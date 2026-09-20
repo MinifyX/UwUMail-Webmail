@@ -8,6 +8,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { displayName } from "@/lib/format";
+import { unsubscribeMail } from "@/lib/unsubscribe";
 import { openLinkNow } from "@/state/links";
 import { toast } from "@/state/toasts";
 import { announceMove } from "@/state/undo";
@@ -37,6 +38,10 @@ function UnsubscribeQuestion({ message, onDone }: { message: Message; onDone: ()
   const [busy, setBusy] = useState(false);
   const name = displayName(message.from);
   const pageOnly = !message.unsubscribe?.oneClick && !message.unsubscribe?.mailto;
+  // Only when unsubscribing really sends a mail: with One-Click the server of the newsletter is
+  // asked instead, and nothing goes out under the reader's name.
+  const byMail =
+    !message.unsubscribe?.oneClick && message.unsubscribe?.mailto ? unsubscribeMail(message.unsubscribe.mailto) : null;
 
   const unsubscribe = async () => {
     setBusy(true);
@@ -74,6 +79,11 @@ function UnsubscribeQuestion({ message, onDone }: { message: Message; onDone: ()
       <NyuScene name="pick" className="w-40" />
       <h2 className="text-[18px] font-extrabold text-balance">{t("unsubscribe.title", { name })}</h2>
       <p className="text-[13px] text-muted">{pageOnly ? t("unsubscribe.bodyPage") : t("unsubscribe.body")}</p>
+      {byMail && (
+        // The address comes out of the newsletter's own header, and the mail goes out under the
+        // reader's name. Whoever is about to send it gets to see where it lands.
+        <p className="text-[13px] text-muted">{t("unsubscribe.mailTo", { address: byMail.address })}</p>
+      )}
       <div className="w-full rounded-2xl bg-canvas px-4 py-1 text-left">
         <Toggle checked={archive} onChange={setArchive} label={t("unsubscribe.archive")} />
       </div>

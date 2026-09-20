@@ -9,6 +9,7 @@
  */
 
 import { textToHtml } from "@/lib/format";
+import { unsubscribeMail } from "@/lib/unsubscribe";
 import { BackendError, type Backend } from "../backend";
 import type {
   Account,
@@ -551,9 +552,8 @@ export class JmapBackend implements Backend {
     if (!options) throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
 
     if (options.mailto) {
-      const target = new URL(options.mailto);
-      const address = decodeURIComponent(target.pathname);
-      if (!address.includes("@")) throw new BackendError("invalid_input", "That unsubscribe address makes no sense.");
+      const target = unsubscribeMail(options.mailto);
+      if (!target) throw new BackendError("invalid_input", "That unsubscribe address makes no sense.");
       const identities = await this.listIdentities();
       // From the address the newsletter went to, where that is one of ours.
       const wentTo = (email.to ?? []).map((entry) => entry.email.toLowerCase());
@@ -562,11 +562,11 @@ export class JmapBackend implements Backend {
         identities.find((identity) => identity.primary);
       await this.send({
         accountId: this.accountId,
-        to: [{ email: address }],
+        to: [{ email: target.address }],
         cc: [],
         bcc: [],
-        subject: target.searchParams.get("subject") ?? "unsubscribe",
-        text: target.searchParams.get("body") ?? "unsubscribe",
+        subject: target.subject,
+        text: "unsubscribe",
         html: "",
         attachments: [],
         ...(from ? { fromEmail: from.email } : {}),
