@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
       alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
     },
     server: {
-      port: 1430,
+      port: 1440,
       strictPort: true,
       proxy: proxy
         ? {

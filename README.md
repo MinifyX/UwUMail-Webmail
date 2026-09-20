@@ -55,7 +55,7 @@ until you ask for them.
 ```bash
 pnpm install
 cp .env.example .env.local   # point UWUMAIL_DEV_SERVER at a test server
-pnpm dev                     # http://localhost:1430/mail/
+pnpm dev                     # http://localhost:1440/mail/
 pnpm dev:demo                # sample data, no server needed
 pnpm build                   # typecheck, then dist/
 ```
