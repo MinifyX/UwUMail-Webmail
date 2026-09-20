@@ -7,7 +7,7 @@ import { DeleteForeverQuestion } from "@/features/mail/DeleteForeverQuestion";
 import { LinkWarning } from "@/features/mail/LinkWarning";
 import { MailShell } from "@/features/shell/MailShell";
 import { i18n, resolveLanguage, useT } from "@/i18n";
-import { BackendError, loadBackend } from "@/backend/backend";
+import { BackendError, isDemo, loadBackend } from "@/backend/backend";
 import { PORTAL_URL, loadSession, webmailAccess } from "@/backend/server";
 import { useApplyTheme } from "@/lib/theme";
 import { applyServerPreferences, useSettings } from "@/state/settings";
@@ -98,6 +98,13 @@ export function App() {
     let cancelled = false;
     void (async () => {
       try {
+        // Sample data means no server at all: asking it who is signed in would be the one call
+        // that still needs one.
+        if (isDemo()) {
+          await loadBackend();
+          if (!cancelled) setBoot({ state: "ready" });
+          return;
+        }
         const session = await loadSession();
         if (cancelled) return;
         if (!session) {
