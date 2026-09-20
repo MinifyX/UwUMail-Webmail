@@ -172,6 +172,17 @@ function throwOnError(response: SetResponse): void {
 /** A conversation id the list uses when conversations are switched off. */
 const SINGLE = "msg:";
 
+/**
+ * A Message-ID without its angle brackets.
+ *
+ * JMAP hands out `messageId` bare (RFC 8621) while the header itself is written `<…>`, and a
+ * draft key may arrive either way. Comparing the bare form means a draft saved by an older
+ * version, or by another mail program, is still recognised as the same draft.
+ */
+export function bareMessageId(id: string | undefined): string {
+  return (id ?? "").trim().replace(/^</, "").replace(/>$/, "");
+}
+
 export class JmapBackend implements Backend {
   readonly kind = "jmap" as const;
 
@@ -736,7 +747,10 @@ export class JmapBackend implements Backend {
       ],
     ]);
     // Servers don't filter by this header reliably, so the comparison happens here.
-    return responseOf<GetResponse<JmapEmail>>(body, "e").list.filter((email) => email.messageId?.[0] === draftKey);
+    const wanted = bareMessageId(draftKey);
+    return responseOf<GetResponse<JmapEmail>>(body, "e").list.filter(
+      (email) => bareMessageId(email.messageId?.[0]) === wanted,
+    );
   }
 
   private async destroyDrafts(draftKey: string, draftsId: string, keep?: string): Promise<void> {
@@ -748,7 +762,7 @@ export class JmapBackend implements Backend {
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
     await this.start();
     const drafts = this.folderOrFail("drafts");
-    const key = draft.draftKey ?? `<uwu-${crypto.randomUUID()}@webmail.local>`;
+    const key = draft.draftKey ?? `uwu-${crypto.randomUUID()}@webmail.local`;
     const email = await this.buildEmail({ ...draft, draftKey: key }, drafts.id, true);
     const response = await one<SetResponse>("Email/set", { create: { draft: email } });
     throwOnError(response);
