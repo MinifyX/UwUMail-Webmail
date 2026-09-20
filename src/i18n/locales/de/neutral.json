@@ -10,7 +10,7 @@
     "compose": "Schreiben",
     "menu": "Ordner",
     "toggleFolder": "Ordner in {{name}} ein- oder ausblenden",
-    "portal": "Einstellungen & Verwaltung"
+    "portal": "Konto & Server"
   },
   "filter": {
     "all": "Alle",

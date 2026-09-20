@@ -10,7 +10,7 @@
     "compose": "Write",
     "menu": "Folders",
     "toggleFolder": "Show or hide folders in {{name}}",
-    "portal": "Settings & admin"
+    "portal": "Account & server"
   },
   "filter": {
     "all": "All",
