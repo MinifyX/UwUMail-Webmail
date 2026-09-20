@@ -3,13 +3,12 @@
  *
  * In the app a Rust engine answers these calls from a local cache. Here the
  * server is asked directly every time, which is fine because it is the same
- * machine that served the page. What the app does locally and a browser can't —
- * cleaning message HTML, following an unsubscribe link, building MIME — the
- * server does instead.
+ * machine that served the page. Two things the app does for itself are the
+ * server's job here, because a page in a browser may not do them: cleaning
+ * message HTML, and building the MIME of a message that is being sent.
  */
 
 import { BackendError, type Backend } from "../backend";
-import { api } from "../server";
 import type {
   Account,
   AttachmentContent,
@@ -49,7 +48,15 @@ import {
   uploadBlob,
   watchPush,
 } from "./client";
-import { toFolder, toMessage, toThreadSummary, type JmapEmail, type JmapMailbox, type JmapThread } from "./convert";
+import {
+  toFolder,
+  toMessage,
+  toThreadSummary,
+  toUnsubscribe,
+  type JmapEmail,
+  type JmapMailbox,
+  type JmapThread,
+} from "./convert";
 
 /** What the list needs of every message; bodies are fetched when a mail is opened. */
 const LIST_PROPERTIES = [
@@ -524,14 +531,49 @@ export class JmapBackend implements Backend {
   }
 
   /**
-   * A browser may not POST to a stranger's unsubscribe link, and shouldn't:
-   * the server does it, with the same rules the app's engine follows.
+   * Unsubscribing from a newsletter.
+   *
+   * The app can also do the one-click POST (RFC 8058) itself, because its engine may talk to
+   * other servers. A page in a browser may not, and having the server do it would mean letting a
+   * mail header decide where the server sends requests — so the mail way is taken where there is
+   * one, and otherwise the browser opens the sender's page.
    */
   async unsubscribe(messageId: string): Promise<UnsubscribeOutcome> {
-    return api<UnsubscribeOutcome>("/api/mail/unsubscribe", {
-      method: "POST",
-      body: JSON.stringify({ emailId: messageId }),
+    await this.start();
+    const response = await one<GetResponse<JmapEmail>>("Email/get", {
+      ids: [messageId],
+      properties: ["id", "to", "subject", "header:List-Unsubscribe:asURLs", "header:List-Unsubscribe-Post:asText"],
     });
+    const email = response.list[0];
+    if (!email) throw new BackendError("not_found", "That mail is gone.");
+    const options = toUnsubscribe(email);
+    if (!options) throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
+
+    if (options.mailto) {
+      const target = new URL(options.mailto);
+      const address = decodeURIComponent(target.pathname);
+      if (!address.includes("@")) throw new BackendError("invalid_input", "That unsubscribe address makes no sense.");
+      const identities = await this.listIdentities();
+      // From the address the newsletter went to, where that is one of ours.
+      const wentTo = (email.to ?? []).map((entry) => entry.email.toLowerCase());
+      const from =
+        identities.find((identity) => wentTo.includes(identity.email.toLowerCase())) ??
+        identities.find((identity) => identity.primary);
+      await this.send({
+        accountId: this.accountId,
+        to: [{ email: address }],
+        cc: [],
+        bcc: [],
+        subject: target.searchParams.get("subject") ?? "unsubscribe",
+        text: target.searchParams.get("body") ?? "unsubscribe",
+        html: "",
+        attachments: [],
+        ...(from ? { fromEmail: from.email } : {}),
+      });
+      return { kind: "done" };
+    }
+    if (options.url) return { kind: "openPage", url: options.url };
+    throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
   }
 
   async inboxMessagesFrom(email: string): Promise<string[]> {
