@@ -158,6 +158,7 @@
     "draftLocal": "Der Entwurf ist nur auf diesem Gerät gespeichert. UwUMail versucht es später erneut.",
     "draftDiscarded": "Entwurf verworfen",
     "draftOpenFailed": "Der Entwurf konnte nicht geöffnet werden. {{reason}}",
+    "draftGone": "In dieser Unterhaltung liegt kein Entwurf mehr.",
     "open": "Öffnen",
     "moved": "Nach „{{folder}}“ verschoben",
     "markedSpam": "Als Spam markiert",

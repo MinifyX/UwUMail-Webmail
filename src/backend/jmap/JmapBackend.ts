@@ -8,6 +8,7 @@
  * message HTML, and building the MIME of a message that is being sent.
  */
 
+import { textToHtml } from "@/lib/format";
 import { BackendError, type Backend } from "../backend";
 import type {
   Account,
@@ -793,7 +794,9 @@ export class JmapBackend implements Backend {
       cc: message.cc,
       bcc: [],
       subject: message.subject,
-      html: message.bodyHtml ?? message.bodyText ?? "",
+      // A draft without HTML is plain text, and plain text is not markup: the reader escapes it
+      // the same way before it shows it.
+      html: message.bodyHtml ?? (message.bodyText ? textToHtml(message.bodyText) : ""),
       inReplyTo: null,
       attachments,
     };
