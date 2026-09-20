@@ -1,0 +1,18 @@
+{
+  "name": "UwUMail",
+  "short_name": "UwUMail",
+  "description": "The mailbox of my UwUMail server",
+  "start_url": "/mail/",
+  "scope": "/mail/",
+  "display": "standalone",
+  "background_color": "#fff7fb",
+  "theme_color": "#ff4d8d",
+  "icons": [
+    {
+      "src": "/mail/uwumail-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,419 @@
+{
+  "nav": {
+    "unified": "All mailboxes",
+    "inbox": "Inbox",
+    "unread": "Unread",
+    "flagged": "Flagged",
+    "drafts": "Drafts",
+    "sent": "Sent",
+    "settings": "Settings",
+    "compose": "Write",
+    "menu": "Folders",
+    "toggleFolder": "Show or hide folders in {{name}}",
+    "portal": "Settings & admin"
+  },
+  "filter": {
+    "all": "All",
+    "unread": "Unread",
+    "flagged": "Flagged",
+    "attachments": "Attachments"
+  },
+  "list": {
+    "search": "Search mail",
+    "clearSearch": "Clear search",
+    "refresh": "Check for new mail",
+    "loadMore": "Load more",
+    "loading": "Loading messages",
+    "unread": "Unread",
+    "markRead": "Mark as read",
+    "empty": {
+      "inbox": {
+        "title": "You're all caught up",
+        "body": "New messages will show up here."
+      },
+      "search": {
+        "title": "No messages match",
+        "body": "Try another word or filter."
+      },
+      "other": {
+        "title": "Nothing here",
+        "body": "This folder is empty."
+      },
+      "offline": {
+        "title": "You are offline",
+        "body": "Your mail shows up here once the connection is back."
+      }
+    },
+    "count_one": "{{count}} message",
+    "count_other": "{{count}} messages",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "clearSelection": "Clear selection"
+  },
+  "reader": {
+    "empty": {
+      "title": "No message selected",
+      "body": "Select a message to read it."
+    },
+    "loading": "Loading message",
+    "reply": "Reply",
+    "replyAll": "Reply all",
+    "forward": "Forward",
+    "archive": "Archive",
+    "trash": "Delete",
+    "deleteForever": "Delete forever",
+    "flag": "Flag",
+    "unflag": "Remove flag",
+    "markUnread": "Mark as unread",
+    "back": "Back",
+    "to": "to {{names}}",
+    "me": "me",
+    "remoteBlocked": "Remote images are blocked to protect your privacy.",
+    "remoteLoad": "Load images",
+    "remoteTrust": "Always load",
+    "remoteTrustOnly": "Always from {{email}}",
+    "remoteTrustAddress": "From {{email}}",
+    "remoteTrustDomain": "From every address at {{domain}}",
+    "remoteTrustedAddress": "Images from {{email}} will load from now on",
+    "remoteTrustedDomain": "Images from {{domain}} will load from now on",
+    "remoteLoadingAddress": "Images load because {{email}} is on your list",
+    "remoteLoadingDomain": "Images load because {{domain}} is on your list",
+    "remoteUntrust": "Stop",
+    "remoteUntrustedAddress": "Images from {{email}} are blocked again",
+    "remoteUntrustedDomain": "Images from {{domain}} are blocked again",
+    "attachments_one": "{{count}} attachment",
+    "attachments_other": "{{count}} attachments",
+    "earlier_one": "{{count}} earlier message",
+    "earlier_other": "{{count}} earlier messages",
+    "noSubject": "(no subject)",
+    "appearanceLight": "Light",
+    "appearanceDark": "Dark",
+    "appearanceShowLight": "Show this mail in light colors.",
+    "appearanceShowDark": "Show this mail in dark colors.",
+    "appearanceAutoDark": "Darkened automatically.",
+    "appearanceAutoLight": "Kept light automatically because this mail has a lot of its own design.",
+    "appearanceNative": "This mail brings its own dark design.",
+    "appearanceRemembered": "Applies to all mail from {{email}} from now on",
+    "error": {
+      "title": "Couldn't load this message",
+      "body": "Check your connection and try again.",
+      "retry": "Try again"
+    },
+    "draft": "Draft",
+    "continueDraft": "Continue writing",
+    "move": "Move",
+    "spam": "Spam",
+    "notSpam": "Not spam",
+    "more": "More",
+    "blockSender": "Block {{email}}",
+    "blockDomain": "Block everything from @{{domain}}",
+    "unsubscribe": "Unsubscribe",
+    "print": "Print",
+    "saveMessage": "Save as file (.eml)",
+    "date": "Date"
+  },
+  "compose": {
+    "new": "New message",
+    "reply": "Reply",
+    "forward": "Forward",
+    "from": "From",
+    "to": "To",
+    "cc": "Cc",
+    "bcc": "Bcc",
+    "showCcBcc": "Cc and Bcc",
+    "subject": "Subject",
+    "placeholder": "Write your message",
+    "attach": "Attach files",
+    "send": "Send",
+    "sending": "Sending",
+    "discard": "Discard",
+    "minimize": "Minimize",
+    "expand": "Expand",
+    "close": "Close",
+    "bold": "Bold",
+    "italic": "Italic",
+    "link": "Link",
+    "list": "List",
+    "linkPrompt": "Link address",
+    "noRecipients": "Add at least one recipient.",
+    "quoteHeader": "On {{date}}, {{name}} wrote:",
+    "forwardHeader": "Forwarded message",
+    "removeRecipient": "Remove {{email}}",
+    "removeAttachment": "Remove {{name}}",
+    "draftSaving": "Saving …",
+    "draftSaved": "Draft saved · {{time}}",
+    "draftLocal": "Only saved on this device",
+    "signature": "Signature",
+    "noSignature": "No signature",
+    "editSignatures": "Edit signatures …"
+  },
+  "toast": {
+    "sent": "Message sent",
+    "sendFailed": "Couldn't send the message. {{reason}}",
+    "archived": "Archived",
+    "trashed": "Moved to trash",
+    "newMail_one": "{{count}} new message",
+    "newMail_other": "{{count}} new messages",
+    "draftSaved": "Draft saved",
+    "draftLocal": "The draft is only saved on this device. UwUMail will try again later.",
+    "draftDiscarded": "Draft discarded",
+    "draftOpenFailed": "The draft couldn't be opened. {{reason}}",
+    "open": "Open",
+    "moved": "Moved to “{{folder}}”",
+    "markedSpam": "Marked as spam",
+    "markedNotSpam": "Back in the inbox",
+    "moveUndone": "Undone",
+    "blocked": "{{entry}} is blocked. New mail from there goes to the spam folder.",
+    "blockedOnServer": "{{entry}} is blocked on your UwUMail server. New mail from there goes to the spam folder.",
+    "unblocked": "{{entry}} isn't blocked anymore",
+    "unsubscribed": "Unsubscribed from {{name}}",
+    "unsubscribePage": "{{name}}'s unsubscribe page is open in your browser",
+    "unsubscribeArchived_one": "{{count}} mail archived",
+    "unsubscribeArchived_other": "{{count}} mails archived",
+    "unsubscribeFailed": "Unsubscribing didn't work. {{reason}}",
+    "messageSaved": "Mail saved",
+    "deletedForever_one": "{{count}} message deleted forever",
+    "deletedForever_other": "{{count}} messages deleted forever"
+  },
+  "status": {
+    "syncing": "Checking for mail",
+    "error": "Couldn't reach {{account}}",
+    "demo": "Demo mode. Sample data, nothing is sent.",
+    "offline": "Offline, showing saved mail",
+    "loading": "Loading your mailbox"
+  },
+  "tone": {
+    "playful": {
+      "name": "Playful",
+      "desc": "Kaomoji, little jokes and cute messages."
+    },
+    "neutral": {
+      "name": "Neutral",
+      "desc": "Clear and plain. Same app, calmer words."
+    },
+    "sample": "Example: {{text}}"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "mail": "Reading",
+    "about": "About",
+    "listDensity": "Mail list",
+    "listDensityDesc": "Compact fits more mail on screen, with a small picture and two lines.",
+    "theme": "Theme",
+    "motion": "Animations",
+    "motionDesc": "With System, UwUMail follows the reduced motion setting of your operating system.",
+    "tone": "Tone",
+    "language": "Language",
+    "conversations": "Group messages into conversations",
+    "conversationsDesc": "Replies appear together with the message they answer.",
+    "remoteImages": "Remote images",
+    "remoteImagesDesc": "Remote images can tell senders when and where you opened a message.",
+    "remoteAsk": "Ask every time",
+    "remoteAlways": "Always load",
+    "trustedSenders": "Always load images from",
+    "trustedSendersDesc": "A company like @shop.com covers all of its addresses, including news@ or noreply@.",
+    "trustedSendersEmpty": "Nobody yet. You add senders right in the image notice of a message.",
+    "trustedSendersInactive": "Only applies with “Ask every time”. Right now UwUMail loads all images.",
+    "untrustSender": "Remove {{sender}}",
+    "version": "Version {{version}}",
+    "license": "Free software under the GNU GPL v3.0.",
+    "source": "Source code",
+    "shortcuts": "Keyboard shortcuts",
+    "mailAppearance": "Mail in dark mode",
+    "mailAppearanceDesc": "Automatic darkens simple mails and keeps elaborately designed newsletters light. Plain text always follows the app theme.",
+    "mailAppearanceAuto": "Automatic",
+    "mailAppearanceLight": "Always light",
+    "mailAppearanceDark": "Always dark",
+    "forgetAppearances": "Reset remembered senders ({{count}})",
+    "appearancesForgotten": "Remembered senders reset",
+    "swipeRight": "Swipe right",
+    "swipeLeft": "Swipe left",
+    "swipeDesc": "What happens when you swipe a mail in the list.",
+    "compose": "Writing",
+    "senders": "Sender addresses",
+    "senderOwn": "The mailbox's address",
+    "senderFromServer": "From the mail server",
+    "blockedSenders": "Blocked senders",
+    "blockedSendersDesc": "New mail from these senders goes to the spam folder. For accounts on a UwUMail server, the server sorts it, even while the app is closed. Block someone from “More” in a mail.",
+    "blockedOnServer": "On the UwUMail server · {{email}}",
+    "blockedInApp": "In this app",
+    "blockedSendersEmpty": "Nobody is blocked.",
+    "unblockSender": "Unblock {{entry}}",
+    "sharedWithPortal": "Shared with the portal, and kept for every browser you sign in from.",
+    "sendersFromServer": "The addresses this mailbox may send from. They belong to the server; new ones are made in the portal.",
+    "manageAddresses": "Manage addresses in the portal"
+  },
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "motion": {
+    "system": "System",
+    "on": "On",
+    "off": "Off"
+  },
+  "language": {
+    "system": "System",
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "shortcuts": {
+    "compose": "Write a message",
+    "search": "Search",
+    "next": "Next message",
+    "previous": "Previous message",
+    "reply": "Reply",
+    "replyAll": "Reply all",
+    "forward": "Forward",
+    "archive": "Archive",
+    "trash": "Delete",
+    "flag": "Flag or unflag",
+    "unread": "Mark as unread",
+    "palette": "Command palette",
+    "close": "Close or go back",
+    "move": "Move",
+    "spam": "Mark as spam",
+    "select": "Select mail",
+    "undo": "Undo the last action",
+    "goInbox": "Go to inbox",
+    "goSent": "Go to sent",
+    "goDrafts": "Go to drafts",
+    "goFlagged": "Go to flagged",
+    "send": "Send (while writing)",
+    "discardDraft": "Discard draft (while writing)"
+  },
+  "palette": {
+    "placeholder": "Type a command",
+    "empty": "No matching command"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "remove": "Remove",
+    "retry": "Try again",
+    "yesterday": "Yesterday",
+    "save": "Save"
+  },
+  "folder": {
+    "inbox": "Inbox",
+    "sent": "Sent",
+    "drafts": "Drafts",
+    "archive": "Archive",
+    "trash": "Trash",
+    "junk": "Junk"
+  },
+  "attachment": {
+    "save": "Save",
+    "saved": "{{name}} saved",
+    "failed": "Couldn't load the attachment. {{reason}}",
+    "previous": "Previous attachment",
+    "next": "Next attachment",
+    "counter": "{{current}} of {{total}}",
+    "loading": "Loading attachment",
+    "noPreview": "No preview for this file type",
+    "noPreviewBody": "Open it with an app on your computer or save it.",
+    "pdfHint": "Not showing up? Open it with your PDF app.",
+    "tableTruncated": "Showing the first {{count}} rows.",
+    "textTruncated": "Showing the first megabyte.",
+    "dangerTag": "Can run programs",
+    "dangerTitle": "This file can run programs on your computer",
+    "dangerBody": "{{name}} comes from {{sender}}. Files like this are a common way to install malware. Only open it if you expected it and trust the sender.",
+    "invitation": "Invitation",
+    "event": "Event",
+    "when": "When",
+    "where": "Where",
+    "organizer": "Organizer",
+    "email": "Email",
+    "phone": "Phone",
+    "notPdf": "This file says it's a PDF but isn't one, so it isn't shown here. Save it or open it with an app if you trust it.",
+    "dangerous": {
+      "title": "Download this file?",
+      "body": "This kind of file can run programs on your computer. Only download it if you expected it and trust the sender.",
+      "confirm": "Download anyway"
+    }
+  },
+  "link": {
+    "warningTitle": "This link goes somewhere else",
+    "warningBody": "The text shows a different address than where the link leads. Phishing mail often works like this.",
+    "shown": "Shown",
+    "actual": "Real target",
+    "dontOpen": "Don't open",
+    "openAnyway": "Open anyway",
+    "failed": "Couldn't open the link. {{reason}}"
+  },
+  "density": {
+    "relaxed": "Relaxed",
+    "compact": "Compact"
+  },
+  "mobile": {
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "selection": {
+      "clear": "Clear selection"
+    },
+    "swipe": {
+      "read": "Read",
+      "unread": "Unread",
+      "archive": "Archive",
+      "trash": "Delete",
+      "flag": "Flag",
+      "none": "Nothing"
+    },
+    "pull": {
+      "pull": "Pull to refresh",
+      "release": "Release to refresh",
+      "refreshing": "Looking for new mail"
+    },
+    "draft": {
+      "to": "To {{names}}",
+      "continue": "Continue writing"
+    },
+    "more": "More",
+    "actions": "Actions",
+    "replyAllShort": "All"
+  },
+  "move": {
+    "title": "Move to …",
+    "search": "Search folders",
+    "empty": "No matching folder",
+    "mixedAccounts": "Mail from different mailboxes can only be moved one mailbox at a time."
+  },
+  "unsubscribe": {
+    "title": "Unsubscribe from {{name}}?",
+    "body": "UwUMail unsubscribes you with the sender directly. After that, no more mail should come from there.",
+    "bodyPage": "The sender has its own page for this. UwUMail opens it for you, and you confirm there.",
+    "archive": "Archive earlier mail from there"
+  },
+  "deleteForever": {
+    "title_one": "Delete this message forever?",
+    "title_other": "Delete {{count}} messages forever?",
+    "body_one": "It's removed from the server too and can't be brought back.",
+    "body_other": "They're removed from the server too and can't be brought back.",
+    "confirm": "Delete forever"
+  },
+  "discardChanges": {
+    "title": "Discard your changes?",
+    "body": "What you've entered here would be lost.",
+    "discard": "Discard changes",
+    "keepEditing": "Keep editing"
+  },
+  "boot": {
+    "toPortal": "To the portal",
+    "signedOut": {
+      "title": "Please sign in",
+      "body": "Your session has ended. Sign in on the portal and you'll come right back here.",
+      "action": "Sign in"
+    },
+    "off": {
+      "title": "The webmail is switched off",
+      "server": "An administrator has switched the webmail off on this server. Your mail is still there, and every mail app keeps working.",
+      "account": "An administrator has switched the webmail off for this account. Your mail is still there, and every mail app keeps working."
+    },
+    "error": {
+      "title": "That didn't work",
+      "action": "Try again"
+    }
+  }
+}

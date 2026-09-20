@@ -1,0 +1,128 @@
+{
+  "list": {
+    "loading": "Fetching your mail (｡･ω･｡)",
+    "empty": {
+      "inbox": {
+        "title": "Inbox zero! Time for tea (っ˘ω˘ς)",
+        "body": "I'll tell you the moment something arrives."
+      },
+      "search": {
+        "title": "Nothing found (・_・;)",
+        "body": "I looked everywhere, even under the sofa."
+      },
+      "other": {
+        "title": "So empty, so peaceful (˘ᵕ˘)",
+        "body": "Nothing in this folder right now."
+      },
+      "offline": {
+        "title": "No internet (・_・;)",
+        "body": "I'll wait under my umbrella and fetch your mail once the connection is back."
+      }
+    }
+  },
+  "reader": {
+    "empty": {
+      "title": "Pick a mail, any mail ✉︎",
+      "body": "I'll open it right here for you."
+    },
+    "loading": "Opening the envelope…",
+    "remoteBlocked": "I blocked remote images so nobody can peek at you (｀・ω・´)",
+    "appearanceAutoLight": "I kept this one light, it dressed up so nicely (・ω・)",
+    "appearanceRemembered": "Got it, I'll remember that for {{email}} ✿",
+    "remoteTrustedAddress": "Got it, images from {{email}} may come in now ✿",
+    "remoteTrustedDomain": "Got it, images from {{domain}} may come in now ✿",
+    "remoteUntrustedAddress": "Okay, images from {{email}} stay outside again (｀・ω・´)",
+    "remoteUntrustedDomain": "Okay, images from {{domain}} stay outside again (｀・ω・´)",
+    "error": {
+      "title": "I got tangled in the cable (╥﹏╥)",
+      "body": "This message didn't come through. Try again in a moment."
+    }
+  },
+  "compose": {
+    "placeholder": "Write something nice ✿",
+    "noRecipients": "Who's it for? Add a recipient first (・・ )?",
+    "draftLocal": "Only saved here for now (・_・;)"
+  },
+  "toast": {
+    "sent": "Off it goes ✉︎ ~",
+    "sendFailed": "Couldn't send (╥﹏╥) {{reason}}",
+    "archived": "Tucked away in the archive (˘ω˘)",
+    "trashed": "Bye bye (｡•́︿•̀｡)",
+    "newMail_one": "You've got mail! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "newMail_other": "{{count}} new mails! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "draftSaved": "Draft tucked away safely (˘ω˘)",
+    "draftDiscarded": "Poof, as if it never happened (・ω・)",
+    "markedSpam": "Off to the spam corner (｀へ´)",
+    "moveUndone": "Poof, back as it was (・ω・)",
+    "blocked": "{{entry}} can't get in anymore (｀・ω・´) New mail goes to the spam folder.",
+    "blockedOnServer": "{{entry}} can't get in anymore, your server keeps watch (｀・ω・´) New mail goes to the spam folder.",
+    "unsubscribed": "Unsubscribed (≧▽≦) No more mail from {{name}}",
+    "messageSaved": "Mail tucked away safely (˘ω˘)",
+    "deletedForever_one": "Gone forever (｡•́︿•̀｡)",
+    "deletedForever_other": "{{count}} messages gone forever (｡•́︿•̀｡)"
+  },
+  "status": {
+    "syncing": "Fetching fresh mail…",
+    "error": "{{account}} isn't answering (・_・;)",
+    "demo": "Demo mode, just pretend mail. Nothing leaves the app (´｡• ω •｡`)",
+    "offline": "No internet (・_・;) Showing what I saved for you",
+    "loading": "Fetching your mail nest"
+  },
+  "tone": {
+    "playful": {
+      "desc": "Kaomoji, little jokes and cute messages (◕ᴗ◕✿)"
+    }
+  },
+  "settings": {
+    "motionDesc": "Should Nyu blink, hop and fly around? With System, I follow your operating system.",
+    "trustedSendersEmpty": "Nobody on my list yet (・・ )? Add senders right in the image notice of a message."
+  },
+  "attachment": {
+    "loading": "Unpacking the attachment…",
+    "dangerTitle": "Careful! This file could start programs (・_・;)",
+    "noPreview": "I can't peek into this one (・・ )?",
+    "dangerous": {
+      "title": "Nyu is squinting at this file",
+      "body": "This kind of file can run programs on your computer. Only take it if you expected it and trust who sent it."
+    }
+  },
+  "link": {
+    "warningTitle": "Hmm, this link might be fibbing (・_・;)"
+  },
+  "mobile": {
+    "pull": {
+      "release": "Let go and I'll check ✧",
+      "refreshing": "Nyu is checking the mailbox (｡･ω･｡)"
+    },
+    "draft": {
+      "continue": "Continue writing ✎"
+    }
+  },
+  "unsubscribe": {
+    "title": "Bye bye {{name}}?"
+  },
+  "deleteForever": {
+    "title_one": "Say goodbye to this one forever? (｡•́︿•̀｡)",
+    "title_other": "Say goodbye to {{count}} messages forever? (｡•́︿•̀｡)",
+    "body_one": "It'll be gone from the server too, and I can't fetch it back.",
+    "body_other": "They'll be gone from the server too, and I can't fetch them back."
+  },
+  "discardChanges": {
+    "title": "Throw it all away? (・_・;)",
+    "body": "I'll forget everything you just typed here."
+  },
+  "boot": {
+    "signedOut": {
+      "title": "Nyu needs to know it's you",
+      "body": "Your session took a nap. Sign in on the portal and Nyu brings you straight back."
+    },
+    "off": {
+      "title": "Nyu is off duty here",
+      "server": "An admin switched the webmail off on this server. Your mail is safe and sound, and every mail app keeps working.",
+      "account": "An admin switched the webmail off for this account. Your mail is safe and sound, and every mail app keeps working."
+    },
+    "error": {
+      "title": "Nyu tripped over a cable"
+    }
+  }
+}

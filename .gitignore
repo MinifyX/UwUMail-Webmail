@@ -1,0 +1,38 @@
+# Build output
+target/
+dist/
+node_modules/
+
+# Local data of a dev server
+/data/
+/dev/data/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Keys, certificates and passwords never belong in this public repository
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.password
+*.secret
+id_rsa*
+id_ed25519*
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Private security-test notes (repro steps, PoCs) — never commit
+security-test-notes.local.md

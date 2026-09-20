@@ -1,0 +1,419 @@
+{
+  "nav": {
+    "unified": "Alle Postfächer",
+    "inbox": "Posteingang",
+    "unread": "Ungelesen",
+    "flagged": "Markiert",
+    "drafts": "Entwürfe",
+    "sent": "Gesendet",
+    "settings": "Einstellungen",
+    "compose": "Schreiben",
+    "menu": "Ordner",
+    "toggleFolder": "Ordner in {{name}} ein- oder ausblenden",
+    "portal": "Einstellungen & Verwaltung"
+  },
+  "filter": {
+    "all": "Alle",
+    "unread": "Ungelesen",
+    "flagged": "Markiert",
+    "attachments": "Anhänge"
+  },
+  "list": {
+    "search": "Mails durchsuchen",
+    "clearSearch": "Suche leeren",
+    "refresh": "Nach neuen Mails sehen",
+    "loadMore": "Mehr laden",
+    "loading": "Mails werden geladen",
+    "unread": "Ungelesen",
+    "markRead": "Als gelesen markieren",
+    "empty": {
+      "inbox": {
+        "title": "Alles gelesen",
+        "body": "Neue Mails erscheinen hier."
+      },
+      "search": {
+        "title": "Keine passenden Mails",
+        "body": "Versuch ein anderes Wort oder einen anderen Filter."
+      },
+      "other": {
+        "title": "Hier ist nichts",
+        "body": "Dieser Ordner ist leer."
+      },
+      "offline": {
+        "title": "Du bist offline",
+        "body": "Sobald die Verbindung wieder da ist, erscheinen hier deine Mails."
+      }
+    },
+    "count_one": "{{count}} Mail",
+    "count_other": "{{count}} Mails",
+    "selected_one": "{{count}} ausgewählt",
+    "selected_other": "{{count}} ausgewählt",
+    "clearSelection": "Auswahl aufheben"
+  },
+  "reader": {
+    "empty": {
+      "title": "Keine Mail ausgewählt",
+      "body": "Wähle eine Mail aus, um sie zu lesen."
+    },
+    "loading": "Mail wird geladen",
+    "reply": "Antworten",
+    "replyAll": "Allen antworten",
+    "forward": "Weiterleiten",
+    "archive": "Archivieren",
+    "trash": "Löschen",
+    "deleteForever": "Endgültig löschen",
+    "flag": "Markieren",
+    "unflag": "Markierung entfernen",
+    "markUnread": "Als ungelesen markieren",
+    "back": "Zurück",
+    "to": "an {{names}}",
+    "me": "mich",
+    "remoteBlocked": "Externe Bilder sind blockiert, um deine Privatsphäre zu schützen.",
+    "remoteLoad": "Bilder laden",
+    "remoteTrust": "Immer laden",
+    "remoteTrustOnly": "Immer von {{email}}",
+    "remoteTrustAddress": "Von {{email}}",
+    "remoteTrustDomain": "Von allen Adressen bei {{domain}}",
+    "remoteTrustedAddress": "Bilder von {{email}} werden ab jetzt geladen",
+    "remoteTrustedDomain": "Bilder von {{domain}} werden ab jetzt geladen",
+    "remoteLoadingAddress": "Bilder werden geladen, weil {{email}} auf deiner Liste steht",
+    "remoteLoadingDomain": "Bilder werden geladen, weil {{domain}} auf deiner Liste steht",
+    "remoteUntrust": "Nicht mehr",
+    "remoteUntrustedAddress": "Bilder von {{email}} sind wieder blockiert",
+    "remoteUntrustedDomain": "Bilder von {{domain}} sind wieder blockiert",
+    "attachments_one": "{{count}} Anhang",
+    "attachments_other": "{{count}} Anhänge",
+    "earlier_one": "{{count}} ältere Nachricht",
+    "earlier_other": "{{count}} ältere Nachrichten",
+    "noSubject": "(kein Betreff)",
+    "appearanceLight": "Hell",
+    "appearanceDark": "Dunkel",
+    "appearanceShowLight": "Diese Mail hell anzeigen.",
+    "appearanceShowDark": "Diese Mail dunkel anzeigen.",
+    "appearanceAutoDark": "Automatisch abgedunkelt.",
+    "appearanceAutoLight": "Automatisch hell gelassen, weil diese Mail viel eigenes Design hat.",
+    "appearanceNative": "Diese Mail bringt ihr eigenes dunkles Design mit.",
+    "appearanceRemembered": "Gilt ab jetzt für alle Mails von {{email}}",
+    "error": {
+      "title": "Die Mail konnte nicht geladen werden",
+      "body": "Prüf deine Verbindung und versuch es noch einmal.",
+      "retry": "Nochmal versuchen"
+    },
+    "draft": "Entwurf",
+    "continueDraft": "Weiterschreiben",
+    "move": "Verschieben",
+    "spam": "Spam",
+    "notSpam": "Kein Spam",
+    "more": "Mehr",
+    "blockSender": "{{email}} blockieren",
+    "blockDomain": "Alles von @{{domain}} blockieren",
+    "unsubscribe": "Abmelden",
+    "print": "Drucken",
+    "saveMessage": "Als Datei speichern (.eml)",
+    "date": "Datum"
+  },
+  "compose": {
+    "new": "Neue Mail",
+    "reply": "Antwort",
+    "forward": "Weiterleitung",
+    "from": "Von",
+    "to": "An",
+    "cc": "Cc",
+    "bcc": "Bcc",
+    "showCcBcc": "Cc und Bcc",
+    "subject": "Betreff",
+    "placeholder": "Schreib deine Nachricht",
+    "attach": "Dateien anhängen",
+    "send": "Senden",
+    "sending": "Wird gesendet",
+    "discard": "Verwerfen",
+    "minimize": "Minimieren",
+    "expand": "Vergrößern",
+    "close": "Schließen",
+    "bold": "Fett",
+    "italic": "Kursiv",
+    "link": "Link",
+    "list": "Liste",
+    "linkPrompt": "Linkadresse",
+    "noRecipients": "Füge mindestens einen Empfänger hinzu.",
+    "quoteHeader": "Am {{date}} schrieb {{name}}:",
+    "forwardHeader": "Weitergeleitete Nachricht",
+    "removeRecipient": "{{email}} entfernen",
+    "removeAttachment": "{{name}} entfernen",
+    "draftSaving": "Speichert …",
+    "draftSaved": "Entwurf gespeichert · {{time}}",
+    "draftLocal": "Nur auf diesem Gerät gespeichert",
+    "signature": "Signatur",
+    "noSignature": "Keine Signatur",
+    "editSignatures": "Signaturen bearbeiten …"
+  },
+  "toast": {
+    "sent": "Mail gesendet",
+    "sendFailed": "Die Mail konnte nicht gesendet werden. {{reason}}",
+    "archived": "Archiviert",
+    "trashed": "In den Papierkorb verschoben",
+    "newMail_one": "{{count}} neue Mail",
+    "newMail_other": "{{count}} neue Mails",
+    "draftSaved": "Entwurf gespeichert",
+    "draftLocal": "Der Entwurf ist nur auf diesem Gerät gespeichert. UwUMail versucht es später erneut.",
+    "draftDiscarded": "Entwurf verworfen",
+    "draftOpenFailed": "Der Entwurf konnte nicht geöffnet werden. {{reason}}",
+    "open": "Öffnen",
+    "moved": "Nach „{{folder}}“ verschoben",
+    "markedSpam": "Als Spam markiert",
+    "markedNotSpam": "Zurück im Posteingang",
+    "moveUndone": "Rückgängig gemacht",
+    "blocked": "{{entry}} ist blockiert. Neue Mails von dort landen im Spam-Ordner.",
+    "blockedOnServer": "{{entry}} ist auf deinem UwUMail-Server blockiert. Neue Mails von dort landen im Spam-Ordner.",
+    "unblocked": "{{entry}} ist nicht mehr blockiert",
+    "unsubscribed": "Von {{name}} abgemeldet",
+    "unsubscribePage": "Die Abmeldeseite von {{name}} ist im Browser geöffnet",
+    "unsubscribeArchived_one": "{{count}} Mail archiviert",
+    "unsubscribeArchived_other": "{{count}} Mails archiviert",
+    "unsubscribeFailed": "Das Abmelden hat nicht geklappt. {{reason}}",
+    "messageSaved": "Mail gespeichert",
+    "deletedForever_one": "{{count}} Mail endgültig gelöscht",
+    "deletedForever_other": "{{count}} Mails endgültig gelöscht"
+  },
+  "status": {
+    "syncing": "Suche nach neuen Mails",
+    "error": "{{account}} ist nicht erreichbar",
+    "demo": "Demo-Modus. Beispieldaten, es wird nichts gesendet.",
+    "offline": "Offline, gespeicherte Mails werden angezeigt",
+    "loading": "Postfach wird geladen"
+  },
+  "tone": {
+    "playful": {
+      "name": "Verspielt",
+      "desc": "Kaomoji, kleine Witze und süße Meldungen."
+    },
+    "neutral": {
+      "name": "Neutral",
+      "desc": "Klar und schlicht. Gleiche App, ruhigere Worte."
+    },
+    "sample": "Beispiel: {{text}}"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "appearance": "Aussehen",
+    "mail": "Lesen",
+    "about": "Über",
+    "listDensity": "Mail-Liste",
+    "listDensityDesc": "Kompakt zeigt mehr Mails auf einmal, mit kleinem Bild und zwei Zeilen.",
+    "theme": "Design",
+    "motion": "Animationen",
+    "motionDesc": "„Wie System“ richtet sich nach der Einstellung für reduzierte Bewegung in deinem Betriebssystem.",
+    "tone": "Ton",
+    "language": "Sprache",
+    "conversations": "Mails als Unterhaltungen gruppieren",
+    "conversationsDesc": "Antworten erscheinen zusammen mit der Mail, auf die sie antworten.",
+    "remoteImages": "Externe Bilder",
+    "remoteImagesDesc": "Externe Bilder können Absendern verraten, wann und wo du eine Mail geöffnet hast.",
+    "remoteAsk": "Jedes Mal fragen",
+    "remoteAlways": "Immer laden",
+    "trustedSenders": "Bilder immer laden von",
+    "trustedSendersDesc": "Eine Firma wie @shop.de schließt alle ihre Adressen ein, auch news@ oder noreply@.",
+    "trustedSendersEmpty": "Noch niemand. Du fügst Absender direkt im Bilder-Hinweis einer Mail hinzu.",
+    "trustedSendersInactive": "Wirkt erst mit „Jedes Mal fragen“. Gerade lädt UwUMail alle Bilder.",
+    "untrustSender": "{{sender}} entfernen",
+    "version": "Version {{version}}",
+    "license": "Freie Software unter der GNU GPL v3.0.",
+    "source": "Quellcode",
+    "shortcuts": "Tastenkürzel",
+    "mailAppearance": "Mails im Dunkelmodus",
+    "mailAppearanceDesc": "Automatisch dunkelt einfache Mails ab und lässt aufwendig gestaltete Newsletter hell. Reine Textmails folgen immer dem App-Design.",
+    "mailAppearanceAuto": "Automatisch",
+    "mailAppearanceLight": "Immer hell",
+    "mailAppearanceDark": "Immer dunkel",
+    "forgetAppearances": "Gemerkte Absender zurücksetzen ({{count}})",
+    "appearancesForgotten": "Gemerkte Absender zurückgesetzt",
+    "swipeRight": "Nach rechts wischen",
+    "swipeLeft": "Nach links wischen",
+    "swipeDesc": "Was passiert, wenn du eine Mail in der Liste zur Seite wischst.",
+    "compose": "Schreiben",
+    "senders": "Absenderadressen",
+    "senderOwn": "Adresse des Postfachs",
+    "senderFromServer": "Vom Mailserver",
+    "blockedSenders": "Blockierte Absender",
+    "blockedSendersDesc": "Neue Mails von diesen Absendern landen im Spam-Ordner. Bei Konten auf einem UwUMail-Server sortiert der Server selbst, auch wenn die App geschlossen ist. Blockieren kannst du über „Mehr“ in einer Mail.",
+    "blockedOnServer": "Auf dem UwUMail-Server · {{email}}",
+    "blockedInApp": "In dieser App",
+    "blockedSendersEmpty": "Niemand ist blockiert.",
+    "unblockSender": "{{entry}} freigeben",
+    "sharedWithPortal": "Gilt zusammen mit dem Portal und in jedem Browser, in dem du dich anmeldest.",
+    "sendersFromServer": "Die Adressen, von denen dieses Postfach senden darf. Sie gehören zum Server; neue legst du im Portal an.",
+    "manageAddresses": "Adressen im Portal verwalten"
+  },
+  "theme": {
+    "system": "System",
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
+  "motion": {
+    "system": "Wie System",
+    "on": "An",
+    "off": "Aus"
+  },
+  "language": {
+    "system": "System",
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "shortcuts": {
+    "compose": "Mail schreiben",
+    "search": "Suchen",
+    "next": "Nächste Mail",
+    "previous": "Vorherige Mail",
+    "reply": "Antworten",
+    "replyAll": "Allen antworten",
+    "forward": "Weiterleiten",
+    "archive": "Archivieren",
+    "trash": "Löschen",
+    "flag": "Markieren oder Markierung entfernen",
+    "unread": "Als ungelesen markieren",
+    "palette": "Befehlspalette",
+    "close": "Schließen oder zurück",
+    "move": "Verschieben",
+    "spam": "Als Spam markieren",
+    "select": "Mail auswählen",
+    "undo": "Letzte Aktion rückgängig",
+    "goInbox": "Zum Posteingang",
+    "goSent": "Zu Gesendet",
+    "goDrafts": "Zu Entwürfe",
+    "goFlagged": "Zu Markiert",
+    "send": "Senden (beim Schreiben)",
+    "discardDraft": "Entwurf verwerfen (beim Schreiben)"
+  },
+  "palette": {
+    "placeholder": "Befehl eingeben",
+    "empty": "Kein passender Befehl"
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "remove": "Entfernen",
+    "retry": "Nochmal versuchen",
+    "yesterday": "Gestern",
+    "save": "Speichern"
+  },
+  "folder": {
+    "inbox": "Posteingang",
+    "sent": "Gesendet",
+    "drafts": "Entwürfe",
+    "archive": "Archiv",
+    "trash": "Papierkorb",
+    "junk": "Spam"
+  },
+  "attachment": {
+    "save": "Speichern",
+    "saved": "{{name}} gespeichert",
+    "failed": "Der Anhang konnte nicht geladen werden. {{reason}}",
+    "previous": "Vorheriger Anhang",
+    "next": "Nächster Anhang",
+    "counter": "{{current}} von {{total}}",
+    "loading": "Anhang wird geladen",
+    "noPreview": "Keine Vorschau für diesen Dateityp",
+    "noPreviewBody": "Öffne ihn mit einem Programm auf deinem Rechner oder speichere ihn.",
+    "pdfHint": "Wird nicht angezeigt? Öffne die Datei mit deinem PDF-Programm.",
+    "tableTruncated": "Die ersten {{count}} Zeilen werden angezeigt.",
+    "textTruncated": "Das erste Megabyte wird angezeigt.",
+    "dangerTag": "Kann Programme ausführen",
+    "dangerTitle": "Diese Datei kann Programme auf deinem Rechner ausführen",
+    "dangerBody": "{{name}} stammt von {{sender}}. Solche Dateien sind ein häufiger Weg, Schadsoftware zu installieren. Öffne sie nur, wenn du sie erwartet hast und dem Absender vertraust.",
+    "invitation": "Einladung",
+    "event": "Termin",
+    "when": "Wann",
+    "where": "Wo",
+    "organizer": "Organisiert von",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "notPdf": "Diese Datei gibt sich als PDF aus, ist aber keins, deshalb wird sie hier nicht angezeigt. Speichere sie oder öffne sie mit einer App, wenn du ihr vertraust.",
+    "dangerous": {
+      "title": "Diese Datei herunterladen?",
+      "body": "Dateien dieser Art können Programme auf deinem Rechner starten. Lade sie nur herunter, wenn du sie erwartet hast und der Absenderin oder dem Absender vertraust.",
+      "confirm": "Trotzdem herunterladen"
+    }
+  },
+  "link": {
+    "warningTitle": "Dieser Link führt woanders hin",
+    "warningBody": "Der Text zeigt eine andere Adresse als das eigentliche Ziel. So arbeiten Phishing-Mails oft.",
+    "shown": "Angezeigt",
+    "actual": "Echtes Ziel",
+    "dontOpen": "Nicht öffnen",
+    "openAnyway": "Trotzdem öffnen",
+    "failed": "Der Link ließ sich nicht öffnen. {{reason}}"
+  },
+  "density": {
+    "relaxed": "Entspannt",
+    "compact": "Kompakt"
+  },
+  "mobile": {
+    "selected_one": "{{count}} ausgewählt",
+    "selected_other": "{{count}} ausgewählt",
+    "selection": {
+      "clear": "Auswahl aufheben"
+    },
+    "swipe": {
+      "read": "Gelesen",
+      "unread": "Ungelesen",
+      "archive": "Archiv",
+      "trash": "Löschen",
+      "flag": "Markieren",
+      "none": "Nichts"
+    },
+    "pull": {
+      "pull": "Zum Aktualisieren ziehen",
+      "release": "Loslassen zum Aktualisieren",
+      "refreshing": "Suche nach neuen Mails"
+    },
+    "draft": {
+      "to": "An {{names}}",
+      "continue": "Weiterschreiben"
+    },
+    "more": "Mehr",
+    "actions": "Aktionen",
+    "replyAllShort": "Allen"
+  },
+  "move": {
+    "title": "Verschieben nach …",
+    "search": "Ordner suchen",
+    "empty": "Kein passender Ordner",
+    "mixedAccounts": "Mails aus verschiedenen Postfächern können nur einzeln verschoben werden."
+  },
+  "unsubscribe": {
+    "title": "Von {{name}} abmelden?",
+    "body": "UwUMail meldet dich direkt beim Absender ab. Danach sollten keine Mails mehr von dort kommen.",
+    "bodyPage": "Der Absender hat dafür eine eigene Seite. UwUMail öffnet sie für dich, dort bestätigst du die Abmeldung.",
+    "archive": "Bisherige Mails von dort archivieren"
+  },
+  "deleteForever": {
+    "title_one": "Diese Mail endgültig löschen?",
+    "title_other": "{{count}} Mails endgültig löschen?",
+    "body_one": "Sie verschwindet auch vom Server und lässt sich nicht zurückholen.",
+    "body_other": "Sie verschwinden auch vom Server und lassen sich nicht zurückholen.",
+    "confirm": "Endgültig löschen"
+  },
+  "discardChanges": {
+    "title": "Änderungen verwerfen?",
+    "body": "Was du hier eingegeben hast, geht sonst verloren.",
+    "discard": "Verwerfen",
+    "keepEditing": "Weiter bearbeiten"
+  },
+  "boot": {
+    "toPortal": "Zum Portal",
+    "signedOut": {
+      "title": "Bitte anmelden",
+      "body": "Deine Sitzung ist abgelaufen. Melde dich im Portal an, danach geht es hier weiter.",
+      "action": "Anmelden"
+    },
+    "off": {
+      "title": "Die Webmail ist ausgeschaltet",
+      "server": "Eine Administratorin oder ein Administrator hat die Webmail auf diesem Server ausgeschaltet. Deine Mail ist weiterhin da, und alle Mail-Programme funktionieren wie bisher.",
+      "account": "Eine Administratorin oder ein Administrator hat die Webmail für dieses Konto ausgeschaltet. Deine Mail ist weiterhin da, und alle Mail-Programme funktionieren wie bisher."
+    },
+    "error": {
+      "title": "Das hat nicht geklappt",
+      "action": "Nochmal versuchen"
+    }
+  }
+}

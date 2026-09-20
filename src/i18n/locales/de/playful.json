@@ -1,0 +1,128 @@
+{
+  "list": {
+    "loading": "Ich hole deine Mails (｡･ω･｡)",
+    "empty": {
+      "inbox": {
+        "title": "Posteingang leer! Zeit für einen Tee (っ˘ω˘ς)",
+        "body": "Ich sag dir sofort Bescheid, wenn was ankommt."
+      },
+      "search": {
+        "title": "Nix gefunden (・_・;)",
+        "body": "Ich hab überall gesucht, sogar unterm Sofa."
+      },
+      "other": {
+        "title": "So leer, so friedlich (˘ᵕ˘)",
+        "body": "In diesem Ordner liegt gerade nichts."
+      },
+      "offline": {
+        "title": "Kein Internet (・_・;)",
+        "body": "Ich warte unterm Schirm. Sobald die Verbindung zurück ist, hol ich deine Mails."
+      }
+    }
+  },
+  "reader": {
+    "empty": {
+      "title": "Such dir eine Mail aus ✉︎",
+      "body": "Ich mach sie dir genau hier auf."
+    },
+    "loading": "Umschlag wird geöffnet…",
+    "remoteBlocked": "Ich hab externe Bilder blockiert, damit dir keiner hinterherspioniert (｀・ω・´)",
+    "appearanceAutoLight": "Hab ich hell gelassen, die Mail hat sich so schick gemacht (・ω・)",
+    "appearanceRemembered": "Merk ich mir für {{email}} ✿",
+    "remoteTrustedAddress": "Merk ich mir: Bilder von {{email}} dürfen rein ✿",
+    "remoteTrustedDomain": "Merk ich mir: Bilder von {{domain}} dürfen rein ✿",
+    "remoteUntrustedAddress": "Okay, Bilder von {{email}} bleiben wieder draußen (｀・ω・´)",
+    "remoteUntrustedDomain": "Okay, Bilder von {{domain}} bleiben wieder draußen (｀・ω・´)",
+    "error": {
+      "title": "Ich hab mich im Kabel verheddert (╥﹏╥)",
+      "body": "Die Mail kam nicht durch. Versuch es gleich nochmal."
+    }
+  },
+  "compose": {
+    "placeholder": "Schreib was Liebes ✿",
+    "noRecipients": "An wen soll's gehen? Füg erst einen Empfänger hinzu (・・ )?",
+    "draftLocal": "Erst mal nur hier gespeichert (・_・;)"
+  },
+  "toast": {
+    "sent": "Und ab die Post ✉︎ ~",
+    "sendFailed": "Senden hat nicht geklappt (╥﹏╥) {{reason}}",
+    "archived": "Ab ins Archiv, schön verstaut (˘ω˘)",
+    "trashed": "Tschüssi (｡•́︿•̀｡)",
+    "newMail_one": "Du hast Post! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "newMail_other": "{{count}} neue Mails! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "draftSaved": "Entwurf ist sicher verstaut (˘ω˘)",
+    "draftDiscarded": "Weg damit, als wär nie was gewesen (・ω・)",
+    "markedSpam": "Ab in die Spam-Ecke (｀へ´)",
+    "moveUndone": "Zack, alles wie vorher (・ω・)",
+    "blocked": "{{entry}} kommt nicht mehr rein (｀・ω・´) Neue Mails landen im Spam-Ordner.",
+    "blockedOnServer": "{{entry}} kommt nicht mehr rein, dein Server passt auf (｀・ω・´) Neue Mails landen im Spam-Ordner.",
+    "unsubscribed": "Abgemeldet (≧▽≦) Keine Post mehr von {{name}}",
+    "messageSaved": "Mail sicher abgelegt (˘ω˘)",
+    "deletedForever_one": "Für immer weg (｡•́︿•̀｡)",
+    "deletedForever_other": "{{count}} Mails für immer weg (｡•́︿•̀｡)"
+  },
+  "status": {
+    "syncing": "Hole frische Mails…",
+    "error": "{{account}} antwortet nicht (・_・;)",
+    "demo": "Demo-Modus, nur Spielmails. Nichts verlässt die App (´｡• ω •｡`)",
+    "offline": "Kein Internet (・_・;) Ich zeig dir, was ich gespeichert hab",
+    "loading": "Nyu holt dein Postfach"
+  },
+  "tone": {
+    "playful": {
+      "desc": "Kaomoji, kleine Witze und süße Meldungen (◕ᴗ◕✿)"
+    }
+  },
+  "settings": {
+    "motionDesc": "Soll Nyu blinzeln, hüpfen und herumfliegen? „Wie System“ hält sich an dein Betriebssystem.",
+    "trustedSendersEmpty": "Noch keiner auf meiner Liste (・・ )? Absender fügst du direkt im Bilder-Hinweis einer Mail hinzu."
+  },
+  "attachment": {
+    "loading": "Ich pack den Anhang aus…",
+    "dangerTitle": "Vorsicht! Die Datei könnte Programme starten (・_・;)",
+    "noPreview": "Da kann ich nicht reinschauen (・・ )?",
+    "dangerous": {
+      "title": "Nyu schaut diese Datei schief an",
+      "body": "Dateien dieser Art können Programme auf deinem Rechner starten. Nimm sie nur, wenn du sie erwartet hast und der Absenderin oder dem Absender vertraust."
+    }
+  },
+  "link": {
+    "warningTitle": "Hm, dieser Link schummelt vielleicht (・_・;)"
+  },
+  "mobile": {
+    "pull": {
+      "release": "Loslassen, dann guck ich nach ✧",
+      "refreshing": "Nyu sieht nach neuer Post (｡･ω･｡)"
+    },
+    "draft": {
+      "continue": "Weiterschreiben ✎"
+    }
+  },
+  "unsubscribe": {
+    "title": "Tschüss {{name}}?"
+  },
+  "deleteForever": {
+    "title_one": "Diese Mail für immer löschen? (｡•́︿•̀｡)",
+    "title_other": "{{count}} Mails für immer löschen? (｡•́︿•̀｡)",
+    "body_one": "Dann ist sie auch auf dem Server weg, und ich kann sie nicht mehr zurückholen.",
+    "body_other": "Dann sind sie auch auf dem Server weg, und ich kann sie nicht mehr zurückholen."
+  },
+  "discardChanges": {
+    "title": "Alles wegwerfen? (・_・;)",
+    "body": "Ich vergesse dann alles, was du hier eingetippt hast."
+  },
+  "boot": {
+    "signedOut": {
+      "title": "Nyu muss wissen, dass du es bist",
+      "body": "Deine Sitzung hat ein Nickerchen gemacht. Melde dich im Portal an, dann bringt Nyu dich direkt zurück."
+    },
+    "off": {
+      "title": "Nyu hat hier gerade frei",
+      "server": "Jemand aus der Verwaltung hat die Webmail auf diesem Server ausgeschaltet. Deine Mail ist wohlbehalten da, und alle Mail-Programme laufen weiter.",
+      "account": "Jemand aus der Verwaltung hat die Webmail für dieses Konto ausgeschaltet. Deine Mail ist wohlbehalten da, und alle Mail-Programme laufen weiter."
+    },
+    "error": {
+      "title": "Nyu ist über ein Kabel gestolpert"
+    }
+  }
+}
