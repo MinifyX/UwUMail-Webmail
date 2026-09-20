@@ -240,7 +240,14 @@ function PdfPreview({ file }: { file: AttachmentContent }) {
   if (!state.ok) return <p className="p-6 text-center text-[13px] text-muted">{t("attachment.notPdf")}</p>;
   return (
     <div className="flex h-full flex-col">
-      <iframe src={file.url} title={file.filename} className="min-h-0 w-full flex-1 border-0 bg-white" />
+      {/* sandbox without allow-top-navigation: a link inside the PDF cannot replace the webmail tab
+          (security-audit W-11). allow-same-origin lets the viewer read the blob it is shown. */}
+      <iframe
+        src={file.url}
+        title={file.filename}
+        sandbox="allow-same-origin"
+        className="min-h-0 w-full flex-1 border-0 bg-white"
+      />
       <p className="px-4 py-2 text-center text-[12px] text-muted">{t("attachment.pdfHint")}</p>
     </div>
   );

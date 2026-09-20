@@ -45,6 +45,7 @@ export interface JmapEmail {
   from?: JmapAddress[] | null;
   to?: JmapAddress[] | null;
   cc?: JmapAddress[] | null;
+  bcc?: JmapAddress[] | null;
   replyTo?: JmapAddress[] | null;
   subject?: string | null;
   receivedAt: string;

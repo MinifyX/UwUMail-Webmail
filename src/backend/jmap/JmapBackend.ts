@@ -51,6 +51,7 @@ import {
   watchPush,
 } from "./client";
 import {
+  toAddresses,
   toFolder,
   toMessage,
   toThreadSummary,
@@ -78,6 +79,7 @@ const MESSAGE_PROPERTIES = [
   ...LIST_PROPERTIES,
   "blobId",
   "cc",
+  "bcc",
   "replyTo",
   "messageId",
   "inReplyTo",
@@ -806,7 +808,9 @@ export class JmapBackend implements Backend {
       draftKey: email.messageId?.[0] ?? null,
       to: message.to,
       cc: message.cc,
-      bcc: [],
+      // Bcc recipients saved with the draft come back too, so continuing a draft does not silently
+      // send without them (security-audit W-10).
+      bcc: toAddresses(email.bcc),
       subject: message.subject,
       // A draft without HTML is plain text, and plain text is not markup: the reader escapes it
       // the same way before it shows it.

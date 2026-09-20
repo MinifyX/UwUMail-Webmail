@@ -37,11 +37,11 @@ function UnsubscribeQuestion({ message, onDone }: { message: Message; onDone: ()
   const [archive, setArchive] = useState(true);
   const [busy, setBusy] = useState(false);
   const name = displayName(message.from);
-  const pageOnly = !message.unsubscribe?.oneClick && !message.unsubscribe?.mailto;
-  // Only when unsubscribing really sends a mail: with One-Click the server of the newsletter is
-  // asked instead, and nothing goes out under the reader's name.
-  const byMail =
-    !message.unsubscribe?.oneClick && message.unsubscribe?.mailto ? unsubscribeMail(message.unsubscribe.mailto) : null;
+  // Unsubscribing sends a mail whenever the header carries a mailto address -- the backend prefers
+  // it over a page, regardless of the One-Click flag -- so the dialog names that address then, even
+  // for a One-Click header (security-audit W-5). Only a page-only header opens a page instead.
+  const byMail = message.unsubscribe?.mailto ? unsubscribeMail(message.unsubscribe.mailto) : null;
+  const pageOnly = !byMail;
 
   const unsubscribe = async () => {
     setBusy(true);
