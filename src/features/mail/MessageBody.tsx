@@ -254,7 +254,10 @@ export function MessageBody({ message, allowRemote, appearance, onAutoDecision, 
     // Images load after the document; their size changes the height too.
     doc.addEventListener("load", updateHeight, true);
     doc.addEventListener("click", (event) => {
-      const anchor = (event.target as Element | null)?.closest?.("a[href]");
+      // `area` as well as `a`: an image map is a link with no text, and today it only ever gets
+      // here without its href because a table of attributes in the sanitizer happens to drop it.
+      // Catching it here does not depend on that staying true.
+      const anchor = (event.target as Element | null)?.closest?.("a[href], area[href]");
       if (!anchor) return;
       event.preventDefault();
       requestOpenLink(anchor.getAttribute("href") ?? "", anchor.textContent ?? "");
