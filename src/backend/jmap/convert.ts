@@ -183,6 +183,7 @@ export function toMessage(email: JmapEmail, accountId: string, folders: Map<stri
     from: toAddress(email.from?.[0] ?? undefined),
     to: toAddresses(email.to),
     cc: toAddresses(email.cc),
+    bcc: toAddresses(email.bcc),
     replyTo: toAddresses(email.replyTo),
     subject: email.subject ?? "",
     date: email.receivedAt,
