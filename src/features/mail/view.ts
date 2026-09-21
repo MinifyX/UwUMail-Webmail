@@ -51,6 +51,8 @@ export interface ViewInfo {
   isDrafts: boolean;
   /** Deleting here means for good. */
   isTrash: boolean;
+  /** Mail here is spam already, so "spam" means "not spam". */
+  isJunk: boolean;
 }
 
 export function useViewInfo(view: MailboxView): ViewInfo {
@@ -65,6 +67,7 @@ export function useViewInfo(view: MailboxView): ViewInfo {
       isInbox: view.role === "inbox",
       isDrafts: view.role === "drafts",
       isTrash: false,
+      isJunk: false,
     };
   }
   const folder = folders.find((f) => f.id === view.folderId);
@@ -76,5 +79,6 @@ export function useViewInfo(view: MailboxView): ViewInfo {
     isInbox: folder?.role === "inbox",
     isDrafts: folder?.role === "drafts",
     isTrash: folder?.role === "trash",
+    isJunk: folder?.role === "junk",
   };
 }

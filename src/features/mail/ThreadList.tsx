@@ -1,5 +1,17 @@
 import clsx from "clsx";
-import { Archive, FolderInput, MailOpen, Menu, RefreshCw, Search, ShieldAlert, Star, Trash, X } from "lucide-react";
+import {
+  Archive,
+  FolderInput,
+  MailOpen,
+  Menu,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  Star,
+  Trash,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ListFilter } from "@/backend/types";
 import type { SceneName } from "@/components/nyu/scenes";
@@ -191,10 +203,10 @@ export function ThreadList({ variant, className }: ThreadListProps) {
               onClick={() => runOnChecked(selection.move)}
             />
             <IconButton
-              icon={ShieldAlert}
+              icon={info.isJunk ? ShieldCheck : ShieldAlert}
               size="sm"
-              label={t("reader.spam")}
-              onClick={() => runOnChecked((ids) => selection.spam(ids, true))}
+              label={info.isJunk ? t("reader.notSpam") : t("reader.spam")}
+              onClick={() => runOnChecked((ids) => selection.spam(ids, !info.isJunk))}
             />
           </div>
         ) : (
@@ -242,6 +254,7 @@ export function ThreadList({ variant, className }: ThreadListProps) {
                 checked={checked.includes(thread.id)}
                 dragIds={checked.includes(thread.id) ? checked : [thread.id]}
                 inTrash={info.isTrash}
+                inJunk={info.isJunk}
                 onSelect={(event) => {
                   const anchor = useUi.getState().selectionAnchor ?? selectedThreadId;
                   if (event.ctrlKey || event.metaKey) {
