@@ -10,6 +10,7 @@
 
 import { textToHtml } from "@/lib/format";
 import { SendQueue } from "@/lib/sendQueue";
+import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { unsubscribeMail } from "@/lib/unsubscribe";
 import { BackendError, type Backend } from "../backend";
 import type {
@@ -56,6 +57,8 @@ import {
   loadUserSettings,
   newSignatureId,
   patchUserSettings,
+  saveUserSettings,
+  type UserSettingsSnapshot,
   signatureKey,
   signaturePatch,
   signaturesFrom,
@@ -235,7 +238,9 @@ export class JmapBackend implements Backend {
     this.stopPush = watchPush((changed) => {
       if (changed.Mailbox) void this.loadFolders();
       if (changed.Email || changed.Mailbox) this.emit({ type: "mail:changed", accountId: this.accountId });
-      if (changed.UserSettings) this.emit({ type: "settings:changed", accountId: this.accountId });
+      if (changed.UserSettings) {
+        this.emit({ type: "settings:changed", accountId: this.accountId, state: changed.UserSettings });
+      }
     });
   }
 
@@ -296,6 +301,21 @@ export class JmapBackend implements Backend {
   async signaturesAvailable(): Promise<boolean> {
     await this.start();
     return supports(SETTINGS);
+  }
+
+  async userSettingsAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(SETTINGS);
+  }
+
+  async loadUserSettings(): Promise<UserSettingsSnapshot> {
+    await this.start();
+    return loadUserSettings();
+  }
+
+  async saveUserSettings(patch: Record<string, unknown>, ifInState?: string): Promise<SaveOutcome> {
+    await this.start();
+    return saveUserSettings(patch, ifInState);
   }
 
   async listSignatures(): Promise<Signature[]> {

@@ -6,14 +6,15 @@
  * (`values/<key>`), so two devices changing different keys never overwrite each other; `null`
  * removes a key. Lists are one key per entry for the same reason, e.g. `signature:<id>`.
  *
- * Only the transport and the signature keys live here so far; the other keys of the contract
- * (theme, tone, trusted senders, …) use the same `loadUserSettings` / `patchUserSettings`.
+ * The transport and the signature keys live here. The other keys (theme, tone, trusted senders,
+ * …) are mapped in lib/settingsSync and kept in step by lib/settingsSyncQueue.
  */
 
 import { SIGNATURE_MAX_BYTES, signatureValue, valueSize } from "@/lib/signatures";
+import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import type { Signature } from "../types";
 import { BackendError } from "../backend";
-import { CORE, one } from "./client";
+import { CORE, JmapMethodError, one } from "./client";
 
 export const SETTINGS = "urn:uwumail:jmap:settings";
 
@@ -29,7 +30,7 @@ interface GetResponse {
   list: { id: string; values?: SettingsValues }[];
 }
 
-interface SetResponse {
+export interface SetResponse {
   newState?: string;
   notUpdated?: Record<string, { type: string; description?: string; properties?: string[] }>;
 }
@@ -44,10 +45,41 @@ export async function loadUserSettings(): Promise<UserSettingsSnapshot> {
   return { state: response.state, values: response.list[0]?.values ?? {} };
 }
 
+/** The update of `UserSettings/set` for these keys. */
+export function settingsPatch(changes: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(changes).map(([key, value]) => [patchPath(key), value]));
+}
+
+/** How a `UserSettings/set` answer turned out for the singleton. */
+export function setOutcome(response: SetResponse): SaveOutcome {
+  const problem = response.notUpdated?.singleton;
+  if (!problem) return response.newState ? { ok: true, state: response.newState } : { ok: true };
+  return problem.properties
+    ? { ok: false, type: problem.type, properties: problem.properties }
+    : { ok: false, type: problem.type };
+}
+
+/**
+ * Sets (or with `null` removes) keys for the settings sync and says how it went: a lost race
+ * (`stateMismatch`) or a refused key is something the sync deals with. Only a request that
+ * didn't get through throws.
+ */
+export async function saveUserSettings(changes: Record<string, unknown>, ifInState?: string): Promise<SaveOutcome> {
+  const args = { update: { singleton: settingsPatch(changes) }, ...(ifInState ? { ifInState } : {}) };
+  try {
+    return setOutcome(await one<SetResponse>("UserSettings/set", args, [CORE, SETTINGS]));
+  } catch (error) {
+    if (error instanceof JmapMethodError) return { ok: false, type: error.type };
+    throw error;
+  }
+}
+
 /** Sets (or with `null` removes) single keys. Returns the new state. */
 export async function patchUserSettings(changes: Record<string, unknown>): Promise<string | undefined> {
-  const patch = Object.fromEntries(Object.entries(changes).map(([key, value]) => [patchPath(key), value]));
-  const response = await one<SetResponse>("UserSettings/set", { update: { singleton: patch } }, [CORE, SETTINGS]);
+  const response = await one<SetResponse>("UserSettings/set", { update: { singleton: settingsPatch(changes) } }, [
+    CORE,
+    SETTINGS,
+  ]);
   const problem = response.notUpdated?.singleton;
   if (problem) {
     if (problem.type === "tooLarge" || problem.type === "overQuota") {

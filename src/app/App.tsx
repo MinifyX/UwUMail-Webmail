@@ -11,6 +11,7 @@ import { i18n, resolveLanguage, useT } from "@/i18n";
 import { BackendError, isDemo, loadBackend } from "@/backend/backend";
 import { PORTAL_URL, loadSession, webmailAccess } from "@/backend/server";
 import { useApplyTheme } from "@/lib/theme";
+import { startSettingsSync } from "@/state/accountSync";
 import { applyServerPreferences, useSettings } from "@/state/settings";
 
 type Boot =
@@ -103,6 +104,7 @@ export function App() {
         // that still needs one.
         if (isDemo()) {
           await loadBackend();
+          void startSettingsSync();
           if (!cancelled) setBoot({ state: "ready" });
           return;
         }
@@ -120,6 +122,8 @@ export function App() {
           return;
         }
         await loadBackend();
+        // The settings that follow the account come from the server's settings extension.
+        void startSettingsSync();
         if (!cancelled) setBoot({ state: "ready" });
       } catch (error) {
         if (cancelled) return;

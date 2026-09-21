@@ -20,6 +20,7 @@ import type {
   ThreadQuery,
   UnsubscribeOutcome,
 } from "./types";
+import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 
 export type BackendErrorCode =
   | "auth_failed"
@@ -61,6 +62,12 @@ export interface Backend {
   listIdentities(): Promise<Identity[]>;
   /** Whether the server keeps signatures (its settings extension); without it there are none. */
   signaturesAvailable(): Promise<boolean>;
+  /** Whether the server keeps the account's settings (its settings extension) for the settings sync. */
+  userSettingsAvailable(): Promise<boolean>;
+  /** The account's shared settings, see lib/settingsSync. */
+  loadUserSettings(): Promise<{ state: string; values: Record<string, unknown> }>;
+  /** Sets keys (`null` removes); with `ifInState` only if nothing was written since. */
+  saveUserSettings(patch: Record<string, unknown>, ifInState?: string): Promise<SaveOutcome>;
   listSignatures(): Promise<Signature[]>;
   /** Creates the signature when its id is empty. Taking a default for an address takes it from the others. */
   saveSignature(signature: Signature): Promise<Signature>;

@@ -6,7 +6,7 @@
  * JSON API follows. Nothing here ever holds a password.
  */
 
-import { BackendError } from "../backend";
+import { BackendError, type BackendErrorCode } from "../backend";
 import { currentSession } from "../server";
 
 export const CORE = "urn:ietf:params:jmap:core";
@@ -101,13 +101,26 @@ export interface MethodResponse {
   createdIds?: Record<string, string>;
 }
 
-function methodError(name: string, args: Record<string, unknown>): BackendError {
+/** A method the server answered with an error, e.g. `stateMismatch`. */
+export class JmapMethodError extends BackendError {
+  readonly type: string;
+
+  constructor(code: BackendErrorCode, message: string, type: string) {
+    super(code, message);
+    this.type = type;
+  }
+}
+
+function methodError(name: string, args: Record<string, unknown>): JmapMethodError {
   const type = typeof args.type === "string" ? args.type : "unknown";
   const description = typeof args.description === "string" ? args.description : name;
-  if (type === "accountNotFound" || type === "forbidden") return new BackendError("webmail_disabled", description);
-  if (type === "invalidArguments" || type === "invalidPatch") return new BackendError("invalid_input", description);
-  if (type === "unknownMethod" || type === "unknownCapability") return new BackendError("not_supported", description);
-  return new BackendError("internal", `${type}: ${description}`);
+  if (type === "accountNotFound" || type === "forbidden")
+    return new JmapMethodError("webmail_disabled", description, type);
+  if (type === "invalidArguments" || type === "invalidPatch")
+    return new JmapMethodError("invalid_input", description, type);
+  if (type === "unknownMethod" || type === "unknownCapability")
+    return new JmapMethodError("not_supported", description, type);
+  return new JmapMethodError("internal", `${type}: ${description}`, type);
 }
 
 /** One JMAP request with as many method calls as fit; throws on a method-level error. */

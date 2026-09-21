@@ -313,4 +313,4 @@ export type BackendEvent =
   | { type: "send:failed"; sendId: string; accountId: string; reason: string; message: OutgoingMessage }
   | { type: "compose:mailto" }
   /** The account's shared settings changed, here or on another device (e.g. signatures). */
-  | { type: "settings:changed"; accountId: string };
+  | { type: "settings:changed"; accountId: string; state?: string };

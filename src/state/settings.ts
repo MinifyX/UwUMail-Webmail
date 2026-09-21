@@ -82,20 +82,14 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 /**
- * Which settings the server keeps for the account, and how they are spelled
- * there. The portal writes the first four as well, so a choice made in one
- * place holds in the other — and in the next browser.
+ * Settings the portal keeps as the account's preferences although they are about the device:
+ * how the list looks and moves. They follow the login from browser to browser, but not into
+ * the app. What follows the account everywhere (theme, tone, language, trusted senders, …)
+ * goes through the server's settings extension instead, see state/accountSync.
  */
 const ON_SERVER = {
-  language: "language",
-  tone: "tone",
-  theme: "theme",
   motion: "motion",
-  conversations: "mailConversations",
   listDensity: "mailDensity",
-  remoteImages: "mailRemoteImages",
-  mailAppearance: "mailAppearance",
-  senderPictures: "mailSenderPictures",
   swipeRight: "mailSwipeRight",
   swipeLeft: "mailSwipeLeft",
 } as const satisfies Partial<Record<keyof Settings, keyof Preferences>>;
@@ -103,30 +97,19 @@ const ON_SERVER = {
 type ServerKey = keyof typeof ON_SERVER;
 
 const ALLOWED: { [K in ServerKey]: readonly string[] } = {
-  language: ["system", "de", "en"],
-  tone: ["playful", "neutral"],
-  theme: ["system", "light", "dark"],
   motion: ["system", "on", "off"],
-  conversations: ["on", "off"],
   listDensity: ["relaxed", "compact"],
-  remoteImages: ["ask", "always"],
-  mailAppearance: ["auto", "light", "dark"],
-  senderPictures: ["on", "off"],
+  // The portal doesn't know "spam" as a swipe; that choice stays in this browser.
   swipeRight: ["read", "archive", "trash", "flag", "none"],
   swipeLeft: ["read", "archive", "trash", "flag", "none"],
 };
 
-const BOOLEANS: ServerKey[] = ["conversations", "senderPictures"];
-
-/** Everything the server stores is a string, so the two booleans travel as on/off. */
 function toServerValue(key: ServerKey, value: unknown): string | null {
-  if (BOOLEANS.includes(key)) return value ? "on" : "off";
   return typeof value === "string" && ALLOWED[key].includes(value) ? value : null;
 }
 
 function fromServerValue(key: ServerKey, value: string): Partial<Settings> | null {
   if (!ALLOWED[key].includes(value)) return null;
-  if (BOOLEANS.includes(key)) return { [key]: value === "on" } as Partial<Settings>;
   return { [key]: value } as Partial<Settings>;
 }
 

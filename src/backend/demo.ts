@@ -1,6 +1,7 @@
 import { BackendError, type Backend } from "./backend";
 import { isDangerous } from "@/lib/attachments";
 import { SendQueue } from "@/lib/sendQueue";
+import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { buildFolders, buildMessages, DEMO_ACCOUNTS, welcomeMessage } from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
@@ -128,6 +129,34 @@ export class DemoBackend implements Backend {
 
   async signaturesAvailable() {
     return true;
+  }
+
+  /** The demo plays a server with the settings extension, kept in memory like everything else. */
+  private userSettings: { state: number; values: Record<string, unknown> } = { state: 0, values: {} };
+
+  async userSettingsAvailable() {
+    return true;
+  }
+
+  async loadUserSettings() {
+    await wait(60);
+    return { state: String(this.userSettings.state), values: structuredClone(this.userSettings.values) };
+  }
+
+  async saveUserSettings(patch: Record<string, unknown>, ifInState?: string): Promise<SaveOutcome> {
+    await wait(80);
+    if (ifInState !== undefined && ifInState !== String(this.userSettings.state)) {
+      return { ok: false, type: "stateMismatch" };
+    }
+    const values = { ...this.userSettings.values };
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === null) delete values[key];
+      else values[key] = structuredClone(value);
+    }
+    this.userSettings = { state: this.userSettings.state + 1, values };
+    const state = String(this.userSettings.state);
+    this.emit({ type: "settings:changed", accountId: this.accounts[0]!.id, state });
+    return { ok: true, state };
   }
 
   async listSignatures() {
