@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { AlertTriangle, Copy, LockOpen, Route } from "lucide-react";
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import type { Address } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
 import { Button } from "@/components/ui/Button";
@@ -198,10 +198,30 @@ export function LinkWarning() {
   );
 }
 
+/**
+ * How long after the question appears its buttons still ignore a click: the second click of a
+ * double click, or the rest of the gesture that opened the question, must not answer it.
+ */
+export const ARMING_MS = 600;
+
+/** Props for a button that opens the link: no answer while arming, none from a held-down key. */
+export function armedActivation(shownAt: number, action: () => void) {
+  return {
+    onClick: () => {
+      if (performance.now() - shownAt >= ARMING_MS) action();
+    },
+    onKeyDown: (event: KeyboardEvent) => {
+      if (event.repeat) event.preventDefault();
+    },
+  };
+}
+
 function LinkQuestion({ check, onDone }: { check: LinkCheck; onDone: () => void }) {
   const { t } = useT();
   const rememberLinkDomain = useSettings((s) => s.rememberLinkDomain);
   const [remember, setRemember] = useState(false);
+  // The gesture that asked (a double click, a held Enter) must not also answer (security-audit W-18).
+  const [shownAt] = useState(() => performance.now());
   const risky = isRisky(check);
   const mail = check.kind === "mail" ? check.mailto : null;
 
@@ -258,13 +278,13 @@ function LinkQuestion({ check, onDone }: { check: LinkCheck; onDone: () => void 
             <Button variant="primary" autoFocus ref={markAutofocus} onClick={onDone}>
               {t("link.dontOpen")}
             </Button>
-            <Button variant="ghost" onClick={open}>
+            <Button variant="ghost" {...armedActivation(shownAt, open)}>
               {t("link.openAnyway")}
             </Button>
           </>
         ) : (
           <>
-            <Button variant="primary" autoFocus ref={markAutofocus} onClick={open}>
+            <Button variant="primary" autoFocus ref={markAutofocus} {...armedActivation(shownAt, open)}>
               {mail ? t("link.compose") : t("link.open")}
             </Button>
             <Button variant="secondary" onClick={onDone}>
