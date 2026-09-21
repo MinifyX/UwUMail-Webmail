@@ -13,7 +13,7 @@ export type RemoteImages = "ask" | "always";
 /** How HTML mail looks while the webmail is dark. */
 export type MailAppearance = "auto" | "light" | "dark";
 /** What swiping a mail in the phone list does. */
-export type SwipeAction = "read" | "archive" | "trash" | "flag" | "none";
+export type SwipeAction = "read" | "archive" | "spam" | "trash" | "flag" | "none";
 /** Seconds a sent mail waits before it goes out, so it can still be taken back. 0 sends at once. */
 export const UNDO_SEND_CHOICES = [0, 5, 10, 20, 30] as const;
 export type UndoSendSeconds = (typeof UNDO_SEND_CHOICES)[number];
