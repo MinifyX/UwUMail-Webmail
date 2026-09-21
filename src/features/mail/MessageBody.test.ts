@@ -178,7 +178,7 @@ describe("buildPrintDocument", () => {
       message({
         subject: "Echt",
         to: [{ name: "Mini", email: "mini@uwumail.dev" }],
-        bodyHtml: '<style>table.head,h1{display:none}</style><h1>Gefälscht</h1><p>Text</p>',
+        bodyHtml: "<style>table.head,h1{display:none}</style><h1>Gefälscht</h1><p>Text</p>",
       }),
       false,
       new Map(),

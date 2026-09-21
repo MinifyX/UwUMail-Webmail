@@ -566,7 +566,9 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             event.preventDefault();
             const cleaned = html
               ? quotableHtml(html)
-              : text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!).replace(/\r?\n/g, "<br>");
+              : text
+                  .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!)
+                  .replace(/\r?\n/g, "<br>");
             document.execCommand("insertHTML", false, cleaned);
             setError(null);
             changed();
