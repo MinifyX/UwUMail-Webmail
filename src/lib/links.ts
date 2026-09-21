@@ -205,7 +205,11 @@ export function checkLink(href: string, text: string): LinkCheck | null {
   const insecure = url.protocol === "http:";
   const userinfo = url.username !== "" || url.password !== "";
   const domain = registrableDomain(host);
+  const redirect = detectRedirect(trimmed);
+  // A link that passes through a redirect goes somewhere else than its domain says, so trusting
+  // the domain would wave through wherever it forwards to (security-audit W-13).
   const rememberable =
+    !redirect &&
     !misleading &&
     !insecure &&
     !punycode &&
@@ -224,7 +228,7 @@ export function checkLink(href: string, text: string): LinkCheck | null {
     insecure,
     userinfo,
     misleading,
-    redirect: detectRedirect(trimmed),
+    redirect,
     mailto: null,
     rememberable,
   };
