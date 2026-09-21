@@ -241,9 +241,13 @@ export interface LinkPreferences {
   domains: readonly string[];
 }
 
-/** Whether a link opens right away or the dialog asks first. Disguised links always ask. */
+/**
+ * Whether a link opens right away or the dialog asks first. Disguised links always ask: text that
+ * names another address, a host that only looks like a Latin one, and a user name in front of
+ * the host (security-audit W-14).
+ */
 export function needsConfirmation(check: LinkCheck, preferences: LinkPreferences): boolean {
-  if (check.misleading) return true;
+  if (check.misleading || check.lookalike || check.userinfo) return true;
   if (!preferences.confirm) return false;
   return check.rememberable === null || !preferences.domains.includes(check.rememberable);
 }

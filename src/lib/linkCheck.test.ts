@@ -113,6 +113,10 @@ describe("needsConfirmation", () => {
   it("always asks for disguised links", () => {
     expect(needsConfirmation(disguised, { confirm: false, domains: ["evil.example"] })).toBe(true);
     expect(needsConfirmation(disguised, { confirm: true, domains: ["evil.example"] })).toBe(true);
+    const lookalike = checkLink("https://xn--pypal-4ve.example/konto", "") as LinkCheck;
+    const userinfo = checkLink("https://bank.example@evil.example/", "") as LinkCheck;
+    expect(needsConfirmation(lookalike, { confirm: false, domains: [] })).toBe(true);
+    expect(needsConfirmation(userinfo, { confirm: false, domains: ["evil.example"] })).toBe(true);
   });
 
   it("asks through a remembered domain when the link forwards elsewhere", () => {
