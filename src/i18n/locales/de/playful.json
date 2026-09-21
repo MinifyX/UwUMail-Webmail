@@ -76,7 +76,10 @@
   },
   "settings": {
     "motionDesc": "Soll Nyu blinzeln, hüpfen und herumfliegen? „Wie System“ hält sich an dein Betriebssystem.",
-    "trustedSendersEmpty": "Noch keiner auf meiner Liste (・・ )? Absender fügst du direkt im Bilder-Hinweis einer Mail hinzu."
+    "trustedSendersEmpty": "Noch keiner auf meiner Liste (・・ )? Absender fügst du direkt im Bilder-Hinweis einer Mail hinzu.",
+    "signatureSaved": "Signatur sitzt ✧",
+    "signaturePlaceholder": "Liebe Grüße ✿",
+    "signatureTooBig": "Uff, so viel passt nicht in eine Signatur (・_・;) Nimm ein kleineres Bild."
   },
   "attachment": {
     "loading": "Ich pack den Anhang aus…",

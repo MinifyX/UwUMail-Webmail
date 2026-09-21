@@ -5,7 +5,7 @@ import { backend } from "@/backend/backend";
 import { useT } from "@/i18n";
 import { useIsPhone, useMediaQuery } from "@/lib/device";
 import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
-import { useAccounts, useBackendEvents, useIdentities } from "@/lib/queries";
+import { useAccounts, useBackendEvents, useIdentities, useSignatures } from "@/lib/queries";
 import { useUi } from "@/state/ui";
 import { Composer } from "../compose/Composer";
 import { loadLocalDraft } from "../compose/localDraft";
@@ -33,6 +33,8 @@ export function MailShell() {
   useAccounts();
   // Loaded early, so a reply opens with the right sender address.
   useIdentities();
+  // Likewise the signatures, so a new mail starts with its default one already in place.
+  useSignatures();
   useBackendEvents();
 
   // A draft that never reached the Drafts folder comes back when the tab opens again.

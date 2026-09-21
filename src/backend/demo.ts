@@ -126,9 +126,34 @@ export class DemoBackend implements Backend {
     return structuredClone(own.flatMap((o) => [o, ...this.identities.filter((i) => i.accountId === o.accountId)]));
   }
 
+  async signaturesAvailable() {
+    return true;
+  }
+
   async listSignatures() {
     await wait(60);
     return structuredClone(this.signatures);
+  }
+
+  /** Kept in memory only, like everything in the demo. */
+  async saveSignature(signature: Signature) {
+    await wait(120);
+    const saved = { ...signature, id: signature.id || `sig-${this.nextId++}` };
+    const email = saved.email.toLowerCase();
+    this.signatures = this.signatures.map((s) =>
+      s.email.toLowerCase() === email && s.id !== saved.id
+        ? { ...s, forNew: saved.forNew ? false : s.forNew, forReplies: saved.forReplies ? false : s.forReplies }
+        : s,
+    );
+    const index = this.signatures.findIndex((s) => s.id === saved.id);
+    if (index >= 0) this.signatures[index] = saved;
+    else this.signatures.push(saved);
+    return structuredClone(saved);
+  }
+
+  async deleteSignature(signatureId: string) {
+    await wait(80);
+    this.signatures = this.signatures.filter((s) => s.id !== signatureId);
   }
 
   async syncNow(accountId?: string) {

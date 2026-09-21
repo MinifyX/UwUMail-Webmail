@@ -46,6 +46,15 @@ export function useSignatures() {
   return useQuery({ queryKey: queryKeys.signatures, queryFn: () => backend().listSignatures() });
 }
 
+/** Whether this server keeps signatures at all (its settings extension). */
+export function useSignaturesAvailable() {
+  return useQuery({
+    queryKey: ["signaturesAvailable"],
+    queryFn: () => backend().signaturesAvailable(),
+    staleTime: Infinity,
+  });
+}
+
 export function useFolders() {
   return useQuery({ queryKey: queryKeys.folders, queryFn: () => backend().listFolders() });
 }
@@ -302,6 +311,9 @@ export function useBackendEvents() {
           break;
         case "account:status":
           void client.invalidateQueries({ queryKey: queryKeys.accounts });
+          break;
+        case "settings:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.signatures });
           break;
       }
     });

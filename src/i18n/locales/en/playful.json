@@ -76,7 +76,10 @@
   },
   "settings": {
     "motionDesc": "Should Nyu blink, hop and fly around? With System, I follow your operating system.",
-    "trustedSendersEmpty": "Nobody on my list yet (・・ )? Add senders right in the image notice of a message."
+    "trustedSendersEmpty": "Nobody on my list yet (・・ )? Add senders right in the image notice of a message.",
+    "signatureSaved": "Signature looks great ✧",
+    "signaturePlaceholder": "Kind regards ✿",
+    "signatureTooBig": "Oof, that much won’t fit in a signature (・_・;) Try a smaller picture."
   },
   "attachment": {
     "loading": "Unpacking the attachment…",

@@ -41,6 +41,19 @@ describe("signatures", () => {
     expect(withSignature(swapped, null, "beforeQuote")).toBe(reply);
   });
 
+  it("cleans a signature before it goes into the composer, keeping pictures that are data URLs", () => {
+    const hostile: Signature = {
+      ...all[0]!,
+      html:
+        '<p onclick="steal()">Hi<img src="https://tracker.example/p.gif"><img src="x" onerror="steal()">' +
+        '<img src="cid:logo"><img src="data:image/png;base64,iVBORw0KGgo="><script>steal()</script></p>',
+    };
+    const html = withSignature("", hostile, "end");
+    expect(html).not.toMatch(/onclick|onerror|script|tracker\.example|cid:|src="x"/);
+    expect(html.match(/<img/g)).toHaveLength(1);
+    expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+  });
+
   it("drops the marker before sending", () => {
     expect(withoutSignatureMarker('<div data-uwu-signature="lang"><p>Hi</p></div>')).toBe("<div><p>Hi</p></div>");
   });

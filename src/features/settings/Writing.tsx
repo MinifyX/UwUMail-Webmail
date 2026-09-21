@@ -6,13 +6,14 @@ import { useT } from "@/i18n";
 import { useIdentities } from "@/lib/queries";
 import { UNDO_SEND_CHOICES, useSettings, type UndoSendSeconds } from "@/state/settings";
 import { Row } from "./Row";
+import { Signatures } from "./Signatures";
 
 /**
  * Writing settings.
  *
  * Sender addresses belong to the server, so they are shown but not edited
- * here: new addresses and aliases are made in the portal. Signatures land on
- * the server with its settings extension and will show up here then.
+ * here: new addresses and aliases are made in the portal. Signatures live in
+ * the server's shared settings, next to the app's.
  */
 export function Writing() {
   const { t } = useT();
@@ -32,6 +33,7 @@ export function Writing() {
         />
       </Row>
       <Senders />
+      <Signatures />
     </>
   );
 }

@@ -59,7 +59,12 @@ export interface Backend {
   listAccounts(): Promise<Account[]>;
   /** The mailbox's own address first, then the aliases the server knows. */
   listIdentities(): Promise<Identity[]>;
+  /** Whether the server keeps signatures (its settings extension); without it there are none. */
+  signaturesAvailable(): Promise<boolean>;
   listSignatures(): Promise<Signature[]>;
+  /** Creates the signature when its id is empty. Taking a default for an address takes it from the others. */
+  saveSignature(signature: Signature): Promise<Signature>;
+  deleteSignature(signatureId: string): Promise<void>;
   syncNow(accountId?: string): Promise<void>;
 
   listFolders(accountId?: string): Promise<Folder[]>;

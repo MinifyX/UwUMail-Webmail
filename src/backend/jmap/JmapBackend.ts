@@ -52,6 +52,15 @@ import {
   watchPush,
 } from "./client";
 import {
+  SETTINGS,
+  loadUserSettings,
+  newSignatureId,
+  patchUserSettings,
+  signatureKey,
+  signaturePatch,
+  signaturesFrom,
+} from "./userSettings";
+import {
   toAddresses,
   toFolder,
   toMessage,
@@ -226,6 +235,7 @@ export class JmapBackend implements Backend {
     this.stopPush = watchPush((changed) => {
       if (changed.Mailbox) void this.loadFolders();
       if (changed.Email || changed.Mailbox) this.emit({ type: "mail:changed", accountId: this.accountId });
+      if (changed.UserSettings) this.emit({ type: "settings:changed", accountId: this.accountId });
     });
   }
 
@@ -282,9 +292,31 @@ export class JmapBackend implements Backend {
     return this.identities;
   }
 
-  /** Signatures live on the server from 0.5.1 on; until then there are none here. */
+  /** Signatures live in the server's settings extension, shared with the app. */
+  async signaturesAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(SETTINGS);
+  }
+
   async listSignatures(): Promise<Signature[]> {
-    return [];
+    if (!(await this.signaturesAvailable())) return [];
+    return signaturesFrom((await loadUserSettings()).values);
+  }
+
+  async saveSignature(signature: Signature): Promise<Signature> {
+    if (!(await this.signaturesAvailable())) {
+      throw new BackendError("not_supported", "This server can't keep signatures.");
+    }
+    const saved = { ...signature, id: signature.id || newSignatureId() };
+    // Read right before writing, so the defaults of the address's other signatures are current.
+    const existing = signaturesFrom((await loadUserSettings()).values);
+    await patchUserSettings(signaturePatch(saved, existing));
+    return saved;
+  }
+
+  async deleteSignature(signatureId: string): Promise<void> {
+    if (!(await this.signaturesAvailable())) return;
+    await patchUserSettings({ [signatureKey(signatureId)]: null });
   }
 
   async syncNow(): Promise<void> {
