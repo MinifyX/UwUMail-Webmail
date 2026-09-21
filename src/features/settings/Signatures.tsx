@@ -12,6 +12,7 @@ import { isSafeLinkTarget } from "@/lib/safeHtml";
 import { cleanSignatureHtml, SIGNATURE_MAX_BYTES, signatureValue, valueSize } from "@/lib/signatures";
 import { toast } from "@/state/toasts";
 import { useUi } from "@/state/ui";
+import { insertDroppedHtml } from "@/features/compose/droppedHtml";
 import { Row } from "./Row";
 
 /** Room kept free next to a new picture, for the name, the other fields and the markup around it. */
@@ -164,6 +165,8 @@ function SignatureEditor({
   const [forReplies, setForReplies] = useState(signature.forReplies);
   const [saving, setSaving] = useState(false);
   const editor = useRef<HTMLDivElement | null>(null);
+  /** A drag that started in the editor itself: moving text, not markup from elsewhere. */
+  const draggingInside = useRef(false);
   const picture = useRef<HTMLInputElement>(null);
 
   const current = (): Signature => ({
@@ -279,6 +282,15 @@ function SignatureEditor({
                   .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!)
                   .replace(/\r?\n/g, "<br>");
             document.execCommand("insertHTML", false, cleaned);
+          }}
+          onDragStart={() => {
+            draggingInside.current = true;
+          }}
+          onDragEnd={() => {
+            draggingInside.current = false;
+          }}
+          onDrop={(event) => {
+            if (!draggingInside.current) insertDroppedHtml(event, cleanSignatureHtml);
           }}
           className="min-h-28 px-3 py-2 text-[14px] leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_img]:inline-block [&_img]:max-w-full [&_p]:min-h-[1.4em]"
         />

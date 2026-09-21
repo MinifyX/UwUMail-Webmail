@@ -23,6 +23,7 @@ import { Menu } from "@/components/ui/Menu";
 import { defaultSignature, withSignature, withoutSignatureMarker } from "@/lib/signatures";
 import { useBackLayer } from "@/lib/backStack";
 import { useIsPhone } from "@/lib/device";
+import { insertDroppedHtml } from "./droppedHtml";
 import { clearLocalDraft, markLocalDraftSaved, saveLocalDraft } from "./localDraft";
 import { AccountDot } from "@/components/ui/Avatar";
 import { Button, IconButton } from "@/components/ui/Button";
@@ -81,6 +82,8 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const editor = useRef<HTMLDivElement | null>(null);
+  /** A drag that started in the editor itself: moving text, not markup from elsewhere. */
+  const draggingInside = useRef(false);
   const fileInput = useRef<HTMLInputElement>(null);
   // Signatures: the address's default goes in when the draft starts, or once they've loaded.
   const { data: signatures } = useSignatures();
@@ -582,6 +585,20 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
                   .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!)
                   .replace(/\r?\n/g, "<br>");
             document.execCommand("insertHTML", false, cleaned);
+            setError(null);
+            changed();
+            body.current = event.currentTarget.innerHTML;
+            setEdits((count) => count + 1);
+          }}
+          onDragStart={() => {
+            draggingInside.current = true;
+          }}
+          onDragEnd={() => {
+            draggingInside.current = false;
+          }}
+          onDrop={(event) => {
+            // Moving text inside the draft stays the browser's job; markup from elsewhere is cleaned.
+            if (draggingInside.current || !insertDroppedHtml(event, quotableHtml)) return;
             setError(null);
             changed();
             body.current = event.currentTarget.innerHTML;
