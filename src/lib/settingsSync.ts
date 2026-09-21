@@ -139,7 +139,7 @@ export function valueBytes(value: unknown): number {
 export function isSyncable(key: string, value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (valueBytes(value) > MAX_VALUE_BYTES) return false;
-  if (key in CHOICES) return CHOICES[key as SyncedChoice](value);
+  if (Object.hasOwn(CHOICES, key)) return CHOICES[key as SyncedChoice](value);
   const colon = key.indexOf(":");
   if (colon < 0) return false;
   const entry = key.slice(colon + 1);
@@ -159,7 +159,7 @@ export function isSyncable(key: string, value: unknown): boolean {
 
 /** Choices are one key each; the server may miss them, but they are never removed. */
 export function isChoiceKey(key: string): boolean {
-  return key in CHOICES;
+  return Object.hasOwn(CHOICES, key);
 }
 
 export function isSignatureKey(key: string): boolean {

@@ -39,6 +39,17 @@ describe("keys the server takes", () => {
     expect(isSyncable("listDensity", "compact")).toBe(false);
   });
 
+  it("takes names every object inherits for nothing", () => {
+    // What the server sends is parsed JSON: "__proto__" arrives as a key of its own.
+    const values = JSON.parse(
+      '{"__proto__":{"theme":"dark"},"constructor":"x","toString":true,"hasOwnProperty":1,"theme":"light"}',
+    ) as Record<string, unknown>;
+    expect(() => syncableValues(values)).not.toThrow();
+    expect(syncableValues(values)).toEqual({ theme: "light" });
+    expect(isSyncable("constructor", "x")).toBe(false);
+    expect(applyToSettings(base, values)).toEqual({ theme: "light" });
+  });
+
   it("checks list entries like the server", () => {
     expect(isSyncable("trustedSenders:@shop.example", true)).toBe(true);
     expect(isSyncable("trustedSenders:news@shop.example", true)).toBe(true);
