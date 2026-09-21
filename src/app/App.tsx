@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Toaster } from "@/components/ui/Toaster";
 import { DangerousFileQuestion } from "@/features/attachments/DangerousFileQuestion";
 import { DeleteForeverQuestion } from "@/features/mail/DeleteForeverQuestion";
+import { LinkSheet, LinkStatus } from "@/features/mail/LinkPreview";
 import { LinkWarning } from "@/features/mail/LinkWarning";
 import { MailShell } from "@/features/shell/MailShell";
 import { i18n, resolveLanguage, useT } from "@/i18n";
@@ -148,6 +149,8 @@ export function App() {
     <>
       {boot.state === "ready" ? <MailShell /> : <BootScreen boot={boot} />}
       <LinkWarning />
+      <LinkSheet />
+      <LinkStatus />
       <DeleteForeverQuestion />
       <DangerousFileQuestion />
       <Toaster />

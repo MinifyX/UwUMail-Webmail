@@ -36,7 +36,12 @@
     "error": {
       "title": "Ich hab mich im Kabel verheddert (╥﹏╥)",
       "body": "Die Mail kam nicht durch. Versuch es gleich nochmal."
-    }
+    },
+    "showAddresses": "Alle Adressen anzeigen",
+    "hideAddresses": "Adressen einklappen",
+    "replyTo": "Antwort an",
+    "copyAddress": "{{email}} kopieren",
+    "addressCopied": "Adresse eingesteckt ✧"
   },
   "compose": {
     "placeholder": "Schreib was Liebes ✿",
@@ -79,7 +84,14 @@
     "trustedSendersEmpty": "Noch keiner auf meiner Liste (・・ )? Absender fügst du direkt im Bilder-Hinweis einer Mail hinzu.",
     "signatureSaved": "Signatur sitzt ✧",
     "signaturePlaceholder": "Liebe Grüße ✿",
-    "signatureTooBig": "Uff, so viel passt nicht in eine Signatur (・_・;) Nimm ein kleineres Bild."
+    "signatureTooBig": "Uff, so viel passt nicht in eine Signatur (・_・;) Nimm ein kleineres Bild.",
+    "linkConfirm": "Vor dem Öffnen von Links fragen",
+    "linkConfirmDesc": "Ich zeig dir vorher, wohin ein Link aus einer Mail führt. Getarnte Links frag ich immer.",
+    "linkDomains": "Ohne Nachfrage öffnen",
+    "linkDomainsDesc": "Links zu diesen Seiten lass ich direkt durch, außer sie sind verkleidet.",
+    "linkDomainsEmpty": "Noch keine. Du fügst Seiten direkt beim Öffnen eines Links hinzu ✧",
+    "linkDomainsInactive": "Gerade lass ich alle Links ohne Nachfrage durch.",
+    "forgetLinkDomain": "{{domain}} entfernen"
   },
   "attachment": {
     "loading": "Ich pack den Anhang aus…",
@@ -91,7 +103,30 @@
     }
   },
   "link": {
-    "warningTitle": "Hm, dieser Link schummelt vielleicht (・_・;)"
+    "warningTitle": "Hm, dieser Link schummelt vielleicht (・_・;)",
+    "confirmTitle": "Magst du diesen Link öffnen? (・ω・)",
+    "confirmBody": "Lass uns kurz zusammen schauen, wo er hinführt ✧",
+    "mailTitle": "Eine Mail schreiben? ✉",
+    "mailBody": "Der Link macht eine neue Mail an diese Leute auf.",
+    "open": "Öffnen",
+    "compose": "Mail schreiben",
+    "copy": "Adresse kopieren",
+    "copyShort": "Kopieren",
+    "copied": "Link eingesteckt ✧",
+    "remember": "Bei {{domain}} nicht mehr fragen",
+    "remembered": "Links zu {{domain}} lass ich ab jetzt direkt durch ✧ Umstellen kannst du das in den Einstellungen unter Lesen.",
+    "insecure": "Unverschlüsselt (http): Was du dort eintippst, könnten andere mitlesen (・_・;)",
+    "unicodeHost": "Sieht so aus",
+    "lookalike": "Hier mischen sich Buchstaben, die nur so tun wie andere. So verkleiden sich falsche Seiten (・_・;)",
+    "userinfo": "Vor der Adresse steht ein Benutzername, der sich als andere Seite verkleiden kann. Wirklich geht's zu {{domain}}.",
+    "redirectsTo": "Hüpft weiter zu",
+    "tracking": "Klick-Tracking über {{host}}",
+    "service": "Weiterleitungsdienst {{host}}",
+    "hiddenTarget": "Wohin's danach geht, verrät der Link nicht.",
+    "otherTarget": "Anderes Ziel als angezeigt",
+    "statusRedirect": "hüpft weiter zu {{target}}",
+    "unsupported": "Solche Links mach ich lieber nicht auf (・_・;)",
+    "sheetTitle": "Link"
   },
   "mobile": {
     "pull": {
