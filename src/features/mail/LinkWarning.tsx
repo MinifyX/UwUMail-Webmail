@@ -40,6 +40,21 @@ const EXACT = "[font-variant-ligatures:none] [font-feature-settings:'calt'_0,'li
 export function LinkAddress({ href, compact = false }: { href: string; compact?: boolean }) {
   const parts = urlParts(href);
   if (!parts) return <span className="font-mono break-all">{visibleText(href)}</span>;
+  if (compact) {
+    // One line that may be too short: the registrable domain never gives way. The path goes
+    // first, then the subdomains, so a long chain of them can't push the real domain out of
+    // sight (security-audit W-16).
+    return (
+      <span className={clsx("flex min-w-0 overflow-hidden whitespace-nowrap", EXACT)}>
+        <span className="shrink-0 text-muted">{parts.scheme}</span>
+        {parts.userinfo && <span className="min-w-0 truncate text-danger line-through">{parts.userinfo}</span>}
+        <span className="min-w-0 truncate">{parts.subdomain}</span>
+        <span className="shrink-0 font-extrabold">{parts.domain}</span>
+        <span className="shrink-0 text-muted">{parts.port}</span>
+        <span className="min-w-0 shrink-[1000] truncate text-muted">{parts.rest}</span>
+      </span>
+    );
+  }
   const host = (
     <span className={clsx("break-all", EXACT)}>
       <span className="text-muted">{parts.scheme}</span>
@@ -49,14 +64,6 @@ export function LinkAddress({ href, compact = false }: { href: string; compact?:
       <span className="text-muted">{parts.port}</span>
     </span>
   );
-  if (compact) {
-    return (
-      <span className="min-w-0 truncate">
-        {host}
-        <span className="text-muted">{parts.rest}</span>
-      </span>
-    );
-  }
   return (
     <span className="flex min-w-0 flex-col gap-1">
       <span className="text-[14px]">{host}</span>
