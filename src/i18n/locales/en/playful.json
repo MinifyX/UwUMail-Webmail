@@ -59,7 +59,8 @@
     "unsubscribed": "Unsubscribed (≧▽≦) No more mail from {{name}}",
     "messageSaved": "Mail tucked away safely (˘ω˘)",
     "deletedForever_one": "Gone forever (｡•́︿•̀｡)",
-    "deletedForever_other": "{{count}} messages gone forever (｡•́︿•̀｡)"
+    "deletedForever_other": "{{count}} messages gone forever (｡•́︿•̀｡)",
+    "sending": "Nyu is about to dash off … ✉︎"
   },
   "status": {
     "syncing": "Fetching fresh mail…",

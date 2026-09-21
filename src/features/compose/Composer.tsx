@@ -31,10 +31,12 @@ import { formatSize } from "@/lib/format";
 import { modKey } from "@/lib/platform";
 import { htmlToPlainText, isSafeLinkTarget, quotableHtml } from "@/lib/safeHtml";
 import { useAccounts, useIdentities, useMessageActions, useSignatures } from "@/lib/queries";
+import { useSettings } from "@/state/settings";
 import { toast } from "@/state/toasts";
 import { useUi, type ComposeRequest } from "@/state/ui";
 import { initialDraft, replyFrom, type DraftState } from "./draft";
 import { RecipientInput } from "./RecipientInput";
+import { undoSend } from "./undoSend";
 
 /** Quiet for this long after the last change, then the draft goes to the server. */
 const DRAFT_SAVE_DELAY = 2500;
@@ -344,8 +346,10 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         attachments,
         draftKey: savedAccount.current === accountId ? draftKey.current : undefined,
       };
-      // Holding mail back for a moment lands on the server in 0.5.1; until then it goes out at once.
-      await backend().send(message);
+      // With "undo send" the mail waits as a draft in this page, then goes out (lib/sendQueue).
+      const delay = useSettings.getState().undoSendSeconds;
+      const queued = delay > 0 ? await backend().queueSend(message, delay) : null;
+      if (!queued) await backend().send(message);
       // Written in another mailbox before: sending there doesn't remove that copy.
       if (draftKey.current && savedAccount.current && savedAccount.current !== accountId) {
         void backend()
@@ -354,7 +358,15 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       }
       clearLocalDraft();
       closeCompose();
-      toast(t("toast.sent"), "success", "sent");
+      if (queued) {
+        // It goes out when the toast does; "sent" follows from the backend (send:done).
+        toast(t("toast.sending"), "info", undefined, {
+          duration: delay * 1000,
+          action: { label: t("toast.undo"), run: () => void undoSend(queued.id) },
+        });
+      } else {
+        toast(t("toast.sent"), "success", "sent");
+      }
       void refresh();
     } catch (reason) {
       finished.current = false;

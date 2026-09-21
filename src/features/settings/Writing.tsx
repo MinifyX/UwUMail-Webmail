@@ -1,18 +1,42 @@
 import { SlidersHorizontal } from "lucide-react";
 import { PORTAL_URL } from "@/backend/server";
 import { Button } from "@/components/ui/Button";
+import { Segmented } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { useIdentities } from "@/lib/queries";
+import { UNDO_SEND_CHOICES, useSettings, type UndoSendSeconds } from "@/state/settings";
 import { Row } from "./Row";
 
 /**
  * Writing settings.
  *
  * Sender addresses belong to the server, so they are shown but not edited
- * here: new addresses and aliases are made in the portal. Signatures and
- * "undo send" land on the server in 0.5.1 and will show up here then.
+ * here: new addresses and aliases are made in the portal. Signatures land on
+ * the server with its settings extension and will show up here then.
  */
 export function Writing() {
+  const { t } = useT();
+  const undoSendSeconds = useSettings((s) => s.undoSendSeconds);
+  const update = useSettings((s) => s.update);
+  return (
+    <>
+      <Row label={t("settings.undoSend")} description={t("settings.undoSendDesc")}>
+        <Segmented
+          label={t("settings.undoSend")}
+          value={String(undoSendSeconds)}
+          onChange={(value) => update({ undoSendSeconds: Number(value) as UndoSendSeconds })}
+          options={UNDO_SEND_CHOICES.map((seconds) => ({
+            value: String(seconds),
+            label: seconds === 0 ? t("settings.undoSendOff") : t("settings.seconds", { count: seconds }),
+          }))}
+        />
+      </Row>
+      <Senders />
+    </>
+  );
+}
+
+function Senders() {
   const { t } = useT();
   const { data: identities = [] } = useIdentities();
   return (

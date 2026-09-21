@@ -1,5 +1,6 @@
 import { BackendError, type Backend } from "./backend";
 import { isDangerous } from "@/lib/attachments";
+import { SendQueue } from "@/lib/sendQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { buildFolders, buildMessages, DEMO_ACCOUNTS, welcomeMessage } from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
@@ -92,7 +93,11 @@ export class DemoBackend implements Backend {
       fromServer: true,
     },
   ];
-  private queued = new Map<string, { timer: ReturnType<typeof setTimeout>; message: OutgoingMessage }>();
+  private sendQueue = new SendQueue({
+    done: (sendId, message) => this.emit({ type: "send:done", sendId, accountId: message.accountId }),
+    failed: (sendId, message, reason) =>
+      this.emit({ type: "send:failed", sendId, accountId: message.accountId, reason, message }),
+  });
 
   constructor() {
     setTimeout(() => {
@@ -282,35 +287,22 @@ export class DemoBackend implements Backend {
     );
   }
 
+  /** Like the server's webmail: the mail waits as a draft, then goes out when the time is up. */
   async queueSend(message: OutgoingMessage, delaySeconds: number): Promise<QueuedSend> {
     if (message.to.length + message.cc.length + message.bcc.length === 0) {
       throw new BackendError("invalid_input", "No recipients");
     }
-    const id = `send-${this.nextId++}`;
-    const timer = setTimeout(() => {
-      this.queued.delete(id);
-      void this.send(message).then(
-        () => this.emit({ type: "send:done", sendId: id, accountId: message.accountId }),
-        (reason: unknown) =>
-          this.emit({
-            type: "send:failed",
-            sendId: id,
-            accountId: message.accountId,
-            reason: reason instanceof Error ? reason.message : String(reason),
-            message,
-          }),
-      );
-    }, delaySeconds * 1000);
-    this.queued.set(id, { timer, message });
-    return { id, sendAt: new Date(Date.now() + delaySeconds * 1000).toISOString() };
+    const { draftKey } = await this.saveDraft(message);
+    const waiting = { ...message, draftKey };
+    return this.sendQueue.add(waiting, delaySeconds, () => this.send(waiting));
   }
 
   async cancelSend(sendId: string) {
-    const entry = this.queued.get(sendId);
-    if (!entry) throw new BackendError("invalid_input", "This mail is already on its way.");
-    clearTimeout(entry.timer);
-    this.queued.delete(sendId);
-    return entry.message;
+    try {
+      return this.sendQueue.cancel(sendId);
+    } catch {
+      throw new BackendError("invalid_input", "This mail is already on its way.");
+    }
   }
 
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {

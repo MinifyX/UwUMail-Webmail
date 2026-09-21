@@ -14,6 +14,9 @@ export type RemoteImages = "ask" | "always";
 export type MailAppearance = "auto" | "light" | "dark";
 /** What swiping a mail in the phone list does. */
 export type SwipeAction = "read" | "archive" | "trash" | "flag" | "none";
+/** Seconds a sent mail waits before it goes out, so it can still be taken back. 0 sends at once. */
+export const UNDO_SEND_CHOICES = [0, 5, 10, 20, 30] as const;
+export type UndoSendSeconds = (typeof UNDO_SEND_CHOICES)[number];
 
 export interface Settings {
   listDensity: ListDensity;
@@ -35,6 +38,8 @@ export interface Settings {
   /** Phone list: swiping right and left. */
   swipeRight: SwipeAction;
   swipeLeft: SwipeAction;
+  /** "Undo send": how long a sent mail waits in this page before it goes out. */
+  undoSendSeconds: UndoSendSeconds;
 }
 
 interface SettingsActions {
@@ -62,6 +67,7 @@ export const DEFAULT_SETTINGS: Settings = {
   senderPictures: true,
   swipeRight: "read",
   swipeLeft: "archive",
+  undoSendSeconds: 10,
 };
 
 /**

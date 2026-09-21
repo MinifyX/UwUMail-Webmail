@@ -178,7 +178,8 @@
     "undo": "Rückgängig",
     "sendUndone": "Senden gestoppt. Die Mail ist wieder offen.",
     "undoTooLate": "Zu spät — die Mail ist schon unterwegs.",
-    "sendFailedKept": "Die Mail konnte nicht gesendet werden und liegt weiter bei dir. {{reason}}"
+    "sendFailedKept": "Die Mail konnte nicht gesendet werden und liegt weiter bei dir. {{reason}}",
+    "sending": "Mail wird gesendet …"
   },
   "status": {
     "syncing": "Suche nach neuen Mails",
@@ -248,6 +249,11 @@
     "sharedWithPortal": "Gilt zusammen mit dem Portal und in jedem Browser, in dem du dich anmeldest.",
     "sendersFromServer": "Die Adressen, von denen dieses Postfach senden darf. Sie gehören zum Server; neue legst du im Portal an.",
     "manageAddresses": "Adressen im Portal verwalten",
+    "undoSend": "Senden rückgängig machen",
+    "undoSendDesc": "So lange kannst du eine gesendete Mail noch zurückholen. Sie wartet dafür als Entwurf in diesem Tab. Schließt du den Tab in der Zeit, geht sie nicht raus und bleibt in den Entwürfen.",
+    "undoSendOff": "Aus",
+    "seconds_one": "{{count}} Sekunde",
+    "seconds_other": "{{count}} s",
     "senderPictures": "Bilder für Firmenabsender",
     "senderPicturesDesc": "Zeigt bei Firmen das Markenlogo oder Website-Icon statt der Initialen. Leute bei Mailanbietern wie Gmail behalten ihre Initialen."
   },

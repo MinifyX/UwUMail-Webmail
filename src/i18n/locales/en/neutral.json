@@ -178,7 +178,8 @@
     "undo": "Undo",
     "sendUndone": "Sending stopped. The mail is open again.",
     "undoTooLate": "Too late — the mail is already on its way.",
-    "sendFailedKept": "The mail could not be sent and is still with you. {{reason}}"
+    "sendFailedKept": "The mail could not be sent and is still with you. {{reason}}",
+    "sending": "Sending mail …"
   },
   "status": {
     "syncing": "Checking for mail",
@@ -248,6 +249,11 @@
     "sharedWithPortal": "Shared with the portal, and kept for every browser you sign in from.",
     "sendersFromServer": "The addresses this mailbox may send from. They belong to the server; new ones are made in the portal.",
     "manageAddresses": "Manage addresses in the portal",
+    "undoSend": "Undo send",
+    "undoSendDesc": "How long you can still take a sent mail back. Meanwhile it waits as a draft in this tab. If you close the tab in that time, it isn’t sent and stays in Drafts.",
+    "undoSendOff": "Off",
+    "seconds_one": "{{count}} second",
+    "seconds_other": "{{count}} s",
     "senderPictures": "Pictures for company senders",
     "senderPicturesDesc": "Shows a company’s brand logo or website icon instead of initials. People at mail providers like Gmail keep their initials."
   },

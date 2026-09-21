@@ -59,7 +59,8 @@
     "unsubscribed": "Abgemeldet (≧▽≦) Keine Post mehr von {{name}}",
     "messageSaved": "Mail sicher abgelegt (˘ω˘)",
     "deletedForever_one": "Für immer weg (｡•́︿•̀｡)",
-    "deletedForever_other": "{{count}} Mails für immer weg (｡•́︿•̀｡)"
+    "deletedForever_other": "{{count}} Mails für immer weg (｡•́︿•̀｡)",
+    "sending": "Nyu flitzt gleich los … ✉︎"
   },
   "status": {
     "syncing": "Hole frische Mails…",

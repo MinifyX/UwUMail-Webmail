@@ -9,6 +9,7 @@
  */
 
 import { textToHtml } from "@/lib/format";
+import { SendQueue } from "@/lib/sendQueue";
 import { unsubscribeMail } from "@/lib/unsubscribe";
 import { BackendError, type Backend } from "../backend";
 import type {
@@ -195,6 +196,11 @@ export class JmapBackend implements Backend {
   private stopPush: (() => void) | null = null;
   private ready: Promise<void> | null = null;
   private mailtoTaken = false;
+  private sendQueue = new SendQueue({
+    done: (sendId) => this.emit({ type: "send:done", sendId, accountId: this.accountId }),
+    failed: (sendId, message, reason) =>
+      this.emit({ type: "send:failed", sendId, accountId: this.accountId, reason, message }),
+  });
 
   private async start(): Promise<void> {
     if (!this.ready) {
@@ -715,13 +721,65 @@ export class JmapBackend implements Backend {
     this.emit({ type: "mail:changed", accountId: this.accountId });
   }
 
-  /** Delayed sending lands on the server in 0.5.1; until then mail goes out at once. */
-  async queueSend(): Promise<QueuedSend> {
-    throw new BackendError("not_supported", "This server can't hold mail back yet.");
+  /**
+   * Holds a mail back for "undo send". The server sends at once on submission, so the wait
+   * happens in this page (see lib/sendQueue): the mail is saved as a draft first, and that very
+   * draft is submitted when the time is up. Closing the tab meanwhile leaves it in Drafts, unsent.
+   */
+  async queueSend(message: OutgoingMessage, delaySeconds: number): Promise<QueuedSend> {
+    await this.start();
+    if (message.to.length + message.cc.length + message.bcc.length === 0) {
+      throw new BackendError("invalid_input", "There is nobody to send this to.");
+    }
+    const saved = await this.storeDraft(message);
+    const waiting = { ...message, draftKey: saved.draftKey };
+    return this.sendQueue.add(waiting, delaySeconds, () => this.submitDraft(saved.emailId, waiting));
   }
 
-  async cancelSend(): Promise<OutgoingMessage> {
-    throw new BackendError("not_supported", "This server can't hold mail back yet.");
+  /** Takes a held-back mail back; its draft stays in the Drafts folder. */
+  async cancelSend(sendId: string): Promise<OutgoingMessage> {
+    try {
+      return this.sendQueue.cancel(sendId);
+    } catch {
+      throw new BackendError("invalid_input", "This mail is already on its way.");
+    }
+  }
+
+  /** Sends a draft that already lies in the Drafts folder and moves it to Sent. */
+  private async submitDraft(emailId: string, message: OutgoingMessage): Promise<void> {
+    await this.start();
+    const drafts = this.folderOrFail("drafts");
+    const sent = this.folderOrFail("sent");
+    const identities = await this.listIdentities();
+    const envelope = {
+      mailFrom: { email: message.fromEmail ?? identities.find((i) => i.primary)?.email ?? "" },
+      rcptTo: [...message.to, ...message.cc, ...message.bcc].map((address) => ({ email: address.email })),
+    };
+    const body = await call(
+      [
+        [
+          "EmailSubmission/set",
+          {
+            accountId: this.accountId,
+            create: { send: { emailId, identityId: this.identityIdFor(message.fromEmail, identities), envelope } },
+            onSuccessUpdateEmail: {
+              "#send": {
+                [`mailboxIds/${drafts.id}`]: null,
+                [`mailboxIds/${sent.id}`]: true,
+                "keywords/$draft": null,
+              },
+            },
+          },
+          "s",
+        ],
+      ],
+      [CORE, MAIL, SUBMISSION],
+    );
+    const submitted = responseOf<SetResponse>(body, "s");
+    throwOnError(submitted);
+    if (!submitted.created?.send) throw new BackendError("internal", "The server didn't take the mail.");
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
   }
 
   /** Every draft carrying this key, newest first. */
@@ -762,6 +820,12 @@ export class JmapBackend implements Backend {
   }
 
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
+    const saved = await this.storeDraft(draft);
+    return { draftKey: saved.draftKey, savedAt: new Date().toISOString() };
+  }
+
+  /** Writes the newest version of a draft and removes every older one with the same key. */
+  private async storeDraft(draft: OutgoingMessage): Promise<{ draftKey: string; emailId: string }> {
     await this.start();
     const drafts = this.folderOrFail("drafts");
     const key = draft.draftKey ?? `uwu-${crypto.randomUUID()}@webmail.local`;
@@ -769,9 +833,10 @@ export class JmapBackend implements Backend {
     const response = await one<SetResponse>("Email/set", { create: { draft: email } });
     throwOnError(response);
     const created = response.created?.draft;
-    await this.destroyDrafts(key, drafts.id, created?.id);
+    if (!created) throw new BackendError("internal", "The server didn't keep the draft.");
+    await this.destroyDrafts(key, drafts.id, created.id);
     this.emit({ type: "mail:changed", accountId: this.accountId });
-    return { draftKey: key, savedAt: new Date().toISOString() };
+    return { draftKey: key, emailId: created.id };
   }
 
   async deleteDraft(_accountId: string, draftKey: string): Promise<void> {
