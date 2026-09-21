@@ -125,16 +125,21 @@ export function isDemo(): boolean {
   return import.meta.env.MODE === "demo" || import.meta.env.VITE_DEMO === "1";
 }
 
-export async function loadBackend(): Promise<Backend> {
-  if (instance) return instance;
-  if (isDemo()) {
-    const { DemoBackend } = await import("./demo");
-    instance = new DemoBackend();
-  } else {
-    const { JmapBackend } = await import("./jmap/JmapBackend");
-    instance = new JmapBackend();
-  }
-  return instance;
+let loading: Promise<Backend> | null = null;
+
+/** Loads the backend once; calls that overlap (React runs effects twice in development) share it. */
+export function loadBackend(): Promise<Backend> {
+  loading ??= (async () => {
+    if (isDemo()) {
+      const { DemoBackend } = await import("./demo");
+      instance = new DemoBackend();
+    } else {
+      const { JmapBackend } = await import("./jmap/JmapBackend");
+      instance = new JmapBackend();
+    }
+    return instance;
+  })();
+  return loading;
 }
 
 export function backend(): Backend {
