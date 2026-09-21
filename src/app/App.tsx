@@ -12,6 +12,7 @@ import { BackendError, isDemo, loadBackend } from "@/backend/backend";
 import { PORTAL_URL, loadSession, webmailAccess } from "@/backend/server";
 import { useApplyTheme } from "@/lib/theme";
 import { startSettingsSync } from "@/state/accountSync";
+import { claimBrowser } from "@/state/browserOwner";
 import { applyServerPreferences, useSettings } from "@/state/settings";
 
 type Boot =
@@ -114,6 +115,8 @@ export function App() {
           setBoot({ state: "signedOut" });
           return;
         }
+        // What an earlier login left in this browser is theirs, not this account's (security-audit W-12).
+        claimBrowser(session.account.login);
         applyServerPreferences(session.preferences);
         const access = await webmailAccess();
         if (cancelled) return;

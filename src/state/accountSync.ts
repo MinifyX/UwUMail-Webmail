@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { backend } from "@/backend/backend";
 import { applyToSettings, settingsToValues, SYNCED_FIELDS } from "@/lib/settingsSync";
 import { SettingsSyncQueue, type SyncMeta, type SyncStatus } from "@/lib/settingsSyncQueue";
+import { SYNC_META_KEY } from "./browserOwner";
 import { useSettings } from "./settings";
 
 /**
@@ -11,7 +12,7 @@ import { useSettings } from "./settings";
  * A server without the extension leaves everything in this browser, as before.
  */
 
-const STORAGE_KEY = "uwumail.webmail.settingsSync";
+const STORAGE_KEY = SYNC_META_KEY;
 
 export const useSettingsSync = create<{ status: SyncStatus | null }>(() => ({ status: null }));
 
