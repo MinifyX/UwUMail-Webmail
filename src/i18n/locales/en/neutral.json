@@ -174,7 +174,11 @@
     "unsubscribeFailed": "Unsubscribing didn't work. {{reason}}",
     "messageSaved": "Mail saved",
     "deletedForever_one": "{{count}} message deleted forever",
-    "deletedForever_other": "{{count}} messages deleted forever"
+    "deletedForever_other": "{{count}} messages deleted forever",
+    "undo": "Undo",
+    "sendUndone": "Sending stopped. The mail is open again.",
+    "undoTooLate": "Too late — the mail is already on its way.",
+    "sendFailedKept": "The mail could not be sent and is still with you. {{reason}}"
   },
   "status": {
     "syncing": "Checking for mail",

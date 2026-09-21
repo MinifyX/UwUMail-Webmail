@@ -174,7 +174,11 @@
     "unsubscribeFailed": "Das Abmelden hat nicht geklappt. {{reason}}",
     "messageSaved": "Mail gespeichert",
     "deletedForever_one": "{{count}} Mail endgültig gelöscht",
-    "deletedForever_other": "{{count}} Mails endgültig gelöscht"
+    "deletedForever_other": "{{count}} Mails endgültig gelöscht",
+    "undo": "Rückgängig",
+    "sendUndone": "Senden gestoppt. Die Mail ist wieder offen.",
+    "undoTooLate": "Zu spät — die Mail ist schon unterwegs.",
+    "sendFailedKept": "Die Mail konnte nicht gesendet werden und liegt weiter bei dir. {{reason}}"
   },
   "status": {
     "syncing": "Suche nach neuen Mails",
