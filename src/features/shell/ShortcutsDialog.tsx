@@ -3,10 +3,10 @@ import { useT } from "@/i18n";
 import { modKey } from "@/lib/platform";
 import { useUi } from "@/state/ui";
 
+const KEY_LABELS: Record<string, string> = { Delete: "Del", shift: "⇧", ArrowUp: "↑", ArrowDown: "↓" };
+
 export function KeyHint({ combo }: { combo: string }) {
-  const keys = combo
-    .split(/[+ ]/)
-    .map((key) => (key === "mod" ? modKey : key === "Delete" ? "Del" : key === "shift" ? "⇧" : key.toUpperCase()));
+  const keys = combo.split(/[+ ]/).map((key) => KEY_LABELS[key] ?? (key === "mod" ? modKey : key.toUpperCase()));
   return (
     <span className="flex gap-1">
       {keys.map((key) => (
@@ -21,11 +21,14 @@ export function KeyHint({ combo }: { combo: string }) {
   );
 }
 
-const SHORTCUTS: [string, string][] = [
+/** Combo, text key, and another combo doing the same. */
+const SHORTCUTS: [string, string, string?][] = [
   ["c", "compose"],
   ["/", "search"],
-  ["j", "next"],
-  ["k", "previous"],
+  ["j", "next", "ArrowDown"],
+  ["k", "previous", "ArrowUp"],
+  ["shift+ArrowDown", "extendDown"],
+  ["shift+ArrowUp", "extendUp"],
   ["r", "reply"],
   ["a", "replyAll"],
   ["f", "forward"],
@@ -36,6 +39,7 @@ const SHORTCUTS: [string, string][] = [
   ["s", "flag"],
   ["u", "unread"],
   ["x", "select"],
+  ["mod+a", "selectAll"],
   ["z", "undo"],
   ["g i", "goInbox"],
   ["g s", "goSent"],
@@ -51,17 +55,29 @@ export function ShortcutsDialog() {
   const { t } = useT();
   const open = useUi((s) => s.shortcutsOpen);
   const setOpen = useUi((s) => s.setShortcutsOpen);
-  const shortcuts = SHORTCUTS.map(([combo, key]): [string, string] => [combo, t(`shortcuts.${key}`)]);
+  const shortcuts = SHORTCUTS.map(([combo, key, alt]): [string, string, string?] => [
+    combo,
+    t(`shortcuts.${key}`),
+    alt,
+  ]);
   return (
     <Dialog open={open} onClose={() => setOpen(false)} title={t("settings.shortcuts")} width="sm">
       <ul className="flex flex-col px-6 pb-6">
-        {shortcuts.map(([combo, label]) => (
+        {shortcuts.map(([combo, label, alt]) => (
           <li
             key={combo}
             className="flex h-10 items-center justify-between border-b border-hairline text-[13.5px] last:border-0"
           >
             <span>{label}</span>
-            <KeyHint combo={combo === "Escape" ? "Esc" : combo} />
+            <span className="flex items-center gap-1.5">
+              <KeyHint combo={combo === "Escape" ? "Esc" : combo} />
+              {alt && (
+                <>
+                  <span className="text-[12px] text-muted">/</span>
+                  <KeyHint combo={alt} />
+                </>
+              )}
+            </span>
           </li>
         ))}
       </ul>

@@ -128,5 +128,10 @@
     "error": {
       "title": "Nyu tripped over a cable"
     }
+  },
+  "shortcuts": {
+    "extendUp": "Stretch the selection up",
+    "extendDown": "Stretch the selection down",
+    "selectAll": "Grab all loaded mail"
   }
 }
