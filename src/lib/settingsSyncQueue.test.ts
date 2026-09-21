@@ -204,6 +204,25 @@ describe("the settings sync queue", () => {
     expect(device.values).toHaveProperty(["linkDomains:refused.example"], true);
   });
 
+  it("doesn't send back what this device stored differently", async () => {
+    const server = new FakeServer();
+    const signature = { email: "", name: "Kurz", html: "<p onclick=x>Mini</p>", forNew: false, forReplies: false };
+    server.write({ "signature:abc": signature });
+    const device = new FakeDevice({});
+    const cleaned = { ...signature, html: "<p>Mini</p>" };
+    device.apply = (patch: SettingsPatch) => {
+      const stored = "signature:abc" in patch ? { "signature:abc": cleaned } : {};
+      device.values = applyPatch(device.values, { ...patch, ...stored });
+      return stored;
+    };
+    const queue = queueFor(server, device);
+    await queue.start();
+    server.saves = [];
+    await queue.localChanged();
+    await vi.advanceTimersByTimeAsync(60);
+    expect(server.saves).toHaveLength(0);
+  });
+
   it("leaves signatures alone where they aren't kept locally", async () => {
     const server = new FakeServer();
     const signature = { email: "", name: "Kurz", html: "<p>Mini</p>", forNew: false, forReplies: false };

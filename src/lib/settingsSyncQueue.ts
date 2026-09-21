@@ -36,8 +36,11 @@ export interface SyncLocal {
   read(): Promise<SettingsValues> | SettingsValues;
   /** Keys this device keeps to itself for now, e.g. a signature too big for the server. */
   keep?(): ReadonlySet<string>;
-  /** Takes what came from the server; `null` removes. */
-  apply(patch: SettingsPatch): Promise<void> | void;
+  /**
+   * Takes what came from the server; `null` removes. Returns the keys that were stored other
+   * than they came (e.g. signature HTML after cleaning), so that isn't mistaken for a change here.
+   */
+  apply(patch: SettingsPatch): Promise<SettingsPatch | void> | SettingsPatch | void;
 }
 
 /** What the queue remembers between starts. */
@@ -268,8 +271,8 @@ export class SettingsSyncQueue {
       firstSync: !this.meta.synced,
       keep: this.keep(),
     });
-    if (Object.keys(merged.apply).length > 0) await this.options.local.apply(merged.apply);
-    this.snapshot = applyPatch(local, merged.apply);
+    const stored = Object.keys(merged.apply).length > 0 ? await this.options.local.apply(merged.apply) : undefined;
+    this.snapshot = applyPatch(local, { ...merged.apply, ...(stored ?? {}) });
     this.meta = { ...this.meta, state: server.state, pending: merged.pending, synced: true };
     this.save();
   }
