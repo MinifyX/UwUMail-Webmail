@@ -223,3 +223,171 @@ filename.slice(dot + 1)…` — and strip format controls in a `cleanDisplayName
 - The webmail was exercised against a real UwUMail test instance in the server's sweep (portal
   session → JMAP, sending and reading a message, and the boundary checks: a JMAP call without/with a
   wrong CSRF token, another account's mailboxes, another account's blob, and one's own download).
+
+## Addendum — 22 September 2026: undo send, signatures, settings sync and the link question
+
+A second pass over everything that landed after this report (commits 663e173 to 084230d): holding
+sent mail back for "undo send" (`src/lib/sendQueue.ts`), signatures from the server's shared
+settings, the settings sync (`src/lib/settingsSync.ts`, `settingsSyncQueue.ts`,
+`src/state/accountSync.ts`, `src/backend/jmap/userSettings.ts`), arrow keys forwarded from the mail
+frame (`readerKeys.ts`), the link question with its hover status line, long-press sheet, redirect
+and lookalike detection (`src/lib/links.ts`, `redirects.ts`, `domains.ts`, `LinkWarning.tsx`,
+`LinkPreview.tsx`, `linkEvents.ts`), the full address details, the spam actions and Ctrl+A. The
+fixes of W-1 to W-11 were re-checked. The server's side of the settings sync was reviewed in the
+same pass; its findings are in
+[UwUMail-Server/docs/security-audit-0.5.2.md](https://github.com/MinifyX/UwUMail-Server/blob/main/docs/security-audit-0.5.2.md#addendum--the-settings-sync-extension-22-september-2026)
+(S-39 to S-41).
+
+The threat model gains two attackers. **The next person at the same browser**: the webmail keeps
+settings, a draft and the sync queue in local storage, which outlives a sign-out. And **the settings
+that come from the server**: another device of the account (or a client with a bug) writes them, so
+they are data to check, never code or markup to trust. Done with Claude, like the report above;
+reproduction notes stay in the private notes file.
+
+### Summary
+
+| ID   | Severity      | Finding                                                                         | Status           |
+| ---- | ------------- | ------------------------------------------------------------------------------- | ---------------- |
+| W-12 | Medium        | What one login leaves in the browser reaches the next                           | fixed in 6b33af1 |
+| W-13 | Low           | A remembered domain waves through its own redirects                             | fixed in abbba75 |
+| W-14 | Low           | With "ask before links" off, lookalike hosts and hidden user names open at once | fixed in fab05db |
+| W-15 | Low           | Remembering a site under an unlisted public suffix remembers the whole suffix   | fixed in a850515 |
+| W-16 | Low           | The status line can cut the real domain off a long address                      | fixed in 1a8a4ae |
+| W-17 | Low           | Middle click, dragging a link and SVG links go past the link question           | fixed in bc50608 |
+| W-18 | Low           | The gesture that opens the link question can also answer it                     | fixed in e8aca80 |
+| W-19 | Low           | The settings sync treats inherited names like `constructor` as known settings   | fixed in a478216 |
+| W-20 | Low           | Markup dragged into the composer skips the paste cleaner                        | fixed in 215c95c |
+| W-21 | Informational | A sender's direction marks run into the names next to theirs                    | fixed in 3480fd4 |
+
+Nothing Critical or High. No path to running code on the app's origin was found: the app uses
+`dangerouslySetInnerHTML` only for signatures that went through `cleanSignatureHtml`, the reader
+frame is scriptless with its own policy, and the page policy the server sends
+(`frame-ancestors 'none'`, `form-action 'none'`, `frame-src 'self' blob:`) is unchanged.
+
+### W-12 · Medium · What one login leaves in the browser reaches the next
+
+`src/state/settings.ts` (persisted as `uwumail.webmail`), `src/features/compose/localDraft.ts`
+(`uwumail.phoneDraft`), `src/state/accountSync.ts` (`uwumail.webmail.settingsSync`)
+
+- **Attacker & preconditions:** a second person who signs in to the webmail in the same browser
+  profile after someone else — a shared family computer, a kiosk, a colleague's laptop. Signing out
+  of the portal ends the session but leaves the webmail's local storage alone.
+- **Impact:** the next login got the previous one's trusted senders, remembered link domains (links
+  to those sites then open without a question), per-sender looks, their choices for remote images
+  and link questions, and — the worst of it — the draft kept for the phone, with recipients, Bcc,
+  subject and text, which the composer offers to bring back. With the settings sync, the previous
+  person's choices could even be written into the new account's server settings, because the sync
+  sends choices the server doesn't have yet.
+- **Fix:** the webmail notes whose data it keeps (`src/state/browserOwner.ts`). When the server
+  names a different login than last time, the settings go back to the defaults (the new account's
+  own come back from the server), and the kept draft and the sync queue are dropped, before anything
+  reads them. Test: `browserOwner.test.ts`.
+- **Left open:** the data stays in the browser until the next login opens the webmail; someone with
+  the browser in hand can read it from local storage. The portal's sign-out does not clear it (the
+  keys belong to the webmail; clearing them on sign-out would be worth doing there too).
+
+### Low findings
+
+- **W-13 · A remembered domain waves through its own redirects** — `src/lib/links.ts`
+  (`checkLink`, `needsConfirmation`). A link on a remembered domain opened without a question even
+  when its address carried a redirect to another site (the usual open redirect), and such a link
+  offered its own domain for remembering. _Fix:_ a link with a detected redirect is never
+  rememberable, so it always asks while asking is on.
+- **W-14 · With "ask before links" off, lookalike hosts and hidden user names open at once** —
+  `src/lib/links.ts` (`needsConfirmation`). The setting promises that disguised links always ask,
+  but only the text-versus-target check did; a host that only looks Latin and a user name in front
+  of the host did not. _Fix:_ both always ask, like a misleading text.
+- **W-15 · Remembering a site under an unlisted public suffix remembers the whole suffix** —
+  `src/lib/domains.ts` (`registrableDomain`). The registrable domain is a heuristic with a short list
+  of multi-label suffixes. Under a suffix not on it (`co.ke`, `com.ng`, `gov.br`, a hosting platform
+  such as `a.run.app`), remembering one site remembered every site under that suffix. _Fix:_ the
+  usual second levels under two-letter country domains count as suffixes, and more hosting platforms
+  are listed. Still a heuristic, not the Public Suffix List (see accepted risks).
+- **W-16 · The status line can cut the real domain off a long address** —
+  `src/features/mail/LinkWarning.tsx` (`LinkAddress`, compact). The hover status line truncated the
+  whole address at its end, so a long chain of made-up subdomains in front of the real domain showed
+  only the made-up part. It matters most where the status line is the only preview (asking switched
+  off, or a remembered domain). _Fix:_ the path gives way first, then the subdomains; the registrable
+  domain never shrinks. Test `LinkAddress.test.tsx`, and checked in a browser against the demo.
+- **W-17 · Middle click, dragging a link and SVG links go past the link question** —
+  `src/features/mail/linkEvents.ts`. Only `click` on `a[href]`/`area[href]` was caught; a middle
+  click (`auxclick`), a link dragged onto the tab bar and an SVG `<a xlink:href>` were not. Today the
+  frame's sandbox (no popups), the page's `frame-src` and both sanitizers (neither keeps SVG links
+  from the server) stand in the way, so this is defence in depth. _Fix:_ a middle click asks like a
+  click, links can't be dragged out of the mail, and `xlink:href` counts as a link. Test
+  `linkEvents.test.ts`.
+- **W-18 · The gesture that opens the link question can also answer it** —
+  `src/features/mail/LinkWarning.tsx`. The question opens centred with "Open" focused, so a held
+  Enter (key repeat) or the second click of a double click placed over that spot could answer it in
+  the same gesture. _Fix:_ the open buttons ignore clicks for 600 ms after the question appears and
+  never react to a repeating key. Test `armedActivation.test.ts`, and checked in a browser against
+  the demo.
+- **W-19 · The settings sync treats inherited names like `constructor` as known settings** —
+  `src/lib/settingsSync.ts` (`isSyncable`, `isChoiceKey`). The check for a known choice used `in`,
+  which also finds every object's inherited members: a `constructor` key from the server passed as a
+  valid setting and was written into the settings, and a `__proto__` key (JSON parsing makes it an
+  ordinary key) threw and stopped the sync for good. The server's whitelist refuses both today
+  (S-40), so this is defence in depth. _Fix:_ only the choices' own keys count. The desktop app
+  shares this file and needs the same change.
+- **W-20 · Markup dragged into the composer skips the paste cleaner** —
+  `src/features/compose/Composer.tsx`, `src/features/settings/Signatures.tsx`. W-2 cleaned pasted
+  markup; dropping a selection dragged out of a mail inserted its markup as it was, so a remote
+  picture in it loaded from the app page (a tracking pixel). _Fix:_ dropped markup goes through the
+  same cleaner (`droppedHtml.ts`); moving text within the editor is left to the browser.
+  Unit-tested; a real drag from the mail frame into the editor was not performed.
+
+### Informational
+
+- **W-21 · A sender's direction marks run into the names next to theirs** —
+  `src/components/ui/Tooltip.tsx`. The "to" line puts every recipient's display name inline; a name
+  with an unclosed right-to-left override turned the names after it around. The full address
+  details already show such characters visibly (`fullAddress`). _Fix:_ every name there is isolated
+  (`unicode-bidi: isolate`).
+
+### What held up
+
+- **Undo send** holds the mail as a draft and submits exactly that draft with the envelope built
+  from the composer. A session change in between makes the submission fail rather than go out under
+  another login (the CSRF token and account id belong to the page's own session); a closed tab
+  leaves an unsent draft, and the page asks before it closes.
+- **Signatures** from the server are cleaned before they are shown or inserted
+  (`cleanSignatureHtml`: the composer's cleaner, then only embedded PNG/JPEG/GIF/WebP pictures);
+  names are text; picture uploads refuse SVG.
+- **The settings sync** only takes keys and values that pass the same rules as the server, key by
+  key; a refused key stays on the device instead of failing every later write; signatures are never
+  kept locally.
+- **The link question** is reached by every click, Enter on a focused link, the long-press sheet and
+  the unsubscribe page. `javascript:`, `data:` and relative links never open; forms, `<meta>`,
+  `<base>` and scripts are removed by both sanitizers and could not act in the sandboxed frame
+  anyway; the status line and the dialog are drawn by the app outside the frame, so a mail can't
+  paint over them. Remembered domains never cover lookalike, international, user-name, IP or
+  plain-http links; case and a trailing dot are normalized before the comparison.
+- **Keys from the mail frame** are forwarded as copies to the app's shortcuts; the frame has no
+  scripts, so only the reader's own key presses get there, and Ctrl/Cmd combinations stay in the
+  frame.
+- **Address details** show every sender-chosen name and address through `visibleText`, so
+  invisible and direction characters are shown, not obeyed.
+- **Spam actions and Ctrl+A** only act on what the reader selected; deleting for good still asks
+  and only removes mail that really lies in the trash.
+- **Earlier findings:** W-1 to W-11 hold (Bcc shown, paste and restore cleaned, print header
+  protected, no trusted-sender images in Junk, unsubscribe target named and now routed through the
+  link question, dangerous-file and link heuristics, draft Bcc, PDF preview sandboxed).
+- **Dependencies and CI:** `pnpm audit --prod` finds nothing; the workflows pin every action by
+  commit, run with `contents: read` and have no `pull_request_target`.
+
+### New or changed accepted risks
+
+- **The registrable domain stays a heuristic.** W-15 closes the common gaps, but a site under a
+  suffix nobody listed can still stand for its neighbours once remembered. The full Public Suffix
+  List would fix it for good at the cost of a large download.
+- **Local storage is readable by whoever holds the browser.** W-12 stops handing it to the next
+  login; it does not encrypt or expire it.
+
+### What was run
+
+- `pnpm format:check`, `typecheck`, `lint`, `test` and `build` on the final tree, all green;
+  `pnpm audit --prod` clean.
+- The demo mode in a browser for W-16 (a long made-up chain of subdomains keeps the real domain
+  visible in the status line), W-18 (an immediate click on "Open" does nothing, a later one opens)
+  and W-21 (names in the header are isolated).
+- No live malicious mail and no real login, as before.
