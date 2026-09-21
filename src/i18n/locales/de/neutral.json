@@ -247,7 +247,9 @@
     "unblockSender": "{{entry}} freigeben",
     "sharedWithPortal": "Gilt zusammen mit dem Portal und in jedem Browser, in dem du dich anmeldest.",
     "sendersFromServer": "Die Adressen, von denen dieses Postfach senden darf. Sie gehören zum Server; neue legst du im Portal an.",
-    "manageAddresses": "Adressen im Portal verwalten"
+    "manageAddresses": "Adressen im Portal verwalten",
+    "senderPictures": "Bilder für Firmenabsender",
+    "senderPicturesDesc": "Zeigt bei Firmen das Markenlogo oder Website-Icon statt der Initialen. Leute bei Mailanbietern wie Gmail behalten ihre Initialen."
   },
   "theme": {
     "system": "System",

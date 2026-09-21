@@ -222,6 +222,14 @@ function Reading() {
           </Button>
         )}
       </Row>
+      <div className="border-b border-hairline py-4 last:border-0">
+        <Toggle
+          checked={settings.senderPictures}
+          onChange={(senderPictures) => settings.update({ senderPictures })}
+          label={t("settings.senderPictures")}
+          description={t("settings.senderPicturesDesc")}
+        />
+      </div>
       {phone && (
         <Row label={t("settings.swipeRight")} description={t("settings.swipeDesc")}>
           <SwipeSelect value={settings.swipeRight} onChange={(swipeRight) => settings.update({ swipeRight })} />
