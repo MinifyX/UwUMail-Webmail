@@ -99,9 +99,8 @@ type ServerKey = keyof typeof ON_SERVER;
 const ALLOWED: { [K in ServerKey]: readonly string[] } = {
   motion: ["system", "on", "off"],
   listDensity: ["relaxed", "compact"],
-  // The portal doesn't know "spam" as a swipe; that choice stays in this browser.
-  swipeRight: ["read", "archive", "trash", "flag", "none"],
-  swipeLeft: ["read", "archive", "trash", "flag", "none"],
+  swipeRight: ["read", "archive", "trash", "flag", "spam", "none"],
+  swipeLeft: ["read", "archive", "trash", "flag", "spam", "none"],
 };
 
 function toServerValue(key: ServerKey, value: unknown): string | null {
