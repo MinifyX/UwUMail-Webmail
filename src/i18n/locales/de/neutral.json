@@ -489,5 +489,10 @@
       "title": "Das hat nicht geklappt",
       "action": "Nochmal versuchen"
     }
+  },
+  "crash": {
+    "title": "Da ist etwas schiefgegangen",
+    "body": "Ein Teil von UwUMail ist beim Anzeigen abgestürzt. Neu laden bringt dich zurück.",
+    "reload": "Neu laden"
   }
 }

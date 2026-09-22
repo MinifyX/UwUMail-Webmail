@@ -489,5 +489,10 @@
       "title": "That didn't work",
       "action": "Try again"
     }
+  },
+  "crash": {
+    "title": "Something went wrong",
+    "body": "Part of UwUMail crashed while drawing. Reloading brings you back.",
+    "reload": "Reload"
   }
 }
