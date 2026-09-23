@@ -17,11 +17,9 @@ export function useInlineImages(message: Message) {
   const results = useQueries({
     queries: inline.map((attachment) => ({
       queryKey: ["inlineImage", attachment.id],
-      queryFn: async () => {
-        const file = await backend().getAttachment(attachment.id);
-        const blob = await (await fetch(file.url)).blob();
-        return URL.createObjectURL(blob);
-      },
+      // The file already comes as a blob URL. Reading it back with fetch made a second copy and
+      // is refused where the page's policy only allows connections to its own origin.
+      queryFn: async () => (await backend().getAttachment(attachment.id)).url,
       staleTime: Infinity,
       gcTime: Infinity,
       retry: false,
