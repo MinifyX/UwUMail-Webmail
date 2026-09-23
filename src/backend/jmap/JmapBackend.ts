@@ -40,6 +40,7 @@ import {
   CORE,
   MAIL,
   SENDERS,
+  SIEVE,
   SUBMISSION,
   WEBMAIL,
   call,
@@ -166,6 +167,17 @@ interface JmapSenderEntry {
   action: "allow" | "block";
   scope?: string;
 }
+
+interface JmapSieveScript {
+  id: string;
+  name: string | null;
+  blobId: string;
+  isActive: boolean;
+}
+
+/** The one script the rules editor owns, see lib/sieveRules. */
+const RULES_SCRIPT = "UwUMail";
+const SIEVE_TYPE = "application/sieve";
 
 function firstError(response: SetResponse): BackendError | null {
   const problem =
@@ -1010,6 +1022,61 @@ export class JmapBackend implements Backend {
       inReplyTo: null,
       attachments,
     };
+  }
+
+  async mailRulesAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(SIEVE);
+  }
+
+  private async rulesScript(): Promise<JmapSieveScript | null> {
+    const response = await one<GetResponse<JmapSieveScript>>("SieveScript/get", { ids: null }, [CORE, SIEVE]);
+    return response.list.find((script) => script.name === RULES_SCRIPT) ?? null;
+  }
+
+  async mailRules(): Promise<{ script: string | null; active: boolean }> {
+    await this.start();
+    if (!supports(SIEVE)) throw new BackendError("not_supported", "This server has no mail rules.");
+    const found = await this.rulesScript();
+    if (!found) return { script: null, active: false };
+    const blob = await downloadBlob(found.blobId, `${RULES_SCRIPT}.sieve`);
+    return { script: await blob.text(), active: found.isActive };
+  }
+
+  private async uploadScript(script: string): Promise<string> {
+    const uploaded = await uploadBlob(new Blob([script], { type: SIEVE_TYPE }), SIEVE_TYPE);
+    return uploaded.blobId;
+  }
+
+  async validateMailRules(script: string): Promise<string | null> {
+    await this.start();
+    const blobId = await this.uploadScript(script);
+    const response = await one<{ error: { type: string; description?: string } | null }>(
+      "SieveScript/validate",
+      { blobId },
+      [CORE, SIEVE],
+    );
+    return response.error ? (response.error.description ?? response.error.type) : null;
+  }
+
+  async saveMailRules(script: string): Promise<void> {
+    await this.start();
+    const blobId = await this.uploadScript(script);
+    const existing = await this.rulesScript();
+    const response = await one<SetResponse>(
+      "SieveScript/set",
+      existing
+        ? { update: { [existing.id]: { blobId } }, onSuccessActivateScript: existing.id }
+        : { create: { rules: { name: RULES_SCRIPT, blobId } }, onSuccessActivateScript: "#rules" },
+      [CORE, SIEVE],
+    );
+    const problem = Object.values(response.notCreated ?? {})[0] ?? Object.values(response.notUpdated ?? {})[0] ?? null;
+    if (problem) {
+      throw new BackendError(
+        problem.type === "invalidSieve" || problem.type === "tooLarge" ? "invalid_input" : "internal",
+        problem.description ?? problem.type,
+      );
+    }
   }
 
   /** Address suggestions come from the server in 0.5.1. */

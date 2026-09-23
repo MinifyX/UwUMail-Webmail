@@ -46,7 +46,8 @@ export interface MoveRequest {
   onMoved?: () => void;
 }
 
-export type SettingsSection = "appearance" | "mail" | "compose" | "security" | "accounts" | "addons" | "about";
+export type SettingsSection =
+  "appearance" | "mail" | "compose" | "rules" | "security" | "accounts" | "addons" | "about";
 
 interface UiState {
   view: MailboxView;

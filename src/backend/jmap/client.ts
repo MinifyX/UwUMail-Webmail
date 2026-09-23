@@ -13,6 +13,10 @@ export const CORE = "urn:ietf:params:jmap:core";
 export const MAIL = "urn:ietf:params:jmap:mail";
 export const SUBMISSION = "urn:ietf:params:jmap:submission";
 export const SENDERS = "urn:uwumail:jmap:senders";
+/** Mail rules as Sieve scripts (RFC 9661). */
+export const SIEVE = "urn:ietf:params:jmap:sieve";
+/** Calendars and events (draft-ietf-jmap-calendars). */
+export const CALENDARS = "urn:ietf:params:jmap:calendars";
 /** Our own: cleaned message HTML and delayed sending, see the server's docs. */
 export const WEBMAIL = "urn:uwumail:jmap:webmail";
 

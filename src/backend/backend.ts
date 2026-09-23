@@ -112,6 +112,15 @@ export interface Backend {
   deleteDraft(accountId: string, draftKey: string): Promise<void>;
   openDraft(messageId: string): Promise<DraftContent>;
 
+  /** Whether the server filters incoming mail with rules (JMAP Sieve); without an id, whether any mailbox does. */
+  mailRulesAvailable(accountId?: string): Promise<boolean>;
+  /** The script named "UwUMail" (see lib/sieveRules), null when there is none yet, and whether it filters. */
+  mailRules(accountId?: string): Promise<{ script: string | null; active: boolean }>;
+  /** Stores the script as "UwUMail" and makes it the active one. */
+  saveMailRules(script: string, accountId?: string): Promise<void>;
+  /** The server's complaint about a script, or null when it would take it. */
+  validateMailRules(script: string, accountId?: string): Promise<string | null>;
+
   searchContacts(query: string): Promise<Contact[]>;
 
   /** Downloads the attachment and hands out a blob URL for it. */

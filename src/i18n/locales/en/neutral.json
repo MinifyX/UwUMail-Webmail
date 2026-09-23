@@ -287,7 +287,8 @@
     "linkDomainsDesc": "Links to these sites open right away, unless they are disguised.",
     "linkDomainsEmpty": "None yet. You add sites right when you open a link.",
     "linkDomainsInactive": "Right now every link opens without asking.",
-    "forgetLinkDomain": "Remove {{domain}}"
+    "forgetLinkDomain": "Remove {{domain}}",
+    "rules": "Rules"
   },
   "theme": {
     "system": "System",
@@ -537,5 +538,92 @@
     "emptyBody_other": "{{count}} messages will be deleted forever. This can't be undone.",
     "emptied_one": "{{count}} message deleted forever",
     "emptied_other": "{{count}} messages deleted forever"
+  },
+  "rules": {
+    "title": "Mail rules",
+    "description": "Your server sorts arriving mail with these rules, from top to bottom, even while UwUMail is closed. The UwUMail app shows the same rules.",
+    "account": "Mailbox",
+    "loading": "Loading rules …",
+    "loadFailed": "The rules couldn't be loaded. {{reason}}",
+    "empty": "No rules yet. With a rule, mail from a sender can go straight into a folder, for example.",
+    "newRule": "New rule",
+    "editRule": "Edit {{name}}",
+    "deleteRule": "Delete {{name}}",
+    "enabled": "{{name}} on or off",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "saved": "Rule saved",
+    "deleted": "Rule “{{name}}” deleted",
+    "saveFailed": "The rules couldn't be saved. {{reason}}",
+    "invalid": "The server doesn't accept these rules: {{reason}}",
+    "valid": "The server accepts these rules.",
+    "inactive": "These rules are switched off on the server right now.",
+    "activate": "Switch on",
+    "name": "Name",
+    "namePlaceholder": "e.g. “Invoices”",
+    "when": "When a message arrives",
+    "matchAll": "All conditions apply",
+    "matchAny": "Any condition applies",
+    "everyMessage": "every message",
+    "value": "Text",
+    "addCondition": "Add condition",
+    "removeCondition": "Remove condition",
+    "then": "Then",
+    "addAction": "Add action",
+    "removeAction": "Remove action",
+    "chooseFolder": "Choose folder",
+    "forwardTo": "Forward to",
+    "forwardPlaceholder": "name@example.com",
+    "keepCopy": "Keep a copy here as well",
+    "stop": "Stop here",
+    "stopDesc": "Rules further down don't run for mail this rule caught.",
+    "and": "and",
+    "or": "or",
+    "field": {
+      "label": "Field",
+      "from": "Sender",
+      "to": "To",
+      "cc": "Cc",
+      "toOrCc": "To or Cc",
+      "subject": "Subject",
+      "listId": "Mailing list"
+    },
+    "op": {
+      "label": "Comparison",
+      "contains": "contains",
+      "notContains": "doesn't contain",
+      "is": "is",
+      "isNot": "is not",
+      "startsWith": "starts with",
+      "endsWith": "ends with"
+    },
+    "action": {
+      "move": "Move to folder",
+      "trash": "Move to trash",
+      "markRead": "Mark as read",
+      "flag": "Flag",
+      "forward": "Forward"
+    },
+    "summary": {
+      "move": "into {{folder}}",
+      "forward": "forward to {{address}}",
+      "stop": "stops"
+    },
+    "problem": {
+      "noName": "Give the rule a name.",
+      "emptyValue": "Enter the text to look for.",
+      "noActions": "Add at least one action.",
+      "noFolder": "Choose a folder.",
+      "badAddress": "Enter one complete address, like name@example.com.",
+      "tooMany": "One folder and one forward per rule."
+    },
+    "foreignTitle": "These rules were edited elsewhere",
+    "foreignBody": "Another program changed the rules script, so UwUMail shows it as text. You can edit it here, or replace it with rules you manage in UwUMail.",
+    "scriptLabel": "Sieve script",
+    "saveScript": "Save",
+    "check": "Check",
+    "replace": "Replace with UwUMail rules",
+    "replaceConfirm": "Replace the script",
+    "replaceBody": "The script above will be deleted and you start with an empty list of rules."
   }
 }

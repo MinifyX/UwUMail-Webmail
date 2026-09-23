@@ -3,7 +3,8 @@ import { isDangerous } from "@/lib/attachments";
 import { SendQueue } from "@/lib/sendQueue";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
-import { buildFolders, buildMessages, DEMO_ACCOUNTS, welcomeMessage } from "./demo-data";
+import { rulesToSieve } from "@/lib/sieveRules";
+import { buildFolders, buildMessages, DEMO_ACCOUNTS, demoRules, welcomeMessage } from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
 import type {
   BlockedSender,
@@ -50,6 +51,28 @@ function uniqueAddresses(addresses: Address[]): Address[] {
     seen.add(key);
     return true;
   });
+}
+
+/**
+ * A stand-in for the server's Sieve check: enough to try the text mode with. Braces and quotes
+ * must pair up, and the commands UwUMail's server doesn't run are refused like it would.
+ */
+function demoSieveProblem(script: string): string | null {
+  const code = script
+    .split(/\r?\n/)
+    .filter((line) => !line.trimStart().startsWith("#"))
+    .join("\n")
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""');
+  if (code.includes('"')) return "line ?: unterminated string";
+  let depth = 0;
+  for (const char of code) {
+    if (char === "{") depth += 1;
+    if (char === "}") depth -= 1;
+    if (depth < 0) break;
+  }
+  if (depth !== 0) return "unbalanced braces";
+  const unsupported = /\b(reject|ereject|vacation|notify|include)\b/.exec(code);
+  return unsupported ? `the command "${unsupported[1]}" is not supported here` : null;
 }
 
 /** In-memory engine with sample data. Used by `pnpm dev` in a normal browser. */
@@ -610,6 +633,38 @@ export class DemoBackend implements Backend {
     const labels = (email.split("@")[1] ?? "").toLowerCase().split(".").filter(Boolean);
     const domain = labels.slice(-2).join(".");
     return labels.length < 2 || DEMO_FREEMAIL.has(domain) ? null : domain;
+  }
+
+  /** Only the demo's JMAP mailbox plays a server with mail rules; its script starts with examples. */
+  private sieveScripts = new Map<string, { script: string; active: boolean }>([
+    [DEMO_ACCOUNTS[0]!.id, { script: rulesToSieve(demoRules(lang(), DEMO_ACCOUNTS[0]!.id)), active: true }],
+  ]);
+
+  private rulesAccount(accountId?: string) {
+    const account = accountId ? this.accounts.find((a) => a.id === accountId) : this.accounts[0];
+    if (account?.protocol !== "jmap") throw new BackendError("not_supported", "This mailbox has no mail rules.");
+    return account.id;
+  }
+
+  async mailRulesAvailable(accountId?: string) {
+    return this.accounts.some((a) => a.protocol === "jmap" && (!accountId || a.id === accountId));
+  }
+
+  async mailRules(accountId?: string) {
+    await wait(150);
+    return structuredClone(this.sieveScripts.get(this.rulesAccount(accountId)) ?? { script: null, active: false });
+  }
+
+  async validateMailRules(script: string) {
+    await wait(120);
+    return demoSieveProblem(script);
+  }
+
+  async saveMailRules(script: string, accountId?: string) {
+    await wait(200);
+    const problem = demoSieveProblem(script);
+    if (problem) throw new BackendError("invalid_input", problem);
+    this.sieveScripts.set(this.rulesAccount(accountId), { script, active: true });
   }
 
   async searchContacts(query: string): Promise<Contact[]> {
