@@ -11,6 +11,16 @@ import { useUi } from "@/state/ui";
 /** Drag data of mail list rows: the thread ids as JSON. */
 export const THREAD_DRAG_TYPE = "application/x-uwumail-threads";
 
+/** The thread ids of such drag data; none when it came from somewhere else and makes no sense. */
+export function draggedThreadIds(data: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(data || "[]");
+    return Array.isArray(parsed) && parsed.every((id) => typeof id === "string") ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 const ids = (messages: Message[]) => messages.map((message) => message.id);
 
 /** Opens "Move to…" for these messages; `onMoved` runs once they moved. */
