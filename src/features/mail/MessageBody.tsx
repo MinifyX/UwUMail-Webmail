@@ -18,12 +18,14 @@ function linkify(html: string) {
 
 /**
  * The engine already sanitizes HTML. We sanitize again here because the demo
- * backend and future addons can also produce message bodies.
+ * backend and future addons can also produce message bodies. `alsoForbid` drops more elements with
+ * their content.
  */
-function sanitize(html: string) {
+function sanitize(html: string, alsoForbid: string[] = []) {
   return DOMPurify.sanitize(html, {
     WHOLE_DOCUMENT: false,
     FORBID_TAGS: [
+      ...alsoForbid,
       "script",
       "iframe",
       "object",
@@ -50,11 +52,18 @@ export const ROOT_ID = "uwu-mail-root";
 const NOMINAL_VIEWPORT_HEIGHT = 900;
 
 /**
+ * A number with a height-based viewport unit. A match only starts where no number goes on before
+ * it, and a number can be split one way only, so a long run of digits costs linear time instead of
+ * freezing the tab (security-audit WM-1).
+ */
+const VIEWPORT_HEIGHT = /(?<![\d.])(-?(?:\d+(?:\.\d+)?|\.\d+))(dvh|svh|lvh|vh|vmin|vmax)\b/gi;
+
+/**
  * The frame is always as tall as the mail, so `100vh` inside it means "as tall
  * as myself" and grows forever. Height-based viewport units become fixed pixels.
  */
 export function fixViewportHeightUnits(html: string): string {
-  return html.replace(/(-?\d*\.?\d+)(dvh|svh|lvh|vh|vmin|vmax)\b/gi, (_, amount: string) => {
+  return html.replace(VIEWPORT_HEIGHT, (_, amount: string) => {
     const pixels = (parseFloat(amount) * NOMINAL_VIEWPORT_HEIGHT) / 100;
     return `${Math.round(pixels * 100) / 100}px`;
   });
@@ -138,8 +147,12 @@ export function buildPrintDocument(
   const escape = (text: string) => text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
   const people = (list: Message["to"]) =>
     escape(list.map((a) => (a.name ? `${a.name} <${a.email}>` : a.email)).join(", "));
+  // The mail shares this one document with the app's own trusted header. The sanitizer drops its
+  // <style> blocks -- only a selector there can reach the header's h1/table to hide it -- and the
+  // body sits in its own stacking/paint box so an absolutely-positioned element cannot overlay the
+  // header above it (security-audit W-3). Inline styles, which is what mail uses in practice, are kept.
   const pictures = withRemoteImages(
-    message.bodyHtml !== null ? sanitize(message.bodyHtml) : "",
+    message.bodyHtml !== null ? sanitize(message.bodyHtml, ["style"]) : "",
     allowRemote,
     imageProxy,
   );
@@ -147,11 +160,7 @@ export function buildPrintDocument(
     message.bodyHtml !== null
       ? replaceContentIds(pictures.html, inlineImages)
       : `<div style="white-space:pre-wrap">${textToHtml(message.bodyText ?? "")}</div>`;
-  // The mail shares this one document with the app's own trusted header. Strip its <style> blocks --
-  // only a selector there can reach the header's h1/table to hide it -- and contain the body in its
-  // own stacking/paint box so an absolutely-positioned element cannot overlay the header above it
-  // (security-audit W-3). Inline styles, which is what mail uses in practice, are kept.
-  const body = `<section style="position:relative;isolation:isolate;contain:content">${rendered.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")}</section>`;
+  const body = `<section style="position:relative;isolation:isolate;contain:content">${rendered}</section>`;
   const imageSources = `data: blob:${pictures.remote}`;
   const rows = [
     [labels.from, people([message.from])],

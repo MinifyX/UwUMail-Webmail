@@ -30,7 +30,7 @@ import { useUi } from "@/state/ui";
 import { PORTAL_URL } from "@/backend/server";
 import { AppSwitch } from "../shell/AppSwitch";
 import { buildFolderTree, countsUnread, type FolderNode } from "./folderTree";
-import { THREAD_DRAG_TYPE, useSelectionActions } from "./selection";
+import { draggedThreadIds, THREAD_DRAG_TYPE, useSelectionActions } from "./selection";
 import { folderIcon, sameView, UNIFIED_ICONS } from "./view";
 
 const UNIFIED_ROLES = ["inbox", "unread", "flagged", "drafts", "sent"] as const;
@@ -132,7 +132,8 @@ function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
           setDropping(false);
           if (!accepts(event)) return;
           event.preventDefault();
-          const threadIds = JSON.parse(event.dataTransfer.getData(THREAD_DRAG_TYPE) || "[]") as string[];
+          const threadIds = draggedThreadIds(event.dataTransfer.getData(THREAD_DRAG_TYPE));
+          if (threadIds.length === 0) return;
           void selection.messagesOf(threadIds).then((messages) => {
             const here = messages.filter((message) => message.accountId === account.id).map((message) => message.id);
             if (here.length === 0) {

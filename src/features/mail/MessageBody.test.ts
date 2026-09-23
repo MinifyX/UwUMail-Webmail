@@ -97,6 +97,20 @@ describe("frame height", () => {
     expect(buildDocument(message({ bodyHtml: '<div style="min-height:100vh">Hi</div>' }), false, "light")).toContain(
       "min-height:900px",
     );
+    expect(fixViewportHeightUnits("a:-.5dvh;b:1.5svh;c:50VMAX;d:.5vh;e:10vhx")).toBe(
+      "a:-4.5px;b:13.5px;c:450px;d:4.5px;e:10vhx",
+    );
+  });
+
+  // Regression (security-audit WM-1): a mail of nothing but digits froze the tab for minutes,
+  // because the old pattern could split a run of digits in many ways and tried all of them.
+  it("stays fast on a long run of digits", () => {
+    const digits = "1".repeat(200_000);
+    const started = performance.now();
+    expect(fixViewportHeightUnits(digits)).toBe(digits);
+    expect(fixViewportHeightUnits(`${digits}vh`)).toMatch(/px$/);
+    expect(fixViewportHeightUnits("1.".repeat(100_000))).toBe("1.".repeat(100_000));
+    expect(performance.now() - started).toBeLessThan(1000);
   });
 
   it("detects a layout that grows by the same step every frame", () => {
@@ -201,5 +215,23 @@ describe("buildPrintDocument", () => {
     expect(doc).not.toContain("display:none");
     expect(doc).not.toContain("<style>table.head");
     expect(doc).toContain("contain:content");
+  });
+
+  it("drops every kind of style block from the printed body, content and all", () => {
+    const doc = buildPrintDocument(
+      message({
+        bodyHtml:
+          '<STYLE media="print">h1{visibility:hidden}</STYLE><svg><style>table{opacity:0}</style></svg><p style="color:#333">Text</p>',
+      }),
+      false,
+      new Map(),
+      labels,
+      "14. September 2026",
+    );
+    expect(doc).not.toContain("visibility:hidden");
+    expect(doc).not.toContain("opacity:0");
+    expect(doc).toContain('<p style="color:#333">Text</p>');
+    // The page's own style block is still there.
+    expect(doc.match(/<style>/g)).toHaveLength(1);
   });
 });

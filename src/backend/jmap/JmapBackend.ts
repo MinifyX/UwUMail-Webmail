@@ -279,6 +279,22 @@ export function bareMessageId(id: string | undefined): string {
   return (id ?? "").trim().replace(/^</, "").replace(/>$/, "");
 }
 
+/**
+ * The local id of the mail a draft answers: the one in its conversation whose Message-ID its
+ * In-Reply-To names. Null when the draft answers nothing or that mail is gone.
+ */
+export function answeredMail(
+  draft: Pick<JmapEmail, "id" | "inReplyTo">,
+  conversation: Pick<JmapEmail, "id" | "messageId">[],
+): string | null {
+  const wanted = bareMessageId(draft.inReplyTo?.[0]);
+  if (!wanted) return null;
+  const found = conversation.find(
+    (email) => email.id !== draft.id && (email.messageId ?? []).some((id) => bareMessageId(id) === wanted),
+  );
+  return found?.id ?? null;
+}
+
 export class JmapBackend implements Backend {
   readonly kind = "jmap" as const;
 
@@ -1075,9 +1091,33 @@ export class JmapBackend implements Backend {
       // A draft without HTML is plain text, and plain text is not markup: the reader escapes it
       // the same way before it shows it.
       html: message.bodyHtml ?? (message.bodyText ? textToHtml(message.bodyText) : ""),
-      inReplyTo: null,
+      // Sending looks the answered mail up again, so a reopened reply keeps its threading.
+      inReplyTo: await this.answeredMailOf(email),
       attachments,
     };
+  }
+
+  /** The mail a saved draft answers, looked up in the draft's conversation. */
+  private async answeredMailOf(draft: JmapEmail): Promise<string | null> {
+    if (!draft.inReplyTo?.length || !draft.threadId) return null;
+    try {
+      const body = await call([
+        ["Thread/get", { accountId: this.accountId, ids: [draft.threadId] }, "t"],
+        [
+          "Email/get",
+          {
+            accountId: this.accountId,
+            "#ids": { resultOf: "t", name: "Thread/get", path: "/list/*/emailIds" },
+            properties: ["id", "messageId"],
+          },
+          "e",
+        ],
+      ]);
+      return answeredMail(draft, responseOf<GetResponse<JmapEmail>>(body, "e").list);
+    } catch {
+      // The draft itself is there; it only goes on as a new mail, as it did before.
+      return null;
+    }
   }
 
   async calendarsAvailable(): Promise<boolean> {
@@ -1482,11 +1522,17 @@ export class JmapBackend implements Backend {
 
   async saveAttachment(attachmentId: string): Promise<boolean> {
     const content = await this.getAttachment(attachmentId);
+    // This copy is made for the download alone; the viewer and the tiles fetch their own.
+    const release = () => URL.revokeObjectURL(content.url);
     if (content.dangerous) {
       const { confirmDangerousFile } = await import("@/state/dangerousFile");
-      if (!(await confirmDangerousFile(content.filename))) return false;
+      if (!(await confirmDangerousFile(content.filename))) {
+        release();
+        return false;
+      }
     }
     offerDownload(content.url, content.filename);
+    setTimeout(release, 60_000);
     return true;
   }
 

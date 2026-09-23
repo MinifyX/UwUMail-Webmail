@@ -11,7 +11,13 @@
 export type ImageProxy = (url: string) => string;
 
 const REMOTE = /^\s*https?:\/\//i;
-const CSS_URL = /url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s"')]*))\s*\)/gi;
+/**
+ * `url(...)` with a quoted or bare address. The spaces around it are taken whole (a lookahead
+ * captures them and nothing ever gives a space back), and a bare address stops at the next `(`,
+ * which it can't contain anyway. Otherwise a long run of spaces or of `url(url(…` makes this
+ * backtrack for minutes and freezes the tab.
+ */
+const CSS_URL = /url\((?=(\s*))\1(?:"([^"]*)"|'([^']*)'|([^\s"'()]*))(?=(\s*))\5\)/gi;
 
 function swap(url: string, proxy: ImageProxy): string {
   return REMOTE.test(url) ? proxy(url.trim()) : url;
@@ -19,7 +25,7 @@ function swap(url: string, proxy: ImageProxy): string {
 
 /** Every `url(...)` in a piece of CSS that points at the web, through the proxy. */
 export function proxyCss(css: string, proxy: ImageProxy): string {
-  return css.replace(CSS_URL, (whole, double?: string, single?: string, bare?: string) => {
+  return css.replace(CSS_URL, (whole, _space: string, double?: string, single?: string, bare?: string) => {
     const url = double ?? single ?? bare ?? "";
     // The proxy's address is percent-encoded throughout, so it needs no escaping inside quotes.
     return REMOTE.test(url) ? `url("${proxy(url.trim())}")` : whole;

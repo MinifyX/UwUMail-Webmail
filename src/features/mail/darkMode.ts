@@ -134,9 +134,12 @@ export function darkenBorder(color: Rgba): Rgba {
 
 // ------------------------------------------------------------- detection
 
-/** Whether the mail's own CSS brings dark mode styles. */
+/**
+ * Whether the mail's own CSS brings dark mode styles. A `color-scheme` value is a list of
+ * keywords; reading it word by word keeps this linear on any mail (security-audit WM-1).
+ */
 export function declaresDarkMode(html: string): boolean {
-  return /prefers-color-scheme\s*:\s*dark/i.test(html) || /color-scheme\s*:[^;}"]*\bdark\b/i.test(html);
+  return /prefers-color-scheme\s*:\s*dark/i.test(html) || /color-scheme\s*:\s*(?:[\w-]+\s+)*?dark\b/i.test(html);
 }
 
 /**
