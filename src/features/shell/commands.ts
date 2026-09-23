@@ -1,6 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Archive,
+  CalendarDays,
+  CalendarPlus,
   CheckSquare,
   FolderInput,
   Forward,
@@ -28,6 +30,7 @@ import { announceMove, runLastUndo } from "@/state/undo";
 import { useUi } from "@/state/ui";
 import type { QueryClient } from "@tanstack/react-query";
 import type { ThreadDetail } from "@/backend/types";
+import { startNewEvent } from "../calendar/CalendarSidebar";
 import { requestMove } from "../mail/selection";
 import { SEARCH_INPUT_ID } from "../mail/ThreadList";
 
@@ -60,6 +63,7 @@ async function afterChange(client: QueryClient) {
 export function buildCommands(
   client: QueryClient,
   t: (key: string, options?: Record<string, unknown>) => string,
+  { calendar = false }: { calendar?: boolean } = {},
 ): Command[] {
   const ui = useUi.getState();
   const settings = useSettings.getState();
@@ -237,6 +241,26 @@ export function buildCommands(
       keys: ["g f"],
       run: () => ui.setView({ kind: "unified", role: "flagged" }),
     },
+    ...(calendar
+      ? [
+          {
+            id: "goCalendar",
+            title: t("shortcuts.goCalendar"),
+            icon: CalendarDays,
+            keys: ["g c"],
+            run: () => ui.setSection("calendar"),
+          },
+          {
+            id: "newEvent",
+            title: t("calendar.newEvent"),
+            icon: CalendarPlus,
+            run: () => {
+              ui.setSection("calendar");
+              startNewEvent();
+            },
+          },
+        ]
+      : []),
     {
       id: "tone",
       title: `${t("settings.tone")}: ${i18n.t(`tone.${settings.tone === "playful" ? "neutral" : "playful"}.name`)}`,

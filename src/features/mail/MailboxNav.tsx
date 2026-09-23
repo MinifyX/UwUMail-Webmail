@@ -28,6 +28,7 @@ import { toast } from "@/state/toasts";
 import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
 import { PORTAL_URL } from "@/backend/server";
+import { AppSwitch } from "../shell/AppSwitch";
 import { buildFolderTree, countsUnread, type FolderNode } from "./folderTree";
 import { THREAD_DRAG_TYPE, useSelectionActions } from "./selection";
 import { folderIcon, sameView, UNIFIED_ICONS } from "./view";
@@ -335,6 +336,8 @@ export function MailboxNav({ className }: { className?: string }) {
       <div className="flex items-center justify-between px-2">
         <Wordmark className="text-[19px]" hop={hops} />
       </div>
+
+      <AppSwitch />
 
       <Button
         variant="primary"
