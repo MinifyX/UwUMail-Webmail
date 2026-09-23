@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Message } from "@/backend/types";
 import { textToHtml } from "@/lib/format";
 import { replaceContentIds } from "@/lib/inlineImages";
+import { proxyRemoteImages, type ImageProxy } from "@/lib/remoteImages";
 import type { MailAppearance } from "@/state/settings";
 import { hideLinkStatus, watchLinks } from "./linkEvents";
 import { darkenImages, type RemoteImageLoader } from "./darkImages";
@@ -63,21 +64,34 @@ export function fixViewportHeightUnits(html: string): string {
  * `dark` for plain text means app colors; for HTML it means the mail's own
  * dark mode styles (only used when the mail declares them).
  */
+/**
+ * The sanitized mail with its remote pictures sent through the server when they may load and the
+ * server can fetch them, and the image sources the frame's CSP allows for that.
+ */
+function withRemoteImages(html: string, allowRemote: boolean, imageProxy: ImageProxy | null | undefined) {
+  if (!allowRemote) return { html, remote: "" };
+  // Our own origin only: whatever was not sent through the server can't reach its sender.
+  if (imageProxy) return { html: proxyRemoteImages(html, imageProxy), remote: " 'self'" };
+  return { html, remote: " https: http:" };
+}
+
 export function buildDocument(
   message: Message,
   allowRemote: boolean,
   variant: "light" | "dark",
   inlineImages: ReadonlyMap<string, string> = new Map(),
+  imageProxy?: ImageProxy | null,
 ) {
   const isHtml = message.bodyHtml !== null;
   const dark = variant === "dark";
+  const pictures = withRemoteImages(isHtml ? sanitize(message.bodyHtml!) : "", allowRemote, imageProxy);
   const body = isHtml
     ? fixViewportHeightUnits(
         // cid: links survive the sanitizer, our own blob URLs wouldn't: swap them afterwards.
-        forceColorSchemeQueries(replaceContentIds(sanitize(message.bodyHtml!), inlineImages), dark),
+        forceColorSchemeQueries(replaceContentIds(pictures.html, inlineImages), dark),
       )
     : linkify(textToHtml(message.bodyText ?? ""));
-  const imageSources = allowRemote ? "data: cid: blob: https: http:" : "data: cid: blob:";
+  const imageSources = `data: cid: blob:${pictures.remote}`;
   const csp = `default-src 'none'; img-src ${imageSources}; style-src 'unsafe-inline'; font-src data:; media-src data:`;
   // The frame never scrolls itself (the reader around it does), so html/body
   // must not stretch to the frame height. Otherwise measuring and resizing
@@ -119,20 +133,26 @@ export function buildPrintDocument(
   inlineImages: ReadonlyMap<string, string>,
   labels: PrintLabels,
   date: string,
+  imageProxy?: ImageProxy | null,
 ) {
   const escape = (text: string) => text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
   const people = (list: Message["to"]) =>
     escape(list.map((a) => (a.name ? `${a.name} <${a.email}>` : a.email)).join(", "));
+  const pictures = withRemoteImages(
+    message.bodyHtml !== null ? sanitize(message.bodyHtml) : "",
+    allowRemote,
+    imageProxy,
+  );
   const rendered =
     message.bodyHtml !== null
-      ? replaceContentIds(sanitize(message.bodyHtml), inlineImages)
+      ? replaceContentIds(pictures.html, inlineImages)
       : `<div style="white-space:pre-wrap">${textToHtml(message.bodyText ?? "")}</div>`;
   // The mail shares this one document with the app's own trusted header. Strip its <style> blocks --
   // only a selector there can reach the header's h1/table to hide it -- and contain the body in its
   // own stacking/paint box so an absolutely-positioned element cannot overlay the header above it
   // (security-audit W-3). Inline styles, which is what mail uses in practice, are kept.
   const body = `<section style="position:relative;isolation:isolate;contain:content">${rendered.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")}</section>`;
-  const imageSources = allowRemote ? "data: blob: https: http:" : "data: blob:";
+  const imageSources = `data: blob:${pictures.remote}`;
   const rows = [
     [labels.from, people([message.from])],
     [labels.to, people(message.to)],
@@ -202,6 +222,8 @@ interface MessageBodyProps {
   darkImages?: boolean;
   /** Reads remote images for that, where the page itself may not. */
   loadRemoteImage?: RemoteImageLoader;
+  /** Sends allowed remote pictures through the server, so their senders never see the reader. */
+  imageProxy?: ImageProxy | null;
 }
 
 export function MessageBody({
@@ -212,12 +234,13 @@ export function MessageBody({
   inlineImages,
   darkImages = false,
   loadRemoteImage,
+  imageProxy,
 }: MessageBodyProps) {
   const [height, setHeight] = useState(120);
   const variant = appearance.kind === "dark" ? "dark" : "light";
   const html = useMemo(
-    () => buildDocument(message, allowRemote, variant, inlineImages),
-    [message, allowRemote, variant, inlineImages],
+    () => buildDocument(message, allowRemote, variant, inlineImages, imageProxy),
+    [message, allowRemote, variant, inlineImages, imageProxy],
   );
   // Remount the frame whenever the look changes: recoloring happens in the
   // loaded document, so an unchanged srcdoc alone wouldn't undo it. Embedded
