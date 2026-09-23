@@ -312,6 +312,7 @@ function ActionRow({
             />
             {t("rules.keepCopy")}
           </label>
+          <p className="text-[12px] text-muted">{t("rules.forwardHint")}</p>
         </div>
       )}
       {problem && (

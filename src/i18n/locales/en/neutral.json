@@ -588,6 +588,7 @@
     "forwardTo": "Forward to",
     "forwardPlaceholder": "name@example.com",
     "keepCopy": "Keep a copy here as well",
+    "forwardHint": "Works for addresses on this server and for addresses you confirmed under forwarding in the portal. Otherwise the mail simply stays here.",
     "stop": "Stop here",
     "stopDesc": "Rules further down don't run for mail this rule caught.",
     "and": "and",

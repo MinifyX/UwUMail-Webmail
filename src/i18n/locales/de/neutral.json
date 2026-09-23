@@ -588,6 +588,7 @@
     "forwardTo": "Weiterleiten an",
     "forwardPlaceholder": "name@example.org",
     "keepCopy": "Auch hier eine Kopie behalten",
+    "forwardHint": "Klappt an Adressen auf diesem Server und an Adressen, die du im Portal unter Weiterleitung bestätigt hast. Sonst bleibt die Mail einfach hier.",
     "stop": "Hier aufhören",
     "stopDesc": "Weiter unten stehende Regeln laufen für Mails, die diese Regel erwischt hat, nicht mehr.",
     "and": "und",
