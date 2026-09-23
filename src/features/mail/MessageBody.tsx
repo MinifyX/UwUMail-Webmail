@@ -61,10 +61,6 @@ export function fixViewportHeightUnits(html: string): string {
 }
 
 /**
- * `dark` for plain text means app colors; for HTML it means the mail's own
- * dark mode styles (only used when the mail declares them).
- */
-/**
  * The sanitized mail with its remote pictures sent through the server when they may load and the
  * server can fetch them, and the image sources the frame's CSP allows for that.
  */
@@ -75,6 +71,10 @@ function withRemoteImages(html: string, allowRemote: boolean, imageProxy: ImageP
   return { html, remote: " https: http:" };
 }
 
+/**
+ * `dark` for plain text means app colors; for HTML it means the mail's own
+ * dark mode styles (only used when the mail declares them).
+ */
 export function buildDocument(
   message: Message,
   allowRemote: boolean,
