@@ -581,3 +581,177 @@ the portal; the rules list shows every forward in its summary.
 - **A trusted middle click or drag** (W-23) — the test browser can't send one.
 - **A real login, real server, real mail and real calendars** — as before; the server's side of
   rules and calendars was read, not run.
+
+## Addendum — 23 September 2026: mail body performance, dark-mode pictures, image proxy and contacts
+
+A fourth pass, first over d48757e (dark-mode picture recolouring, `darkImages.ts`,
+`imageRecolor.ts` and its worker, and the demo banner), then re-checked against c92fc3b, which added
+the server's image proxy (`src/lib/remoteImages.ts`, `imageProxy` and `fetchMailImage` in
+`JmapBackend`) and contacts (`src/features/contacts`, `src/backend/jmap/contacts.ts`). The new code
+got a focused read for the same classes of issue. This pass numbers its findings WM-1 to WM-5. Done
+with Claude, like the passes above.
+
+The threat model is unchanged. New input is contact data (from the server, or from a vCard someone
+attached to a mail) and the CSS of a mail, which the image proxy now rewrites on the app's page.
+
+### Summary
+
+| ID   | Severity | Finding                                                                                  | Status           |
+| ---- | -------- | ---------------------------------------------------------------------------------------- | ---------------- |
+| WM-1 | Medium   | One crafted mail freezes the webmail tab (regex backtracking on the mail body)           | fixed in 9db330d |
+| WM-5 | Medium   | Once pictures are allowed, crafted CSS freezes the tab while the image proxy rewrites it | fixed in 84a8f88 |
+| WM-2 | Low      | Dark-mode recolouring re-requests allowed remote pictures with CORS, naming the origin   | listed           |
+| WM-3 | Low      | Links in a mail are not guarded until the frame's `load`, which a sender can hold open   | listed           |
+| WM-4 | Low      | The dangerous-attachment list misses common executable types                             | listed           |
+
+Nothing Critical or High. Dark-mode recolouring does not load remote pictures before the reader
+allows them: it only picks up an image that already loaded in the frame, whose policy blocks remote
+pictures until then. W-10 was only half fixed; its second half is fixed now (see below).
+
+### WM-1 · Medium · One crafted mail freezes the webmail tab (regex backtracking on the mail body)
+
+`src/features/mail/MessageBody.tsx` (`fixViewportHeightUnits`, run by `buildDocument` for every HTML
+mail shown) and `src/features/mail/darkMode.ts` (`declaresDarkMode`, run by `resolveAppearance` on
+every render of a mail in the dark app theme)
+
+- **CVSS 3.1:** `AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:L` (4.3, Medium)
+- **Attacker & preconditions:** anyone who sends the reader a mail. The reader opens it, or the
+  conversation it was sent into.
+- **Impact:** the viewport-unit pattern `(-?\d*\.?\d+)(vh|…)` can split a run of digits in many
+  ways and tries all of them before it gives up, so a body of 10 000 digits takes minutes (cubic
+  growth: 2 000 digits took 7 s in V8). The dark-mode pattern read from every `color-scheme:` to the
+  next `;`, `}` or `"`, which is quadratic over many such declarations. Both run on the app's main
+  thread before the sandboxed frame exists. The tab hangs each time the mail or its conversation is
+  opened; anything typed since the composer's last local copy is lost when the tab is killed.
+  Nothing leaks.
+- **Evidence:** the patterns from the source, timed in Node (V8), and the same inputs against the
+  fixed patterns.
+- **Fix:** a viewport number now only starts where no number goes on before it (`(?<![\d.])`) and
+  can be split one way only (`\d+(?:\.\d+)?|\.\d+`). The `color-scheme` value is read as what it is,
+  a list of keywords, word by word. Both are linear. The appearance is worked out once per mail and
+  theme instead of on every render.
+- **Regression test:** `src/features/mail/MessageBody.test.ts` (200 000 digits, with and without a
+  unit, and `1.` repeated) and `src/features/mail/darkMode.test.ts` (`color-scheme:` 100 000 times,
+  and one declaration of 100 000 words) must finish within a second; the unit and detection cases
+  keep their results.
+
+### WM-5 · Medium · Once pictures are allowed, crafted CSS freezes the tab while the image proxy rewrites it
+
+`src/lib/remoteImages.ts` (`CSS_URL`, used by `proxyCss` for every `style` attribute and `<style>`
+block of a mail whose remote pictures may load, when the server offers the image proxy)
+
+- **CVSS 3.1:** `AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:L` (4.3, Medium)
+- **Attacker & preconditions:** anyone who sends the reader a mail whose pictures load — the reader
+  pressed "load pictures", trusts the sender, or loads them always. The server's cleaner keeps
+  `<style>` and `style`, so the CSS arrives as written.
+- **Impact:** the same as WM-1. `url(` followed by a long run of spaces made the two space runs
+  around the address trade characters back and forth (quadratic in the run), and `url(url(url(…`
+  let every bare address read on to the end (quadratic in the style's length): 8 000 repetitions
+  took a second, a few hundred kilobytes minutes.
+- **Evidence:** timed in Node (V8) with the pattern from the source, then with the fixed one
+  (1 MB of either input in under 60 ms).
+- **Fix:** the spaces around the address are taken whole (a lookahead captures them, so none is
+  ever given back), and a bare address stops at `(`, which CSS does not allow in an unquoted
+  address anyway. What the proxy misses stays blocked by the frame's policy, as before.
+- **Regression test:** `src/lib/remoteImages.test.ts` — `url(` 50 000 times, `url(` with 200 000
+  spaces and `url("` 50 000 times finish within a second and come back unchanged; spaces inside
+  `url( … )` are still handled.
+
+### Low findings
+
+- **WM-2 · Dark-mode recolouring re-requests allowed remote pictures with CORS, naming the
+  origin** — `src/features/mail/darkImages.ts` (`readable`, `decode`). CVSS
+  `AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N` (3.1). Once pictures are allowed and the mail is shown dark,
+  a picture the page cannot read otherwise is loaded a second time from the app page with
+  `crossOrigin = "anonymous"`, and a CORS request always carries `Origin: <webmail host>`. That
+  tells the picture's host the webmail's host name and that dark mode is on. Since c92fc3b this is
+  mostly moot: with the server's image proxy, pictures load from the webmail's own origin and are
+  read through it, so a second request goes to our own server. It remains with a server that has
+  no proxy. _Fix:_ drop the CORS fallback for `http(s)` pictures.
+- **WM-3 · Links in a mail are not guarded until the frame's `load`, which a sender can hold
+  open** — `src/features/mail/MessageBody.tsx` (`handleLoad`), `linkEvents.ts`. CVSS
+  `AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N` (3.1). The click, middle-click, drag and context-menu
+  guards (W-8, W-17, W-18) are attached in `onLoad`, which a `srcdoc` frame fires only after every
+  picture has finished. A picture that never finishes loading keeps the guards off; dragging a link
+  to the tab bar then opens it without the link question. Needs pictures allowed. _Fix:_ keep the
+  frame inert (`pointer-events: none`, `tabIndex={-1}`) until the guards are in place.
+- **WM-4 · The dangerous-attachment list misses common executable types** —
+  `src/lib/attachments.ts` (`DANGEROUS`). CVSS `AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:L/A:N` (4.2 by the
+  numbers, Low in practice: the reader has to save and open the file). Missing:
+  `py pyw pyz pyzw pyc`, `mdb mde accde ade adp`, `cab msu`, `ws vb vbp shb shs`, `xbap website`,
+  and `xml xht` (XML in the XHTML namespace renders with script from disk). They are saved without
+  the "can run programs" question. _Fix:_ add them here and in the engine's list.
+
+### W-10, completed
+
+`JmapBackend.openDraft` restored Bcc but always returned `inReplyTo: null`, so a reply reopened from
+the Drafts folder opened as a new mail and was saved and sent without `In-Reply-To` and
+`References`. It now finds the mail the draft's `In-Reply-To` names among the draft's conversation
+and hands back its id; sending looks up its Message-ID again as for any reply. When that mail is
+gone, the draft goes on as a new mail, as before. Fixed in 8f75d05, tested by `answeredMail` in
+`src/backend/jmap/JmapBackend.test.ts`. This also makes the `"reply"` branch of
+`openDraftMessage` reachable again.
+
+### Cleanups
+
+- **Embedded pictures** (e02d180): `useInlineImages` fetched the blob URL `getAttachment` had just
+  made, copied it into a second one and never released the first. It now uses the first. Fetching a
+  `blob:` URL is also refused under the server's policy (`connect-src 'self'`), so this should also
+  make embedded pictures show on a real server; that was not checked in a browser.
+- **Saved attachments** (e3a7837): the download's blob URL is released after a minute, like a saved
+  mail's, or at once when the "can run programs" question is declined.
+- **Print** (fe01c9b): the mail's `<style>` blocks are dropped by the sanitizer, content and all,
+  instead of by a regex over the serialized body (W-3 holds; a test covers HTML and SVG style
+  blocks).
+- **Folder drops** (3a6b5ee): drag data of the thread type is read with a guard; anything but an
+  array of strings is ignored instead of throwing.
+
+Not done: releasing the viewer's and the tiles' attachment URLs when the query cache drops them.
+The demo backend hands the same URL out again for the same attachment, so it needs more than a
+cache listener, and it was not worth it without a browser to check playback and previews.
+
+### What held up
+
+- **Image proxy.** Pictures are rewritten in a `<template>`, where nothing loads, and only in
+  `src`, `srcset`, `background`, `poster`, SVG `<image>` addresses and CSS `url()`. The frame's
+  policy then allows pictures from the webmail's own origin only, so a spelling the rewrite misses
+  (`image-set()`, an escaped URL, an odd `srcset`) stays blocked instead of reaching its sender.
+  Before pictures are allowed the policy has no origin at all, so a relative address can't load
+  either. Proxy addresses are percent-encoded throughout and put into quoted `url("…")`.
+- **Reading pictures for dark mode.** `fetchMailImage` only fetches addresses on the page's own
+  origin or builds the proxy's address; the result is decoded as a picture and never shown as text.
+- **Contacts.** Card text is rendered as React text; a phone link keeps only digits and `+`; a card
+  picture is used only as a `data:image/` address, so a card can't make the page load anything from
+  elsewhere; a vCard from a mail only fills the editor, and nothing is saved until the reader saves.
+  Patch paths are built from keys of the card the server sent, not from the vCard.
+- **Recolour worker.** Linear, and the pixel limit is checked before any canvas work.
+- The other patterns that run on mail content (`linkify`, the calendar's link pattern, `cid:`
+  references, `forceColorSchemeQueries`) were checked for the same backtracking and are linear.
+
+### Also noticed (not security)
+
+- The text, CSV, JSON, calendar, contact and PDF previews `fetch()` the attachment's `blob:` URL,
+  which the server's page policy (`connect-src 'self'`) refuses. On a real server they would then
+  never render; the demo has no policy and shows them. Needs a check in a browser; the fix would be
+  to read the `Blob` itself instead of its URL.
+- `fixViewportHeightUnits` also rewrites `100vh` written in the mail's text, not only in its CSS.
+
+### Status of the earlier findings
+
+W-1 to W-9 and W-11 to W-22 hold as listed in the check above. W-10 is now complete. W-23 to W-27
+are still open as listed; W-28 was fixed in 53df50e.
+
+### What was run
+
+- `pnpm format:check`, `typecheck`, `lint`, `test` (50 files, 344 tests, 28 skipped for the live
+  server), `pnpm build` and `pnpm audit --prod` (no known vulnerabilities). One calendar flow test
+  timed out once while the machine was at full load and passed on its own.
+- The old and new patterns of WM-1 and WM-5 timed in Node 24 (V8) with the adversarial inputs
+  above.
+- Code reading of the server's page policy and HTML cleaner for WM-5 and the preview note.
+
+### What could not be tested, and why
+
+- **The freeze in a browser.** The patterns were timed in V8, the engine of the browsers most
+  readers use; a browser with a crafted mail was not run.
+- **Embedded pictures and previews on a real server** — no server was run in this pass.
