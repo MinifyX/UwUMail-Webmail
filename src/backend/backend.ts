@@ -1,11 +1,14 @@
 import type {
   Account,
+  AddressBookInfo,
   AttachmentContent,
   BackendEvent,
   BlockedSender,
   CalendarInfo,
   CalendarOccurrence,
   Contact,
+  ContactInput,
+  ContactRecord,
   DraftContent,
   DraftSaveResult,
   EventDeleteScope,
@@ -145,6 +148,22 @@ export interface Backend {
   /** The server's complaint about a script, or null when it would take it. */
   validateMailRules(script: string, accountId?: string): Promise<string | null>;
 
+  /** Whether the server keeps address books (JMAP Contacts); without it the contacts stay hidden. */
+  contactsAvailable(): Promise<boolean>;
+  addressBooks(): Promise<AddressBookInfo[]>;
+  createAddressBook(name: string): Promise<AddressBookInfo>;
+  renameAddressBook(id: string, name: string): Promise<void>;
+  /** Removes the address book with its contacts. */
+  deleteAddressBook(id: string): Promise<void>;
+  setDefaultAddressBook(id: string): Promise<void>;
+  /** Every contact of every address book. */
+  contacts(): Promise<ContactRecord[]>;
+  /** Returns the new contact's id. */
+  createContact(input: ContactInput): Promise<string>;
+  /** Changes what the editor shows and leaves the rest of the card as it is. */
+  updateContact(id: string, input: ContactInput): Promise<void>;
+  deleteContact(id: string): Promise<void>;
+  /** Address suggestions for the composer from the address books; the demo adds its mail history. */
   searchContacts(query: string): Promise<Contact[]>;
 
   /** Downloads the attachment and hands out a blob URL for it. */

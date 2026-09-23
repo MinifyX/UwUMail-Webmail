@@ -16,12 +16,15 @@ import { unsubscribeMail } from "@/lib/unsubscribe";
 import { BackendError, type Backend } from "../backend";
 import type {
   Account,
+  AddressBookInfo,
   AttachmentContent,
   BackendEvent,
   BlockedSender,
   CalendarInfo,
   CalendarOccurrence,
   Contact,
+  ContactInput,
+  ContactRecord,
   DraftContent,
   DraftSaveResult,
   EventDeleteScope,
@@ -53,7 +56,18 @@ import {
   type JmapCalendarEvent,
 } from "./calendar";
 import {
+  CARD_PROPERTIES,
+  cardFromInput,
+  contactSuggestions,
+  patchFromInput,
+  toAddressBookInfo,
+  toContactRecord,
+  type JmapAddressBook,
+  type JmapCard,
+} from "./contacts";
+import {
   CALENDARS,
+  CONTACTS,
   CORE,
   MAIL,
   SENDERS,
@@ -215,6 +229,23 @@ function throwOnError(response: SetResponse): void {
   if (error) throw error;
 }
 
+/** ContactCard/set refusals the contact editor shows as they are: they name what to fix. */
+function throwOnContactError(response: SetResponse): void {
+  const problem = Object.values(response.notCreated ?? {})[0] ?? Object.values(response.notUpdated ?? {})[0];
+  if (!problem) return;
+  if (problem.type === "tooLarge") throw new BackendError("invalid_input", "This contact is too large to store.");
+  if (problem.type === "invalidProperties") {
+    throw new BackendError("invalid_input", problem.description ?? "The server didn't take this contact.");
+  }
+  throwOnError(response);
+}
+
+/** Cards per ContactCard/get, the server's maxObjectsInGet. */
+const CARDS_PER_GET = 500;
+/** Cards a composer search looks at, and the suggestions it shows. */
+const SUGGESTION_CARDS = 20;
+const SUGGESTIONS = 8;
+
 /** Mailbox/set refusals the folder dialogs explain themselves. */
 function throwOnMailboxError(response: SetResponse): void {
   const problem =
@@ -285,6 +316,7 @@ export class JmapBackend implements Backend {
       if (changed.Mailbox) void this.loadFolders();
       if (changed.Email || changed.Mailbox) this.emit({ type: "mail:changed", accountId: this.accountId });
       if (changed.Calendar || changed.CalendarEvent) this.emit({ type: "calendar:changed" });
+      if (changed.AddressBook || changed.ContactCard) this.emit({ type: "contacts:changed" });
       if (changed.UserSettings) {
         this.emit({ type: "settings:changed", accountId: this.accountId, state: changed.UserSettings });
       }
@@ -1266,9 +1298,149 @@ export class JmapBackend implements Backend {
     }
   }
 
-  /** Address suggestions come from the server in 0.5.1. */
-  async searchContacts(): Promise<Contact[]> {
-    return [];
+  async contactsAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(CONTACTS);
+  }
+
+  private contactCall<T>(name: string, args: Record<string, unknown>): Promise<T> {
+    return one<T>(name, args, [CORE, CONTACTS]);
+  }
+
+  async addressBooks(): Promise<AddressBookInfo[]> {
+    await this.start();
+    const response = await this.contactCall<GetResponse<JmapAddressBook>>("AddressBook/get", { ids: null });
+    return response.list
+      .map((book) => toAddressBookInfo(book, this.accountId))
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+  }
+
+  async createAddressBook(name: string): Promise<AddressBookInfo> {
+    await this.start();
+    const response = await this.contactCall<SetResponse>("AddressBook/set", { create: { new: { name } } });
+    throwOnError(response);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't create the address book.");
+    this.emit({ type: "contacts:changed" });
+    return { id, accountId: this.accountId, name, isDefault: false, sortOrder: 0, mayDelete: true };
+  }
+
+  async renameAddressBook(id: string, name: string): Promise<void> {
+    await this.start();
+    throwOnError(await this.contactCall<SetResponse>("AddressBook/set", { update: { [id]: { name } } }));
+    this.emit({ type: "contacts:changed" });
+  }
+
+  async deleteAddressBook(id: string): Promise<void> {
+    await this.start();
+    throwOnError(
+      await this.contactCall<SetResponse>("AddressBook/set", { destroy: [id], onDestroyRemoveContents: true }),
+    );
+    this.emit({ type: "contacts:changed" });
+  }
+
+  async setDefaultAddressBook(id: string): Promise<void> {
+    await this.start();
+    throwOnError(
+      await this.contactCall<SetResponse>("AddressBook/set", { update: { [id]: {} }, onSuccessSetIsDefault: id }),
+    );
+    this.emit({ type: "contacts:changed" });
+  }
+
+  /** The ids first, then the cards in pages the server takes, all in one more request. */
+  async contacts(): Promise<ContactRecord[]> {
+    await this.start();
+    const query = await this.contactCall<{ ids: string[] }>("ContactCard/query", {});
+    if (query.ids.length === 0) return [];
+    const pages: string[][] = [];
+    for (let start = 0; start < query.ids.length; start += CARDS_PER_GET) {
+      pages.push(query.ids.slice(start, start + CARDS_PER_GET));
+    }
+    const body = await call(
+      pages.map((ids, index) => [
+        "ContactCard/get",
+        { accountId: this.accountId, ids, properties: CARD_PROPERTIES },
+        `p${index}`,
+      ]),
+      [CORE, CONTACTS],
+    );
+    return pages.flatMap((_, index) =>
+      responseOf<GetResponse<JmapCard>>(body, `p${index}`).list.map((card) => toContactRecord(card, this.accountId)),
+    );
+  }
+
+  async createContact(input: ContactInput): Promise<string> {
+    await this.start();
+    const response = await this.contactCall<SetResponse>("ContactCard/set", {
+      create: { new: cardFromInput(input) },
+    });
+    throwOnContactError(response);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't save the contact.");
+    this.emit({ type: "contacts:changed" });
+    return id;
+  }
+
+  /** Reads the card as it is now, so the patch only touches what the editor changed. */
+  async updateContact(id: string, input: ContactInput): Promise<void> {
+    await this.start();
+    const current = await this.contactCall<GetResponse<JmapCard>>("ContactCard/get", {
+      ids: [id],
+      properties: CARD_PROPERTIES,
+    });
+    const card = current.list[0];
+    if (!card) throw new BackendError("not_found", "This contact is gone.");
+    const patch = patchFromInput(card, input);
+    if (Object.keys(patch).length === 0) return;
+    throwOnContactError(await this.contactCall<SetResponse>("ContactCard/set", { update: { [id]: patch } }));
+    this.emit({ type: "contacts:changed" });
+  }
+
+  async deleteContact(id: string): Promise<void> {
+    await this.start();
+    throwOnError(await this.contactCall<SetResponse>("ContactCard/set", { destroy: [id] }));
+    this.emit({ type: "contacts:changed" });
+  }
+
+  /** The address books' matches by name, address or company, fetched in the same request. */
+  async searchContacts(query: string): Promise<Contact[]> {
+    const wanted = query.trim();
+    if (!wanted) return [];
+    await this.start();
+    if (!supports(CONTACTS)) return [];
+    const accountId = this.accountId;
+    const body = await call(
+      [
+        [
+          "ContactCard/query",
+          {
+            accountId,
+            filter: {
+              operator: "OR",
+              conditions: [{ name: wanted }, { email: wanted }, { organization: wanted }],
+            },
+            limit: SUGGESTION_CARDS,
+          },
+          "q",
+        ],
+        [
+          "ContactCard/get",
+          {
+            accountId,
+            "#ids": { resultOf: "q", name: "ContactCard/query", path: "/ids" },
+            properties: ["id", "name", "emails", "organizations"],
+          },
+          "g",
+        ],
+      ],
+      [CORE, CONTACTS],
+    );
+    const lower = wanted.toLowerCase();
+    return contactSuggestions(responseOf<GetResponse<JmapCard>>(body, "g").list, accountId)
+      .sort(
+        (a, b) => Number(!a.email.toLowerCase().startsWith(lower)) - Number(!b.email.toLowerCase().startsWith(lower)),
+      )
+      .slice(0, SUGGESTIONS);
   }
 
   private splitAttachmentId(attachmentId: string): { emailId: string; blobId: string } {

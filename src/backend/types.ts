@@ -378,6 +378,81 @@ export interface EventInput {
 
 export type EventDeleteScope = "occurrence" | "series";
 
+/** An address book of the account (JMAP Contacts, a CardDAV address book on the server). */
+export interface AddressBookInfo {
+  id: string;
+  accountId: string;
+  name: string;
+  isDefault: boolean;
+  sortOrder: number;
+  mayDelete: boolean;
+}
+
+/** Where an email address, phone number or postal address belongs. */
+export type ContactKind = "home" | "work" | "other";
+
+/** One entry of a contact; `id` is the entry's key in the card, empty for a new one. */
+export interface ContactEmail {
+  id: string;
+  address: string;
+  kind: ContactKind;
+}
+
+export interface ContactPhone {
+  id: string;
+  number: string;
+  kind: ContactKind | "mobile";
+}
+
+export interface ContactPostal {
+  id: string;
+  street: string;
+  postcode: string;
+  locality: string;
+  region: string;
+  country: string;
+  kind: ContactKind;
+}
+
+/** A contact as the contacts view shows it: the parts of the card the editor knows. */
+export interface ContactRecord {
+  id: string;
+  accountId: string;
+  addressBookId: string;
+  /** The name to show: the full name, else given and surname, else the organization or the email. */
+  displayName: string;
+  given: string;
+  surname: string;
+  organization: string;
+  title: string;
+  emails: ContactEmail[];
+  phones: ContactPhone[];
+  addresses: ContactPostal[];
+  /** "YYYY-MM-DD", or "--MM-DD" when the year isn't known. */
+  birthday: string | null;
+  note: string;
+  /** A picture to show (a data: or https: URL); pictures can't be changed here yet. */
+  photo: string | null;
+  /** A group rather than a person; groups are shown but not edited. */
+  isGroup: boolean;
+}
+
+/** What the contact editor saves. Entries keep their `id` so what the editor doesn't show stays. */
+export interface ContactInput {
+  addressBookId: string;
+  given: string;
+  surname: string;
+  organization: string;
+  title: string;
+  emails: ContactEmail[];
+  phones: ContactPhone[];
+  addresses: ContactPostal[];
+  /** Left as it was when `birthdayChanged` is false. */
+  birthday: string | null;
+  birthdayChanged: boolean;
+  note: string;
+}
+
 export type BackendEvent =
   | { type: "mail:changed"; accountId: string }
   | { type: "mail:received"; accountId: string; messageIds: string[] }
@@ -388,4 +463,6 @@ export type BackendEvent =
   /** The account's shared settings changed, here or on another device (e.g. signatures). */
   | { type: "settings:changed"; accountId: string; state?: string }
   /** Calendars or events changed, here or on another device. */
-  | { type: "calendar:changed" };
+  | { type: "calendar:changed" }
+  /** Address books or contacts changed, here or on another device. */
+  | { type: "contacts:changed" };
