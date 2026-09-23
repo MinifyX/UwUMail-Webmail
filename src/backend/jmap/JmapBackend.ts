@@ -8,6 +8,7 @@
  * message HTML, and building the MIME of a message that is being sent.
  */
 
+import { deviceTimeZone } from "@/lib/calendarDates";
 import { textToHtml } from "@/lib/format";
 import { SendQueue } from "@/lib/sendQueue";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
@@ -18,9 +19,13 @@ import type {
   AttachmentContent,
   BackendEvent,
   BlockedSender,
+  CalendarInfo,
+  CalendarOccurrence,
   Contact,
   DraftContent,
   DraftSaveResult,
+  EventDeleteScope,
+  EventInput,
   FlagChange,
   Folder,
   Identity,
@@ -37,6 +42,18 @@ import type {
   UnsubscribeOutcome,
 } from "../types";
 import {
+  EDIT_PROPERTIES,
+  EVENT_PROPERTIES,
+  RULE_PROPERTIES,
+  eventPatch,
+  newEventObject,
+  toCalendarInfo,
+  toOccurrence,
+  type JmapCalendar,
+  type JmapCalendarEvent,
+} from "./calendar";
+import {
+  CALENDARS,
   CORE,
   MAIL,
   SENDERS,
@@ -175,6 +192,8 @@ interface JmapSieveScript {
   isActive: boolean;
 }
 
+const CALENDAR_PROPERTIES = ["id", "name", "color", "sortOrder", "isVisible", "isDefault", "myRights"];
+
 /** The one script the rules editor owns, see lib/sieveRules. */
 const RULES_SCRIPT = "UwUMail";
 const SIEVE_TYPE = "application/sieve";
@@ -265,6 +284,7 @@ export class JmapBackend implements Backend {
     this.stopPush = watchPush((changed) => {
       if (changed.Mailbox) void this.loadFolders();
       if (changed.Email || changed.Mailbox) this.emit({ type: "mail:changed", accountId: this.accountId });
+      if (changed.Calendar || changed.CalendarEvent) this.emit({ type: "calendar:changed" });
       if (changed.UserSettings) {
         this.emit({ type: "settings:changed", accountId: this.accountId, state: changed.UserSettings });
       }
@@ -1022,6 +1042,173 @@ export class JmapBackend implements Backend {
       inReplyTo: null,
       attachments,
     };
+  }
+
+  async calendarsAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(CALENDARS);
+  }
+
+  private calendarCall<T>(name: string, args: Record<string, unknown>): Promise<T> {
+    return one<T>(name, args, [CORE, CALENDARS]);
+  }
+
+  async calendars(): Promise<CalendarInfo[]> {
+    await this.start();
+    const response = await this.calendarCall<GetResponse<JmapCalendar>>("Calendar/get", {
+      ids: null,
+      properties: CALENDAR_PROPERTIES,
+    });
+    return response.list
+      .map((calendar) => toCalendarInfo(calendar, this.accountId))
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+  }
+
+  async createCalendar(input: { name: string; color: string | null }): Promise<CalendarInfo> {
+    await this.start();
+    const response = await this.calendarCall<SetResponse>("Calendar/set", {
+      create: { new: { name: input.name, color: input.color, isVisible: true } },
+    });
+    throwOnError(response);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't create the calendar.");
+    this.emit({ type: "calendar:changed" });
+    const created = (await this.calendars()).find((calendar) => calendar.id === id);
+    return (
+      created ?? {
+        id,
+        accountId: this.accountId,
+        name: input.name,
+        color: input.color,
+        isDefault: false,
+        isVisible: true,
+        sortOrder: 0,
+        mayWrite: true,
+        mayDelete: true,
+      }
+    );
+  }
+
+  async updateCalendar(id: string, patch: { name?: string; color?: string | null; isVisible?: boolean }) {
+    await this.start();
+    throwOnError(await this.calendarCall<SetResponse>("Calendar/set", { update: { [id]: patch } }));
+    this.emit({ type: "calendar:changed" });
+  }
+
+  async deleteCalendar(id: string): Promise<void> {
+    await this.start();
+    throwOnError(await this.calendarCall<SetResponse>("Calendar/set", { destroy: [id], onDestroyRemoveEvents: true }));
+    this.emit({ type: "calendar:changed" });
+  }
+
+  async setDefaultCalendar(id: string): Promise<void> {
+    await this.start();
+    throwOnError(
+      await this.calendarCall<SetResponse>("Calendar/set", { update: { [id]: {} }, onSuccessSetIsDefault: id }),
+    );
+    this.emit({ type: "calendar:changed" });
+  }
+
+  /**
+   * One request for the calendars, the expanded query and its occurrences, and a second one for
+   * the rules of the series among them, which expanded instances don't carry.
+   */
+  async calendarEvents(from: string, to: string, timeZone: string): Promise<CalendarOccurrence[]> {
+    await this.start();
+    const accountId = this.accountId;
+    const body = await call(
+      [
+        ["Calendar/get", { accountId, ids: null, properties: CALENDAR_PROPERTIES }, "c"],
+        [
+          "CalendarEvent/query",
+          {
+            accountId,
+            filter: { after: from, before: to },
+            sort: [{ property: "start", isAscending: true }],
+            expandRecurrences: true,
+            timeZone,
+            limit: 5000,
+          },
+          "q",
+        ],
+        [
+          "CalendarEvent/get",
+          {
+            accountId,
+            "#ids": { resultOf: "q", name: "CalendarEvent/query", path: "/ids" },
+            properties: EVENT_PROPERTIES,
+            timeZone,
+          },
+          "e",
+        ],
+      ],
+      [CORE, CALENDARS],
+    );
+    const calendars = new Map(
+      responseOf<GetResponse<JmapCalendar>>(body, "c").list.map((calendar) => [
+        calendar.id,
+        toCalendarInfo(calendar, accountId),
+      ]),
+    );
+    const events = responseOf<GetResponse<JmapCalendarEvent>>(body, "e").list;
+    const baseIds = [...new Set(events.map((event) => event.baseEventId).filter((id): id is string => !!id))];
+    const bases = new Map<string, JmapCalendarEvent>();
+    if (baseIds.length > 0) {
+      const found = await this.calendarCall<GetResponse<JmapCalendarEvent>>("CalendarEvent/get", {
+        ids: baseIds,
+        properties: RULE_PROPERTIES,
+      });
+      for (const base of found.list) bases.set(base.id, base);
+    }
+    return events.map((event) =>
+      toOccurrence(event, {
+        accountId,
+        viewerZone: timeZone,
+        calendar: calendars.get(Object.keys(event.calendarIds)[0] ?? ""),
+        base: event.baseEventId ? bases.get(event.baseEventId) : undefined,
+      }),
+    );
+  }
+
+  async createEvent(input: EventInput): Promise<string> {
+    await this.start();
+    const response = await this.calendarCall<SetResponse>("CalendarEvent/set", {
+      create: { new: newEventObject(input, deviceTimeZone()) },
+    });
+    throwOnError(response);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't keep the event.");
+    this.emit({ type: "calendar:changed" });
+    return id;
+  }
+
+  async updateEvent(eventId: string, input: EventInput, occurrenceStart?: string): Promise<void> {
+    await this.start();
+    const found = await this.calendarCall<GetResponse<JmapCalendarEvent>>("CalendarEvent/get", {
+      ids: [eventId],
+      properties: EDIT_PROPERTIES,
+    });
+    const current = found.list[0];
+    if (!current) throw new BackendError("not_found", "That event is gone.");
+    const patch = eventPatch(current, input, deviceTimeZone(), occurrenceStart);
+    if (Object.keys(patch).length === 0) return;
+    throwOnError(await this.calendarCall<SetResponse>("CalendarEvent/set", { update: { [eventId]: patch } }));
+    this.emit({ type: "calendar:changed" });
+  }
+
+  /** An instance of a series goes by its own (synthetic) id: the server records the exception. */
+  async deleteEvent(occurrenceId: string, scope: EventDeleteScope): Promise<void> {
+    await this.start();
+    let target = occurrenceId;
+    if (scope === "series") {
+      const found = await this.calendarCall<GetResponse<JmapCalendarEvent>>("CalendarEvent/get", {
+        ids: [occurrenceId],
+        properties: ["id", "baseEventId"],
+      });
+      target = found.list[0]?.baseEventId ?? occurrenceId;
+    }
+    throwOnError(await this.calendarCall<SetResponse>("CalendarEvent/set", { destroy: [target] }));
+    this.emit({ type: "calendar:changed" });
   }
 
   async mailRulesAvailable(): Promise<boolean> {

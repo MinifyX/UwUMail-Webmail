@@ -3,6 +3,7 @@ import { isDangerous } from "@/lib/attachments";
 import { SendQueue } from "@/lib/sendQueue";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
+import { DemoCalendar } from "./demo-calendar";
 import { rulesToSieve } from "@/lib/sieveRules";
 import { buildFolders, buildMessages, DEMO_ACCOUNTS, demoRules, welcomeMessage } from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
@@ -15,6 +16,8 @@ import type {
   Contact,
   DraftContent,
   DraftSaveResult,
+  EventDeleteScope,
+  EventInput,
   FlagChange,
   Folder,
   Identity,
@@ -633,6 +636,58 @@ export class DemoBackend implements Backend {
     const labels = (email.split("@")[1] ?? "").toLowerCase().split(".").filter(Boolean);
     const domain = labels.slice(-2).join(".");
     return labels.length < 2 || DEMO_FREEMAIL.has(domain) ? null : domain;
+  }
+
+  private calendar = new DemoCalendar(lang(), DEMO_ACCOUNTS[0]!.id, () => this.emit({ type: "calendar:changed" }));
+
+  async calendarsAvailable() {
+    return true;
+  }
+
+  async calendars() {
+    await wait(80);
+    return this.calendar.calendars();
+  }
+
+  async createCalendar(input: { name: string; color: string | null }) {
+    await wait(120);
+    return this.calendar.createCalendar(input);
+  }
+
+  async updateCalendar(id: string, patch: { name?: string; color?: string | null; isVisible?: boolean }) {
+    await wait(60);
+    this.calendar.updateCalendar(id, patch);
+  }
+
+  async deleteCalendar(id: string) {
+    await wait(120);
+    this.calendar.deleteCalendar(id);
+  }
+
+  async setDefaultCalendar(id: string) {
+    await wait(60);
+    this.calendar.setDefaultCalendar(id);
+  }
+
+  /** The demo keeps every time in the viewer's zone, so there is nothing to convert. */
+  async calendarEvents(from: string, to: string) {
+    await wait(120);
+    return this.calendar.occurrences(from, to);
+  }
+
+  async createEvent(input: EventInput) {
+    await wait(150);
+    return this.calendar.createEvent(input);
+  }
+
+  async updateEvent(eventId: string, input: EventInput, occurrenceStart?: string) {
+    await wait(150);
+    this.calendar.updateEvent(eventId, input, occurrenceStart);
+  }
+
+  async deleteEvent(occurrenceId: string, scope: EventDeleteScope) {
+    await wait(120);
+    this.calendar.deleteEvent(occurrenceId, scope);
   }
 
   /** Only the demo's JMAP mailbox plays a server with mail rules; its script starts with examples. */

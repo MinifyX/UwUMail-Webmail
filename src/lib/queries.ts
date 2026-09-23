@@ -25,6 +25,8 @@ export const queryKeys = {
   thread: ["thread"] as const,
   identities: ["identities"] as const,
   signatures: ["signatures"] as const,
+  calendars: ["calendars"] as const,
+  calendarEvents: ["calendarEvents"] as const,
 };
 
 export function useAccounts() {
@@ -320,6 +322,10 @@ export function useBackendEvents() {
           break;
         case "settings:changed":
           void client.invalidateQueries({ queryKey: queryKeys.signatures });
+          break;
+        case "calendar:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.calendars });
+          void client.invalidateQueries({ queryKey: queryKeys.calendarEvents });
           break;
       }
     });

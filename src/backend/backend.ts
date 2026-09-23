@@ -3,9 +3,13 @@ import type {
   AttachmentContent,
   BackendEvent,
   BlockedSender,
+  CalendarInfo,
+  CalendarOccurrence,
   Contact,
   DraftContent,
   DraftSaveResult,
+  EventDeleteScope,
+  EventInput,
   FlagChange,
   Folder,
   Identity,
@@ -111,6 +115,26 @@ export interface Backend {
   saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult>;
   deleteDraft(accountId: string, draftKey: string): Promise<void>;
   openDraft(messageId: string): Promise<DraftContent>;
+
+  /** Whether the server keeps calendars (JMAP Calendars); without it the calendar stays hidden. */
+  calendarsAvailable(): Promise<boolean>;
+  calendars(): Promise<CalendarInfo[]>;
+  createCalendar(input: { accountId?: string; name: string; color: string | null }): Promise<CalendarInfo>;
+  updateCalendar(id: string, patch: { name?: string; color?: string | null; isVisible?: boolean }): Promise<void>;
+  /** Removes the calendar with its events. */
+  deleteCalendar(id: string): Promise<void>;
+  setDefaultCalendar(id: string): Promise<void>;
+  /** Every occurrence overlapping [from, to), wall times in `timeZone`, series expanded. */
+  calendarEvents(from: string, to: string, timeZone: string): Promise<CalendarOccurrence[]>;
+  /** Returns the new event's id. */
+  createEvent(input: EventInput): Promise<string>;
+  /**
+   * Changes the whole event (the series, for a repeating one); only what differs is sent.
+   * `occurrenceStart` is the start of the occurrence the edit began from: a repeating event's
+   * start moves by as much as that occurrence's start was moved, instead of jumping to its date.
+   */
+  updateEvent(eventId: string, input: EventInput, occurrenceStart?: string): Promise<void>;
+  deleteEvent(occurrenceId: string, scope: EventDeleteScope): Promise<void>;
 
   /** Whether the server filters incoming mail with rules (JMAP Sieve); without an id, whether any mailbox does. */
   mailRulesAvailable(accountId?: string): Promise<boolean>;
