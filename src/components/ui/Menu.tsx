@@ -180,7 +180,8 @@ export function ContextMenu({ at, items, onClose, label }: ContextMenuProps) {
           moveFocus(event.key === "ArrowDown" ? 1 : -1);
         }
       }}
-      style={position ?? { left: at.x, top: at.y, visibility: "hidden" }}
+      // Unmeasured it stays see-through, not hidden: hidden elements can't take the focus.
+      style={position ?? { left: at.x, top: at.y, opacity: 0 }}
       className="fixed z-50 flex w-max max-w-[min(320px,calc(100vw-16px))] min-w-[200px] animate-pop flex-col rounded-2xl border border-line bg-surface p-1.5 text-ink shadow-float"
     >
       {items.map((item, index) => (

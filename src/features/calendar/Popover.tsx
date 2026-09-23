@@ -64,7 +64,8 @@ export function Popover({ anchor, label, onClose, children }: PopoverProps) {
       ref={card}
       role="dialog"
       aria-label={label}
-      style={phone ? undefined : (position ?? { left: anchor.left, top: anchor.top, visibility: "hidden" })}
+      // Unmeasured it stays see-through, not hidden: hidden elements can't take the focus.
+      style={phone ? undefined : (position ?? { left: anchor.left, top: anchor.top, opacity: 0 })}
       className={clsx(
         "fixed z-40 flex animate-pop flex-col border border-line bg-surface text-ink shadow-float",
         phone
