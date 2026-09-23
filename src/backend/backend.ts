@@ -27,6 +27,7 @@ import type {
   ThreadQuery,
   UnsubscribeOutcome,
 } from "./types";
+import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 
 export type BackendErrorCode =
@@ -177,6 +178,11 @@ export interface Backend {
   getSenderPicture(email: string): Promise<SenderPicture | null>;
   /** A remote image of a mail, for dark mode to recolor; null where the page has to do without. */
   fetchMailImage(url: string): Promise<Blob | null>;
+  /**
+   * Where a mail's remote pictures load from so their senders never see the reader: the server
+   * fetches them. Null where there is no such server; the pictures then load directly.
+   */
+  imageProxy(): ImageProxy | null;
   /** Main domain of a company address (`news.shop.example` → `shop.example`); null for mail providers. */
   companyDomain(email: string): Promise<string | null>;
 

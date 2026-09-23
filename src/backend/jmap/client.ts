@@ -21,6 +21,8 @@ export const CALENDARS = "urn:ietf:params:jmap:calendars";
 export const CONTACTS = "urn:ietf:params:jmap:contacts";
 /** Our own: cleaned message HTML and delayed sending, see the server's docs. */
 export const WEBMAIL = "urn:uwumail:jmap:webmail";
+/** Our own: a mail's remote pictures, fetched by the server so their senders never see the reader. */
+export const REMOTE = "urn:uwumail:jmap:remote";
 
 export interface JmapSession {
   accountId: string;
@@ -177,6 +179,31 @@ function downloadPath(blobId: string, name: string): string {
     .replaceAll("{blobId}", encodeURIComponent(blobId))
     .replaceAll("{name}", encodeURIComponent(name))
     .replaceAll("{type}", "application/octet-stream");
+  return onOwnOrigin(filled);
+}
+
+/**
+ * Where the server fetches a mail's remote picture for us, on our own origin; null when the
+ * server can't (the session is not there yet, or it is an older server).
+ */
+export function remoteImagePath(url: string): string | null {
+  if (!session) return null;
+  const remote = session.capabilities[REMOTE] as { imageUrl?: unknown } | undefined;
+  if (typeof remote?.imageUrl !== "string") return null;
+  const filled = remote.imageUrl
+    .replaceAll("{accountId}", encodeURIComponent(session.accountId))
+    .replaceAll("{url}", encodeURIComponent(url));
+  return onOwnOrigin(filled);
+}
+
+/** Where the server hands out the logo or website icon of a company sender; null when it can't. */
+export function senderPicturePath(email: string): string | null {
+  if (!session) return null;
+  const remote = session.capabilities[REMOTE] as { pictureUrl?: unknown } | undefined;
+  if (typeof remote?.pictureUrl !== "string") return null;
+  const filled = remote.pictureUrl
+    .replaceAll("{accountId}", encodeURIComponent(session.accountId))
+    .replaceAll("{email}", encodeURIComponent(email));
   return onOwnOrigin(filled);
 }
 

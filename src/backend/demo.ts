@@ -638,6 +638,11 @@ export class DemoBackend implements Backend {
     return null;
   }
 
+  imageProxy() {
+    // No server to fetch through; the demo's remote pictures point at hosts that never answer.
+    return null;
+  }
+
   async companyDomain(email: string) {
     // Good enough for made-up addresses; the real engine uses the public suffix list.
     const labels = (email.split("@")[1] ?? "").toLowerCase().split(".").filter(Boolean);

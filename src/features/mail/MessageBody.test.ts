@@ -64,6 +64,18 @@ describe("buildDocument", () => {
     expect(allowed).toContain("https:");
   });
 
+  it("sends allowed remote pictures through the server and allows nothing else", () => {
+    const proxy = (url: string) => `/jmap/image/a1?url=${encodeURIComponent(url)}`;
+    const mail = message({ bodyHtml: '<img src="https://track.example/open.gif"><img src="cid:logo">' });
+    const allowed = buildDocument(mail, true, "light", new Map(), proxy);
+    expect(allowed).toContain('src="/jmap/image/a1?url=https%3A%2F%2Ftrack.example%2Fopen.gif"');
+    expect(allowed).toContain("img-src data: cid: blob: 'self';");
+    expect(allowed).not.toContain("https:");
+    const blocked = buildDocument(mail, false, "light", new Map(), proxy);
+    expect(blocked).toContain('src="https://track.example/open.gif"');
+    expect(blocked).toContain("img-src data: cid: blob:;");
+  });
+
   it("turns links in plain text into anchors", () => {
     const doc = buildDocument(message({ bodyText: "Look at https://uwumail.dev/docs." }), false, "dark");
     expect(doc).toContain('<a href="https://uwumail.dev/docs">https://uwumail.dev/docs</a>.');
