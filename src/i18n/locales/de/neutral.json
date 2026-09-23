@@ -586,7 +586,7 @@
     "removeAction": "Aktion entfernen",
     "chooseFolder": "Ordner wählen",
     "forwardTo": "Weiterleiten an",
-    "forwardPlaceholder": "name@beispiel.de",
+    "forwardPlaceholder": "name@example.org",
     "keepCopy": "Auch hier eine Kopie behalten",
     "stop": "Hier aufhören",
     "stopDesc": "Weiter unten stehende Regeln laufen für Mails, die diese Regel erwischt hat, nicht mehr.",
@@ -627,7 +627,7 @@
       "emptyValue": "Gib den Text ein, nach dem gesucht wird.",
       "noActions": "Füg mindestens eine Aktion hinzu.",
       "noFolder": "Wähl einen Ordner.",
-      "badAddress": "Gib eine vollständige Adresse ein, z. B. name@beispiel.de.",
+      "badAddress": "Gib eine vollständige Adresse ein, z. B. name@example.org.",
       "tooMany": "Pro Regel ein Ordner und eine Weiterleitung."
     },
     "foreignTitle": "Diese Regeln wurden woanders bearbeitet",
