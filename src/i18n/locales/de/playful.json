@@ -177,5 +177,15 @@
     "title": "Uff, da ist Nyu was runtergefallen",
     "body": "Ein Stück von UwUMail ist beim Anzeigen gestolpert. Einmal neu laden, dann geht's weiter ✧",
     "reload": "Neu laden"
+  },
+  "folders": {
+    "created": "Ordner „{{name}}“ steht bereit ✿",
+    "deleteTitle": "Tschüss, „{{name}}“?",
+    "emptied_one": "Blitzblank! {{count}} Mail ist für immer weg ✧",
+    "emptied_other": "Blitzblank! {{count}} Mails sind für immer weg ✧",
+    "emptyTitle": {
+      "trash": "Müll rausbringen? (・ω・)",
+      "junk": "Spam rauskehren? (｀・ω・´)"
+    }
   }
 }

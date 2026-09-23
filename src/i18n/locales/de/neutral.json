@@ -342,7 +342,8 @@
     "remove": "Entfernen",
     "retry": "Nochmal versuchen",
     "yesterday": "Gestern",
-    "save": "Speichern"
+    "save": "Speichern",
+    "ok": "OK"
   },
   "folder": {
     "inbox": "Posteingang",
@@ -494,5 +495,47 @@
     "title": "Da ist etwas schiefgegangen",
     "body": "Ein Teil von UwUMail ist beim Anzeigen abgestürzt. Neu laden bringt dich zurück.",
     "reload": "Neu laden"
+  },
+  "folders": {
+    "new": "Neuer Ordner",
+    "newInside": "Neuer Ordner darin",
+    "rename": "Umbenennen",
+    "delete": "Ordner löschen",
+    "actions": "Aktionen für {{name}}",
+    "createTitle": "Neuer Ordner",
+    "renameTitle": "Ordner umbenennen",
+    "inside": "In „{{name}}“",
+    "name": "Name",
+    "create": "Anlegen",
+    "created": "Ordner „{{name}}“ angelegt",
+    "renamed": "Umbenannt in „{{name}}“",
+    "deleted": "Ordner „{{name}}“ gelöscht",
+    "deleteTitle": "„{{name}}“ löschen?",
+    "deleteBody_one": "Die {{count}} Mail darin kommt in den Papierkorb.",
+    "deleteBody_other": "Die {{count}} Mails darin kommen in den Papierkorb.",
+    "deleteBodyEmpty": "Der Ordner ist leer.",
+    "deleteConfirm": "Ordner löschen",
+    "hasChildrenTitle": "In „{{name}}“ liegen noch Ordner",
+    "hasChildrenBody": "Lösch oder verschieb erst die Ordner darin, dann den Ordner selbst.",
+    "problem": {
+      "empty": "Gib einen Namen ein.",
+      "slash": "Ein Ordnername darf kein „/“ enthalten.",
+      "control": "Der Name enthält unsichtbare Steuerzeichen.",
+      "tooLong": "Der Name ist zu lang.",
+      "taken": "Hier gibt es schon einen Ordner mit diesem Namen."
+    },
+    "empty": {
+      "trash": "Papierkorb leeren",
+      "junk": "Spam leeren"
+    },
+    "emptyShort": "Leeren",
+    "emptyTitle": {
+      "trash": "Papierkorb leeren?",
+      "junk": "Spam-Ordner leeren?"
+    },
+    "emptyBody_one": "{{count}} Mail wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
+    "emptyBody_other": "{{count}} Mails werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
+    "emptied_one": "{{count}} Mail endgültig gelöscht",
+    "emptied_other": "{{count}} Mails endgültig gelöscht"
   }
 }

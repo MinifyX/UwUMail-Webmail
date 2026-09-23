@@ -46,6 +46,8 @@ export interface ViewInfo {
   title: string;
   subtitle?: string;
   account?: Account;
+  /** The folder on screen, when it is one. */
+  folder?: Folder;
   isInbox: boolean;
   /** Opening a conversation here continues the draft instead of reading it. */
   isDrafts: boolean;
@@ -76,6 +78,7 @@ export function useViewInfo(view: MailboxView): ViewInfo {
     title: folder?.name ?? "",
     subtitle: account?.email,
     account,
+    folder,
     isInbox: folder?.role === "inbox",
     isDrafts: folder?.role === "drafts",
     isTrash: folder?.role === "trash",

@@ -177,5 +177,15 @@
     "title": "Oops, Nyu knocked something over",
     "body": "A bit of UwUMail tripped while drawing. Reload once and you're back ✧",
     "reload": "Reload"
+  },
+  "folders": {
+    "created": "Folder “{{name}}” is ready to be filled ✿",
+    "deleteTitle": "Say goodbye to “{{name}}”?",
+    "emptied_one": "Squeaky clean! {{count}} mail gone for good ✧",
+    "emptied_other": "Squeaky clean! {{count}} mails gone for good ✧",
+    "emptyTitle": {
+      "trash": "Take out the trash? (・ω・)",
+      "junk": "Sweep out the spam? (｀・ω・´)"
+    }
   }
 }

@@ -208,6 +208,82 @@ export class DemoBackend implements Backend {
       });
   }
 
+  async createFolder(input: { accountId?: string; name: string; parentId: string | null }) {
+    await wait(120);
+    const parent = input.parentId ? this.folders.find((f) => f.id === input.parentId) : undefined;
+    if (input.parentId && !parent) throw new BackendError("not_found", "This folder no longer exists.");
+    const accountId = parent?.accountId ?? input.accountId ?? this.accounts[0]!.id;
+    this.assertFreeName(accountId, input.parentId, input.name);
+    const id = `${accountId}:f${this.nextId++}`;
+    this.folders.push({
+      id,
+      accountId,
+      name: input.name,
+      path: parent ? `${parent.path}/${input.name}` : input.name,
+      role: null,
+      parentId: input.parentId,
+      selectable: true,
+      unread: 0,
+      total: 0,
+    });
+    this.emit({ type: "mail:changed", accountId });
+    return id;
+  }
+
+  async renameFolder(folderId: string, name: string) {
+    await wait(100);
+    const folder = this.folders.find((f) => f.id === folderId);
+    if (!folder) throw new BackendError("not_found", "This folder no longer exists.");
+    if (folder.role) throw new BackendError("invalid_input", "System folders keep their names.");
+    this.assertFreeName(folder.accountId, folder.parentId, name, folderId);
+    const oldPath = folder.path;
+    folder.name = name;
+    folder.path = oldPath.includes("/") ? `${oldPath.slice(0, oldPath.lastIndexOf("/"))}/${name}` : name;
+    for (const other of this.folders) {
+      if (other.path.startsWith(`${oldPath}/`)) other.path = folder.path + other.path.slice(oldPath.length);
+    }
+    this.emit({ type: "mail:changed", accountId: folder.accountId });
+  }
+
+  async deleteFolder(folderId: string) {
+    await wait(150);
+    const folder = this.folders.find((f) => f.id === folderId);
+    if (!folder) throw new BackendError("not_found", "This folder no longer exists.");
+    if (folder.role) throw new BackendError("invalid_input", "System folders stay.");
+    if (this.folders.some((f) => f.parentId === folderId)) {
+      throw new BackendError("invalid_input", "This folder still holds folders.");
+    }
+    for (const message of this.messages) {
+      if (message.folderId === folderId) message.folderId = `${folder.accountId}:trash`;
+    }
+    this.folders = this.folders.filter((f) => f.id !== folderId);
+    this.emit({ type: "mail:changed", accountId: folder.accountId });
+  }
+
+  async emptyFolder(folderId: string) {
+    await wait(200);
+    const folder = this.folders.find((f) => f.id === folderId);
+    if (folder?.role !== "trash" && folder?.role !== "junk") {
+      throw new BackendError("invalid_input", "Only trash and junk empty.");
+    }
+    const before = this.messages.length;
+    this.messages = this.messages.filter((m) => m.folderId !== folderId);
+    this.emit({ type: "mail:changed", accountId: folder.accountId });
+    return before - this.messages.length;
+  }
+
+  /** Like a server: two folders side by side can't share a name. */
+  private assertFreeName(accountId: string, parentId: string | null, name: string, except?: string) {
+    const taken = this.folders.some(
+      (f) =>
+        f.accountId === accountId &&
+        f.parentId === parentId &&
+        f.id !== except &&
+        f.name.toLowerCase() === name.toLowerCase(),
+    );
+    if (taken) throw new BackendError("invalid_input", "A folder with that name is already there.");
+  }
+
   async listThreads(query: ThreadQuery): Promise<ThreadPage> {
     await wait(120);
     const matching = this.messages.filter((m) => this.inView(m, query) && this.matchesFilter(m, query));

@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Star,
   Trash,
+  Trash2,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +28,7 @@ import {
   useThreads,
   useVisibleAccounts,
 } from "@/lib/queries";
+import { openFolderDialog } from "@/state/folderDialog";
 import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
 import { openDraftThread } from "../compose/openDraft";
@@ -120,6 +122,17 @@ export function ThreadList({ variant, className }: ThreadListProps) {
             <h1 className="truncate text-[20px] leading-tight font-extrabold tracking-[-0.01em]">{info.title}</h1>
             {info.subtitle && <p className="truncate text-[12px] text-muted">{info.subtitle}</p>}
           </div>
+          {(info.isTrash || info.isJunk) && info.folder && threads.length > 0 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={Trash2}
+              title={t(`folders.empty.${info.isJunk ? "junk" : "trash"}`)}
+              onClick={() => openFolderDialog({ kind: "empty", folder: info.folder! })}
+            >
+              {t("folders.emptyShort")}
+            </Button>
+          )}
           <IconButton
             icon={RefreshCw}
             label={t("list.refresh")}

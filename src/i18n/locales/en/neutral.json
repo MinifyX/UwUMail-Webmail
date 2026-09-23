@@ -342,7 +342,8 @@
     "remove": "Remove",
     "retry": "Try again",
     "yesterday": "Yesterday",
-    "save": "Save"
+    "save": "Save",
+    "ok": "OK"
   },
   "folder": {
     "inbox": "Inbox",
@@ -494,5 +495,47 @@
     "title": "Something went wrong",
     "body": "Part of UwUMail crashed while drawing. Reloading brings you back.",
     "reload": "Reload"
+  },
+  "folders": {
+    "new": "New folder",
+    "newInside": "New folder inside",
+    "rename": "Rename",
+    "delete": "Delete folder",
+    "actions": "Actions for {{name}}",
+    "createTitle": "New folder",
+    "renameTitle": "Rename folder",
+    "inside": "Inside “{{name}}”",
+    "name": "Name",
+    "create": "Create",
+    "created": "Folder “{{name}}” created",
+    "renamed": "Renamed to “{{name}}”",
+    "deleted": "Folder “{{name}}” deleted",
+    "deleteTitle": "Delete “{{name}}”?",
+    "deleteBody_one": "Its {{count}} message moves to the trash.",
+    "deleteBody_other": "Its {{count}} messages move to the trash.",
+    "deleteBodyEmpty": "The folder is empty.",
+    "deleteConfirm": "Delete folder",
+    "hasChildrenTitle": "“{{name}}” still holds folders",
+    "hasChildrenBody": "Delete or move the folders inside it first, then the folder itself.",
+    "problem": {
+      "empty": "Enter a name.",
+      "slash": "A folder name can't contain “/”.",
+      "control": "The name contains invisible control characters.",
+      "tooLong": "That name is too long.",
+      "taken": "There's already a folder with that name here."
+    },
+    "empty": {
+      "trash": "Empty trash",
+      "junk": "Empty junk"
+    },
+    "emptyShort": "Empty",
+    "emptyTitle": {
+      "trash": "Empty the trash?",
+      "junk": "Empty the junk folder?"
+    },
+    "emptyBody_one": "{{count}} message will be deleted forever. This can't be undone.",
+    "emptyBody_other": "{{count}} messages will be deleted forever. This can't be undone.",
+    "emptied_one": "{{count}} message deleted forever",
+    "emptied_other": "{{count}} messages deleted forever"
   }
 }

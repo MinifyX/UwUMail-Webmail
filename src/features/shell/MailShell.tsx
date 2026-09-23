@@ -9,6 +9,7 @@ import { useAccounts, useBackendEvents, useIdentities, useSignatures } from "@/l
 import { useUi } from "@/state/ui";
 import { Composer } from "../compose/Composer";
 import { loadLocalDraft } from "../compose/localDraft";
+import { FolderDialogs } from "../mail/FolderDialogs";
 import { MailboxNav } from "../mail/MailboxNav";
 import { scrollReader, wantsTextSelectAll } from "../mail/readerKeys";
 import { MoveDialog } from "../mail/MoveDialog";
@@ -147,6 +148,7 @@ export function MailShell() {
       <CommandPalette commands={commands} />
       <ShortcutsDialog />
       <MoveDialog />
+      <FolderDialogs />
     </div>
   );
 }

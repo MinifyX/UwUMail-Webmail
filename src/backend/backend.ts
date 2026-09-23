@@ -75,6 +75,13 @@ export interface Backend {
   syncNow(accountId?: string): Promise<void>;
 
   listFolders(accountId?: string): Promise<Folder[]>;
+  /** Returns the new folder's id; `parentId` null puts it at the top level. */
+  createFolder(input: { accountId?: string; name: string; parentId: string | null }): Promise<string>;
+  renameFolder(folderId: string, name: string): Promise<void>;
+  /** Moves the folder's mail to the trash first; refuses while it holds folders. Not for role folders. */
+  deleteFolder(folderId: string): Promise<void>;
+  /** Trash and junk only: deletes everything in it for good and returns how many went. */
+  emptyFolder(folderId: string): Promise<number>;
   listThreads(query: ThreadQuery): Promise<ThreadPage>;
   getThread(threadId: string, conversations: boolean): Promise<ThreadDetail>;
 

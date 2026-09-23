@@ -184,6 +184,21 @@ function throwOnError(response: SetResponse): void {
   if (error) throw error;
 }
 
+/** Mailbox/set refusals the folder dialogs explain themselves. */
+function throwOnMailboxError(response: SetResponse): void {
+  const problem =
+    Object.values(response.notCreated ?? {})[0] ??
+    Object.values(response.notUpdated ?? {})[0] ??
+    Object.values(response.notDestroyed ?? {})[0];
+  if (!problem) return;
+  if (problem.type === "mailboxHasChild") throw new BackendError("invalid_input", "This folder still holds folders.");
+  if (problem.type === "mailboxHasEmail") throw new BackendError("invalid_input", "This folder still holds mail.");
+  if (problem.type === "invalidProperties" || problem.type === "alreadyExists") {
+    throw new BackendError("invalid_input", problem.description ?? "That folder name doesn't work here.");
+  }
+  throw new BackendError("internal", problem.description ?? problem.type);
+}
+
 /** A conversation id the list uses when conversations are switched off. */
 const SINGLE = "msg:";
 
@@ -348,6 +363,66 @@ export class JmapBackend implements Backend {
   async listFolders(): Promise<Folder[]> {
     await this.start();
     return this.folders.length > 0 ? this.folders : this.loadFolders();
+  }
+
+  async createFolder(input: { name: string; parentId: string | null }): Promise<string> {
+    await this.start();
+    const response = await one<SetResponse>("Mailbox/set", {
+      create: { new: { name: input.name, parentId: input.parentId } },
+    });
+    throwOnMailboxError(response);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't create the folder.");
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+    return id;
+  }
+
+  async renameFolder(folderId: string, name: string): Promise<void> {
+    await this.start();
+    throwOnMailboxError(await one<SetResponse>("Mailbox/set", { update: { [folderId]: { name } } }));
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+  }
+
+  async deleteFolder(folderId: string): Promise<void> {
+    await this.start();
+    await this.loadFolders();
+    const folder = this.folderMap.get(folderId);
+    if (!folder) throw new BackendError("not_found", "That folder is gone.");
+    if (folder.role) throw new BackendError("invalid_input", "System folders stay.");
+    if (this.folders.some((other) => other.parentId === folderId)) {
+      throw new BackendError("invalid_input", "This folder still holds folders.");
+    }
+    const trash = this.folderOrFail("trash");
+    // Page by page: whatever moved has left the folder, so the next page starts at 0 again.
+    for (let round = 0; round < 200; round += 1) {
+      const found = await one<QueryResponse>("Email/query", {
+        filter: { inMailbox: folderId },
+        limit: 500,
+        calculateTotal: false,
+      });
+      if (found.ids.length === 0) break;
+      const patch = { [`mailboxIds/${folderId}`]: null, [`mailboxIds/${trash.id}`]: true };
+      throwOnError(
+        await one<SetResponse>("Email/set", { update: Object.fromEntries(found.ids.map((id) => [id, patch])) }),
+      );
+    }
+    throwOnMailboxError(await one<SetResponse>("Mailbox/set", { destroy: [folderId], onDestroyRemoveEmails: false }));
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+  }
+
+  /** The portal's own call, which deletes on the server in one go instead of message by message. */
+  async emptyFolder(folderId: string): Promise<number> {
+    await this.start();
+    const role = this.folderMap.get(folderId)?.role;
+    if (role !== "trash" && role !== "junk") throw new BackendError("invalid_input", "Only trash and junk empty.");
+    const { api } = await import("../server");
+    const result = await api<{ removed: number }>(`/api/account/mailboxes/${role}/empty`, { method: "POST" });
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+    return result.removed;
   }
 
   private filterFor(query: ThreadQuery): Record<string, unknown> {

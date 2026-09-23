@@ -3,7 +3,9 @@ import {
   ChevronDown,
   ChevronRight,
   CircleAlert,
+  Ellipsis,
   FolderOpen,
+  FolderPlus,
   LoaderCircle,
   PenLine,
   Settings,
@@ -11,15 +13,17 @@ import {
   WifiOff,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Account, Folder, MailboxView } from "@/backend/types";
 import { AccountDot } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
+import { Button, IconButton } from "@/components/ui/Button";
 import { Wordmark } from "@/components/ui/Logo";
+import { ContextMenu } from "@/components/ui/Menu";
 import { Badge } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
 import { useFolders, useMessageActions, useVisibleAccounts } from "@/lib/queries";
+import { openFolderDialog } from "@/state/folderDialog";
 import { toast } from "@/state/toasts";
 import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
@@ -64,8 +68,38 @@ function Glyph({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) {
   );
 }
 
+/** What can be done to a folder from its menu. Role folders keep their name and stay. */
+function useFolderMenuItems(folder: Folder, account: Account) {
+  const { t } = useT();
+  const items: { label: string; onSelect: () => void; danger?: boolean }[] = [];
+  if (folder.role === "trash" || folder.role === "junk") {
+    const role = folder.role;
+    items.push({ label: t(`folders.empty.${role}`), onSelect: () => openFolderDialog({ kind: "empty", folder }) });
+    return items;
+  }
+  items.push({
+    label: t("folders.newInside"),
+    onSelect: () => openFolderDialog({ kind: "create", accountId: account.id, parent: folder }),
+  });
+  if (!folder.role) {
+    items.push({ label: t("folders.rename"), onSelect: () => openFolderDialog({ kind: "rename", folder }) });
+    items.push({
+      label: t("folders.delete"),
+      danger: true,
+      onSelect: () => openFolderDialog({ kind: "delete", folder }),
+    });
+  }
+  return items;
+}
+
+/** How long a finger rests on a folder before its menu opens. */
+const LONG_PRESS = 550;
+
 function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
   const { t } = useT();
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+  const press = useRef<{ timer: number; x: number; y: number; fired: boolean } | null>(null);
+  const menuItems = useFolderMenuItems(node.folder, account);
   const view = useUi((s) => s.view);
   const setView = useUi((s) => s.setView);
   const collapsed = useSettings((s) => s.collapsedFolders.includes(node.folder.id));
@@ -108,6 +142,42 @@ function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
             return actions.move(here, { id: folder.id, name: label });
           });
         }}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          setMenuAt({ x: event.clientX, y: event.clientY });
+        }}
+        // Phones without a context menu event (iOS) get the menu from a long press.
+        onPointerDown={(event) => {
+          if (event.pointerType !== "touch") return;
+          const { clientX: x, clientY: y } = event;
+          const timer = window.setTimeout(() => {
+            if (press.current) press.current.fired = true;
+            setMenuAt({ x, y });
+          }, LONG_PRESS);
+          press.current = { timer, x, y, fired: false };
+        }}
+        onPointerMove={(event) => {
+          const start = press.current;
+          if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) {
+            window.clearTimeout(start.timer);
+            press.current = null;
+          }
+        }}
+        onPointerUp={() => {
+          if (press.current) window.clearTimeout(press.current.timer);
+        }}
+        onPointerCancel={() => {
+          if (press.current) window.clearTimeout(press.current.timer);
+          press.current = null;
+        }}
+        onClickCapture={(event) => {
+          // The finger lifting after a long press isn't a tap on the folder.
+          if (press.current?.fired) {
+            event.stopPropagation();
+            event.preventDefault();
+          }
+          press.current = null;
+        }}
         className={clsx(
           "group relative flex h-9 items-center rounded-xl transition-colors",
           dropping
@@ -143,8 +213,33 @@ function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
         >
           <Glyph icon={icon} active={active} />
           <span className="min-w-0 flex-1 truncate">{label}</span>
-          {count > 0 && <Badge count={count} />}
+          {count > 0 && (
+            <Badge count={count} className={clsx(menuAt === null && "pointer-fine:group-hover:invisible")} />
+          )}
         </button>
+        <button
+          type="button"
+          aria-label={t("folders.actions", { name: label })}
+          title={t("folders.actions", { name: label })}
+          aria-haspopup="menu"
+          aria-expanded={menuAt !== null}
+          onClick={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            setMenuAt(menuAt ? null : { x: rect.right - 200, y: rect.bottom + 4 });
+          }}
+          className={clsx(
+            "absolute top-1/2 right-1.5 grid size-7 -translate-y-1/2 place-items-center rounded-full text-muted hover:bg-pink-tint-strong hover:text-ink focus-visible:opacity-100 pointer-coarse:hidden",
+            menuAt ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+          )}
+        >
+          <Ellipsis className="size-4" aria-hidden />
+        </button>
+        <ContextMenu
+          at={menuAt}
+          items={menuItems}
+          onClose={() => setMenuAt(null)}
+          label={t("folders.actions", { name: label })}
+        />
       </div>
       {hasChildren && !collapsed && (
         <ul role="group" className="flex flex-col gap-0.5 pt-0.5">
@@ -173,22 +268,31 @@ function AccountSection({ account, folders }: { account: Account; folders: Folde
 
   return (
     <section className="flex flex-col gap-0.5">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        title={statusLabel}
-        className="flex h-8 items-center gap-2 rounded-lg px-3 text-[12px] font-bold tracking-wide text-muted uppercase hover:text-ink"
-      >
-        <AccountDot color={account.color} />
-        <span className="min-w-0 flex-1 truncate text-left tracking-normal normal-case">{account.email}</span>
-        {status.state === "syncing" && (
-          <LoaderCircle className="size-3.5 animate-spin text-pink" aria-label={statusLabel} />
-        )}
-        {status.state === "offline" && <WifiOff className="size-3.5 text-warning" aria-label={statusLabel} />}
-        {status.state === "error" && <CircleAlert className="size-3.5 text-danger" aria-label={statusLabel} />}
-        <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
-      </button>
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          title={statusLabel}
+          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-[12px] font-bold tracking-wide text-muted uppercase hover:text-ink"
+        >
+          <AccountDot color={account.color} />
+          <span className="min-w-0 flex-1 truncate text-left tracking-normal normal-case">{account.email}</span>
+          {status.state === "syncing" && (
+            <LoaderCircle className="size-3.5 animate-spin text-pink" aria-label={statusLabel} />
+          )}
+          {status.state === "offline" && <WifiOff className="size-3.5 text-warning" aria-label={statusLabel} />}
+          {status.state === "error" && <CircleAlert className="size-3.5 text-danger" aria-label={statusLabel} />}
+          <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
+        </button>
+        <IconButton
+          icon={FolderPlus}
+          size="sm"
+          label={t("folders.new")}
+          onClick={() => openFolderDialog({ kind: "create", accountId: account.id, parent: null })}
+          className="size-7"
+        />
+      </div>
       {open && (
         <ul role="tree" aria-label={account.email} className="flex flex-col gap-0.5">
           {tree.map((node) => (
