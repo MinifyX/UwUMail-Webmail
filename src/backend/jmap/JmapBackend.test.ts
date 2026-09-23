@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bareMessageId } from "./JmapBackend";
+import { answeredMail, bareMessageId } from "./JmapBackend";
 
 describe("bareMessageId", () => {
   /**
@@ -26,5 +26,26 @@ describe("bareMessageId", () => {
   it("only strips the outer brackets and ignores surrounding space", () => {
     expect(bareMessageId("  <a@b>  ")).toBe("a@b");
     expect(bareMessageId("<a<b>@c>")).toBe("a<b>@c");
+  });
+});
+
+describe("answeredMail", () => {
+  const conversation = [
+    { id: "m1", messageId: ["first@shop.example"] },
+    { id: "m2", messageId: ["second@shop.example"] },
+    { id: "d1", messageId: ["uwu-1@webmail.local"] },
+  ];
+
+  // Regression (security-audit W-10): a reopened reply came back without the mail it answers,
+  // so saving or sending it again dropped In-Reply-To and References.
+  it("finds the mail a reopened reply answers", () => {
+    expect(answeredMail({ id: "d1", inReplyTo: ["second@shop.example"] }, conversation)).toBe("m2");
+    expect(answeredMail({ id: "d1", inReplyTo: ["<first@shop.example>"] }, conversation)).toBe("m1");
+  });
+
+  it("leaves a new mail and a vanished original alone", () => {
+    expect(answeredMail({ id: "d1", inReplyTo: null }, conversation)).toBeNull();
+    expect(answeredMail({ id: "d1", inReplyTo: ["gone@shop.example"] }, conversation)).toBeNull();
+    expect(answeredMail({ id: "d1", inReplyTo: ["uwu-1@webmail.local"] }, conversation)).toBeNull();
   });
 });
