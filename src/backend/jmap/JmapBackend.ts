@@ -11,6 +11,7 @@
 import { deviceTimeZone } from "@/lib/calendarDates";
 import { textToHtml } from "@/lib/format";
 import { SendQueue } from "@/lib/sendQueue";
+import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { unsubscribeMail } from "@/lib/unsubscribe";
 import { BackendError, type Backend } from "../backend";
@@ -56,6 +57,7 @@ import {
   CALENDARS,
   CORE,
   MAIL,
+  REMOTE,
   SENDERS,
   SIEVE,
   SUBMISSION,
@@ -65,7 +67,9 @@ import {
   jmapSession,
   loadJmapSession,
   one,
+  remoteImagePath,
   responseOf,
+  senderPicturePath,
   supports,
   uploadBlob,
   watchPush,
@@ -1330,14 +1334,42 @@ export class JmapBackend implements Backend {
     return true;
   }
 
-  /** Sender pictures come from the server in 0.5.1; until then the interface shows initials. */
-  async getSenderPicture(): Promise<SenderPicture | null> {
-    return null;
+  /**
+   * The server fetches and keeps sender pictures, so the sender's website never sees who reads
+   * their mail. A server without them leaves the initials.
+   */
+  async getSenderPicture(email: string): Promise<SenderPicture | null> {
+    const path = senderPicturePath(email);
+    if (!path) return null;
+    try {
+      const response = await fetch(path, { credentials: "same-origin" });
+      if (!response.ok) return null;
+      const kind = response.headers.get("x-picture-kind") === "logo" ? "logo" : "icon";
+      return { url: URL.createObjectURL(await response.blob()), kind };
+    } catch {
+      return null;
+    }
   }
 
-  /** The page may only read remote images whose server allows it (CORS); dark mode tries that itself. */
-  async fetchMailImage(): Promise<Blob | null> {
-    return null;
+  /**
+   * Through the server's picture proxy, which is on our own origin, so the page may read what it
+   * hands back. Without one, the page may only read images whose server allows it (CORS); dark
+   * mode tries that itself.
+   */
+  async fetchMailImage(url: string): Promise<Blob | null> {
+    const own = url.startsWith(`${window.location.origin}/`) ? url : remoteImagePath(url);
+    if (!own) return null;
+    try {
+      const response = await fetch(own, { credentials: "same-origin" });
+      return response.ok ? await response.blob() : null;
+    } catch {
+      return null;
+    }
+  }
+
+  imageProxy(): ImageProxy | null {
+    // Whatever can't be sent through it stays blocked by the reader's CSP, so `url` is a safe answer.
+    return supports(REMOTE) ? (url) => remoteImagePath(url) ?? url : null;
   }
 
   async companyDomain(email: string): Promise<string | null> {
