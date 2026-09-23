@@ -1335,6 +1335,11 @@ export class JmapBackend implements Backend {
     return null;
   }
 
+  /** The page may only read remote images whose server allows it (CORS); dark mode tries that itself. */
+  async fetchMailImage(): Promise<Blob | null> {
+    return null;
+  }
+
   async companyDomain(email: string): Promise<string | null> {
     const domain = email.split("@")[1]?.toLowerCase();
     if (!domain || MAIL_PROVIDERS.has(domain)) return null;

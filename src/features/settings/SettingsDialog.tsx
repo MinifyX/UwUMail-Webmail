@@ -242,6 +242,14 @@ function Reading() {
       </Row>
       <div className="border-b border-hairline py-4 last:border-0">
         <Toggle
+          checked={settings.darkImages}
+          onChange={(darkImages) => settings.update({ darkImages })}
+          label={t("settings.darkImages")}
+          description={t("settings.darkImagesDesc")}
+        />
+      </div>
+      <div className="border-b border-hairline py-4 last:border-0">
+        <Toggle
           checked={settings.senderPictures}
           onChange={(senderPictures) => settings.update({ senderPictures })}
           label={t("settings.senderPictures")}

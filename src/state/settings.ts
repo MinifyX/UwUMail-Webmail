@@ -35,6 +35,8 @@ export interface Settings {
   /** The message header shows every address in full. Kept on this device only. */
   showAddressDetails: boolean;
   mailAppearance: MailAppearance;
+  /** Light images in mails shown dark are recolored too, see features/mail/darkImages. */
+  darkImages: boolean;
   /** Light/dark choices remembered per sender address (lowercase). */
   senderAppearance: Record<string, "light" | "dark">;
   /** Folder ids whose subfolders are hidden in the sidebar. */
@@ -73,6 +75,7 @@ export const DEFAULT_SETTINGS: Settings = {
   linkDomains: [],
   showAddressDetails: false,
   mailAppearance: "auto",
+  darkImages: true,
   senderAppearance: {},
   collapsedFolders: [],
   senderPictures: true,
