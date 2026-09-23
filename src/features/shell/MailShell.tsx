@@ -7,8 +7,11 @@ import { useIsPhone, useMediaQuery } from "@/lib/device";
 import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
 import { useAccounts, useBackendEvents, useIdentities, useSignatures } from "@/lib/queries";
 import { useUi } from "@/state/ui";
+import { CalendarShell } from "../calendar/CalendarShell";
+import { useCalendarsAvailable } from "../calendar/useCalendarData";
 import { Composer } from "../compose/Composer";
 import { loadLocalDraft } from "../compose/localDraft";
+import { FolderDialogs } from "../mail/FolderDialogs";
 import { MailboxNav } from "../mail/MailboxNav";
 import { scrollReader, wantsTextSelectAll } from "../mail/readerKeys";
 import { MoveDialog } from "../mail/MoveDialog";
@@ -52,7 +55,12 @@ export function MailShell() {
     ui.setComposeMinimized(true);
   }, [phone]);
 
-  const commands = useMemo(() => buildCommands(client, t), [client, t]);
+  const section = useUi((s) => s.section);
+  const { data: calendarAvailable = false } = useCalendarsAvailable();
+  const commands = useMemo(
+    () => buildCommands(client, t, { calendar: calendarAvailable }),
+    [client, t, calendarAvailable],
+  );
 
   const hotkeys = useMemo(() => {
     const map: HotkeyMap = {
@@ -94,7 +102,8 @@ export function MailShell() {
     }
     return map;
   }, [commands, phone]);
-  useHotkeys(hotkeys, { repeat: ["j", "k", "ArrowDown", "ArrowUp", ...SCROLL_KEYS] });
+  // The calendar brings its own keys.
+  useHotkeys(hotkeys, { enabled: section === "mail", repeat: ["j", "k", "ArrowDown", "ArrowUp", ...SCROLL_KEYS] });
 
   return (
     <div className="flex h-full flex-col">
@@ -104,7 +113,9 @@ export function MailShell() {
         </p>
       )}
 
-      {phone ? (
+      {section === "calendar" ? (
+        <CalendarShell />
+      ) : phone ? (
         <MobileShell />
       ) : (
         <div className="relative flex min-h-0 flex-1 gap-3 p-3">
@@ -147,6 +158,7 @@ export function MailShell() {
       <CommandPalette commands={commands} />
       <ShortcutsDialog />
       <MoveDialog />
+      <FolderDialogs />
     </div>
   );
 }

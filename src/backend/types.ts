@@ -305,6 +305,79 @@ export interface MailtoDraft {
   body: string;
 }
 
+/** A calendar of the account. `color` is a CSS `#rrggbb`, or null for the app's default. */
+export interface CalendarInfo {
+  id: string;
+  accountId: string;
+  name: string;
+  color: string | null;
+  isDefault: boolean;
+  isVisible: boolean;
+  sortOrder: number;
+  mayWrite: boolean;
+  mayDelete: boolean;
+}
+
+export type Weekday = "mo" | "tu" | "we" | "th" | "fr" | "sa" | "su";
+
+/** The part of a recurrence rule the editor understands. */
+export interface Recurrence {
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
+  /** At least 1. */
+  interval: number;
+  /** Weekly only. */
+  byDay: Weekday[] | null;
+  /** "YYYY-MM-DD", inclusive, local. */
+  until: string | null;
+  count: number | null;
+}
+
+/** One event on screen: a single event, or one instance of a series. */
+export interface CalendarOccurrence {
+  /** Synthetic for instances of a series. */
+  id: string;
+  /** The stored event; the base event for a series. */
+  eventId: string;
+  accountId: string;
+  calendarId: string;
+  title: string;
+  description: string;
+  location: string;
+  allDay: boolean;
+  /** Local wall time in the viewer's zone, "YYYY-MM-DDTHH:mm:ss". */
+  start: string;
+  /** Exclusive, same format; all-day events end the next day at T00:00:00. */
+  end: string;
+  /** The event's own zone; null for all-day and floating events. */
+  timeZone: string | null;
+  /** The series rule; null when the event doesn't repeat. */
+  recurrence: Recurrence | null;
+  /** False when the stored rule says more than Recurrence can. */
+  recurrenceEditable: boolean;
+  recurrenceId: string | null;
+  /** No write right, or somebody else's invitation. */
+  readOnly: boolean;
+  color: string | null;
+}
+
+/** What the event editor saves. */
+export interface EventInput {
+  calendarId: string;
+  title: string;
+  description: string;
+  location: string;
+  allDay: boolean;
+  /** Wall time in `timeZone`; all-day: dates at T00:00:00, end exclusive. */
+  start: string;
+  end: string;
+  /** The device's IANA zone for timed events; null for all-day ones. */
+  timeZone: string | null;
+  /** Left as it was when `recurrenceEditable` was false. */
+  recurrence: Recurrence | null;
+}
+
+export type EventDeleteScope = "occurrence" | "series";
+
 export type BackendEvent =
   | { type: "mail:changed"; accountId: string }
   | { type: "mail:received"; accountId: string; messageIds: string[] }
@@ -313,4 +386,6 @@ export type BackendEvent =
   | { type: "send:failed"; sendId: string; accountId: string; reason: string; message: OutgoingMessage }
   | { type: "compose:mailto" }
   /** The account's shared settings changed, here or on another device (e.g. signatures). */
-  | { type: "settings:changed"; accountId: string; state?: string };
+  | { type: "settings:changed"; accountId: string; state?: string }
+  /** Calendars or events changed, here or on another device. */
+  | { type: "calendar:changed" };

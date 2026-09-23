@@ -1,5 +1,6 @@
 // Fictional sample mail for `pnpm dev` and screenshots. No real people.
 
+import type { RuleSet } from "@/lib/sieveRules";
 import type { Account, Address, Attachment, Folder, FolderRole, Message } from "./types";
 
 type Lang = "de" | "en";
@@ -528,5 +529,50 @@ export function welcomeMessage(lang: Lang, id: string): Message {
     bodyText: text,
     hasRemoteContent: false,
     attachments: [],
+  };
+}
+
+/** Example mail rules for the demo's JMAP mailbox, pointing at its sample folders. */
+export function demoRules(lang: Lang, accountId: string): RuleSet {
+  const de = lang === "de";
+  const folders = buildFolders(accountId, lang);
+  const folder = (key: string) => {
+    const found = folders.find((f) => f.id === `${accountId}:${key}`)!;
+    return { mailboxId: found.id, mailboxName: found.path };
+  };
+  return {
+    v: 1,
+    rules: [
+      {
+        id: "demo-receipts",
+        name: de ? "Bestellungen ablegen" : "File orders",
+        enabled: true,
+        match: "any",
+        conditions: [
+          { field: "from", op: "endsWith", value: "@pixelparts.example" },
+          { field: "subject", op: "contains", value: de ? "Rechnung" : "Invoice" },
+        ],
+        actions: [{ type: "move", ...folder("receipts") }, { type: "markRead" }],
+        stop: true,
+      },
+      {
+        id: "demo-bank",
+        name: de ? "Bank markieren" : "Flag the bank",
+        enabled: true,
+        match: "all",
+        conditions: [{ field: "from", op: "is", value: "service@sparschwein.example" }],
+        actions: [{ type: "flag" }],
+        stop: false,
+      },
+      {
+        id: "demo-bugs",
+        name: de ? "Bug-Meldungen" : "Bug reports",
+        enabled: false,
+        match: "all",
+        conditions: [{ field: "listId", op: "contains", value: "bugs.uwumail.example" }],
+        actions: [{ type: "move", ...folder("projects-uwumail-bugs") }],
+        stop: false,
+      },
+    ],
   };
 }

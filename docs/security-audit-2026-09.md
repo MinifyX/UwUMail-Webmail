@@ -391,3 +391,193 @@ frame is scriptless with its own policy, and the page policy the server sends
   visible in the status line), W-18 (an immediate click on "Open" does nothing, a later one opens)
   and W-21 (names in the header are isolated).
 - No live malicious mail and no real login, as before.
+
+## Addendum — 23 September 2026: calendar, rules, folders and the untested parts
+
+A third pass, over the branch `feat/calendar-rules` before it is merged (`git diff main...HEAD`,
+commits 71ba77a to 8b42999): the calendar (`src/features/calendar`, `src/backend/jmap/calendar.ts`,
+`src/lib/calendarDates.ts`, `recurrence.ts`), mail rules as a Sieve script (`src/lib/sieveRules.ts`,
+`src/features/rules`), creating, renaming, deleting and emptying folders (`FolderDialogs.tsx`,
+`folderName.ts`, the new `JmapBackend` methods), the context menu and the calendar's popover with
+their focus handling, and the script up- and download. It also re-checks W-1 to W-21 and, for the
+first time, runs the parts the earlier passes could only reason about — paste, print, the PDF
+preview and the mail frame's policy — in a real browser.
+
+The threat model is the one above, with two additions. **Calendar text** (title, description,
+location) comes from whoever wrote the event — a CalDAV client, or an invitation someone accepted
+elsewhere — so it is untrusted like a mail. **Mail rules** are written by the account itself; the
+questions there are whether any text in a rule can change what the script does, and what a script
+written by another client can make the editor show. Done with Claude, like the passes above;
+reproduction notes stay in the private notes file.
+
+### Summary
+
+| ID   | Severity      | Finding                                                                        | Status           |
+| ---- | ------------- | ------------------------------------------------------------------------------ | ---------------- |
+| W-22 | Medium        | Quoted mail loads pictures whose address doesn't start with "http" or "//"     | fixed in e1fabfe |
+| W-23 | Low           | Links in calendar events open on a middle click or a drag without the question | listed           |
+| W-24 | Low           | Emptying the trash and deleting a folder answer to the key that opened them    | listed           |
+| W-25 | Low           | Saving rules switches off another active Sieve script without saying so        | listed           |
+| W-26 | Informational | The server's Sieve engine reads `${…}` in rule text as a variable              | listed           |
+| W-27 | Informational | One malformed event or calendar from the server empties the calendar view      | listed           |
+| W-28 | Informational | The German forward-address placeholder names a real domain                     | listed           |
+
+Nothing Critical or High. The new code adds no way to run script on the app's origin: calendar and
+rule text is rendered as React text, calendar colours reach a style only as a checked hex value,
+event links go through `requestOpenLink`, and neither the calendar nor the rules use
+`dangerouslySetInnerHTML`. W-22 is older than this branch; running W-2 in a browser found it.
+
+### W-22 · Medium · Quoted mail loads pictures whose address doesn't start with "http" or "//"
+
+`src/lib/safeHtml.ts:3` (the former `REMOTE` pattern), reached from `src/features/compose/draft.ts:30`
+(Reply and Forward), the composer's paste and drop handlers, a restored draft and `cleanSignatureHtml`
+
+- **CVSS 3.1:** `AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N` (4.3, Medium)
+- **Attacker & preconditions:** anyone who sends the reader a mail. The reader answers or forwards
+  it — the ordinary way to handle mail, nothing unusual. Remote pictures may be blocked for that
+  sender.
+- **Impact:** `quotableHtml` removed a picture address only when it began with `http:`, `https:`
+  or `//`. A browser, however, also reads `https:\\host/p.gif`, `\\host/p.gif`, `/\host/p.gif`,
+  `http:host/p.gif`, an address with a tab or line break inside the scheme, and one with a leading
+  control character as addresses on `host`; the same holds for `<table background>`. The server's
+  cleaner lets them through (it checks the scheme, then keeps the text as written, and passes
+  relative addresses on). The quote is shown in the composer, on the app's own page, whose policy
+  allows `https:` pictures — so pressing Reply fired the sender's tracking pixel and handed over the
+  reader's IP address and the fact that they answered, though the reader frame had blocked it. A
+  relative address loaded from the webmail's own server with the session cookie (a GET the sender
+  chooses). The reader frame and the print document were not affected: their own policies allow no
+  remote pictures.
+- **Evidence:** verified locally, yes — a demo build served with the server's webmail policy
+  header: opening the crafted mail made no request; pressing Reply opened TLS connections to four
+  local listeners (backslash, control character, tab, table background); a paste of the same markup
+  did the same. After the fix, neither Reply nor paste reached any listener.
+- **Fix:** a picture address stays only if, read the way the browser reads it (leading controls and
+  spaces dropped, tabs and line breaks removed), it is `data:` or `cid:` (`isEmbeddedSource`).
+  Everything else — remote, relative, or anything unrecognised — is removed.
+- **Regression test:** `src/lib/safeHtml.test.ts` — each spelling above, a relative address and a
+  table background leave nothing behind; `data:` and `cid:` pictures stay.
+
+### Low findings
+
+- **W-23 · Links in calendar events open on a middle click or a drag without the question** —
+  `src/features/calendar/EventPopover.tsx:29-40` (`LinkedText`). CVSS
+  `AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N` (3.1). A click on a link in an event's description or
+  location asks, like a link in a mail (checked in the browser). But the link is a real `<a href>`
+  on the app page without an `auxclick` handler, and draggable, so a middle click or a drag onto the
+  tab bar opens it at once — past the lookalike, redirect and user-name checks. In a mail the
+  frame's sandbox stops this (W-17); on the app page nothing does. The event text is the attacker's
+  when it comes from an accepted invitation. _Fix:_ route `auxclick` through `requestOpenLink` and
+  set `draggable={false}`, or render the address as a button. Verified by code and DOM inspection;
+  a trusted middle click could not be sent from the test browser.
+- **W-24 · Emptying the trash and deleting a folder answer to the key that opened them** —
+  `src/features/mail/FolderDialogs.tsx:185,225`, `src/components/ui/Menu.tsx:141`. CVSS
+  `AV:L/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L` (2.5). The folder menu focuses its first item — for the
+  trash and junk the only one, "Empty" — and the question that follows focuses its danger button. A
+  held Enter (key repeat) goes through both and deletes the trash for good. No attacker, but a
+  permanent loss from one keystroke, the gesture W-18 closed for the link question. _Fix:_ use
+  `armedActivation` on both danger buttons, or focus "Cancel".
+- **W-25 · Saving rules switches off another active Sieve script without saying so** —
+  `src/backend/jmap/JmapBackend.ts:1256-1257`, `src/features/rules/useMailRules.ts`. CVSS
+  `AV:N/AC:H/PR:L/UI:R/S:U/C:N/I:L/A:N` (2.6). Every save activates the "UwUMail" script, and a
+  JMAP server keeps only one script active, so a script written in another client (a spam or
+  forwarding filter the account relies on) silently stops running when the first rule is saved. The
+  editor shows an empty rule list in that case, not the other script. _Fix:_ when another script is
+  active, say so and ask before activating.
+
+### Informational
+
+- **W-26 · The server's Sieve engine reads `${…}` in rule text as a variable** —
+  `src/lib/sieveRules.ts:110` (`quote`). CVSS `AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:N` (0.0). The
+  engine (`sieve-rs`) expands `${name}`, `${header.subject}` and `${hex:…}` in every quoted string,
+  whether or not the script requires `variables` or `encoded-character`. A condition value or
+  forward address typed with `${` therefore means something other than what the editor shows. Only
+  the account writes its rules, and nothing can leave the string (quotes and backslashes are
+  escaped, line breaks removed), so this is correctness, not injection. _Fix:_ write `$` as
+  `${hex:24}` in `quote()`, which this engine decodes to a literal dollar sign.
+- **W-27 · One malformed event or calendar from the server empties the calendar view** —
+  `src/backend/jmap/calendar.ts:246,250`, `JmapBackend.ts:1064`. CVSS
+  `AV:N/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:L` (1.8). An unreadable `utcStart`, an unknown time zone or a
+  calendar without a name throws (a `RangeError` from `Intl`, checked), and the whole range fails
+  to load. The server computes these values, so this needs a server bug. _Fix:_ skip or flag the one
+  item instead of failing the list.
+- **W-28 · The German forward-address placeholder names a real domain** —
+  `src/i18n/locales/de/neutral.json:589,630` (`name@beispiel.de`). Not a secret; the repository's
+  rule is to use reserved example domains. _Fix:_ `name@beispiel.example`.
+
+### What held up
+
+- **Sieve generation.** Rule names become one comment line with every line break and control
+  character removed; values, folder names, folder ids and forward addresses become quoted strings
+  with `\` and `"` escaped; `*` and `?` are escaped before `:matches`. A rule name, a value or a
+  folder name cannot end a comment, close a string or add a command. Forward addresses are one plain
+  mailbox; the server also allows at most one redirect per message and never to the account itself.
+- **Scripts from elsewhere.** A script is read back as rules only if its data line parses and the
+  Sieve it would generate is exactly the script (line endings and trailing spaces aside); anything
+  else is shown as text in a text area and checked by the server before it is saved. A script can't
+  hide commands behind a rule list.
+- **Script transfer.** Download and upload go to paths on the page's own origin with
+  `credentials: "same-origin"`; uploads, `SieveScript/set` and the portal's empty-folder call carry
+  the CSRF token. No object URLs are made for scripts.
+- **Folders.** Names without `/`, control characters or line separators and at most 255 bytes; role
+  folders can't be renamed or deleted from the menu; deleting moves the mail to the trash first;
+  only trash and junk can be emptied, through the portal's own call.
+- **Calendar.** Colours are hex-checked before they reach a style; event text is plain text; links
+  are only `http(s)` and a click goes through the link question.
+- **Menus and popovers.** The context menu and the calendar popover are drawn by the app outside any
+  mail, close on Escape, a click outside and a lost window, and give the focus back. Being
+  see-through instead of hidden before they are measured lasts one layout pass.
+
+### Regression check of W-1 to W-21
+
+| Finding | Status on this branch                                                                                                                                               |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| W-1     | holds — Cc/Bcc shown when either is set                                                                                                                             |
+| W-2     | **bypassable until e1fabfe (W-22)**, holds after it — in the browser, plain remote pictures, handlers, `javascript:` links and styles were already removed on paste |
+| W-3     | holds — in the browser, the mail's `<style>` blocks are gone, fixed and negative-margin overlays stay inside their box, and `<style>` text in attributes is escaped |
+| W-4     | holds — no trusted-sender or "always" pictures in Junk                                                                                                              |
+| W-5     | holds — the mail target is named whenever the header has one                                                                                                        |
+| W-6     | holds — `dot < 0`; a leading-dot name keeps its extension                                                                                                           |
+| W-7     | holds — `svg svgz rdp wsb pub desktop` are listed                                                                                                                   |
+| W-8     | holds — format characters are stripped before the host is read                                                                                                      |
+| W-9     | holds — every mailto recipient host is compared                                                                                                                     |
+| W-10    | holds — `openDraft` reads Bcc                                                                                                                                       |
+| W-11    | holds — the frame keeps `sandbox`; under the server's policy the preview never loads a blob, and without it the browser drew nothing in the sandboxed frame         |
+| W-12    | holds — `browserOwner` unchanged                                                                                                                                    |
+| W-13–16 | hold — `links.ts`, `domains.ts` and `LinkAddress` unchanged, tests pass                                                                                             |
+| W-17    | holds for mail; **the calendar's own links repeat the gap on the app page (W-23)**                                                                                  |
+| W-18    | holds for the link question; **the new destructive folder questions lack it (W-24)**                                                                                |
+| W-19    | holds — `Object.hasOwn`                                                                                                                                             |
+| W-20    | holds — dropped markup goes through `quotableHtml`, which now also covers W-22                                                                                      |
+| W-21    | holds — names are isolated                                                                                                                                          |
+
+The accepted risks above are unchanged. One is added: **mail rules can forward mail to any
+address.** Anyone with a moment at a signed-in browser can add a silent forward, as they could in
+the portal; the rules list shows every forward in its summary.
+
+### What was run
+
+- `pnpm audit --prod` (no known vulnerabilities), `pnpm format`, `typecheck`, `lint` and `test`
+  (43 files, 298 tests) on the final tree, and `pnpm build`.
+- A secrets grep over the branch diff (keys, tokens, private keys, long random strings, addresses,
+  IPs): nothing but fictional demo and test addresses, and W-28.
+- A demo build with a temporary crafted mail and a PDF with a link annotation (neither committed),
+  served on 127.0.0.1 with the server's webmail policy header and again without it, with local
+  listeners standing in for a tracker. In Chromium: the reader frame (every remote picture,
+  stylesheet, `@import`, font, `srcset`, `poster`, SVG image and CSS background blocked by the
+  frame's policy; no request reached a listener), Reply and paste (W-22, before and after the fix),
+  the print document with its `print()` intercepted (W-3), the PDF preview (W-11), and a link in a
+  calendar event (asks).
+- Code reading of the server's cleaner (`ammonia`) and Sieve engine (`sieve-rs`) for W-22 and W-26.
+
+### What could not be tested, and why
+
+- **A real clipboard round trip.** Ctrl+C in the mail frame and Ctrl+V in the composer did not
+  produce a paste in the test browser; the paste handler was driven by a paste event carrying
+  crafted `text/html` in the same browser instead.
+- **Printed output.** The print document was rendered and inspected on screen; the print dialog and
+  the paper or PDF result were not produced.
+- **Clicking inside the PDF viewer.** The sandboxed frame showed nothing and the test browser
+  refused input into it; other browsers' viewers were not checked.
+- **A trusted middle click or drag** (W-23) — the test browser can't send one.
+- **A real login, real server, real mail and real calendars** — as before; the server's side of
+  rules and calendars was read, not run.

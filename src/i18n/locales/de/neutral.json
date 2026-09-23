@@ -10,7 +10,12 @@
     "compose": "Schreiben",
     "menu": "Ordner",
     "toggleFolder": "Ordner in {{name}} ein- oder ausblenden",
-    "portal": "Konto & Server"
+    "portal": "Konto & Server",
+    "apps": "Mail oder Kalender",
+    "section": {
+      "mail": "Mail",
+      "calendar": "Kalender"
+    }
   },
   "filter": {
     "all": "Alle",
@@ -287,7 +292,8 @@
     "linkDomainsDesc": "Links zu diesen Seiten öffnen direkt, außer sie sind getarnt.",
     "linkDomainsEmpty": "Noch keine. Du fügst Seiten direkt beim Öffnen eines Links hinzu.",
     "linkDomainsInactive": "Gerade öffnen alle Links ohne Nachfrage.",
-    "forgetLinkDomain": "{{domain}} entfernen"
+    "forgetLinkDomain": "{{domain}} entfernen",
+    "rules": "Regeln"
   },
   "theme": {
     "system": "System",
@@ -330,7 +336,15 @@
     "discardDraft": "Entwurf verwerfen (beim Schreiben)",
     "extendUp": "Auswahl nach oben erweitern",
     "extendDown": "Auswahl nach unten erweitern",
-    "selectAll": "Alle geladenen Mails auswählen"
+    "selectAll": "Alle geladenen Mails auswählen",
+    "goCalendar": "Zum Kalender",
+    "calendarToday": "Heute",
+    "calendarDay": "Tagesansicht",
+    "calendarWeek": "Wochenansicht",
+    "calendarMonth": "Monatsansicht",
+    "calendarNew": "Neuer Termin",
+    "calendarNext": "Nächster Tag, nächste Woche oder nächster Monat",
+    "calendarPrevious": "Vorheriger Tag, vorherige Woche oder vorheriger Monat"
   },
   "palette": {
     "placeholder": "Befehl eingeben",
@@ -342,7 +356,8 @@
     "remove": "Entfernen",
     "retry": "Nochmal versuchen",
     "yesterday": "Gestern",
-    "save": "Speichern"
+    "save": "Speichern",
+    "ok": "OK"
   },
   "folder": {
     "inbox": "Posteingang",
@@ -494,5 +509,266 @@
     "title": "Da ist etwas schiefgegangen",
     "body": "Ein Teil von UwUMail ist beim Anzeigen abgestürzt. Neu laden bringt dich zurück.",
     "reload": "Neu laden"
+  },
+  "folders": {
+    "new": "Neuer Ordner",
+    "newInside": "Neuer Ordner darin",
+    "rename": "Umbenennen",
+    "delete": "Ordner löschen",
+    "actions": "Aktionen für {{name}}",
+    "createTitle": "Neuer Ordner",
+    "renameTitle": "Ordner umbenennen",
+    "inside": "In „{{name}}“",
+    "name": "Name",
+    "create": "Anlegen",
+    "created": "Ordner „{{name}}“ angelegt",
+    "renamed": "Umbenannt in „{{name}}“",
+    "deleted": "Ordner „{{name}}“ gelöscht",
+    "deleteTitle": "„{{name}}“ löschen?",
+    "deleteBody_one": "Die {{count}} Mail darin kommt in den Papierkorb.",
+    "deleteBody_other": "Die {{count}} Mails darin kommen in den Papierkorb.",
+    "deleteBodyEmpty": "Der Ordner ist leer.",
+    "deleteConfirm": "Ordner löschen",
+    "hasChildrenTitle": "In „{{name}}“ liegen noch Ordner",
+    "hasChildrenBody": "Lösch oder verschieb erst die Ordner darin, dann den Ordner selbst.",
+    "problem": {
+      "empty": "Gib einen Namen ein.",
+      "slash": "Ein Ordnername darf kein „/“ enthalten.",
+      "control": "Der Name enthält unsichtbare Steuerzeichen.",
+      "tooLong": "Der Name ist zu lang.",
+      "taken": "Hier gibt es schon einen Ordner mit diesem Namen."
+    },
+    "empty": {
+      "trash": "Papierkorb leeren",
+      "junk": "Spam leeren"
+    },
+    "emptyShort": "Leeren",
+    "emptyTitle": {
+      "trash": "Papierkorb leeren?",
+      "junk": "Spam-Ordner leeren?"
+    },
+    "emptyBody_one": "{{count}} Mail wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
+    "emptyBody_other": "{{count}} Mails werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
+    "emptied_one": "{{count}} Mail endgültig gelöscht",
+    "emptied_other": "{{count}} Mails endgültig gelöscht"
+  },
+  "rules": {
+    "title": "Mail-Regeln",
+    "description": "Dein Server sortiert ankommende Mails mit diesen Regeln, von oben nach unten, auch wenn UwUMail zu ist. Die UwUMail-App zeigt dieselben Regeln.",
+    "account": "Postfach",
+    "loading": "Regeln werden geladen …",
+    "loadFailed": "Die Regeln konnten nicht geladen werden. {{reason}}",
+    "empty": "Noch keine Regeln. Mit einer Regel landen Mails von einem Absender zum Beispiel direkt in einem Ordner.",
+    "newRule": "Neue Regel",
+    "editRule": "{{name}} bearbeiten",
+    "deleteRule": "{{name}} löschen",
+    "enabled": "{{name}} ein- oder ausschalten",
+    "moveUp": "{{name}} nach oben",
+    "moveDown": "{{name}} nach unten",
+    "saved": "Regel gespeichert",
+    "deleted": "Regel „{{name}}“ gelöscht",
+    "saveFailed": "Die Regeln konnten nicht gespeichert werden. {{reason}}",
+    "invalid": "Der Server nimmt diese Regeln nicht an: {{reason}}",
+    "valid": "Der Server nimmt diese Regeln an.",
+    "inactive": "Diese Regeln sind auf dem Server gerade ausgeschaltet.",
+    "activate": "Einschalten",
+    "name": "Name",
+    "namePlaceholder": "z. B. „Rechnungen“",
+    "when": "Wenn eine Mail ankommt",
+    "matchAll": "Alle Bedingungen passen",
+    "matchAny": "Eine Bedingung passt",
+    "everyMessage": "jede Mail",
+    "value": "Text",
+    "addCondition": "Bedingung hinzufügen",
+    "removeCondition": "Bedingung entfernen",
+    "then": "Dann",
+    "addAction": "Aktion hinzufügen",
+    "removeAction": "Aktion entfernen",
+    "chooseFolder": "Ordner wählen",
+    "forwardTo": "Weiterleiten an",
+    "forwardPlaceholder": "name@example.org",
+    "keepCopy": "Auch hier eine Kopie behalten",
+    "forwardHint": "Klappt an Adressen auf diesem Server und an Adressen, die du im Portal unter Weiterleitung bestätigt hast. Sonst bleibt die Mail einfach hier.",
+    "stop": "Hier aufhören",
+    "stopDesc": "Weiter unten stehende Regeln laufen für Mails, die diese Regel erwischt hat, nicht mehr.",
+    "and": "und",
+    "or": "oder",
+    "field": {
+      "label": "Feld",
+      "from": "Absender",
+      "to": "An",
+      "cc": "Cc",
+      "toOrCc": "An oder Cc",
+      "subject": "Betreff",
+      "listId": "Mailingliste"
+    },
+    "op": {
+      "label": "Vergleich",
+      "contains": "enthält",
+      "notContains": "enthält nicht",
+      "is": "ist",
+      "isNot": "ist nicht",
+      "startsWith": "beginnt mit",
+      "endsWith": "endet mit"
+    },
+    "action": {
+      "move": "In Ordner verschieben",
+      "trash": "In den Papierkorb",
+      "markRead": "Als gelesen markieren",
+      "flag": "Markieren",
+      "forward": "Weiterleiten"
+    },
+    "summary": {
+      "move": "nach {{folder}}",
+      "forward": "an {{address}} weiterleiten",
+      "stop": "hört auf"
+    },
+    "problem": {
+      "noName": "Gib der Regel einen Namen.",
+      "emptyValue": "Gib den Text ein, nach dem gesucht wird.",
+      "noActions": "Füg mindestens eine Aktion hinzu.",
+      "noFolder": "Wähl einen Ordner.",
+      "badAddress": "Gib eine vollständige Adresse ein, z. B. name@example.org.",
+      "tooMany": "Pro Regel ein Ordner und eine Weiterleitung."
+    },
+    "foreignTitle": "Diese Regeln wurden woanders bearbeitet",
+    "foreignBody": "Ein anderes Programm hat das Regel-Skript geändert, deshalb zeigt UwUMail es als Text. Du kannst es hier bearbeiten oder durch Regeln ersetzen, die du in UwUMail verwaltest.",
+    "scriptLabel": "Sieve-Skript",
+    "saveScript": "Speichern",
+    "check": "Prüfen",
+    "replace": "Durch UwUMail-Regeln ersetzen",
+    "replaceConfirm": "Skript ersetzen",
+    "replaceBody": "Das Skript oben wird gelöscht und du fängst mit einer leeren Regelliste an."
+  },
+  "calendar": {
+    "title": "Kalender",
+    "menu": "Kalender",
+    "today": "Heute",
+    "view": "Ansicht",
+    "views": {
+      "day": "Tag",
+      "week": "Woche",
+      "month": "Monat",
+      "agenda": "Liste"
+    },
+    "previous": {
+      "day": "Vorheriger Tag",
+      "week": "Vorherige Woche",
+      "month": "Vorheriger Monat"
+    },
+    "next": {
+      "day": "Nächster Tag",
+      "week": "Nächste Woche",
+      "month": "Nächster Monat"
+    },
+    "previousMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "loading": "Termine werden geladen",
+    "loadFailed": "Die Termine konnten nicht geladen werden.",
+    "newEvent": "Neuer Termin",
+    "editEvent": "Termin bearbeiten",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "untitled": "(Ohne Titel)",
+    "eventTitle": "Titel",
+    "titlePlaceholder": "Titel hinzufügen",
+    "allDay": "Ganztägig",
+    "allDayShort": "ganztägig",
+    "starts": "Beginn",
+    "ends": "Ende",
+    "startTime": "Beginnt um",
+    "endTime": "Endet um",
+    "calendar": "Kalender",
+    "location": "Ort",
+    "description": "Beschreibung",
+    "moreOptions": "Weitere Optionen",
+    "noWritableCalendar": "Es gibt keinen Kalender, in den du Termine eintragen kannst.",
+    "readOnly": "nur lesen",
+    "timeZone": "Zeitzone des Termins: {{zone}}",
+    "more_one": "{{count}} weiterer",
+    "more_other": "{{count}} weitere",
+    "openDay": "{{date}} anzeigen",
+    "nothingToday": "Heute steht nichts an",
+    "agendaEmpty": {
+      "title": "Nichts geplant",
+      "body": "Die nächsten 30 Tage sind frei."
+    },
+    "repeat": {
+      "label": "Wiederholen",
+      "none": "Keine Wiederholung",
+      "daily": "Täglich",
+      "weekly": "Wöchentlich",
+      "monthly": "Monatlich",
+      "yearly": "Jährlich",
+      "everyLabel": "Alle",
+      "interval": "Abstand",
+      "unit": {
+        "daily_one": "Tag",
+        "daily_other": "Tage",
+        "weekly_one": "Woche",
+        "weekly_other": "Wochen",
+        "monthly_one": "Monat",
+        "monthly_other": "Monate",
+        "yearly_one": "Jahr",
+        "yearly_other": "Jahre"
+      },
+      "days": "An diesen Tagen",
+      "ends": "Endet",
+      "never": "Nie",
+      "onDate": "Am",
+      "after": "Nach",
+      "untilDate": "Letzter Tag",
+      "count": "Anzahl",
+      "occurrences_one": "Mal",
+      "occurrences_other": "Mal",
+      "wholeSeries": "Änderungen gelten für jeden Termin der Serie.",
+      "complex": "Diese Wiederholung wurde woanders eingerichtet und lässt sich hier nicht ändern. Sie bleibt, wie sie ist.",
+      "every": {
+        "daily_one": "Jeden Tag",
+        "daily_other": "Alle {{count}} Tage",
+        "weekly_one": "Jede Woche",
+        "weekly_other": "Alle {{count}} Wochen",
+        "monthly_one": "Jeden Monat",
+        "monthly_other": "Alle {{count}} Monate",
+        "yearly_one": "Jedes Jahr",
+        "yearly_other": "Alle {{count}} Jahre"
+      },
+      "onDays": "am {{days}}",
+      "until": "bis {{date}}",
+      "times_one": "einmal",
+      "times_other": "{{count}}-mal"
+    },
+    "problem": {
+      "end": "Das Ende muss nach dem Beginn liegen.",
+      "repeat": "Prüf die Wiederholung: Abstand, Tage und Ende.",
+      "name": "Gib dem Kalender einen Namen."
+    },
+    "calendars": "Kalender",
+    "newCalendar": "Neuer Kalender",
+    "editCalendar": "Kalender bearbeiten",
+    "calendarActions": "Aktionen für {{name}}",
+    "makeDefault": "Für neue Termine verwenden",
+    "deleteCalendar": "Kalender löschen",
+    "deleteCalendarTitle": "„{{name}}“ löschen?",
+    "deleteCalendarBody": "Alle Termine in diesem Kalender werden auch gelöscht, auf jedem Gerät.",
+    "default": "Standard",
+    "create": "Anlegen",
+    "calendarName": "Name",
+    "color": "Farbe",
+    "colorNumber": "Farbe {{number}}",
+    "deleteScope": {
+      "title": "Wiederkehrenden Termin löschen",
+      "occurrence": "Nur diesen Termin",
+      "series": "Alle Termine der Serie"
+    },
+    "toast": {
+      "created": "Termin gespeichert",
+      "saved": "Termin geändert",
+      "deleted": "Termin gelöscht",
+      "failed": "Das hat nicht geklappt. {{reason}}",
+      "defaultSet": "Neue Termine landen jetzt in „{{name}}“",
+      "calendarCreated": "Kalender „{{name}}“ angelegt",
+      "calendarDeleted": "Kalender „{{name}}“ gelöscht"
+    }
   }
 }

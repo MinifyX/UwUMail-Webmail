@@ -1,5 +1,16 @@
 import clsx from "clsx";
-import { ExternalLink, ImageIcon, Info, Keyboard, Mail, Palette, PenLine, SlidersHorizontal, X } from "lucide-react";
+import {
+  ExternalLink,
+  ImageIcon,
+  Info,
+  Keyboard,
+  ListFilter,
+  Mail,
+  Palette,
+  PenLine,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import pkg from "../../../package.json";
@@ -16,6 +27,8 @@ import { openLinkNow } from "@/state/links";
 import { isDomainEntry, sortEntries } from "@/lib/trustedSenders";
 import { useSettings, type LanguageSetting, type SwipeAction } from "@/state/settings";
 import { toast } from "@/state/toasts";
+import { MailRules } from "../rules/MailRules";
+import { useMailRulesAccounts } from "../rules/useMailRules";
 import { BlockedSenders } from "./BlockedSenders";
 import { LinkSettings } from "./LinkSettings";
 import { Row } from "./Row";
@@ -23,16 +36,19 @@ import { Writing } from "./Writing";
 import { useUi, type SettingsSection } from "@/state/ui";
 
 /**
- * Only what belongs to reading and writing mail.
+ * What belongs to reading, writing and sorting mail.
  *
  * Everything about the account itself — password, two-factor, forwarding, away
- * messages, aliases, spam rules — already has a place in the portal, so it is
- * a link from here instead of a second interface that could drift apart.
+ * messages, aliases, the spam filter — already has a place in the portal, so it
+ * is a link from here instead of a second interface that could drift apart. Mail
+ * rules are the exception: they sort mail like folders do, so they live here, as
+ * a Sieve script the server runs and the app edits the same way.
  */
 const SECTIONS: { id: SettingsSection; icon: LucideIcon }[] = [
   { id: "appearance", icon: Palette },
   { id: "mail", icon: Mail },
   { id: "compose", icon: PenLine },
+  { id: "rules", icon: ListFilter },
   { id: "about", icon: Info },
 ];
 
@@ -284,6 +300,9 @@ export function SettingsDialog() {
   const formDirty = useUi((s) => s.settingsFormDirty);
   // What the question is standing in front of: closing the window, or the section to switch to.
   const [pending, setPending] = useState<"close" | SettingsSection | null>(null);
+  // Rules only where the server runs them.
+  const { data: rulesAccounts = [] } = useMailRulesAccounts();
+  const sections = SECTIONS.filter(({ id }) => id !== "rules" || rulesAccounts.length > 0);
 
   const requestClose = () => {
     if (formDirty) setPending("close");
@@ -312,7 +331,7 @@ export function SettingsDialog() {
       >
         <div className="flex min-h-[460px] flex-col gap-2 px-4 pb-5 sm:flex-row sm:gap-6 sm:px-6">
           <nav className="flex shrink-0 gap-1 overflow-x-auto sm:w-48 sm:flex-col" aria-label={t("settings.title")}>
-            {SECTIONS.map(({ id, icon: Icon }) => (
+            {sections.map(({ id, icon: Icon }) => (
               <button
                 key={id}
                 type="button"
@@ -332,6 +351,7 @@ export function SettingsDialog() {
             {section === "appearance" && <Appearance />}
             {section === "mail" && <Reading />}
             {section === "compose" && <Writing />}
+            {section === "rules" && <MailRules />}
             {section === "about" && <About />}
           </div>
         </div>

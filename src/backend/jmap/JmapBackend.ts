@@ -8,6 +8,7 @@
  * message HTML, and building the MIME of a message that is being sent.
  */
 
+import { deviceTimeZone } from "@/lib/calendarDates";
 import { textToHtml } from "@/lib/format";
 import { SendQueue } from "@/lib/sendQueue";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
@@ -18,9 +19,13 @@ import type {
   AttachmentContent,
   BackendEvent,
   BlockedSender,
+  CalendarInfo,
+  CalendarOccurrence,
   Contact,
   DraftContent,
   DraftSaveResult,
+  EventDeleteScope,
+  EventInput,
   FlagChange,
   Folder,
   Identity,
@@ -37,9 +42,22 @@ import type {
   UnsubscribeOutcome,
 } from "../types";
 import {
+  EDIT_PROPERTIES,
+  EVENT_PROPERTIES,
+  RULE_PROPERTIES,
+  eventPatch,
+  newEventObject,
+  toCalendarInfo,
+  toOccurrence,
+  type JmapCalendar,
+  type JmapCalendarEvent,
+} from "./calendar";
+import {
+  CALENDARS,
   CORE,
   MAIL,
   SENDERS,
+  SIEVE,
   SUBMISSION,
   WEBMAIL,
   call,
@@ -167,6 +185,19 @@ interface JmapSenderEntry {
   scope?: string;
 }
 
+interface JmapSieveScript {
+  id: string;
+  name: string | null;
+  blobId: string;
+  isActive: boolean;
+}
+
+const CALENDAR_PROPERTIES = ["id", "name", "color", "sortOrder", "isVisible", "isDefault", "myRights"];
+
+/** The one script the rules editor owns, see lib/sieveRules. */
+const RULES_SCRIPT = "UwUMail";
+const SIEVE_TYPE = "application/sieve";
+
 function firstError(response: SetResponse): BackendError | null {
   const problem =
     Object.values(response.notCreated ?? {})[0] ??
@@ -182,6 +213,21 @@ function firstError(response: SetResponse): BackendError | null {
 function throwOnError(response: SetResponse): void {
   const error = firstError(response);
   if (error) throw error;
+}
+
+/** Mailbox/set refusals the folder dialogs explain themselves. */
+function throwOnMailboxError(response: SetResponse): void {
+  const problem =
+    Object.values(response.notCreated ?? {})[0] ??
+    Object.values(response.notUpdated ?? {})[0] ??
+    Object.values(response.notDestroyed ?? {})[0];
+  if (!problem) return;
+  if (problem.type === "mailboxHasChild") throw new BackendError("invalid_input", "This folder still holds folders.");
+  if (problem.type === "mailboxHasEmail") throw new BackendError("invalid_input", "This folder still holds mail.");
+  if (problem.type === "invalidProperties" || problem.type === "alreadyExists") {
+    throw new BackendError("invalid_input", problem.description ?? "That folder name doesn't work here.");
+  }
+  throw new BackendError("internal", problem.description ?? problem.type);
 }
 
 /** A conversation id the list uses when conversations are switched off. */
@@ -238,6 +284,7 @@ export class JmapBackend implements Backend {
     this.stopPush = watchPush((changed) => {
       if (changed.Mailbox) void this.loadFolders();
       if (changed.Email || changed.Mailbox) this.emit({ type: "mail:changed", accountId: this.accountId });
+      if (changed.Calendar || changed.CalendarEvent) this.emit({ type: "calendar:changed" });
       if (changed.UserSettings) {
         this.emit({ type: "settings:changed", accountId: this.accountId, state: changed.UserSettings });
       }
@@ -348,6 +395,66 @@ export class JmapBackend implements Backend {
   async listFolders(): Promise<Folder[]> {
     await this.start();
     return this.folders.length > 0 ? this.folders : this.loadFolders();
+  }
+
+  async createFolder(input: { name: string; parentId: string | null }): Promise<string> {
+    await this.start();
+    const response = await one<SetResponse>("Mailbox/set", {
+      create: { new: { name: input.name, parentId: input.parentId } },
+    });
+    throwOnMailboxError(response);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't create the folder.");
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+    return id;
+  }
+
+  async renameFolder(folderId: string, name: string): Promise<void> {
+    await this.start();
+    throwOnMailboxError(await one<SetResponse>("Mailbox/set", { update: { [folderId]: { name } } }));
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+  }
+
+  async deleteFolder(folderId: string): Promise<void> {
+    await this.start();
+    await this.loadFolders();
+    const folder = this.folderMap.get(folderId);
+    if (!folder) throw new BackendError("not_found", "That folder is gone.");
+    if (folder.role) throw new BackendError("invalid_input", "System folders stay.");
+    if (this.folders.some((other) => other.parentId === folderId)) {
+      throw new BackendError("invalid_input", "This folder still holds folders.");
+    }
+    const trash = this.folderOrFail("trash");
+    // Page by page: whatever moved has left the folder, so the next page starts at 0 again.
+    for (let round = 0; round < 200; round += 1) {
+      const found = await one<QueryResponse>("Email/query", {
+        filter: { inMailbox: folderId },
+        limit: 500,
+        calculateTotal: false,
+      });
+      if (found.ids.length === 0) break;
+      const patch = { [`mailboxIds/${folderId}`]: null, [`mailboxIds/${trash.id}`]: true };
+      throwOnError(
+        await one<SetResponse>("Email/set", { update: Object.fromEntries(found.ids.map((id) => [id, patch])) }),
+      );
+    }
+    throwOnMailboxError(await one<SetResponse>("Mailbox/set", { destroy: [folderId], onDestroyRemoveEmails: false }));
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+  }
+
+  /** The portal's own call, which deletes on the server in one go instead of message by message. */
+  async emptyFolder(folderId: string): Promise<number> {
+    await this.start();
+    const role = this.folderMap.get(folderId)?.role;
+    if (role !== "trash" && role !== "junk") throw new BackendError("invalid_input", "Only trash and junk empty.");
+    const { api } = await import("../server");
+    const result = await api<{ removed: number }>(`/api/account/mailboxes/${role}/empty`, { method: "POST" });
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+    return result.removed;
   }
 
   private filterFor(query: ThreadQuery): Record<string, unknown> {
@@ -935,6 +1042,228 @@ export class JmapBackend implements Backend {
       inReplyTo: null,
       attachments,
     };
+  }
+
+  async calendarsAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(CALENDARS);
+  }
+
+  private calendarCall<T>(name: string, args: Record<string, unknown>): Promise<T> {
+    return one<T>(name, args, [CORE, CALENDARS]);
+  }
+
+  async calendars(): Promise<CalendarInfo[]> {
+    await this.start();
+    const response = await this.calendarCall<GetResponse<JmapCalendar>>("Calendar/get", {
+      ids: null,
+      properties: CALENDAR_PROPERTIES,
+    });
+    return response.list
+      .map((calendar) => toCalendarInfo(calendar, this.accountId))
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+  }
+
+  async createCalendar(input: { name: string; color: string | null }): Promise<CalendarInfo> {
+    await this.start();
+    const response = await this.calendarCall<SetResponse>("Calendar/set", {
+      create: { new: { name: input.name, color: input.color, isVisible: true } },
+    });
+    throwOnError(response);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't create the calendar.");
+    this.emit({ type: "calendar:changed" });
+    const created = (await this.calendars()).find((calendar) => calendar.id === id);
+    return (
+      created ?? {
+        id,
+        accountId: this.accountId,
+        name: input.name,
+        color: input.color,
+        isDefault: false,
+        isVisible: true,
+        sortOrder: 0,
+        mayWrite: true,
+        mayDelete: true,
+      }
+    );
+  }
+
+  async updateCalendar(id: string, patch: { name?: string; color?: string | null; isVisible?: boolean }) {
+    await this.start();
+    throwOnError(await this.calendarCall<SetResponse>("Calendar/set", { update: { [id]: patch } }));
+    this.emit({ type: "calendar:changed" });
+  }
+
+  async deleteCalendar(id: string): Promise<void> {
+    await this.start();
+    throwOnError(await this.calendarCall<SetResponse>("Calendar/set", { destroy: [id], onDestroyRemoveEvents: true }));
+    this.emit({ type: "calendar:changed" });
+  }
+
+  async setDefaultCalendar(id: string): Promise<void> {
+    await this.start();
+    throwOnError(
+      await this.calendarCall<SetResponse>("Calendar/set", { update: { [id]: {} }, onSuccessSetIsDefault: id }),
+    );
+    this.emit({ type: "calendar:changed" });
+  }
+
+  /**
+   * One request for the calendars, the expanded query and its occurrences, and a second one for
+   * the rules of the series among them, which expanded instances don't carry.
+   */
+  async calendarEvents(from: string, to: string, timeZone: string): Promise<CalendarOccurrence[]> {
+    await this.start();
+    const accountId = this.accountId;
+    const body = await call(
+      [
+        ["Calendar/get", { accountId, ids: null, properties: CALENDAR_PROPERTIES }, "c"],
+        [
+          "CalendarEvent/query",
+          {
+            accountId,
+            filter: { after: from, before: to },
+            sort: [{ property: "start", isAscending: true }],
+            expandRecurrences: true,
+            timeZone,
+            limit: 5000,
+          },
+          "q",
+        ],
+        [
+          "CalendarEvent/get",
+          {
+            accountId,
+            "#ids": { resultOf: "q", name: "CalendarEvent/query", path: "/ids" },
+            properties: EVENT_PROPERTIES,
+            timeZone,
+          },
+          "e",
+        ],
+      ],
+      [CORE, CALENDARS],
+    );
+    const calendars = new Map(
+      responseOf<GetResponse<JmapCalendar>>(body, "c").list.map((calendar) => [
+        calendar.id,
+        toCalendarInfo(calendar, accountId),
+      ]),
+    );
+    const events = responseOf<GetResponse<JmapCalendarEvent>>(body, "e").list;
+    const baseIds = [...new Set(events.map((event) => event.baseEventId).filter((id): id is string => !!id))];
+    const bases = new Map<string, JmapCalendarEvent>();
+    if (baseIds.length > 0) {
+      const found = await this.calendarCall<GetResponse<JmapCalendarEvent>>("CalendarEvent/get", {
+        ids: baseIds,
+        properties: RULE_PROPERTIES,
+      });
+      for (const base of found.list) bases.set(base.id, base);
+    }
+    return events.map((event) =>
+      toOccurrence(event, {
+        accountId,
+        viewerZone: timeZone,
+        calendar: calendars.get(Object.keys(event.calendarIds)[0] ?? ""),
+        base: event.baseEventId ? bases.get(event.baseEventId) : undefined,
+      }),
+    );
+  }
+
+  async createEvent(input: EventInput): Promise<string> {
+    await this.start();
+    const response = await this.calendarCall<SetResponse>("CalendarEvent/set", {
+      create: { new: newEventObject(input, deviceTimeZone()) },
+    });
+    throwOnError(response);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't keep the event.");
+    this.emit({ type: "calendar:changed" });
+    return id;
+  }
+
+  async updateEvent(eventId: string, input: EventInput, occurrenceStart?: string): Promise<void> {
+    await this.start();
+    const found = await this.calendarCall<GetResponse<JmapCalendarEvent>>("CalendarEvent/get", {
+      ids: [eventId],
+      properties: EDIT_PROPERTIES,
+    });
+    const current = found.list[0];
+    if (!current) throw new BackendError("not_found", "That event is gone.");
+    const patch = eventPatch(current, input, deviceTimeZone(), occurrenceStart);
+    if (Object.keys(patch).length === 0) return;
+    throwOnError(await this.calendarCall<SetResponse>("CalendarEvent/set", { update: { [eventId]: patch } }));
+    this.emit({ type: "calendar:changed" });
+  }
+
+  /** An instance of a series goes by its own (synthetic) id: the server records the exception. */
+  async deleteEvent(occurrenceId: string, scope: EventDeleteScope): Promise<void> {
+    await this.start();
+    let target = occurrenceId;
+    if (scope === "series") {
+      const found = await this.calendarCall<GetResponse<JmapCalendarEvent>>("CalendarEvent/get", {
+        ids: [occurrenceId],
+        properties: ["id", "baseEventId"],
+      });
+      target = found.list[0]?.baseEventId ?? occurrenceId;
+    }
+    throwOnError(await this.calendarCall<SetResponse>("CalendarEvent/set", { destroy: [target] }));
+    this.emit({ type: "calendar:changed" });
+  }
+
+  async mailRulesAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(SIEVE);
+  }
+
+  private async rulesScript(): Promise<JmapSieveScript | null> {
+    const response = await one<GetResponse<JmapSieveScript>>("SieveScript/get", { ids: null }, [CORE, SIEVE]);
+    return response.list.find((script) => script.name === RULES_SCRIPT) ?? null;
+  }
+
+  async mailRules(): Promise<{ script: string | null; active: boolean }> {
+    await this.start();
+    if (!supports(SIEVE)) throw new BackendError("not_supported", "This server has no mail rules.");
+    const found = await this.rulesScript();
+    if (!found) return { script: null, active: false };
+    const blob = await downloadBlob(found.blobId, `${RULES_SCRIPT}.sieve`);
+    return { script: await blob.text(), active: found.isActive };
+  }
+
+  private async uploadScript(script: string): Promise<string> {
+    const uploaded = await uploadBlob(new Blob([script], { type: SIEVE_TYPE }), SIEVE_TYPE);
+    return uploaded.blobId;
+  }
+
+  async validateMailRules(script: string): Promise<string | null> {
+    await this.start();
+    const blobId = await this.uploadScript(script);
+    const response = await one<{ error: { type: string; description?: string } | null }>(
+      "SieveScript/validate",
+      { blobId },
+      [CORE, SIEVE],
+    );
+    return response.error ? (response.error.description ?? response.error.type) : null;
+  }
+
+  async saveMailRules(script: string): Promise<void> {
+    await this.start();
+    const blobId = await this.uploadScript(script);
+    const existing = await this.rulesScript();
+    const response = await one<SetResponse>(
+      "SieveScript/set",
+      existing
+        ? { update: { [existing.id]: { blobId } }, onSuccessActivateScript: existing.id }
+        : { create: { rules: { name: RULES_SCRIPT, blobId } }, onSuccessActivateScript: "#rules" },
+      [CORE, SIEVE],
+    );
+    const problem = Object.values(response.notCreated ?? {})[0] ?? Object.values(response.notUpdated ?? {})[0] ?? null;
+    if (problem) {
+      throw new BackendError(
+        problem.type === "invalidSieve" || problem.type === "tooLarge" ? "invalid_input" : "internal",
+        problem.description ?? problem.type,
+      );
+    }
   }
 
   /** Address suggestions come from the server in 0.5.1. */

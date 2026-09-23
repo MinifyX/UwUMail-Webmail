@@ -177,5 +177,31 @@
     "title": "Oops, Nyu knocked something over",
     "body": "A bit of UwUMail tripped while drawing. Reload once and you're back ✧",
     "reload": "Reload"
+  },
+  "folders": {
+    "created": "Folder “{{name}}” is ready to be filled ✿",
+    "deleteTitle": "Say goodbye to “{{name}}”?",
+    "emptied_one": "Squeaky clean! {{count}} mail gone for good ✧",
+    "emptied_other": "Squeaky clean! {{count}} mails gone for good ✧",
+    "emptyTitle": {
+      "trash": "Take out the trash? (・ω・)",
+      "junk": "Sweep out the spam? (｀・ω・´)"
+    }
+  },
+  "rules": {
+    "empty": "No rules yet. Tell me where mail should go and I'll sort it for you, even while you sleep (˘ω˘)",
+    "saved": "Got it, I'll sort by this from now on ✿",
+    "foreignTitle": "Someone else scribbled in here (・_・;)"
+  },
+  "calendar": {
+    "nothingToday": "Nothing planned today. Nap time? (˘ω˘)",
+    "agendaEmpty": {
+      "title": "All free! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+      "body": "Nothing in the next 30 days. Time for adventures."
+    },
+    "toast": {
+      "created": "Written into the calendar ✿",
+      "deleted": "Poof, gone from the calendar (・ω・)"
+    }
   }
 }

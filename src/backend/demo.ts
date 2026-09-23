@@ -3,7 +3,9 @@ import { isDangerous } from "@/lib/attachments";
 import { SendQueue } from "@/lib/sendQueue";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
-import { buildFolders, buildMessages, DEMO_ACCOUNTS, welcomeMessage } from "./demo-data";
+import { DemoCalendar } from "./demo-calendar";
+import { rulesToSieve } from "@/lib/sieveRules";
+import { buildFolders, buildMessages, DEMO_ACCOUNTS, demoRules, welcomeMessage } from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
 import type {
   BlockedSender,
@@ -14,6 +16,8 @@ import type {
   Contact,
   DraftContent,
   DraftSaveResult,
+  EventDeleteScope,
+  EventInput,
   FlagChange,
   Folder,
   Identity,
@@ -50,6 +54,28 @@ function uniqueAddresses(addresses: Address[]): Address[] {
     seen.add(key);
     return true;
   });
+}
+
+/**
+ * A stand-in for the server's Sieve check: enough to try the text mode with. Braces and quotes
+ * must pair up, and the commands UwUMail's server doesn't run are refused like it would.
+ */
+function demoSieveProblem(script: string): string | null {
+  const code = script
+    .split(/\r?\n/)
+    .filter((line) => !line.trimStart().startsWith("#"))
+    .join("\n")
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""');
+  if (code.includes('"')) return "line ?: unterminated string";
+  let depth = 0;
+  for (const char of code) {
+    if (char === "{") depth += 1;
+    if (char === "}") depth -= 1;
+    if (depth < 0) break;
+  }
+  if (depth !== 0) return "unbalanced braces";
+  const unsupported = /\b(reject|ereject|vacation|notify|include)\b/.exec(code);
+  return unsupported ? `the command "${unsupported[1]}" is not supported here` : null;
 }
 
 /** In-memory engine with sample data. Used by `pnpm dev` in a normal browser. */
@@ -206,6 +232,82 @@ export class DemoBackend implements Backend {
         const inFolder = this.messages.filter((m) => m.folderId === folder.id);
         return { ...folder, total: inFolder.length, unread: inFolder.filter((m) => !m.flags.seen).length };
       });
+  }
+
+  async createFolder(input: { accountId?: string; name: string; parentId: string | null }) {
+    await wait(120);
+    const parent = input.parentId ? this.folders.find((f) => f.id === input.parentId) : undefined;
+    if (input.parentId && !parent) throw new BackendError("not_found", "This folder no longer exists.");
+    const accountId = parent?.accountId ?? input.accountId ?? this.accounts[0]!.id;
+    this.assertFreeName(accountId, input.parentId, input.name);
+    const id = `${accountId}:f${this.nextId++}`;
+    this.folders.push({
+      id,
+      accountId,
+      name: input.name,
+      path: parent ? `${parent.path}/${input.name}` : input.name,
+      role: null,
+      parentId: input.parentId,
+      selectable: true,
+      unread: 0,
+      total: 0,
+    });
+    this.emit({ type: "mail:changed", accountId });
+    return id;
+  }
+
+  async renameFolder(folderId: string, name: string) {
+    await wait(100);
+    const folder = this.folders.find((f) => f.id === folderId);
+    if (!folder) throw new BackendError("not_found", "This folder no longer exists.");
+    if (folder.role) throw new BackendError("invalid_input", "System folders keep their names.");
+    this.assertFreeName(folder.accountId, folder.parentId, name, folderId);
+    const oldPath = folder.path;
+    folder.name = name;
+    folder.path = oldPath.includes("/") ? `${oldPath.slice(0, oldPath.lastIndexOf("/"))}/${name}` : name;
+    for (const other of this.folders) {
+      if (other.path.startsWith(`${oldPath}/`)) other.path = folder.path + other.path.slice(oldPath.length);
+    }
+    this.emit({ type: "mail:changed", accountId: folder.accountId });
+  }
+
+  async deleteFolder(folderId: string) {
+    await wait(150);
+    const folder = this.folders.find((f) => f.id === folderId);
+    if (!folder) throw new BackendError("not_found", "This folder no longer exists.");
+    if (folder.role) throw new BackendError("invalid_input", "System folders stay.");
+    if (this.folders.some((f) => f.parentId === folderId)) {
+      throw new BackendError("invalid_input", "This folder still holds folders.");
+    }
+    for (const message of this.messages) {
+      if (message.folderId === folderId) message.folderId = `${folder.accountId}:trash`;
+    }
+    this.folders = this.folders.filter((f) => f.id !== folderId);
+    this.emit({ type: "mail:changed", accountId: folder.accountId });
+  }
+
+  async emptyFolder(folderId: string) {
+    await wait(200);
+    const folder = this.folders.find((f) => f.id === folderId);
+    if (folder?.role !== "trash" && folder?.role !== "junk") {
+      throw new BackendError("invalid_input", "Only trash and junk empty.");
+    }
+    const before = this.messages.length;
+    this.messages = this.messages.filter((m) => m.folderId !== folderId);
+    this.emit({ type: "mail:changed", accountId: folder.accountId });
+    return before - this.messages.length;
+  }
+
+  /** Like a server: two folders side by side can't share a name. */
+  private assertFreeName(accountId: string, parentId: string | null, name: string, except?: string) {
+    const taken = this.folders.some(
+      (f) =>
+        f.accountId === accountId &&
+        f.parentId === parentId &&
+        f.id !== except &&
+        f.name.toLowerCase() === name.toLowerCase(),
+    );
+    if (taken) throw new BackendError("invalid_input", "A folder with that name is already there.");
   }
 
   async listThreads(query: ThreadQuery): Promise<ThreadPage> {
@@ -534,6 +636,90 @@ export class DemoBackend implements Backend {
     const labels = (email.split("@")[1] ?? "").toLowerCase().split(".").filter(Boolean);
     const domain = labels.slice(-2).join(".");
     return labels.length < 2 || DEMO_FREEMAIL.has(domain) ? null : domain;
+  }
+
+  private calendar = new DemoCalendar(lang(), DEMO_ACCOUNTS[0]!.id, () => this.emit({ type: "calendar:changed" }));
+
+  async calendarsAvailable() {
+    return true;
+  }
+
+  async calendars() {
+    await wait(80);
+    return this.calendar.calendars();
+  }
+
+  async createCalendar(input: { name: string; color: string | null }) {
+    await wait(120);
+    return this.calendar.createCalendar(input);
+  }
+
+  async updateCalendar(id: string, patch: { name?: string; color?: string | null; isVisible?: boolean }) {
+    await wait(60);
+    this.calendar.updateCalendar(id, patch);
+  }
+
+  async deleteCalendar(id: string) {
+    await wait(120);
+    this.calendar.deleteCalendar(id);
+  }
+
+  async setDefaultCalendar(id: string) {
+    await wait(60);
+    this.calendar.setDefaultCalendar(id);
+  }
+
+  /** The demo keeps every time in the viewer's zone, so there is nothing to convert. */
+  async calendarEvents(from: string, to: string) {
+    await wait(120);
+    return this.calendar.occurrences(from, to);
+  }
+
+  async createEvent(input: EventInput) {
+    await wait(150);
+    return this.calendar.createEvent(input);
+  }
+
+  async updateEvent(eventId: string, input: EventInput, occurrenceStart?: string) {
+    await wait(150);
+    this.calendar.updateEvent(eventId, input, occurrenceStart);
+  }
+
+  async deleteEvent(occurrenceId: string, scope: EventDeleteScope) {
+    await wait(120);
+    this.calendar.deleteEvent(occurrenceId, scope);
+  }
+
+  /** Only the demo's JMAP mailbox plays a server with mail rules; its script starts with examples. */
+  private sieveScripts = new Map<string, { script: string; active: boolean }>([
+    [DEMO_ACCOUNTS[0]!.id, { script: rulesToSieve(demoRules(lang(), DEMO_ACCOUNTS[0]!.id)), active: true }],
+  ]);
+
+  private rulesAccount(accountId?: string) {
+    const account = accountId ? this.accounts.find((a) => a.id === accountId) : this.accounts[0];
+    if (account?.protocol !== "jmap") throw new BackendError("not_supported", "This mailbox has no mail rules.");
+    return account.id;
+  }
+
+  async mailRulesAvailable(accountId?: string) {
+    return this.accounts.some((a) => a.protocol === "jmap" && (!accountId || a.id === accountId));
+  }
+
+  async mailRules(accountId?: string) {
+    await wait(150);
+    return structuredClone(this.sieveScripts.get(this.rulesAccount(accountId)) ?? { script: null, active: false });
+  }
+
+  async validateMailRules(script: string) {
+    await wait(120);
+    return demoSieveProblem(script);
+  }
+
+  async saveMailRules(script: string, accountId?: string) {
+    await wait(200);
+    const problem = demoSieveProblem(script);
+    if (problem) throw new BackendError("invalid_input", problem);
+    this.sieveScripts.set(this.rulesAccount(accountId), { script, active: true });
   }
 
   async searchContacts(query: string): Promise<Contact[]> {
