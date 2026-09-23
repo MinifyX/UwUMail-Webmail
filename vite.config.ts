@@ -42,6 +42,9 @@ export default defineConfig(({ mode }) => {
     build: {
       target: "es2022",
       sourcemap: false,
+      // The server's policy allows fonts only from 'self', so a small font subset
+      // inlined as a data: URL would be blocked; keep every font a file.
+      assetsInlineLimit: (file) => (file.endsWith(".woff2") ? false : undefined),
     },
     test: {
       environment: "jsdom",
