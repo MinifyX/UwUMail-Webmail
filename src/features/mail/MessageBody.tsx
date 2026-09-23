@@ -18,12 +18,14 @@ function linkify(html: string) {
 
 /**
  * The engine already sanitizes HTML. We sanitize again here because the demo
- * backend and future addons can also produce message bodies.
+ * backend and future addons can also produce message bodies. `alsoForbid` drops more elements with
+ * their content.
  */
-function sanitize(html: string) {
+function sanitize(html: string, alsoForbid: string[] = []) {
   return DOMPurify.sanitize(html, {
     WHOLE_DOCUMENT: false,
     FORBID_TAGS: [
+      ...alsoForbid,
       "script",
       "iframe",
       "object",
@@ -145,8 +147,12 @@ export function buildPrintDocument(
   const escape = (text: string) => text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
   const people = (list: Message["to"]) =>
     escape(list.map((a) => (a.name ? `${a.name} <${a.email}>` : a.email)).join(", "));
+  // The mail shares this one document with the app's own trusted header. The sanitizer drops its
+  // <style> blocks -- only a selector there can reach the header's h1/table to hide it -- and the
+  // body sits in its own stacking/paint box so an absolutely-positioned element cannot overlay the
+  // header above it (security-audit W-3). Inline styles, which is what mail uses in practice, are kept.
   const pictures = withRemoteImages(
-    message.bodyHtml !== null ? sanitize(message.bodyHtml) : "",
+    message.bodyHtml !== null ? sanitize(message.bodyHtml, ["style"]) : "",
     allowRemote,
     imageProxy,
   );
@@ -154,11 +160,7 @@ export function buildPrintDocument(
     message.bodyHtml !== null
       ? replaceContentIds(pictures.html, inlineImages)
       : `<div style="white-space:pre-wrap">${textToHtml(message.bodyText ?? "")}</div>`;
-  // The mail shares this one document with the app's own trusted header. Strip its <style> blocks --
-  // only a selector there can reach the header's h1/table to hide it -- and contain the body in its
-  // own stacking/paint box so an absolutely-positioned element cannot overlay the header above it
-  // (security-audit W-3). Inline styles, which is what mail uses in practice, are kept.
-  const body = `<section style="position:relative;isolation:isolate;contain:content">${rendered.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")}</section>`;
+  const body = `<section style="position:relative;isolation:isolate;contain:content">${rendered}</section>`;
   const imageSources = `data: blob:${pictures.remote}`;
   const rows = [
     [labels.from, people([message.from])],
