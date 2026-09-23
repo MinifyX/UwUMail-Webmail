@@ -50,11 +50,18 @@ export const ROOT_ID = "uwu-mail-root";
 const NOMINAL_VIEWPORT_HEIGHT = 900;
 
 /**
+ * A number with a height-based viewport unit. A match only starts where no number goes on before
+ * it, and a number can be split one way only, so a long run of digits costs linear time instead of
+ * freezing the tab (security-audit WM-1).
+ */
+const VIEWPORT_HEIGHT = /(?<![\d.])(-?(?:\d+(?:\.\d+)?|\.\d+))(dvh|svh|lvh|vh|vmin|vmax)\b/gi;
+
+/**
  * The frame is always as tall as the mail, so `100vh` inside it means "as tall
  * as myself" and grows forever. Height-based viewport units become fixed pixels.
  */
 export function fixViewportHeightUnits(html: string): string {
-  return html.replace(/(-?\d*\.?\d+)(dvh|svh|lvh|vh|vmin|vmax)\b/gi, (_, amount: string) => {
+  return html.replace(VIEWPORT_HEIGHT, (_, amount: string) => {
     const pixels = (parseFloat(amount) * NOMINAL_VIEWPORT_HEIGHT) / 100;
     return `${Math.round(pixels * 100) / 100}px`;
   });
