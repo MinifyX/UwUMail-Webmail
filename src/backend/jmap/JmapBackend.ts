@@ -1522,11 +1522,17 @@ export class JmapBackend implements Backend {
 
   async saveAttachment(attachmentId: string): Promise<boolean> {
     const content = await this.getAttachment(attachmentId);
+    // This copy is made for the download alone; the viewer and the tiles fetch their own.
+    const release = () => URL.revokeObjectURL(content.url);
     if (content.dangerous) {
       const { confirmDangerousFile } = await import("@/state/dangerousFile");
-      if (!(await confirmDangerousFile(content.filename))) return false;
+      if (!(await confirmDangerousFile(content.filename))) {
+        release();
+        return false;
+      }
     }
     offerDownload(content.url, content.filename);
+    setTimeout(release, 60_000);
     return true;
   }
 
