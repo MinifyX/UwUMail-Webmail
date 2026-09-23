@@ -21,6 +21,8 @@ import {
   Star,
   Trash,
   Undo2,
+  UserPlus,
+  UsersRound,
 } from "lucide-react";
 import { backend } from "@/backend/backend";
 import { i18n } from "@/i18n";
@@ -31,6 +33,7 @@ import { useUi } from "@/state/ui";
 import type { QueryClient } from "@tanstack/react-query";
 import type { ThreadDetail } from "@/backend/types";
 import { startNewEvent } from "../calendar/CalendarSidebar";
+import { startNewContact } from "../contacts/state";
 import { requestMove } from "../mail/selection";
 import { SEARCH_INPUT_ID } from "../mail/ThreadList";
 
@@ -63,7 +66,7 @@ async function afterChange(client: QueryClient) {
 export function buildCommands(
   client: QueryClient,
   t: (key: string, options?: Record<string, unknown>) => string,
-  { calendar = false }: { calendar?: boolean } = {},
+  { calendar = false, contacts = false }: { calendar?: boolean; contacts?: boolean } = {},
 ): Command[] {
   const ui = useUi.getState();
   const settings = useSettings.getState();
@@ -257,6 +260,26 @@ export function buildCommands(
             run: () => {
               ui.setSection("calendar");
               startNewEvent();
+            },
+          },
+        ]
+      : []),
+    ...(contacts
+      ? [
+          {
+            id: "goContacts",
+            title: t("shortcuts.goContacts"),
+            icon: UsersRound,
+            keys: ["g p"],
+            run: () => ui.setSection("contacts"),
+          },
+          {
+            id: "newContact",
+            title: t("contacts.newContact"),
+            icon: UserPlus,
+            run: () => {
+              ui.setSection("contacts");
+              startNewContact();
             },
           },
         ]

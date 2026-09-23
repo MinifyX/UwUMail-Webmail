@@ -8,6 +8,10 @@ import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
 import { useAccounts, useBackendEvents, useIdentities, useSignatures } from "@/lib/queries";
 import { useUi } from "@/state/ui";
 import { CalendarShell } from "../calendar/CalendarShell";
+import { ContactEditor } from "../contacts/ContactEditor";
+import { ContactsShell } from "../contacts/ContactsShell";
+import { DeleteContactQuestion } from "../contacts/DeleteContactQuestion";
+import { useContactsAvailable } from "../contacts/useContactsData";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
 import { Composer } from "../compose/Composer";
 import { loadLocalDraft } from "../compose/localDraft";
@@ -57,9 +61,10 @@ export function MailShell() {
 
   const section = useUi((s) => s.section);
   const { data: calendarAvailable = false } = useCalendarsAvailable();
+  const { data: contactsAvailable = false } = useContactsAvailable();
   const commands = useMemo(
-    () => buildCommands(client, t, { calendar: calendarAvailable }),
-    [client, t, calendarAvailable],
+    () => buildCommands(client, t, { calendar: calendarAvailable, contacts: contactsAvailable }),
+    [client, t, calendarAvailable, contactsAvailable],
   );
 
   const hotkeys = useMemo(() => {
@@ -102,7 +107,7 @@ export function MailShell() {
     }
     return map;
   }, [commands, phone]);
-  // The calendar brings its own keys.
+  // The calendar and the contacts bring their own keys.
   useHotkeys(hotkeys, { enabled: section === "mail", repeat: ["j", "k", "ArrowDown", "ArrowUp", ...SCROLL_KEYS] });
 
   return (
@@ -115,6 +120,8 @@ export function MailShell() {
 
       {section === "calendar" ? (
         <CalendarShell />
+      ) : section === "contacts" ? (
+        <ContactsShell />
       ) : phone ? (
         <MobileShell />
       ) : (
@@ -159,6 +166,8 @@ export function MailShell() {
       <ShortcutsDialog />
       <MoveDialog />
       <FolderDialogs />
+      <ContactEditor />
+      <DeleteContactQuestion />
     </div>
   );
 }
