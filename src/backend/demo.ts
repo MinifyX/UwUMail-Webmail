@@ -4,6 +4,7 @@ import { SendQueue } from "@/lib/sendQueue";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
+import { DemoContacts } from "./demo-contacts";
 import { rulesToSieve } from "@/lib/sieveRules";
 import { buildFolders, buildMessages, DEMO_ACCOUNTS, demoRules, welcomeMessage } from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
@@ -14,6 +15,7 @@ import type {
   Address,
   BackendEvent,
   Contact,
+  ContactInput,
   DraftContent,
   DraftSaveResult,
   EventDeleteScope,
@@ -700,6 +702,57 @@ export class DemoBackend implements Backend {
     this.calendar.deleteEvent(occurrenceId, scope);
   }
 
+  private addressBook = new DemoContacts(lang(), DEMO_ACCOUNTS[0]!.id, () => this.emit({ type: "contacts:changed" }));
+
+  async contactsAvailable() {
+    return true;
+  }
+
+  async addressBooks() {
+    await wait(60);
+    return this.addressBook.addressBooks();
+  }
+
+  async createAddressBook(name: string) {
+    await wait(120);
+    return this.addressBook.createAddressBook(name);
+  }
+
+  async renameAddressBook(id: string, name: string) {
+    await wait(60);
+    this.addressBook.renameAddressBook(id, name);
+  }
+
+  async deleteAddressBook(id: string) {
+    await wait(120);
+    this.addressBook.deleteAddressBook(id);
+  }
+
+  async setDefaultAddressBook(id: string) {
+    await wait(60);
+    this.addressBook.setDefaultAddressBook(id);
+  }
+
+  async contacts() {
+    await wait(100);
+    return this.addressBook.contacts();
+  }
+
+  async createContact(input: ContactInput) {
+    await wait(150);
+    return this.addressBook.createContact(input);
+  }
+
+  async updateContact(id: string, input: ContactInput) {
+    await wait(150);
+    this.addressBook.updateContact(id, input);
+  }
+
+  async deleteContact(id: string) {
+    await wait(120);
+    this.addressBook.deleteContact(id);
+  }
+
   /** Only the demo's JMAP mailbox plays a server with mail rules; its script starts with examples. */
   private sieveScripts = new Map<string, { script: string; active: boolean }>([
     [DEMO_ACCOUNTS[0]!.id, { script: rulesToSieve(demoRules(lang(), DEMO_ACCOUNTS[0]!.id)), active: true }],
@@ -744,10 +797,13 @@ export class DemoBackend implements Backend {
         else counts.set(key, { name: address.name, email: address.email, timesContacted: 1, lastUsed: message.date });
       }
     }
-    return [...counts.values()]
+    const fromHistory = [...counts.values()]
       .filter((c) => !q || c.email.toLowerCase().includes(q) || c.name?.toLowerCase().includes(q))
-      .sort((a, b) => b.timesContacted - a.timesContacted)
-      .slice(0, 8);
+      .sort((a, b) => b.timesContacted - a.timesContacted);
+    // The address books first, as the server's search puts them.
+    const fromBooks = this.addressBook.search(q);
+    const known = new Set(fromBooks.map((c) => c.email.toLowerCase()));
+    return [...fromBooks, ...fromHistory.filter((c) => !known.has(c.email.toLowerCase()))].slice(0, 8);
   }
 
   async takeMailto(): Promise<MailtoDraft | null> {

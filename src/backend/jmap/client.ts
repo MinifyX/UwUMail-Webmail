@@ -17,6 +17,8 @@ export const SENDERS = "urn:uwumail:jmap:senders";
 export const SIEVE = "urn:ietf:params:jmap:sieve";
 /** Calendars and events (draft-ietf-jmap-calendars). */
 export const CALENDARS = "urn:ietf:params:jmap:calendars";
+/** Address books and contacts (RFC 9610). */
+export const CONTACTS = "urn:ietf:params:jmap:contacts";
 /** Our own: cleaned message HTML and delayed sending, see the server's docs. */
 export const WEBMAIL = "urn:uwumail:jmap:webmail";
 /** Our own: a mail's remote pictures, fetched by the server so their senders never see the reader. */

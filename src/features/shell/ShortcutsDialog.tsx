@@ -3,6 +3,7 @@ import { useT } from "@/i18n";
 import { modKey } from "@/lib/platform";
 import { useUi } from "@/state/ui";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
+import { useContactsAvailable } from "../contacts/useContactsData";
 
 const KEY_LABELS: Record<string, string> = { Delete: "Del", shift: "⇧", ArrowUp: "↑", ArrowDown: "↓" };
 
@@ -64,11 +65,23 @@ const CALENDAR_SHORTCUTS: [string, string, string?][] = [
   ["p", "calendarPrevious", "k"],
 ];
 
+/** The contacts' own keys, while they are on screen. */
+const CONTACT_SHORTCUTS: [string, string, string?][] = [
+  ["g p", "goContacts"],
+  ["c", "contactsNew"],
+  ["e", "contactsEdit"],
+  ["#", "contactsDelete", "Delete"],
+  ["j", "contactsNext", "ArrowDown"],
+  ["k", "contactsPrevious", "ArrowUp"],
+  ["g m", "goMail"],
+];
+
 export function ShortcutsDialog() {
   const { t } = useT();
   const open = useUi((s) => s.shortcutsOpen);
   const setOpen = useUi((s) => s.setShortcutsOpen);
   const { data: calendar = false } = useCalendarsAvailable();
+  const { data: contacts = false } = useContactsAvailable();
   const label = ([combo, key, alt]: [string, string, string?]): [string, string, string?] => [
     combo,
     t(`shortcuts.${key}`),
@@ -84,6 +97,14 @@ export function ShortcutsDialog() {
             {t("nav.section.calendar")}
           </h3>
           <ShortcutList shortcuts={CALENDAR_SHORTCUTS.map(label)} />
+        </>
+      )}
+      {contacts && (
+        <>
+          <h3 className="px-6 pt-1 pb-1 text-[12px] font-bold tracking-wide text-muted uppercase">
+            {t("nav.section.contacts")}
+          </h3>
+          <ShortcutList shortcuts={CONTACT_SHORTCUTS.map(label)} />
         </>
       )}
     </Dialog>

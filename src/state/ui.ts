@@ -49,8 +49,8 @@ export interface MoveRequest {
 export type SettingsSection =
   "appearance" | "mail" | "compose" | "rules" | "security" | "accounts" | "addons" | "about";
 
-/** The two halves of the app. */
-export type AppSection = "mail" | "calendar";
+/** The parts of the app the switch at the top of the sidebar leads to. */
+export type AppSection = "mail" | "calendar" | "contacts";
 
 interface UiState {
   section: AppSection;

@@ -43,6 +43,9 @@ for the whole server or for single accounts.
 - **Reads like the app.** Conversations, folder tree, search, attachments,
   spam and blocking, keyboard shortcuts, dark mode, German and English, playful
   or plain — the same Nyu, the same colours.
+- **Calendar and contacts.** When the server keeps them for the account, the
+  calendar and the address books sit next to the mail, the same ones a phone
+  syncs over CalDAV and CardDAV.
 - **Fits a phone.** Below 700 px it turns into the app's phone layout, with
   swipes and a full-screen composer, and it can be put on the home screen.
 

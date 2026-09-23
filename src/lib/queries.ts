@@ -27,6 +27,8 @@ export const queryKeys = {
   signatures: ["signatures"] as const,
   calendars: ["calendars"] as const,
   calendarEvents: ["calendarEvents"] as const,
+  addressBooks: ["addressBooks"] as const,
+  contacts: ["contacts"] as const,
 };
 
 export function useAccounts() {
@@ -326,6 +328,10 @@ export function useBackendEvents() {
         case "calendar:changed":
           void client.invalidateQueries({ queryKey: queryKeys.calendars });
           void client.invalidateQueries({ queryKey: queryKeys.calendarEvents });
+          break;
+        case "contacts:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.addressBooks });
+          void client.invalidateQueries({ queryKey: queryKeys.contacts });
           break;
       }
     });
