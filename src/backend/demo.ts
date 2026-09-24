@@ -119,7 +119,7 @@ export class DemoBackend implements Backend {
     {
       id: "id-studio",
       accountId: DEMO_ACCOUNTS[0]!.id,
-      email: "hallo@uwumail.dev",
+      email: "hallo@uwumail.example",
       name: "Mini vom Studio",
       primary: false,
       fromServer: true,
@@ -470,7 +470,7 @@ export class DemoBackend implements Backend {
     await wait(350);
     const account = this.accounts.find((a) => a.id === draft.accountId);
     if (!account) throw new BackendError("not_found", "Account not found");
-    const draftKey = draft.draftKey ?? `demo-${this.nextId++}@${account.email.split("@")[1] ?? "uwumail.dev"}`;
+    const draftKey = draft.draftKey ?? `demo-${this.nextId++}@${account.email.split("@")[1] ?? "uwumail.example"}`;
     this.removeDraftMessage(draftKey);
     const original = draft.inReplyTo ? this.messages.find((m) => m.id === draft.inReplyTo) : undefined;
     const id = `msg-${this.nextId++}`;
