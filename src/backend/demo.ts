@@ -6,6 +6,8 @@ import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
 import { rulesToSieve } from "@/lib/sieveRules";
+import { resolveLanguage } from "@/i18n";
+import { useSettings } from "@/state/settings";
 import { buildFolders, buildMessages, DEMO_ACCOUNTS, demoRules, welcomeMessage } from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
 import type {
@@ -44,8 +46,9 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Like the engine: conversations the trash lists hold only their trashed messages. */
 const TRASHED_THREAD = "trash:";
 
+/** The sample data exists in German and English; every other language gets the English one. */
 function lang(): "de" | "en" {
-  return navigator.language.toLowerCase().startsWith("de") ? "de" : "en";
+  return resolveLanguage(useSettings.getState().language) === "de" ? "de" : "en";
 }
 
 function uniqueAddresses(addresses: Address[]): Address[] {
@@ -116,7 +119,7 @@ export class DemoBackend implements Backend {
     {
       id: "id-studio",
       accountId: DEMO_ACCOUNTS[0]!.id,
-      email: "hallo@uwumail.dev",
+      email: "hallo@uwumail.example",
       name: "Mini vom Studio",
       primary: false,
       fromServer: true,
@@ -467,7 +470,7 @@ export class DemoBackend implements Backend {
     await wait(350);
     const account = this.accounts.find((a) => a.id === draft.accountId);
     if (!account) throw new BackendError("not_found", "Account not found");
-    const draftKey = draft.draftKey ?? `demo-${this.nextId++}@${account.email.split("@")[1] ?? "uwumail.dev"}`;
+    const draftKey = draft.draftKey ?? `demo-${this.nextId++}@${account.email.split("@")[1] ?? "uwumail.example"}`;
     this.removeDraftMessage(draftKey);
     const original = draft.inReplyTo ? this.messages.find((m) => m.id === draft.inReplyTo) : undefined;
     const id = `msg-${this.nextId++}`;

@@ -8,7 +8,9 @@ export type Tone = "playful" | "neutral";
 export type ThemeSetting = "system" | "light" | "dark";
 /** Animations: follow the system's reduced-motion setting, or override it. */
 export type MotionSetting = "system" | "on" | "off";
-export type LanguageSetting = "system" | "de" | "en";
+/** "system" follows the browser's languages; the others are the languages the webmail speaks. */
+export const LANGUAGE_SETTINGS = ["system", "de", "en", "fr", "nl", "ja", "zh"] as const;
+export type LanguageSetting = (typeof LANGUAGE_SETTINGS)[number];
 export type RemoteImages = "ask" | "always";
 /** How HTML mail looks while the webmail is dark. */
 export type MailAppearance = "auto" | "light" | "dark";
@@ -167,6 +169,17 @@ export const useSettings = create<Settings & SettingsActions>()(
         })),
     }),
     // Kept per browser so the first paint is right; the server has the say once it answers.
-    { name: "uwumail.webmail", version: 1 },
+    {
+      name: "uwumail.webmail",
+      version: 1,
+      // A language this version doesn't speak (left by a newer one) falls back to the browser's.
+      merge: (persisted, current) => {
+        const state = { ...current, ...(persisted as Partial<Settings>) };
+        if (!(LANGUAGE_SETTINGS as readonly unknown[]).includes(state.language)) {
+          state.language = DEFAULT_SETTINGS.language;
+        }
+        return state;
+      },
+    },
   ),
 );

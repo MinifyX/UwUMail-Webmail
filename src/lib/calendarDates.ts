@@ -219,7 +219,8 @@ export function formatDuration({ days, seconds }: Duration): string {
 
 /**
  * The first day of the week for a language: Monday for German, otherwise what the locale says
- * (Sunday for US English), Monday when the browser can't tell.
+ * (Sunday for US English). When the browser can't tell: Sunday for US English, Japanese and
+ * Chinese, Monday for everything else (French, Dutch, British English …).
  */
 export function weekStartFor(language: string): number {
   if (language.toLowerCase().startsWith("de")) return 1;
@@ -233,5 +234,5 @@ export function weekStartFor(language: string): number {
   } catch {
     // An unknown tag falls through to the guess below.
   }
-  return /^en(-US)?$/i.test(language) ? 0 : 1;
+  return /^(en(-US)?|ja(-.*)?|zh(-.*)?)$/i.test(language) ? 0 : 1;
 }

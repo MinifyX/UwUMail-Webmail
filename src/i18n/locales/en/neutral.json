@@ -166,7 +166,7 @@
     "newMail_one": "{{count}} new message",
     "newMail_other": "{{count}} new messages",
     "draftSaved": "Draft saved",
-    "draftLocal": "The draft is only saved on this device. UwUMail will try again later.",
+    "draftLocal": "The draft is only saved on this device. {{brand}} will try again later.",
     "draftDiscarded": "Draft discarded",
     "draftOpenFailed": "The draft couldn't be opened. {{reason}}",
     "draftGone": "There is no draft left in this conversation.",
@@ -176,7 +176,7 @@
     "markedNotSpam": "Back in the inbox",
     "moveUndone": "Undone",
     "blocked": "{{entry}} is blocked. New mail from there goes to the spam folder.",
-    "blockedOnServer": "{{entry}} is blocked on your UwUMail server. New mail from there goes to the spam folder.",
+    "blockedOnServer": "{{entry}} is blocked on your {{brand}} server. New mail from there goes to the spam folder.",
     "unblocked": "{{entry}} isn't blocked anymore",
     "unsubscribed": "Unsubscribed from {{name}}",
     "unsubscribePage": "{{name}}'s unsubscribe page is open in your browser",
@@ -219,7 +219,7 @@
     "listDensityDesc": "Compact fits more mail on screen, with a small picture and two lines.",
     "theme": "Theme",
     "motion": "Animations",
-    "motionDesc": "With System, UwUMail follows the reduced motion setting of your operating system.",
+    "motionDesc": "With System, {{brand}} follows the reduced motion setting of your operating system.",
     "tone": "Tone",
     "language": "Language",
     "conversations": "Group messages into conversations",
@@ -229,9 +229,9 @@
     "remoteAsk": "Ask every time",
     "remoteAlways": "Always load",
     "trustedSenders": "Always load images from",
-    "trustedSendersDesc": "A company like @shop.com covers all of its addresses, including news@ or noreply@.",
+    "trustedSendersDesc": "A company like @shop.example covers all of its addresses, including news@ or noreply@.",
     "trustedSendersEmpty": "Nobody yet. You add senders right in the image notice of a message.",
-    "trustedSendersInactive": "Only applies with “Ask every time”. Right now UwUMail loads all images.",
+    "trustedSendersInactive": "Only applies with “Ask every time”. Right now {{brand}} loads all images.",
     "untrustSender": "Remove {{sender}}",
     "version": "Version {{version}}",
     "license": "Free software under the GNU GPL v3.0.",
@@ -255,7 +255,7 @@
     "senderFromServer": "From the mail server",
     "blockedSenders": "Blocked senders",
     "blockedSendersDesc": "New mail from these senders goes to the spam folder. For accounts on a UwUMail server, the server sorts it, even while the app is closed. Block someone from “More” in a mail.",
-    "blockedOnServer": "On the UwUMail server · {{email}}",
+    "blockedOnServer": "On the {{brand}} server · {{email}}",
     "blockedInApp": "In this app",
     "blockedSendersEmpty": "Nobody is blocked.",
     "unblockSender": "Unblock {{entry}}",
@@ -309,9 +309,7 @@
     "off": "Off"
   },
   "language": {
-    "system": "System",
-    "de": "Deutsch",
-    "en": "English"
+    "system": "System"
   },
   "shortcuts": {
     "compose": "Write a message",
@@ -436,7 +434,7 @@
     "hiddenTarget": "Where it goes after that isn't in the link.",
     "otherTarget": "Different target than shown",
     "statusRedirect": "redirects to {{target}}",
-    "unsupported": "UwUMail doesn't open this kind of link.",
+    "unsupported": "{{brand}} doesn't open this kind of link.",
     "sheetTitle": "Link"
   },
   "density": {
@@ -481,8 +479,8 @@
   "unsubscribe": {
     "title": "Unsubscribe from {{name}}?",
     "mailTo": "That sends a mail from you to {{address}}.",
-    "body": "UwUMail unsubscribes you with the sender directly. After that, no more mail should come from there.",
-    "bodyPage": "The sender has its own page for this. UwUMail opens it for you, and you confirm there.",
+    "body": "{{brand}} unsubscribes you with the sender directly. After that, no more mail should come from there.",
+    "bodyPage": "The sender has its own page for this. {{brand}} opens it for you, and you confirm there.",
     "archive": "Archive earlier mail from there"
   },
   "deleteForever": {
@@ -517,7 +515,7 @@
   },
   "crash": {
     "title": "Something went wrong",
-    "body": "Part of UwUMail crashed while drawing. Reloading brings you back.",
+    "body": "Part of {{brand}} crashed while drawing. Reloading brings you back.",
     "reload": "Reload"
   },
   "folders": {
@@ -564,7 +562,7 @@
   },
   "rules": {
     "title": "Mail rules",
-    "description": "Your server sorts arriving mail with these rules, from top to bottom, even while UwUMail is closed. The UwUMail app shows the same rules.",
+    "description": "Your server sorts arriving mail with these rules, from top to bottom, even while {{brand}} is closed. The UwUMail app shows the same rules.",
     "account": "Mailbox",
     "loading": "Loading rules …",
     "loadFailed": "The rules couldn't be loaded. {{reason}}",
@@ -642,11 +640,11 @@
       "tooMany": "One folder and one forward per rule."
     },
     "foreignTitle": "These rules were edited elsewhere",
-    "foreignBody": "Another program changed the rules script, so UwUMail shows it as text. You can edit it here, or replace it with rules you manage in UwUMail.",
+    "foreignBody": "Another program changed the rules script, so {{brand}} shows it as text. You can edit it here, or replace it with rules you manage in {{brand}}.",
     "scriptLabel": "Sieve script",
     "saveScript": "Save",
     "check": "Check",
-    "replace": "Replace with UwUMail rules",
+    "replace": "Replace with {{brand}} rules",
     "replaceConfirm": "Replace the script",
     "replaceBody": "The script above will be deleted and you start with an empty list of rules."
   },

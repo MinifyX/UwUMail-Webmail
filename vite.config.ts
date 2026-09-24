@@ -36,6 +36,8 @@ export default defineConfig(({ mode }) => {
             "/api": proxy,
             "/jmap": proxy,
             "/.well-known/jmap": proxy,
+            // The server's colours and logo, see lib/brand.
+            "/branding": proxy,
           }
         : undefined,
     },

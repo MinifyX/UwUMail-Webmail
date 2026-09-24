@@ -7,13 +7,14 @@ import { DeleteForeverQuestion } from "@/features/mail/DeleteForeverQuestion";
 import { LinkSheet, LinkStatus } from "@/features/mail/LinkPreview";
 import { LinkWarning } from "@/features/mail/LinkWarning";
 import { MailShell } from "@/features/shell/MailShell";
-import { i18n, resolveLanguage, useT } from "@/i18n";
+import { useApplyLanguage, useT } from "@/i18n";
 import { BackendError, isDemo, loadBackend } from "@/backend/backend";
 import { PORTAL_URL, loadSession, webmailAccess } from "@/backend/server";
+import { useApplyBrand } from "@/lib/brand";
 import { useApplyTheme } from "@/lib/theme";
 import { startSettingsSync } from "@/state/accountSync";
 import { claimBrowser } from "@/state/browserOwner";
-import { applyServerPreferences, useSettings } from "@/state/settings";
+import { applyServerPreferences } from "@/state/settings";
 
 type Boot =
   | { state: "loading" }
@@ -94,8 +95,10 @@ function BootScreen({ boot }: { boot: Exclude<Boot, { state: "ready" }> }) {
 
 export function App() {
   const [boot, setBoot] = useState<Boot>({ state: "loading" });
-  const language = useSettings((s) => s.language);
   useApplyTheme();
+  useApplyLanguage();
+  // Name, logo and colour of the server; UwUMail until the session says otherwise, and in the demo.
+  useApplyBrand();
 
   useEffect(() => {
     let cancelled = false;
@@ -145,12 +148,6 @@ export function App() {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    const resolved = resolveLanguage(language);
-    void i18n.changeLanguage(resolved);
-    document.documentElement.lang = resolved;
-  }, [language]);
 
   return (
     <>

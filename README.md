@@ -41,8 +41,9 @@ for the whole server or for single accounts.
 - **One mailbox.** The account on this server, nothing else. No adding
   accounts, no passwords kept in a browser.
 - **Reads like the app.** Conversations, folder tree, search, attachments,
-  spam and blocking, keyboard shortcuts, dark mode, German and English, playful
-  or plain — the same Nyu, the same colours.
+  spam and blocking, keyboard shortcuts, dark mode, German, English, French,
+  Dutch, Japanese and Simplified Chinese, playful or plain — the same Nyu, the
+  same colours, or the name, logo and colour the server's admin chose.
 - **Calendar and contacts.** When the server keeps them for the account, the
   calendar and the address books sit next to the mail, the same ones a phone
   syncs over CalDAV and CardDAV.

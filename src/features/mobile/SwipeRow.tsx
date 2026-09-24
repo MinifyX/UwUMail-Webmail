@@ -117,7 +117,11 @@ export function SwipeRow({
           {offset < 0 && <span>{label}</span>}
           <span className={clsx("relative transition-transform duration-150", armed && "scale-125")}>
             <Icon className="size-5" strokeWidth={2.4} />
-            <LogoSymbol key={String(armed)} hop={armed ? 1 : 0} className="absolute -top-3.5 -right-3.5 h-4 w-auto" />
+            <LogoSymbol
+              key={String(armed)}
+              hop={armed ? 1 : 0}
+              className="absolute -top-3.5 -right-3.5 h-4 w-auto max-w-8"
+            />
           </span>
           {offset > 0 && <span>{label}</span>}
         </div>

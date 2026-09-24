@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { CalendarInfo, CalendarOccurrence, Recurrence } from "@/backend/types";
-import { i18n } from "@/i18n";
+import { i18n, type Language } from "@/i18n";
 import { addDays, dateOf, wallMs, weekStartFor, type DateKey, type WallTime } from "@/lib/calendarDates";
 import { WEEKDAYS } from "@/lib/recurrence";
 
@@ -10,9 +10,19 @@ export const DEFAULT_COLOR = "#ff4d8d";
 /** Colours offered for calendars: the app's account colours and two calmer ones. */
 export const CALENDAR_COLORS = ["#ff4d8d", "#8b5cf6", "#0ea5e9", "#10b981", "#f59e0b", "#f97360", "#64748b", "#a16207"];
 
-/** The language tag dates are written in: German, or the browser's English (US, UK …). */
+/** Where each language's dates come from; English follows the browser instead (US, UK …). */
+const LOCALES: Record<Exclude<Language, "en">, string> = {
+  de: "de-DE",
+  fr: "fr-FR",
+  nl: "nl-NL",
+  ja: "ja-JP",
+  zh: "zh-CN",
+};
+
+/** The language tag dates are written in. */
 export function calendarLocale(): string {
-  if (i18n.language === "de") return "de-DE";
+  const language = i18n.language as Language;
+  if (language !== "en" && language in LOCALES) return LOCALES[language];
   return navigator.languages?.find((tag) => tag.toLowerCase().startsWith("en")) ?? "en-US";
 }
 

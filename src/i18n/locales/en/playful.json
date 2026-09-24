@@ -175,7 +175,7 @@
   },
   "crash": {
     "title": "Oops, Nyu knocked something over",
-    "body": "A bit of UwUMail tripped while drawing. Reload once and you're back ✧",
+    "body": "A bit of {{brand}} tripped while drawing. Reload once and you're back ✧",
     "reload": "Reload"
   },
   "folders": {
