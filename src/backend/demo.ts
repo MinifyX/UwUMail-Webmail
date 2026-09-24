@@ -6,6 +6,8 @@ import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
 import { rulesToSieve } from "@/lib/sieveRules";
+import { resolveLanguage } from "@/i18n";
+import { useSettings } from "@/state/settings";
 import { buildFolders, buildMessages, DEMO_ACCOUNTS, demoRules, welcomeMessage } from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
 import type {
@@ -44,8 +46,9 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Like the engine: conversations the trash lists hold only their trashed messages. */
 const TRASHED_THREAD = "trash:";
 
+/** The sample data exists in German and English; every other language gets the English one. */
 function lang(): "de" | "en" {
-  return navigator.language.toLowerCase().startsWith("de") ? "de" : "en";
+  return resolveLanguage(useSettings.getState().language) === "de" ? "de" : "en";
 }
 
 function uniqueAddresses(addresses: Address[]): Address[] {

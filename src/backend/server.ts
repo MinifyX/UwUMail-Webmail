@@ -6,6 +6,7 @@
  * session's CSRF token, exactly like the portal's own requests.
  */
 
+import { useBrand, type Brand } from "@/state/brand";
 import { BackendError } from "./backend";
 
 export type Role = "admin" | "member";
@@ -37,7 +38,8 @@ export interface ServerSession {
   account: ServerAccount;
   csrfToken: string;
   preferences: Preferences;
-  server: { hostname: string; version: string };
+  /** `brand` is missing on servers from before branding; they are UwUMail as it comes. */
+  server: { hostname: string; version: string; brand?: Brand };
 }
 
 let session: ServerSession | null = null;
@@ -95,6 +97,8 @@ export async function loadSession(): Promise<ServerSession | null> {
   if (!response.ok) throw problem(response.status, await response.json().catch(() => null));
   const body = (await response.json()) as ServerSession | null;
   session = body;
+  // The server's name, logo, colour and whether Nyu comes along.
+  if (body) useBrand.getState().apply(body.server?.brand);
   return body;
 }
 

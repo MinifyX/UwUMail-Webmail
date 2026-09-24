@@ -1,0 +1,212 @@
+{
+  "list": {
+    "loading": "Je vais chercher vos e-mails (｡･ω･｡)",
+    "empty": {
+      "inbox": {
+        "title": "Boîte vide ! L'heure du thé (っ˘ω˘ς)",
+        "body": "Je vous préviens dès que quelque chose arrive."
+      },
+      "search": {
+        "title": "Rien trouvé (・_・;)",
+        "body": "J'ai cherché partout, même sous le canapé."
+      },
+      "other": {
+        "title": "Si vide, si paisible (˘ᵕ˘)",
+        "body": "Rien dans ce dossier pour l'instant."
+      },
+      "offline": {
+        "title": "Pas d'internet (・_・;)",
+        "body": "J'attends sous mon parapluie et je vais chercher vos e-mails dès que la connexion revient."
+      }
+    }
+  },
+  "reader": {
+    "empty": {
+      "title": "Choisissez un e-mail, n'importe lequel ✉︎",
+      "body": "Je vous l'ouvre juste ici."
+    },
+    "loading": "J'ouvre l'enveloppe…",
+    "remoteBlocked": "J'ai bloqué les images distantes pour que personne ne vous espionne (｀・ω・´)",
+    "appearanceAutoLight": "Je l'ai gardé clair, il s'est si bien habillé (・ω・)",
+    "appearanceRemembered": "Compris, je m'en souviendrai pour {{email}} ✿",
+    "remoteTrustedAddress": "Compris, les images de {{email}} peuvent entrer maintenant ✿",
+    "remoteTrustedDomain": "Compris, les images de {{domain}} peuvent entrer maintenant ✿",
+    "remoteUntrustedAddress": "D'accord, les images de {{email}} restent de nouveau dehors (｀・ω・´)",
+    "remoteUntrustedDomain": "D'accord, les images de {{domain}} restent de nouveau dehors (｀・ω・´)",
+    "error": {
+      "title": "Je me suis emmêlé dans le câble (╥﹏╥)",
+      "body": "Ce message n'est pas arrivé. Réessayez dans un instant."
+    },
+    "showAddresses": "Afficher toutes les adresses",
+    "hideAddresses": "Replier les adresses",
+    "replyTo": "Répondre à",
+    "copyAddress": "Copier {{email}}",
+    "addressCopied": "Adresse mise de côté ✧"
+  },
+  "compose": {
+    "placeholder": "Écrivez quelque chose de gentil ✿",
+    "noRecipients": "C'est pour qui ? Ajoutez d'abord un destinataire (・・ )?",
+    "draftLocal": "Enregistré seulement ici pour l'instant (・_・;)"
+  },
+  "toast": {
+    "sent": "Et c'est parti ✉︎ ~",
+    "sendFailed": "Envoi impossible (╥﹏╥) {{reason}}",
+    "archived": "Rangé bien au chaud dans les archives (˘ω˘)",
+    "trashed": "Bye bye (｡•́︿•̀｡)",
+    "newMail_one": "Vous avez du courrier ! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "newMail_many": "{{count}} nouveaux e-mails ! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "newMail_other": "{{count}} nouveaux e-mails ! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "draftSaved": "Brouillon rangé en lieu sûr (˘ω˘)",
+    "draftDiscarded": "Pouf, comme si de rien n'était (・ω・)",
+    "markedSpam": "Direction le coin des spams (｀へ´)",
+    "moveUndone": "Pouf, tout est comme avant (・ω・)",
+    "blocked": "{{entry}} ne peut plus entrer (｀・ω・´) Les nouveaux e-mails vont dans le dossier spam.",
+    "blockedOnServer": "{{entry}} ne peut plus entrer, votre serveur monte la garde (｀・ω・´) Les nouveaux e-mails vont dans le dossier spam.",
+    "unsubscribed": "Désabonné (≧▽≦) Plus d'e-mails de {{name}}",
+    "messageSaved": "E-mail rangé en lieu sûr (˘ω˘)",
+    "deletedForever_one": "Parti pour toujours (｡•́︿•̀｡)",
+    "deletedForever_many": "{{count}} messages partis pour toujours (｡•́︿•̀｡)",
+    "deletedForever_other": "{{count}} messages partis pour toujours (｡•́︿•̀｡)",
+    "sending": "Nyu s'apprête à filer … ✉︎"
+  },
+  "status": {
+    "syncing": "Je vais chercher des e-mails tout frais…",
+    "error": "{{account}} ne répond pas (・_・;)",
+    "demo": "Mode démo, rien que des e-mails pour de faux. Rien ne quitte l'app (´｡• ω •｡`)",
+    "offline": "Pas d'internet (・_・;) Je vous montre ce que j'ai gardé pour vous",
+    "loading": "Je vais chercher votre nid à e-mails"
+  },
+  "tone": {
+    "playful": {
+      "desc": "Kaomoji, petites blagues et messages mignons (◕ᴗ◕✿)"
+    }
+  },
+  "settings": {
+    "motionDesc": "Nyu doit-il cligner des yeux, sautiller et voleter partout ? Avec Système, je suis votre système d'exploitation.",
+    "trustedSendersEmpty": "Personne sur ma liste pour l'instant (・・ )? Ajoutez des expéditeurs directement depuis l'avis sur les images d'un message.",
+    "signatureSaved": "La signature est superbe ✧",
+    "signaturePlaceholder": "Bien à vous ✿",
+    "signatureTooBig": "Oups, tout ça ne rentre pas dans une signature (・_・;) Essayez une image plus petite.",
+    "linkConfirm": "Demander avant d'ouvrir les liens",
+    "linkConfirmDesc": "Je vous montre d'abord où mène un lien d'un e-mail. Les liens déguisés ont toujours droit à une question.",
+    "linkDomains": "Ouvrir sans demander",
+    "linkDomainsDesc": "Je laisse passer directement les liens vers ces sites, sauf s'ils sont déguisés.",
+    "linkDomainsEmpty": "Aucun pour l'instant. Vous ajoutez des sites directement en ouvrant un lien ✧",
+    "linkDomainsInactive": "Pour l'instant, je laisse passer chaque lien directement.",
+    "forgetLinkDomain": "Retirer {{domain}}"
+  },
+  "attachment": {
+    "loading": "Je déballe la pièce jointe…",
+    "dangerTitle": "Attention ! Ce fichier pourrait lancer des programmes (・_・;)",
+    "noPreview": "Je ne peux pas jeter un œil à celui-ci (・・ )?",
+    "dangerous": {
+      "title": "Nyu regarde ce fichier d'un œil méfiant",
+      "body": "Ce type de fichier peut lancer des programmes sur votre ordinateur. Ne le prenez que si vous l'attendiez et faites confiance à l'expéditeur."
+    }
+  },
+  "link": {
+    "warningTitle": "Hmm, ce lien raconte peut-être des bobards (・_・;)",
+    "confirmTitle": "Ouvrir ce lien ? (・ω・)",
+    "confirmBody": "Regardons ensemble où il mène ✧",
+    "mailTitle": "Écrire un e-mail ? ✉",
+    "mailBody": "Le lien commence un nouvel e-mail à ces personnes.",
+    "open": "Ouvrir",
+    "compose": "Écrire un e-mail",
+    "copy": "Copier l'adresse",
+    "copyShort": "Copier",
+    "copied": "Lien mis de côté ✧",
+    "remember": "Ne plus demander pour {{domain}}",
+    "remembered": "Je laisse maintenant passer directement les liens vers {{domain}} ✧ Vous pouvez modifier cela dans Paramètres, sous Lecture.",
+    "insecure": "Non chiffré (http) : d'autres pourraient lire ce que vous y saisissez (・_・;)",
+    "unicodeHost": "Ressemble à",
+    "lookalike": "Certaines lettres ici se font passer pour d'autres. C'est comme ça que les faux sites se déguisent (・_・;)",
+    "userinfo": "Un nom d'utilisateur devant l'adresse peut se déguiser en un autre site. En vrai, il mène à {{domain}}.",
+    "redirectsTo": "Rebondit vers",
+    "tracking": "Suivi des clics via {{host}}",
+    "service": "Service de redirection {{host}}",
+    "hiddenTarget": "Le lien ne dit pas où il rebondit ensuite.",
+    "otherTarget": "Destination différente de celle affichée",
+    "statusRedirect": "rebondit vers {{target}}",
+    "unsupported": "Je préfère ne pas ouvrir ce genre de liens (・_・;)",
+    "sheetTitle": "Lien"
+  },
+  "mobile": {
+    "pull": {
+      "release": "Relâchez et je vérifie ✧",
+      "refreshing": "Nyu regarde dans la boîte aux lettres (｡･ω･｡)"
+    },
+    "draft": {
+      "continue": "Continuer d'écrire ✎"
+    },
+    "swipe": {
+      "spam": "Spam !",
+      "notSpam": "Finalement pas un spam"
+    }
+  },
+  "unsubscribe": {
+    "title": "Bye bye {{name}} ?"
+  },
+  "deleteForever": {
+    "title_one": "Dire adieu à celui-ci pour toujours ? (｡•́︿•̀｡)",
+    "title_many": "Dire adieu à {{count}} messages pour toujours ? (｡•́︿•̀｡)",
+    "title_other": "Dire adieu à {{count}} messages pour toujours ? (｡•́︿•̀｡)",
+    "body_one": "Il disparaîtra aussi du serveur, et je ne pourrai pas le récupérer.",
+    "body_many": "Ils disparaîtront aussi du serveur, et je ne pourrai pas les récupérer.",
+    "body_other": "Ils disparaîtront aussi du serveur, et je ne pourrai pas les récupérer."
+  },
+  "discardChanges": {
+    "title": "Tout jeter ? (・_・;)",
+    "body": "J'oublierai tout ce que vous venez de taper ici."
+  },
+  "boot": {
+    "signedOut": {
+      "title": "Nyu doit savoir que c'est bien vous",
+      "body": "Votre session a fait une sieste. Connectez-vous sur le portail et Nyu vous ramène tout de suite ici."
+    },
+    "off": {
+      "title": "Nyu n'est pas de service ici",
+      "server": "Un admin a désactivé le webmail sur ce serveur. Vos e-mails sont sains et saufs, et toutes les apps de messagerie continuent de fonctionner.",
+      "account": "Un admin a désactivé le webmail pour ce compte. Vos e-mails sont sains et saufs, et toutes les apps de messagerie continuent de fonctionner."
+    },
+    "error": {
+      "title": "Nyu s'est pris les pattes dans un câble"
+    }
+  },
+  "shortcuts": {
+    "extendUp": "Étirer la sélection vers le haut",
+    "extendDown": "Étirer la sélection vers le bas",
+    "selectAll": "Attraper tous les e-mails chargés"
+  },
+  "crash": {
+    "title": "Oups, Nyu a renversé quelque chose",
+    "body": "Un bout de {{brand}} a trébuché pendant l'affichage. Rechargez une fois et vous revoilà ✧",
+    "reload": "Recharger"
+  },
+  "folders": {
+    "created": "Le dossier « {{name}} » est prêt à être rempli ✿",
+    "deleteTitle": "Dire adieu à « {{name}} » ?",
+    "emptied_one": "Tout propre ! {{count}} e-mail parti pour de bon ✧",
+    "emptied_many": "Tout propre ! {{count}} e-mails partis pour de bon ✧",
+    "emptied_other": "Tout propre ! {{count}} e-mails partis pour de bon ✧",
+    "emptyTitle": {
+      "trash": "On sort la poubelle ? (・ω・)",
+      "junk": "On balaie les spams ? (｀・ω・´)"
+    }
+  },
+  "rules": {
+    "empty": "Pas encore de règles. Dites-moi où doivent aller les e-mails et je les trie pour vous, même pendant que vous dormez (˘ω˘)",
+    "saved": "Compris, je trie comme ça à partir de maintenant ✿",
+    "foreignTitle": "Quelqu'un d'autre a gribouillé ici (・_・;)"
+  },
+  "calendar": {
+    "nothingToday": "Rien de prévu aujourd'hui. L'heure de la sieste ? (˘ω˘)",
+    "agendaEmpty": {
+      "title": "Tout est libre ! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+      "body": "Rien dans les 30 prochains jours. L'heure des aventures."
+    },
+    "toast": {
+      "created": "Noté dans l'agenda ✿",
+      "deleted": "Pouf, disparu de l'agenda (・ω・)"
+    }
+  }
+}

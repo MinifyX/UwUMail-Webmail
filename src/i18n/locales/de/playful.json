@@ -175,7 +175,7 @@
   },
   "crash": {
     "title": "Uff, da ist Nyu was runtergefallen",
-    "body": "Ein Stück von UwUMail ist beim Anzeigen gestolpert. Einmal neu laden, dann geht's weiter ✧",
+    "body": "Ein Stück von {{brand}} ist beim Anzeigen gestolpert. Einmal neu laden, dann geht's weiter ✧",
     "reload": "Neu laden"
   },
   "folders": {

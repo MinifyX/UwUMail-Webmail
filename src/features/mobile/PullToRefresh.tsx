@@ -112,7 +112,7 @@ export function PullToRefresh({ scrollRef, onRefresh, children }: PullToRefreshP
               <LogoSymbol
                 mood={refreshing ? "happy" : armed ? "sparkle" : "uwu"}
                 className={clsx(
-                  "h-9 w-auto",
+                  "h-9 w-auto max-w-24",
                   refreshing && "origin-bottom animate-[nyu-hop_700ms_ease-in-out_infinite]",
                 )}
               />

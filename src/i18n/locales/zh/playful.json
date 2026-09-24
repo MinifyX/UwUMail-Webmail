@@ -1,0 +1,202 @@
+{
+  "list": {
+    "loading": "正在帮你取邮件 (｡･ω･｡)",
+    "empty": {
+      "inbox": {
+        "title": "收件箱清零！喝杯茶吧 (っ˘ω˘ς)",
+        "body": "一有新邮件，我马上告诉你。"
+      },
+      "search": {
+        "title": "什么都没找到 (・_・;)",
+        "body": "我到处都找过了，连沙发底下都翻了。"
+      },
+      "other": {
+        "title": "空空的，好安静 (˘ᵕ˘)",
+        "body": "这个文件夹里暂时什么都没有。"
+      },
+      "offline": {
+        "title": "没有网络 (・_・;)",
+        "body": "我先躲在小伞下等着，连接恢复后就去帮你取邮件。"
+      }
+    }
+  },
+  "reader": {
+    "empty": {
+      "title": "随便挑一封邮件吧 ✉︎",
+      "body": "我会在这里帮你打开。"
+    },
+    "loading": "正在拆信封…",
+    "remoteBlocked": "我把远程图片挡住了，这样就没人能偷看你 (｀・ω・´)",
+    "appearanceAutoLight": "这封打扮得太漂亮了，我就让它保持浅色 (・ω・)",
+    "appearanceRemembered": "好的，我会为 {{email}} 记住这个设置 ✿",
+    "remoteTrustedAddress": "好的，来自 {{email}} 的图片现在可以进来啦 ✿",
+    "remoteTrustedDomain": "好的，来自 {{domain}} 的图片现在可以进来啦 ✿",
+    "remoteUntrustedAddress": "好吧，来自 {{email}} 的图片又要待在外面了 (｀・ω・´)",
+    "remoteUntrustedDomain": "好吧，来自 {{domain}} 的图片又要待在外面了 (｀・ω・´)",
+    "error": {
+      "title": "我被网线缠住了 (╥﹏╥)",
+      "body": "这封邮件没能送到。稍等一下再试试吧。"
+    },
+    "showAddresses": "显示所有地址",
+    "hideAddresses": "把地址收起来",
+    "replyTo": "回复至",
+    "copyAddress": "复制 {{email}}",
+    "addressCopied": "地址已收好 ✧"
+  },
+  "compose": {
+    "placeholder": "写点好听的吧 ✿",
+    "noRecipients": "这是写给谁的呀？先添加一位收件人吧 (・・ )?",
+    "draftLocal": "暂时只保存在这里 (・_・;)"
+  },
+  "toast": {
+    "sent": "出发啦 ✉︎ ~",
+    "sendFailed": "没发出去 (╥﹏╥) {{reason}}",
+    "archived": "已经收进归档啦 (˘ω˘)",
+    "trashed": "拜拜 (｡•́︿•̀｡)",
+    "newMail_other": "{{count}} 封新邮件！(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "draftSaved": "草稿已经安全收好 (˘ω˘)",
+    "draftDiscarded": "噗，就像什么都没发生过 (・ω・)",
+    "markedSpam": "去垃圾邮件角落待着吧 (｀へ´)",
+    "moveUndone": "噗，恢复原样啦 (・ω・)",
+    "blocked": "{{entry}} 再也进不来了 (｀・ω・´) 新邮件会进入垃圾邮件文件夹。",
+    "blockedOnServer": "{{entry}} 再也进不来了，你的服务器会帮忙守着 (｀・ω・´) 新邮件会进入垃圾邮件文件夹。",
+    "unsubscribed": "已退订 (≧▽≦) 不会再收到 {{name}} 的邮件了",
+    "messageSaved": "邮件已经安全收好 (˘ω˘)",
+    "deletedForever_other": "{{count}} 封邮件永远消失了 (｡•́︿•̀｡)",
+    "sending": "Nyu 马上就要出发啦… ✉︎"
+  },
+  "status": {
+    "syncing": "正在取新鲜的邮件…",
+    "error": "{{account}} 没有回应 (・_・;)",
+    "demo": "演示模式，都是假装的邮件。不会有任何内容离开应用 (´｡• ω •｡`)",
+    "offline": "没有网络 (・_・;) 先给你看我存好的邮件",
+    "loading": "正在搬来你的邮件小窝"
+  },
+  "tone": {
+    "playful": {
+      "desc": "颜文字、小玩笑和可爱的提示 (◕ᴗ◕✿)"
+    }
+  },
+  "settings": {
+    "motionDesc": "要让 Nyu 眨眼、蹦跳、飞来飞去吗？选择“系统”时，我会跟随你的操作系统。",
+    "trustedSendersEmpty": "我的列表上还没有人 (・・ )? 直接在邮件的图片提示中添加发件人吧。",
+    "signatureSaved": "签名看起来棒极了 ✧",
+    "signaturePlaceholder": "此致敬礼 ✿",
+    "signatureTooBig": "哎呀，签名里放不下这么多 (・_・;) 试试小一点的图片吧。",
+    "linkConfirm": "打开链接前询问",
+    "linkConfirmDesc": "我会先告诉你邮件中的链接指向哪里。伪装的链接我每次都会问你。",
+    "linkDomains": "无需询问直接打开",
+    "linkDomainsDesc": "指向这些网站的链接我会直接放行，除非它们经过伪装。",
+    "linkDomainsEmpty": "暂无。你可以在打开链接时直接添加网站 ✧",
+    "linkDomainsInactive": "目前我会直接放行所有链接。",
+    "forgetLinkDomain": "移除 {{domain}}"
+  },
+  "attachment": {
+    "loading": "正在拆开附件…",
+    "dangerTitle": "小心！这个文件可能会启动程序 (・_・;)",
+    "noPreview": "这个我偷看不了 (・・ )?",
+    "dangerous": {
+      "title": "Nyu 正眯着眼盯着这个文件",
+      "body": "这类文件可以在你的电脑上运行程序。只有在你预期会收到它并且信任发件人时才下载。"
+    }
+  },
+  "link": {
+    "warningTitle": "嗯……这个链接可能在撒谎 (・_・;)",
+    "confirmTitle": "要打开这个链接吗？(・ω・)",
+    "confirmBody": "我们一起偷偷看看它指向哪里吧 ✧",
+    "mailTitle": "要写邮件吗？✉",
+    "mailBody": "这个链接会新建一封发给这些人的邮件。",
+    "open": "打开",
+    "compose": "写邮件",
+    "copy": "复制地址",
+    "copyShort": "复制",
+    "copied": "链接已收好 ✧",
+    "remember": "{{domain}} 不用再问了",
+    "remembered": "指向 {{domain}} 的链接我今后会直接放行 ✧ 你可以在“设置”的“阅读”中更改。",
+    "insecure": "未加密（http）：别人可能会看到你在那里输入的内容 (・_・;)",
+    "unicodeHost": "看起来像",
+    "lookalike": "这里有些字母在假扮别的字母。假冒网站就是这样伪装的 (・_・;)",
+    "userinfo": "地址前面有一个用户名，可能会伪装成另一个网站。它实际上指向 {{domain}}。",
+    "redirectsTo": "跳转至",
+    "tracking": "通过 {{host}} 跟踪点击",
+    "service": "重定向服务 {{host}}",
+    "hiddenTarget": "链接没有说明之后还会跳到哪里。",
+    "otherTarget": "目标与显示的不同",
+    "statusRedirect": "跳转至 {{target}}",
+    "unsupported": "这种链接我还是不打开为好 (・_・;)",
+    "sheetTitle": "链接"
+  },
+  "mobile": {
+    "pull": {
+      "release": "松手，我就去看看 ✧",
+      "refreshing": "Nyu 正在查看信箱 (｡･ω･｡)"
+    },
+    "draft": {
+      "continue": "继续编写 ✎"
+    },
+    "swipe": {
+      "spam": "垃圾邮件！",
+      "notSpam": "其实不是垃圾邮件"
+    }
+  },
+  "unsubscribe": {
+    "title": "和 {{name}} 说拜拜？"
+  },
+  "deleteForever": {
+    "title_other": "要和这 {{count}} 封邮件永远说再见吗？(｡•́︿•̀｡)",
+    "body_other": "它们也会从服务器上消失，我没办法再把它们找回来了。"
+  },
+  "discardChanges": {
+    "title": "全部扔掉吗？(・_・;)",
+    "body": "你刚才在这里输入的内容，我会全部忘掉。"
+  },
+  "boot": {
+    "signedOut": {
+      "title": "Nyu 需要确认是你",
+      "body": "你的会话去睡午觉了。在门户登录后，Nyu 会直接带你回来。"
+    },
+    "off": {
+      "title": "Nyu 在这里下班了",
+      "server": "管理员已在此服务器上关闭网页邮箱。你的邮件安然无恙，所有邮件应用也都能继续使用。",
+      "account": "管理员已为此账户关闭网页邮箱。你的邮件安然无恙，所有邮件应用也都能继续使用。"
+    },
+    "error": {
+      "title": "Nyu 被网线绊倒了"
+    }
+  },
+  "shortcuts": {
+    "extendUp": "把选择向上拉长",
+    "extendDown": "把选择向下拉长",
+    "selectAll": "抓起所有已加载的邮件"
+  },
+  "crash": {
+    "title": "哎呀，Nyu 把东西碰倒了",
+    "body": "{{brand}} 的一小部分在绘制时摔了一跤。重新加载一下就好了 ✧",
+    "reload": "重新加载"
+  },
+  "folders": {
+    "created": "文件夹“{{name}}”已经准备好装东西啦 ✿",
+    "deleteTitle": "要和“{{name}}”说再见吗？",
+    "emptied_other": "干干净净！{{count}} 封邮件永远消失了 ✧",
+    "emptyTitle": {
+      "trash": "要倒垃圾吗？(・ω・)",
+      "junk": "要把垃圾邮件扫出去吗？(｀・ω・´)"
+    }
+  },
+  "rules": {
+    "empty": "还没有规则。告诉我邮件该去哪里，我就帮你分拣，你睡觉的时候也不例外 (˘ω˘)",
+    "saved": "好的，今后我就按这个分拣 ✿",
+    "foreignTitle": "有人在这里乱涂乱画过 (・_・;)"
+  },
+  "calendar": {
+    "nothingToday": "今天没有安排。要不要睡个午觉？(˘ω˘)",
+    "agendaEmpty": {
+      "title": "全都有空！(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+      "body": "接下来 30 天没有安排。去冒险吧。"
+    },
+    "toast": {
+      "created": "已经写进日历啦 ✿",
+      "deleted": "噗，从日历上消失了 (・ω・)"
+    }
+  }
+}

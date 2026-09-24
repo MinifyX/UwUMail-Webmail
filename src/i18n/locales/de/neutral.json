@@ -166,7 +166,7 @@
     "newMail_one": "{{count}} neue Mail",
     "newMail_other": "{{count}} neue Mails",
     "draftSaved": "Entwurf gespeichert",
-    "draftLocal": "Der Entwurf ist nur auf diesem Gerät gespeichert. UwUMail versucht es später erneut.",
+    "draftLocal": "Der Entwurf ist nur auf diesem Gerät gespeichert. {{brand}} versucht es später erneut.",
     "draftDiscarded": "Entwurf verworfen",
     "draftOpenFailed": "Der Entwurf konnte nicht geöffnet werden. {{reason}}",
     "draftGone": "In dieser Unterhaltung liegt kein Entwurf mehr.",
@@ -176,7 +176,7 @@
     "markedNotSpam": "Zurück im Posteingang",
     "moveUndone": "Rückgängig gemacht",
     "blocked": "{{entry}} ist blockiert. Neue Mails von dort landen im Spam-Ordner.",
-    "blockedOnServer": "{{entry}} ist auf deinem UwUMail-Server blockiert. Neue Mails von dort landen im Spam-Ordner.",
+    "blockedOnServer": "{{entry}} ist auf deinem {{brand}}-Server blockiert. Neue Mails von dort landen im Spam-Ordner.",
     "unblocked": "{{entry}} ist nicht mehr blockiert",
     "unsubscribed": "Von {{name}} abgemeldet",
     "unsubscribePage": "Die Abmeldeseite von {{name}} ist im Browser geöffnet",
@@ -219,7 +219,7 @@
     "listDensityDesc": "Kompakt zeigt mehr Mails auf einmal, mit kleinem Bild und zwei Zeilen.",
     "theme": "Design",
     "motion": "Animationen",
-    "motionDesc": "„Wie System“ richtet sich nach der Einstellung für reduzierte Bewegung in deinem Betriebssystem.",
+    "motionDesc": "Mit „Wie System“ richtet sich {{brand}} nach der Einstellung für reduzierte Bewegung in deinem Betriebssystem.",
     "tone": "Ton",
     "language": "Sprache",
     "conversations": "Mails als Unterhaltungen gruppieren",
@@ -229,9 +229,9 @@
     "remoteAsk": "Jedes Mal fragen",
     "remoteAlways": "Immer laden",
     "trustedSenders": "Bilder immer laden von",
-    "trustedSendersDesc": "Eine Firma wie @shop.de schließt alle ihre Adressen ein, auch news@ oder noreply@.",
+    "trustedSendersDesc": "Eine Firma wie @shop.example schließt alle ihre Adressen ein, auch news@ oder noreply@.",
     "trustedSendersEmpty": "Noch niemand. Du fügst Absender direkt im Bilder-Hinweis einer Mail hinzu.",
-    "trustedSendersInactive": "Wirkt erst mit „Jedes Mal fragen“. Gerade lädt UwUMail alle Bilder.",
+    "trustedSendersInactive": "Wirkt erst mit „Jedes Mal fragen“. Gerade lädt {{brand}} alle Bilder.",
     "untrustSender": "{{sender}} entfernen",
     "version": "Version {{version}}",
     "license": "Freie Software unter der GNU GPL v3.0.",
@@ -255,7 +255,7 @@
     "senderFromServer": "Vom Mailserver",
     "blockedSenders": "Blockierte Absender",
     "blockedSendersDesc": "Neue Mails von diesen Absendern landen im Spam-Ordner. Bei Konten auf einem UwUMail-Server sortiert der Server selbst, auch wenn die App geschlossen ist. Blockieren kannst du über „Mehr“ in einer Mail.",
-    "blockedOnServer": "Auf dem UwUMail-Server · {{email}}",
+    "blockedOnServer": "Auf dem {{brand}}-Server · {{email}}",
     "blockedInApp": "In dieser App",
     "blockedSendersEmpty": "Niemand ist blockiert.",
     "unblockSender": "{{entry}} freigeben",
@@ -309,9 +309,7 @@
     "off": "Aus"
   },
   "language": {
-    "system": "System",
-    "de": "Deutsch",
-    "en": "English"
+    "system": "System"
   },
   "shortcuts": {
     "compose": "Mail schreiben",
@@ -436,7 +434,7 @@
     "hiddenTarget": "Wohin es danach geht, steht nicht im Link.",
     "otherTarget": "Anderes Ziel als angezeigt",
     "statusRedirect": "leitet weiter zu {{target}}",
-    "unsupported": "Diese Art Link öffnet UwUMail nicht.",
+    "unsupported": "Diese Art Link öffnet {{brand}} nicht.",
     "sheetTitle": "Link"
   },
   "density": {
@@ -481,8 +479,8 @@
   "unsubscribe": {
     "title": "Von {{name}} abmelden?",
     "mailTo": "Dafür geht eine Mail von dir an {{address}}.",
-    "body": "UwUMail meldet dich direkt beim Absender ab. Danach sollten keine Mails mehr von dort kommen.",
-    "bodyPage": "Der Absender hat dafür eine eigene Seite. UwUMail öffnet sie für dich, dort bestätigst du die Abmeldung.",
+    "body": "{{brand}} meldet dich direkt beim Absender ab. Danach sollten keine Mails mehr von dort kommen.",
+    "bodyPage": "Der Absender hat dafür eine eigene Seite. {{brand}} öffnet sie für dich, dort bestätigst du die Abmeldung.",
     "archive": "Bisherige Mails von dort archivieren"
   },
   "deleteForever": {
@@ -517,7 +515,7 @@
   },
   "crash": {
     "title": "Da ist etwas schiefgegangen",
-    "body": "Ein Teil von UwUMail ist beim Anzeigen abgestürzt. Neu laden bringt dich zurück.",
+    "body": "Ein Teil von {{brand}} ist beim Anzeigen abgestürzt. Neu laden bringt dich zurück.",
     "reload": "Neu laden"
   },
   "folders": {
@@ -564,7 +562,7 @@
   },
   "rules": {
     "title": "Mail-Regeln",
-    "description": "Dein Server sortiert ankommende Mails mit diesen Regeln, von oben nach unten, auch wenn UwUMail zu ist. Die UwUMail-App zeigt dieselben Regeln.",
+    "description": "Dein Server sortiert ankommende Mails mit diesen Regeln, von oben nach unten, auch wenn {{brand}} zu ist. Die UwUMail-App zeigt dieselben Regeln.",
     "account": "Postfach",
     "loading": "Regeln werden geladen …",
     "loadFailed": "Die Regeln konnten nicht geladen werden. {{reason}}",
@@ -642,11 +640,11 @@
       "tooMany": "Pro Regel ein Ordner und eine Weiterleitung."
     },
     "foreignTitle": "Diese Regeln wurden woanders bearbeitet",
-    "foreignBody": "Ein anderes Programm hat das Regel-Skript geändert, deshalb zeigt UwUMail es als Text. Du kannst es hier bearbeiten oder durch Regeln ersetzen, die du in UwUMail verwaltest.",
+    "foreignBody": "Ein anderes Programm hat das Regel-Skript geändert, deshalb zeigt {{brand}} es als Text. Du kannst es hier bearbeiten oder durch Regeln ersetzen, die du in {{brand}} verwaltest.",
     "scriptLabel": "Sieve-Skript",
     "saveScript": "Speichern",
     "check": "Prüfen",
-    "replace": "Durch UwUMail-Regeln ersetzen",
+    "replace": "Durch {{brand}}-Regeln ersetzen",
     "replaceConfirm": "Skript ersetzen",
     "replaceBody": "Das Skript oben wird gelöscht und du fängst mit einer leeren Regelliste an."
   },

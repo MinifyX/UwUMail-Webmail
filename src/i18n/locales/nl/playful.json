@@ -1,0 +1,207 @@
+{
+  "list": {
+    "loading": "Je mail wordt opgehaald (｡･ω･｡)",
+    "empty": {
+      "inbox": {
+        "title": "Inbox leeg! Tijd voor thee (っ˘ω˘ς)",
+        "body": "Ik laat het je meteen weten als er iets binnenkomt."
+      },
+      "search": {
+        "title": "Niets gevonden (・_・;)",
+        "body": "Ik heb overal gezocht, zelfs onder de bank."
+      },
+      "other": {
+        "title": "Zo leeg, zo vredig (˘ᵕ˘)",
+        "body": "Er zit nu niets in deze map."
+      },
+      "offline": {
+        "title": "Geen internet (・_・;)",
+        "body": "Ik wacht onder mijn paraplu en haal je mail op zodra de verbinding terug is."
+      }
+    }
+  },
+  "reader": {
+    "empty": {
+      "title": "Kies een mail, welke dan ook ✉︎",
+      "body": "Ik open hem hier voor je."
+    },
+    "loading": "Envelop openmaken…",
+    "remoteBlocked": "Ik heb externe afbeeldingen geblokkeerd, zodat niemand naar je kan gluren (｀・ω・´)",
+    "appearanceAutoLight": "Deze heb ik licht gelaten, hij had zich zo mooi aangekleed (・ω・)",
+    "appearanceRemembered": "Begrepen, dat onthoud ik voor {{email}} ✿",
+    "remoteTrustedAddress": "Begrepen, afbeeldingen van {{email}} mogen nu binnenkomen ✿",
+    "remoteTrustedDomain": "Begrepen, afbeeldingen van {{domain}} mogen nu binnenkomen ✿",
+    "remoteUntrustedAddress": "Oké, afbeeldingen van {{email}} blijven weer buiten (｀・ω・´)",
+    "remoteUntrustedDomain": "Oké, afbeeldingen van {{domain}} blijven weer buiten (｀・ω・´)",
+    "error": {
+      "title": "Ik ben in de kabel verstrikt geraakt (╥﹏╥)",
+      "body": "Dit bericht is niet doorgekomen. Probeer het zo nog eens."
+    },
+    "showAddresses": "Alle adressen tonen",
+    "hideAddresses": "Adressen wegvouwen",
+    "replyTo": "Antwoord aan",
+    "copyAddress": "{{email}} kopiëren",
+    "addressCopied": "Adres opgeborgen ✧"
+  },
+  "compose": {
+    "placeholder": "Schrijf iets liefs ✿",
+    "noRecipients": "Voor wie is het? Voeg eerst een ontvanger toe (・・ )?",
+    "draftLocal": "Voorlopig alleen hier bewaard (・_・;)"
+  },
+  "toast": {
+    "sent": "Daar gaat ie ✉︎ ~",
+    "sendFailed": "Verzenden lukte niet (╥﹏╥) {{reason}}",
+    "archived": "Veilig opgeborgen in het archief (˘ω˘)",
+    "trashed": "Doei doei (｡•́︿•̀｡)",
+    "newMail_one": "Je hebt post! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "newMail_other": "{{count}} nieuwe mails! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+    "draftSaved": "Concept veilig opgeborgen (˘ω˘)",
+    "draftDiscarded": "Poef, alsof het nooit gebeurd is (・ω・)",
+    "markedSpam": "Hup, de spamhoek in (｀へ´)",
+    "moveUndone": "Poef, weer zoals het was (・ω・)",
+    "blocked": "{{entry}} komt er niet meer in (｀・ω・´) Nieuwe mail gaat naar de spammap.",
+    "blockedOnServer": "{{entry}} komt er niet meer in, je server houdt de wacht (｀・ω・´) Nieuwe mail gaat naar de spammap.",
+    "unsubscribed": "Afgemeld (≧▽≦) Geen mail meer van {{name}}",
+    "messageSaved": "Mail veilig opgeborgen (˘ω˘)",
+    "deletedForever_one": "Voor altijd weg (｡•́︿•̀｡)",
+    "deletedForever_other": "{{count}} berichten voor altijd weg (｡•́︿•̀｡)",
+    "sending": "Nyu gaat er zo vandoor … ✉︎"
+  },
+  "status": {
+    "syncing": "Verse mail ophalen…",
+    "error": "{{account}} geeft geen antwoord (・_・;)",
+    "demo": "Demomodus, alleen nepmail. Er verlaat niets de app (´｡• ω •｡`)",
+    "offline": "Geen internet (・_・;) Ik laat zien wat ik voor je bewaard heb",
+    "loading": "Je mailnestje ophalen"
+  },
+  "tone": {
+    "playful": {
+      "desc": "Kaomoji, grapjes en schattige berichten (◕ᴗ◕✿)"
+    }
+  },
+  "settings": {
+    "motionDesc": "Mag Nyu knipperen, huppelen en rondvliegen? Met Systeem volg ik je besturingssysteem.",
+    "trustedSendersEmpty": "Nog niemand op mijn lijstje (・・ )? Voeg afzenders direct toe via de afbeeldingsmelding in een bericht.",
+    "signatureSaved": "Handtekening ziet er top uit ✧",
+    "signaturePlaceholder": "Met vriendelijke groet ✿",
+    "signatureTooBig": "Oef, zoveel past er niet in een handtekening (・_・;) Probeer een kleinere afbeelding.",
+    "linkConfirm": "Vragen voor het openen van links",
+    "linkConfirmDesc": "Ik laat je eerst zien waar een link uit een mail naartoe gaat. Bij vermomde links vraag ik het altijd.",
+    "linkDomains": "Openen zonder te vragen",
+    "linkDomainsDesc": "Links naar deze sites laat ik direct door, tenzij ze vermomd zijn.",
+    "linkDomainsEmpty": "Nog geen. Je voegt sites direct toe wanneer je een link opent ✧",
+    "linkDomainsInactive": "Op dit moment laat ik elke link direct door.",
+    "forgetLinkDomain": "{{domain}} verwijderen"
+  },
+  "attachment": {
+    "loading": "Bijlage uitpakken…",
+    "dangerTitle": "Pas op! Dit bestand kan programma's starten (・_・;)",
+    "noPreview": "Hierin kan ik niet gluren (・・ )?",
+    "dangerous": {
+      "title": "Nyu kijkt wantrouwig naar dit bestand",
+      "body": "Dit soort bestand kan programma's op je computer starten. Neem het alleen aan als je het verwachtte en de afzender vertrouwt."
+    }
+  },
+  "link": {
+    "warningTitle": "Hmm, deze link jokt misschien (・_・;)",
+    "confirmTitle": "Wil je deze link openen? (・ω・)",
+    "confirmBody": "Laten we samen even kijken waar hij heen gaat ✧",
+    "mailTitle": "Een mail schrijven? ✉",
+    "mailBody": "De link start een nieuwe mail aan deze mensen.",
+    "open": "Openen",
+    "compose": "Mail schrijven",
+    "copy": "Adres kopiëren",
+    "copyShort": "Kopiëren",
+    "copied": "Link opgeborgen ✧",
+    "remember": "Niet meer vragen voor {{domain}}",
+    "remembered": "Links naar {{domain}} laat ik nu direct door ✧ Je kunt dit wijzigen in Instellingen onder Lezen.",
+    "insecure": "Niet versleuteld (http): anderen kunnen lezen wat je daar typt (・_・;)",
+    "unicodeHost": "Lijkt op",
+    "lookalike": "Sommige letters hier doen alleen alsof ze andere letters zijn. Zo verkleden nepsites zich (・_・;)",
+    "userinfo": "Voor het adres staat een gebruikersnaam die zich als een andere site kan verkleden. Hij gaat echt naar {{domain}}.",
+    "redirectsTo": "Huppelt door naar",
+    "tracking": "Kliktracking via {{host}}",
+    "service": "Doorstuurdienst {{host}}",
+    "hiddenTarget": "De link verraadt niet waar hij daarna heen huppelt.",
+    "otherTarget": "Ander doel dan getoond",
+    "statusRedirect": "huppelt door naar {{target}}",
+    "unsupported": "Zulke links open ik liever niet (・_・;)",
+    "sheetTitle": "Link"
+  },
+  "mobile": {
+    "pull": {
+      "release": "Laat los, dan kijk ik ✧",
+      "refreshing": "Nyu kijkt in de brievenbus (｡･ω･｡)"
+    },
+    "draft": {
+      "continue": "Verder schrijven ✎"
+    },
+    "swipe": {
+      "spam": "Spam!",
+      "notSpam": "Toch geen spam"
+    }
+  },
+  "unsubscribe": {
+    "title": "Doei doei {{name}}?"
+  },
+  "deleteForever": {
+    "title_one": "Voor altijd afscheid nemen van deze? (｡•́︿•̀｡)",
+    "title_other": "Voor altijd afscheid nemen van {{count}} berichten? (｡•́︿•̀｡)",
+    "body_one": "Hij verdwijnt ook van de server en ik kan hem niet meer terughalen.",
+    "body_other": "Ze verdwijnen ook van de server en ik kan ze niet meer terughalen."
+  },
+  "discardChanges": {
+    "title": "Alles weggooien? (・_・;)",
+    "body": "Dan vergeet ik alles wat je hier net hebt getypt."
+  },
+  "boot": {
+    "signedOut": {
+      "title": "Nyu moet weten dat jij het bent",
+      "body": "Je sessie is gaan slapen. Log in op het portaal en Nyu brengt je direct terug."
+    },
+    "off": {
+      "title": "Nyu heeft hier vrij",
+      "server": "Een beheerder heeft de webmail op deze server uitgeschakeld. Je mail is veilig en wel, en elke mailapp blijft werken.",
+      "account": "Een beheerder heeft de webmail voor dit account uitgeschakeld. Je mail is veilig en wel, en elke mailapp blijft werken."
+    },
+    "error": {
+      "title": "Nyu is over een kabel gestruikeld"
+    }
+  },
+  "shortcuts": {
+    "extendUp": "Selectie naar boven uitrekken",
+    "extendDown": "Selectie naar beneden uitrekken",
+    "selectAll": "Alle geladen mail pakken"
+  },
+  "crash": {
+    "title": "Oeps, Nyu heeft iets omgestoten",
+    "body": "Een stukje {{brand}} struikelde tijdens het tekenen. Eén keer herladen en je bent terug ✧",
+    "reload": "Herladen"
+  },
+  "folders": {
+    "created": "Map “{{name}}” staat klaar om gevuld te worden ✿",
+    "deleteTitle": "Afscheid nemen van “{{name}}”?",
+    "emptied_one": "Brandschoon! {{count}} mail voorgoed weg ✧",
+    "emptied_other": "Brandschoon! {{count}} mails voorgoed weg ✧",
+    "emptyTitle": {
+      "trash": "De prullenbak buiten zetten? (・ω・)",
+      "junk": "De spam eruit vegen? (｀・ω・´)"
+    }
+  },
+  "rules": {
+    "empty": "Nog geen regels. Vertel me waar mail heen moet en ik sorteer het voor je, zelfs terwijl je slaapt (˘ω˘)",
+    "saved": "Begrepen, vanaf nu sorteer ik zo ✿",
+    "foreignTitle": "Iemand anders heeft hier in gekrabbeld (・_・;)"
+  },
+  "calendar": {
+    "nothingToday": "Vandaag niets gepland. Tijd voor een dutje? (˘ω˘)",
+    "agendaEmpty": {
+      "title": "Helemaal vrij! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+      "body": "Niets in de komende 30 dagen. Tijd voor avontuur."
+    },
+    "toast": {
+      "created": "In de agenda geschreven ✿",
+      "deleted": "Poef, weg uit de agenda (・ω・)"
+    }
+  }
+}

@@ -111,4 +111,10 @@ describe("weekStartFor", () => {
     expect(weekStartFor("en-US")).toBe(0);
     expect(weekStartFor("en")).toBe(0);
   });
+
+  it("starts French and Dutch weeks on Monday and Japanese ones on Sunday", () => {
+    expect(weekStartFor("fr-FR")).toBe(1);
+    expect(weekStartFor("nl-NL")).toBe(1);
+    expect(weekStartFor("ja-JP")).toBe(0);
+  });
 });

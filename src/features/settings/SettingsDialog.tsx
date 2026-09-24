@@ -21,10 +21,11 @@ import { ConfirmDiscardDialog } from "@/components/ui/ConfirmDiscardDialog";
 import { Dialog } from "@/components/ui/Dialog";
 import { Segmented, Select, Toggle } from "@/components/ui/Field";
 import { LogoSymbol } from "@/components/ui/Logo";
-import { i18n, useT } from "@/i18n";
+import { HTML_LANG, i18n, LANGUAGE_NAMES, LANGUAGES, useT } from "@/i18n";
 import { useIsPhone } from "@/lib/device";
 import { openLinkNow } from "@/state/links";
 import { isDomainEntry, sortEntries } from "@/lib/trustedSenders";
+import { useBrand } from "@/state/brand";
 import { useSettings, type LanguageSetting, type SwipeAction } from "@/state/settings";
 import { toast } from "@/state/toasts";
 import { MailRules } from "../rules/MailRules";
@@ -55,6 +56,8 @@ const SECTIONS: { id: SettingsSection; icon: LucideIcon }[] = [
 function Appearance() {
   const { t } = useT();
   const settings = useSettings();
+  // Without the mascot there is only the plain tone, so there is nothing to choose.
+  const mascot = useBrand((s) => s.mascot);
   return (
     <>
       <Row label={t("settings.listDensity")} description={t("settings.listDensityDesc")}>
@@ -92,20 +95,22 @@ function Appearance() {
           ]}
         />
       </Row>
-      <Row
-        label={t("settings.tone")}
-        description={t("tone.sample", { text: i18n.getFixedT(null, settings.tone)("toast.sent") })}
-      >
-        <Segmented
+      {mascot && (
+        <Row
           label={t("settings.tone")}
-          value={settings.tone}
-          onChange={(tone) => settings.update({ tone })}
-          options={[
-            { value: "playful", label: t("tone.playful.name") },
-            { value: "neutral", label: t("tone.neutral.name") },
-          ]}
-        />
-      </Row>
+          description={t("tone.sample", { text: i18n.getFixedT(null, settings.tone)("toast.sent") })}
+        >
+          <Segmented
+            label={t("settings.tone")}
+            value={settings.tone}
+            onChange={(tone) => settings.update({ tone })}
+            options={[
+              { value: "playful", label: t("tone.playful.name") },
+              { value: "neutral", label: t("tone.neutral.name") },
+            ]}
+          />
+        </Row>
+      )}
       <Row label={t("settings.language")} description={t("settings.sharedWithPortal")}>
         <Select
           aria-label={t("settings.language")}
@@ -114,8 +119,11 @@ function Appearance() {
           className="max-w-[240px]"
         >
           <option value="system">{t("language.system")}</option>
-          <option value="de">{t("language.de")}</option>
-          <option value="en">{t("language.en")}</option>
+          {LANGUAGES.map((language) => (
+            <option key={language} value={language} lang={HTML_LANG[language]}>
+              {LANGUAGE_NAMES[language]}
+            </option>
+          ))}
         </Select>
       </Row>
     </>
@@ -270,9 +278,11 @@ function Reading() {
 function About() {
   const { t } = useT();
   const setShortcutsOpen = useUi((s) => s.setShortcutsOpen);
+  const brand = useBrand((s) => s.name);
+  // The server's logo when it has one; the software below keeps its own name.
   return (
     <div className="flex flex-col items-center gap-4 py-8 text-center">
-      <LogoSymbol className="h-20 w-auto" title="UwUMail" />
+      <LogoSymbol className="h-20 w-auto max-w-[240px]" title={brand} />
       <div>
         <p className="text-[20px] font-extrabold">
           <span className="text-pink">UwU</span>Mail

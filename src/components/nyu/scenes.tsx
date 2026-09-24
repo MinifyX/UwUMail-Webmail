@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import type { ReactNode } from "react";
+import { useBrand } from "@/state/brand";
 import { Nyu, NYU, Paw, Sticker } from "./Nyu";
 
 // Every scene is drawn on a 320 × 220 canvas. Nyu sits at about 0.4 scale,
@@ -369,7 +370,10 @@ export const SCENE_NAMES = Object.keys(SCENES) as SceneName[];
 
 /** A small illustration of Nyu for empty and error states. Decorative only. */
 export function NyuScene({ name, className }: { name: SceneName; className?: string }) {
+  const mascot = useBrand((s) => s.mascot);
   const Scene = SCENES[name];
+  // Switched off by the admin: the pages simply do without the picture.
+  if (!mascot) return null;
   return (
     <svg
       viewBox="-10 -10 340 230"
