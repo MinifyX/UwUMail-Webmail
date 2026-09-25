@@ -891,5 +891,36 @@
     "edit": "Bearbeiten",
     "stop": "Nicht senden",
     "stopped": "Nicht gesendet. Die Mail liegt wieder in den Entwürfen."
+  },
+  "sharing": {
+    "notAllowed": "Die Person, der dieser Ordner gehört, hat das nicht erlaubt.",
+    "sharedBy": "Geteilt von {{name}}",
+    "readOnly": "Nur lesen",
+    "readOnlyShort": "nur lesen",
+    "shareFolder": "Teilen …",
+    "sharedWithCount_one": "Mit {{count}} Person geteilt",
+    "sharedWithCount_other": "Mit {{count}} Personen geteilt",
+    "title": "„{{name}}“ teilen",
+    "levelsDesc": {
+      "folder": "Lesen: den Ordner und seine Mails sehen. Lesen und schreiben: außerdem Mails als gelesen markieren, markieren, einsortieren und löschen. Alles: außerdem Ordner darin anlegen, ihn umbenennen und weiter teilen.",
+      "calendar": "Lesen: den Kalender und seine Termine sehen. Lesen und schreiben: außerdem Termine anlegen, ändern und löschen. Alles: außerdem ihn umbenennen, seine Farbe ändern und weiter teilen."
+    },
+    "current": "Wer Zugriff hat",
+    "nobody": "Noch mit niemandem geteilt.",
+    "levelFor": "Zugriff für {{name}}",
+    "remove": "Nicht mehr mit {{name}} teilen",
+    "removed": "Nicht mehr mit {{name}} geteilt",
+    "add": "Mit jemandem teilen",
+    "share": "Teilen",
+    "shared": "Mit {{name}} geteilt",
+    "search": "Name oder Adresse von jemandem auf diesem Server",
+    "loadingPeople": "Personen werden geladen …",
+    "peopleFailed": "Die Personen auf diesem Server konnten nicht geladen werden.",
+    "noPeople": "Sonst passt niemand.",
+    "level": {
+      "read": "Lesen",
+      "write": "Lesen und schreiben",
+      "all": "Alles"
+    }
   }
 }

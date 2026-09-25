@@ -918,5 +918,36 @@
     "edit": "Modifier",
     "stop": "Ne pas envoyer",
     "stopped": "Non envoyé. L'e-mail est de retour dans Brouillons."
+  },
+  "sharing": {
+    "notAllowed": "La personne à qui appartient ce dossier ne l'a pas autorisé.",
+    "sharedBy": "Partagé par {{name}}",
+    "readOnly": "Lecture seule",
+    "readOnlyShort": "lecture seule",
+    "shareFolder": "Partager …",
+    "sharedWithCount_one": "Partagé avec {{count}} personne",
+    "sharedWithCount_other": "Partagé avec {{count}} personnes",
+    "title": "Partager « {{name}} »",
+    "levelsDesc": {
+      "folder": "Lecture : voir le dossier et ses e-mails. Lecture et écriture : aussi marquer comme lu, signaler, classer et supprimer. Tout : aussi créer des dossiers dedans, le renommer et le partager à son tour.",
+      "calendar": "Lecture : voir l'agenda et ses événements. Lecture et écriture : aussi ajouter, modifier et supprimer des événements. Tout : aussi le renommer, changer sa couleur et le partager à son tour."
+    },
+    "current": "Qui y a accès",
+    "nobody": "Partagé avec personne pour l'instant.",
+    "levelFor": "Accès pour {{name}}",
+    "remove": "Ne plus partager avec {{name}}",
+    "removed": "N'est plus partagé avec {{name}}",
+    "add": "Partager avec quelqu'un",
+    "share": "Partager",
+    "shared": "Partagé avec {{name}}",
+    "search": "Nom ou adresse de quelqu'un sur ce serveur",
+    "loadingPeople": "Chargement des personnes …",
+    "peopleFailed": "Les personnes de ce serveur n'ont pas pu être chargées.",
+    "noPeople": "Personne d'autre ne correspond.",
+    "level": {
+      "read": "Lecture",
+      "write": "Lecture et écriture",
+      "all": "Tout"
+    }
   }
 }

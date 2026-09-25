@@ -8,6 +8,7 @@ import { displayName, formatListDate } from "@/lib/format";
 import type { useThreadActions } from "@/lib/queries";
 import type { ListDensity } from "@/state/settings";
 import { THREAD_DRAG_TYPE } from "./selection";
+import type { MailRights } from "./rights";
 
 interface ThreadRowProps {
   thread: ThreadSummary;
@@ -26,6 +27,8 @@ interface ThreadRowProps {
   inTrash?: boolean;
   /** The row sits in junk, where "spam" means "not spam". */
   inJunk?: boolean;
+  /** What may be done here; everything when left out (see ./rights). */
+  rights?: MailRights;
 }
 
 function QuickAction({
@@ -73,6 +76,7 @@ export function ThreadRow({
   dragIds,
   inTrash = false,
   inJunk = false,
+  rights,
 }: ThreadRowProps) {
   const { t, i18n } = useT();
   const compact = density === "compact";
@@ -204,37 +208,47 @@ export function ThreadRow({
           compact ? "top-[18px]" : "top-[22px]",
         )}
       >
-        <QuickAction
-          icon={Archive}
-          label={t("reader.archive")}
-          compact={compact}
-          onClick={() => void actions.archive(thread)}
-        />
-        <QuickAction
-          icon={inJunk ? ShieldCheck : ShieldAlert}
-          label={inJunk ? t("reader.notSpam") : t("reader.spam")}
-          compact={compact}
-          onClick={() => void actions.spam(thread, !inJunk)}
-        />
-        <QuickAction
-          icon={Trash}
-          label={inTrash ? t("reader.deleteForever") : t("reader.trash")}
-          compact={compact}
-          onClick={() => void actions.trash(thread)}
-        />
-        <QuickAction
-          icon={unread ? MailOpen : Mail}
-          label={unread ? t("list.markRead") : t("reader.markUnread")}
-          compact={compact}
-          onClick={() => void actions.toggleRead(thread)}
-        />
-        <QuickAction
-          icon={Star}
-          label={thread.flagged ? t("reader.unflag") : t("reader.flag")}
-          active={thread.flagged}
-          compact={compact}
-          onClick={() => void actions.toggleFlag(thread)}
-        />
+        {(rights?.archive ?? true) && (
+          <QuickAction
+            icon={Archive}
+            label={t("reader.archive")}
+            compact={compact}
+            onClick={() => void actions.archive(thread)}
+          />
+        )}
+        {(rights?.spam ?? true) && (
+          <QuickAction
+            icon={inJunk ? ShieldCheck : ShieldAlert}
+            label={inJunk ? t("reader.notSpam") : t("reader.spam")}
+            compact={compact}
+            onClick={() => void actions.spam(thread, !inJunk)}
+          />
+        )}
+        {(rights?.remove ?? true) && (
+          <QuickAction
+            icon={Trash}
+            label={inTrash ? t("reader.deleteForever") : t("reader.trash")}
+            compact={compact}
+            onClick={() => void actions.trash(thread)}
+          />
+        )}
+        {(rights?.markSeen ?? true) && (
+          <QuickAction
+            icon={unread ? MailOpen : Mail}
+            label={unread ? t("list.markRead") : t("reader.markUnread")}
+            compact={compact}
+            onClick={() => void actions.toggleRead(thread)}
+          />
+        )}
+        {(rights?.flag ?? true) && (
+          <QuickAction
+            icon={Star}
+            label={thread.flagged ? t("reader.unflag") : t("reader.flag")}
+            active={thread.flagged}
+            compact={compact}
+            onClick={() => void actions.toggleFlag(thread)}
+          />
+        )}
       </span>
     </div>
   );

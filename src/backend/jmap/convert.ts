@@ -1,5 +1,6 @@
 /** Turning JMAP objects (RFC 8621) into the shapes the interface works with. */
 
+import type { JmapRights } from "./sharing";
 import type {
   Address,
   Attachment,
@@ -19,7 +20,9 @@ export interface JmapMailbox {
   sortOrder?: number;
   totalEmails: number;
   unreadEmails: number;
-  myRights?: { mayReadItems?: boolean };
+  myRights?: JmapRights | null;
+  /** Who else sees it (RFC 9670), by principal id; null when the account may not share it. */
+  shareWith?: Record<string, JmapRights | string | null> | null;
 }
 
 export interface JmapAddress {

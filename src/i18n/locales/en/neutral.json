@@ -891,5 +891,36 @@
     "edit": "Edit",
     "stop": "Don't send",
     "stopped": "Not sent. The mail is back in Drafts."
+  },
+  "sharing": {
+    "notAllowed": "The owner of this folder didn't allow that.",
+    "sharedBy": "Shared by {{name}}",
+    "readOnly": "Read only",
+    "readOnlyShort": "read only",
+    "shareFolder": "Share …",
+    "sharedWithCount_one": "Shared with {{count}} person",
+    "sharedWithCount_other": "Shared with {{count}} people",
+    "title": "Share “{{name}}”",
+    "levelsDesc": {
+      "folder": "Read: see the folder and its mail. Read and write: also mark mail read, flag, file in and delete. Everything: also make folders inside, rename it and share it on.",
+      "calendar": "Read: see the calendar and its events. Read and write: also add, change and delete events. Everything: also rename it, change its colour and share it on."
+    },
+    "current": "Who has access",
+    "nobody": "Not shared with anybody yet.",
+    "levelFor": "Access for {{name}}",
+    "remove": "Stop sharing with {{name}}",
+    "removed": "No longer shared with {{name}}",
+    "add": "Share with somebody",
+    "share": "Share",
+    "shared": "Shared with {{name}}",
+    "search": "Name or address of somebody on this server",
+    "loadingPeople": "Loading people …",
+    "peopleFailed": "The people on this server couldn't be loaded.",
+    "noPeople": "Nobody else fits.",
+    "level": {
+      "read": "Read",
+      "write": "Read and write",
+      "all": "Everything"
+    }
   }
 }

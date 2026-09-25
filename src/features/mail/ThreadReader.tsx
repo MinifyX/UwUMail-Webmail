@@ -21,6 +21,7 @@ import { useT } from "@/i18n";
 import { inTrash, useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
 import { MessageView } from "./MessageView";
+import { mailRights } from "./rights";
 import { requestMove } from "./selection";
 
 interface ThreadReaderProps {
@@ -62,8 +63,17 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
 
   useEffect(() => {
     if (!messages) return;
-    const unseen = messages.filter((m) => !m.flags.seen).map((m) => m.id);
-    if (unseen.length > 0) void actions.setFlags(unseen, { seen: true });
+    const unseen = messages.filter((m) => !m.flags.seen);
+    // In a folder shared to read only, opening a mail leaves it unread for its owner.
+    const allowed = mailRights(
+      unseen.map((m) => m.folderId),
+      folders,
+    ).markSeen;
+    if (unseen.length > 0 && allowed)
+      void actions.setFlags(
+        unseen.map((m) => m.id),
+        { seen: true },
+      );
     // Only when a different thread finished loading, not on every refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedThreadId]);
@@ -114,6 +124,10 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
   const hiddenCount = all.filter((m) => !expanded.has(m.id)).length;
   const inJunk = all.every((m) => folders.find((f) => f.id === m.folderId)?.role === "junk");
   const trashed = inTrash(all, folders);
+  const rights = mailRights(
+    all.map((m) => m.folderId),
+    folders,
+  );
 
   return (
     <section
@@ -141,37 +155,52 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
           onClick={() => openCompose({ mode: "forward", source: latest })}
         />
         <span className="mx-1.5 h-5 w-px bg-line" aria-hidden />
-        <IconButton
-          icon={Archive}
-          label={t("reader.archive")}
-          onClick={() => void actions.archive(ids).then(() => selectThread(null))}
-        />
-        <IconButton
-          icon={Trash}
-          label={trashed ? t("reader.deleteForever") : t("reader.trash")}
-          onClick={() => void actions.trash(all).then((gone) => gone && selectThread(null))}
-        />
-        <IconButton
-          icon={FolderInput}
-          label={t("reader.move")}
-          onClick={() => requestMove(all, () => selectThread(null))}
-        />
-        <IconButton
-          icon={inJunk ? ShieldCheck : ShieldAlert}
-          label={inJunk ? t("reader.notSpam") : t("reader.spam")}
-          onClick={() => void actions.spam(ids, !inJunk).then(() => selectThread(null))}
-        />
-        <IconButton
-          icon={Star}
-          label={flagged ? t("reader.unflag") : t("reader.flag")}
-          active={flagged}
-          onClick={() => void actions.setFlags(flagged ? ids : [latest.id], { flagged: !flagged })}
-        />
-        <IconButton
-          icon={MailOpen}
-          label={t("reader.markUnread")}
-          onClick={() => void actions.setFlags([latest.id], { seen: false }).then(() => selectThread(null))}
-        />
+        {rights.archive && (
+          <IconButton
+            icon={Archive}
+            label={t("reader.archive")}
+            onClick={() => void actions.archive(ids).then(() => selectThread(null))}
+          />
+        )}
+        {rights.remove && (
+          <IconButton
+            icon={Trash}
+            label={trashed ? t("reader.deleteForever") : t("reader.trash")}
+            onClick={() => void actions.trash(all).then((gone) => gone && selectThread(null))}
+          />
+        )}
+        {rights.remove && (
+          <IconButton
+            icon={FolderInput}
+            label={t("reader.move")}
+            onClick={() => requestMove(all, () => selectThread(null))}
+          />
+        )}
+        {rights.spam && (
+          <IconButton
+            icon={inJunk ? ShieldCheck : ShieldAlert}
+            label={inJunk ? t("reader.notSpam") : t("reader.spam")}
+            onClick={() => void actions.spam(ids, !inJunk).then(() => selectThread(null))}
+          />
+        )}
+        {rights.flag && (
+          <IconButton
+            icon={Star}
+            label={flagged ? t("reader.unflag") : t("reader.flag")}
+            active={flagged}
+            onClick={() => void actions.setFlags(flagged ? ids : [latest.id], { flagged: !flagged })}
+          />
+        )}
+        {rights.markSeen && (
+          <IconButton
+            icon={MailOpen}
+            label={t("reader.markUnread")}
+            onClick={() => void actions.setFlags([latest.id], { seen: false }).then(() => selectThread(null))}
+          />
+        )}
+        {rights.shared && !rights.flag && (
+          <span className="ml-2 truncate text-[12px] font-semibold text-muted">{t("sharing.readOnly")}</span>
+        )}
       </header>
 
       <div data-reader-scroll className="min-h-0 flex-1 overflow-y-auto">

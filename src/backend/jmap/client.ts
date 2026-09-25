@@ -75,6 +75,20 @@ function onOwnOrigin(url: string): string {
 
 let session: JmapSession | null = null;
 
+/** Called when an API answer names another session state than the one before, e.g. a new share. */
+let onSessionStale: (() => void) | null = null;
+let lastSessionState: string | null = null;
+
+export function whenSessionChanges(listener: (() => void) | null): void {
+  onSessionStale = listener;
+}
+
+/** Loads the session anew, e.g. after somebody started or stopped sharing folders with the account. */
+export async function reloadJmapSession(): Promise<JmapSession> {
+  session = null;
+  return loadJmapSession();
+}
+
 export async function loadJmapSession(): Promise<JmapSession> {
   if (session) return session;
   let response: Response;
@@ -182,6 +196,12 @@ export async function call(methods: Invocation[], using: string[] = [CORE, MAIL]
   if (response.status === 403) throw new BackendError("webmail_disabled", "The webmail is switched off here.");
   if (!response.ok) throw new BackendError("internal", `The mail server answered ${response.status}.`);
   const body = (await response.json()) as MethodResponse;
+  if (body.sessionState) {
+    // Compared with the previous answer, not the session document: once per change.
+    const changed = lastSessionState !== null && body.sessionState !== lastSessionState;
+    lastSessionState = body.sessionState;
+    if (changed) onSessionStale?.();
+  }
   for (const [name, args] of body.methodResponses) {
     if (name === "error") throw methodError(name, args);
   }
@@ -201,8 +221,9 @@ export async function one<T>(name: string, args: Record<string, unknown>, using:
   return responseOf<T>(body, "0");
 }
 
-function downloadPath(blobId: string, name: string): string {
-  const { downloadUrl, accountId } = jmapSession();
+function downloadPath(blobId: string, name: string, account?: string): string {
+  const { downloadUrl, accountId: own } = jmapSession();
+  const accountId = account ?? own;
   const filled = downloadUrl
     .replaceAll("{accountId}", encodeURIComponent(accountId))
     .replaceAll("{blobId}", encodeURIComponent(blobId))
@@ -236,11 +257,14 @@ export function senderPicturePath(email: string): string | null {
   return onOwnOrigin(filled);
 }
 
-/** Downloads a blob into memory. Blobs are fetched, never linked, so the session header fits. */
-export async function downloadBlob(blobId: string, name: string): Promise<Blob> {
+/**
+ * Downloads a blob into memory. Blobs are fetched, never linked, so the session header fits.
+ * `accountId` is the account the blob belongs to, a shared one for mail somebody shares.
+ */
+export async function downloadBlob(blobId: string, name: string, accountId?: string): Promise<Blob> {
   let response: Response;
   try {
-    response = await fetch(downloadPath(blobId, name), { credentials: "same-origin" });
+    response = await fetch(downloadPath(blobId, name, accountId), { credentials: "same-origin" });
   } catch {
     throw new BackendError("connection_failed", "The attachment can't be fetched.");
   }
@@ -276,10 +300,11 @@ export async function uploadBlob(data: Blob, type: string): Promise<UploadedBlob
 }
 
 /**
- * Push over EventSource. The browser reconnects on its own; `onState` is called
- * with the changed types, e.g. `{ Email: "s12" }`.
+ * Push over EventSource. The browser reconnects on its own; `onState` is called with the changed
+ * types per account, e.g. `{ a3: { Email: "s12" } }`: the own account's and those of people who
+ * share folders with it.
  */
-export function watchPush(onState: (changed: Record<string, string>) => void): () => void {
+export function watchPush(onState: (changed: Record<string, Record<string, string>>) => void): () => void {
   const { eventSourceUrl } = jmapSession();
   const url = eventSourceUrl.replaceAll("{types}", "*").replaceAll("{closeafter}", "no").replaceAll("{ping}", "300");
   let source: EventSource | null = null;
@@ -293,8 +318,7 @@ export function watchPush(onState: (changed: Record<string, string>) => void): (
       const data = JSON.parse((event as MessageEvent<string>).data) as {
         changed?: Record<string, Record<string, string>>;
       };
-      const changed = data.changed?.[jmapSession().accountId];
-      if (changed) onState(changed);
+      if (data.changed) onState(data.changed);
     } catch {
       // A push we can't read is no reason to break the connection.
     }

@@ -1,7 +1,17 @@
 // Fictional sample mail for `pnpm dev` and screenshots. No real people.
 
 import type { RuleSet } from "@/lib/sieveRules";
-import type { Account, Address, Attachment, Folder, FolderRole, Message } from "./types";
+import type {
+  Account,
+  Address,
+  Attachment,
+  Folder,
+  FolderRights,
+  FolderRole,
+  Message,
+  Person,
+  SharedAccount,
+} from "./types";
 import { demoBanner } from "./demo-pictures";
 
 type Lang = "de" | "en";
@@ -580,4 +590,114 @@ export function demoRules(lang: Lang, accountId: string): RuleSet {
       },
     ],
   };
+}
+
+/** Everything a folder allows: the account's own folders. */
+export const ALL_RIGHTS: FolderRights = {
+  mayReadItems: true,
+  mayAddItems: true,
+  mayRemoveItems: true,
+  maySetSeen: true,
+  maySetKeywords: true,
+  mayCreateChild: true,
+  mayRename: true,
+  mayDelete: true,
+  mayAdmin: true,
+};
+
+const READ_RIGHTS: FolderRights = {
+  ...ALL_RIGHTS,
+  mayAddItems: false,
+  mayRemoveItems: false,
+  maySetSeen: false,
+  maySetKeywords: false,
+  mayCreateChild: false,
+  mayRename: false,
+  mayDelete: false,
+  mayAdmin: false,
+};
+
+const WRITE_RIGHTS: FolderRights = {
+  ...READ_RIGHTS,
+  mayAddItems: true,
+  mayRemoveItems: true,
+  maySetSeen: true,
+  maySetKeywords: true,
+};
+
+/** People on the demo "server", to share with. */
+export const DEMO_PEOPLE: Person[] = [
+  { id: "p-kai", name: "Kai Kralle", email: "kai@uwumail.example" },
+  { id: "p-leni", name: "Leni", email: "leni@uwumail.example" },
+];
+
+/** Leni shares her team inbox (read and write) and the invoices (read only) with the demo. */
+export function buildSharedMailbox(lang: Lang, now = Date.now()) {
+  const accountId = "shared-leni";
+  const account: SharedAccount = { id: accountId, email: "leni@uwumail.example", name: "Leni", readOnly: false };
+  const folder = (key: string, de: string, en: string, rights: FolderRights): Folder => ({
+    id: `${accountId}:${key}`,
+    accountId,
+    name: lang === "de" ? de : en,
+    path: key,
+    role: null,
+    parentId: null,
+    selectable: true,
+    unread: 0,
+    total: 0,
+    rights,
+    shared: true,
+  });
+  const folders = [
+    folder("team", "Team", "Team", WRITE_RIGHTS),
+    folder("invoices", "Rechnungen", "Invoices", READ_RIGHTS),
+  ];
+  const message = (
+    index: number,
+    key: string,
+    from: Address,
+    subject: Localized,
+    body: Localized,
+    minutesAgo: number,
+  ): Message => ({
+    id: `leni-${index}`,
+    threadId: `leni-thr-${index}`,
+    accountId,
+    folderId: `${accountId}:${key}`,
+    from,
+    to: [{ name: "Leni", email: "leni@uwumail.example" }],
+    cc: [],
+    bcc: [],
+    replyTo: [],
+    subject: subject[lang],
+    date: new Date(now - minutesAgo * 60_000).toISOString(),
+    flags: { seen: index > 1, flagged: false, answered: false, draft: false },
+    snippet: body[lang].slice(0, 140),
+    bodyHtml: null,
+    bodyText: body[lang],
+    hasRemoteContent: false,
+    attachments: [],
+  });
+  const messages = [
+    message(
+      1,
+      "team",
+      { name: "Kai Kralle", email: "kai@uwumail.example" },
+      p("Plan für Freitag", "Plan for Friday"),
+      p(
+        "Hallo ihr beiden, am Freitag treffen wir uns um zehn. Bringt Kekse mit!",
+        "Hi you two, we meet at ten on Friday. Bring cookies!",
+      ),
+      95,
+    ),
+    message(
+      2,
+      "invoices",
+      { name: "Katzenfutter-Versand", email: "billing@catfood.example" },
+      p("Deine Rechnung für September", "Your invoice for September"),
+      p("Danke für deine Bestellung. Die Rechnung liegt bei.", "Thanks for your order. The invoice is attached."),
+      60 * 26,
+    ),
+  ];
+  return { account, folders, messages };
 }

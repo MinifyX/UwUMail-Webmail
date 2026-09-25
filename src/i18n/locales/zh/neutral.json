@@ -864,5 +864,35 @@
     "edit": "编辑",
     "stop": "不发送",
     "stopped": "未发送。邮件已回到草稿。"
+  },
+  "sharing": {
+    "notAllowed": "此文件夹的所有者不允许这样做。",
+    "sharedBy": "{{name}} 共享",
+    "readOnly": "只读",
+    "readOnlyShort": "只读",
+    "shareFolder": "共享…",
+    "sharedWithCount_other": "已与 {{count}} 人共享",
+    "title": "共享“{{name}}”",
+    "levelsDesc": {
+      "folder": "只读：查看文件夹及其中的邮件。读写：还可以标为已读、加旗标、归档和删除邮件。全部：还可以在其中新建文件夹、重命名并继续共享。",
+      "calendar": "只读：查看日历及其日程。读写：还可以添加、修改和删除日程。全部：还可以重命名、更改颜色并继续共享。"
+    },
+    "current": "有权访问的人",
+    "nobody": "尚未与任何人共享。",
+    "levelFor": "{{name}} 的权限",
+    "remove": "停止与 {{name}} 共享",
+    "removed": "已不再与 {{name}} 共享",
+    "add": "与他人共享",
+    "share": "共享",
+    "shared": "已与 {{name}} 共享",
+    "search": "此服务器上某人的姓名或地址",
+    "loadingPeople": "正在加载用户…",
+    "peopleFailed": "无法加载此服务器上的用户。",
+    "noPeople": "没有其他匹配的人。",
+    "level": {
+      "read": "只读",
+      "write": "读写",
+      "all": "全部"
+    }
   }
 }

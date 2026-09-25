@@ -24,6 +24,7 @@ import { useAccounts, useFolders, useMessageActions, useThread } from "@/lib/que
 import { useUi } from "@/state/ui";
 import { MessageView } from "../mail/MessageView";
 import { requestMove } from "../mail/selection";
+import { mailRights } from "../mail/rights";
 
 /** Messages that start expanded: the newest one plus every unread one. */
 function initiallyExpanded(messages: Message[]) {
@@ -74,8 +75,17 @@ export function MobileReader({ threadId }: { threadId: string }) {
 
   useEffect(() => {
     if (!messages) return;
-    const unseen = messages.filter((m) => !m.flags.seen).map((m) => m.id);
-    if (unseen.length > 0) void actions.setFlags(unseen, { seen: true });
+    const unseen = messages.filter((m) => !m.flags.seen);
+    // In a folder shared to read only, opening a mail leaves it unread for its owner.
+    const allowed = mailRights(
+      unseen.map((m) => m.folderId),
+      folders,
+    ).markSeen;
+    if (unseen.length > 0 && allowed)
+      void actions.setFlags(
+        unseen.map((m) => m.id),
+        { seen: true },
+      );
     // Only when a different thread finished loading, not on every refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedThreadId]);
@@ -121,6 +131,10 @@ export function MobileReader({ threadId }: { threadId: string }) {
   const hiddenCount = all.filter((m) => !expanded.has(m.id)).length;
   const leaveAfter = (work: Promise<void>) => void work.then(back);
   const inJunk = all.every((m) => folders.find((f) => f.id === m.folderId)?.role === "junk");
+  const rights = mailRights(
+    all.map((m) => m.folderId),
+    folders,
+  );
 
   return (
     <section className="flex h-full min-w-0 flex-col bg-canvas" aria-label={data.thread.subject}>
@@ -129,12 +143,14 @@ export function MobileReader({ threadId }: { threadId: string }) {
         <h1 className="min-w-0 flex-1 truncate px-1 text-[16px] font-bold">
           {data.thread.subject || t("reader.noSubject")}
         </h1>
-        <IconButton
-          icon={Star}
-          label={flagged ? t("reader.unflag") : t("reader.flag")}
-          active={flagged}
-          onClick={() => void actions.setFlags(flagged ? ids : [latest.id], { flagged: !flagged })}
-        />
+        {rights.flag && (
+          <IconButton
+            icon={Star}
+            label={flagged ? t("reader.unflag") : t("reader.flag")}
+            active={flagged}
+            onClick={() => void actions.setFlags(flagged ? ids : [latest.id], { flagged: !flagged })}
+          />
+        )}
         <IconButton
           icon={EllipsisVertical}
           label={t("mobile.more")}
@@ -150,37 +166,46 @@ export function MobileReader({ threadId }: { threadId: string }) {
               onClick={() => setMenuOpen(false)}
             />
             <div className="absolute top-12 right-2 z-30 min-w-[220px] animate-pop overflow-hidden rounded-2xl border border-hairline bg-elevated py-1 shadow-float">
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  requestMove(all, back);
-                }}
-                className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
-              >
-                <FolderInput className="size-[18px] text-muted" aria-hidden />
-                {t("reader.move")}
-              </button>
-              <button
-                type="button"
-                onClick={() => leaveAfter(actions.spam(ids, !inJunk))}
-                className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
-              >
-                {inJunk ? (
-                  <ShieldCheck className="size-[18px] text-muted" aria-hidden />
-                ) : (
-                  <ShieldAlert className="size-[18px] text-muted" aria-hidden />
-                )}
-                {inJunk ? t("reader.notSpam") : t("reader.spam")}
-              </button>
-              <button
-                type="button"
-                onClick={() => leaveAfter(actions.setFlags([latest.id], { seen: false }))}
-                className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
-              >
-                <MailOpen className="size-[18px] text-muted" aria-hidden />
-                {t("reader.markUnread")}
-              </button>
+              {rights.remove && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    requestMove(all, back);
+                  }}
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
+                >
+                  <FolderInput className="size-[18px] text-muted" aria-hidden />
+                  {t("reader.move")}
+                </button>
+              )}
+              {rights.spam && (
+                <button
+                  type="button"
+                  onClick={() => leaveAfter(actions.spam(ids, !inJunk))}
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
+                >
+                  {inJunk ? (
+                    <ShieldCheck className="size-[18px] text-muted" aria-hidden />
+                  ) : (
+                    <ShieldAlert className="size-[18px] text-muted" aria-hidden />
+                  )}
+                  {inJunk ? t("reader.notSpam") : t("reader.spam")}
+                </button>
+              )}
+              {rights.markSeen && (
+                <button
+                  type="button"
+                  onClick={() => leaveAfter(actions.setFlags([latest.id], { seen: false }))}
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
+                >
+                  <MailOpen className="size-[18px] text-muted" aria-hidden />
+                  {t("reader.markUnread")}
+                </button>
+              )}
+              {!rights.remove && !rights.spam && !rights.markSeen && (
+                <p className="px-4 py-3 text-[13px] text-muted">{t("sharing.readOnly")}</p>
+              )}
             </div>
           </>
         )}
@@ -242,12 +267,20 @@ export function MobileReader({ threadId }: { threadId: string }) {
           label={t("reader.forward")}
           onClick={() => openCompose({ mode: "forward", source: latest })}
         />
-        <BarButton icon={Archive} label={t("mobile.swipe.archive")} onClick={() => leaveAfter(actions.archive(ids))} />
-        <BarButton
-          icon={Trash}
-          label={t("reader.trash")}
-          onClick={() => void actions.trash(all).then((gone) => gone && back())}
-        />
+        {rights.archive && (
+          <BarButton
+            icon={Archive}
+            label={t("mobile.swipe.archive")}
+            onClick={() => leaveAfter(actions.archive(ids))}
+          />
+        )}
+        {rights.remove && (
+          <BarButton
+            icon={Trash}
+            label={rights.shared ? t("reader.deleteForever") : t("reader.trash")}
+            onClick={() => void actions.trash(all).then((gone) => gone && back())}
+          />
+        )}
       </nav>
     </section>
   );

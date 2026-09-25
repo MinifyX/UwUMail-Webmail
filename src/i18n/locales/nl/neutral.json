@@ -891,5 +891,36 @@
     "edit": "Bewerken",
     "stop": "Niet verzenden",
     "stopped": "Niet verzonden. De mail staat weer in Concepten."
+  },
+  "sharing": {
+    "notAllowed": "De eigenaar van deze map heeft dat niet toegestaan.",
+    "sharedBy": "Gedeeld door {{name}}",
+    "readOnly": "Alleen lezen",
+    "readOnlyShort": "alleen lezen",
+    "shareFolder": "Delen …",
+    "sharedWithCount_one": "Gedeeld met {{count}} persoon",
+    "sharedWithCount_other": "Gedeeld met {{count}} personen",
+    "title": "‘{{name}}’ delen",
+    "levelsDesc": {
+      "folder": "Lezen: de map en de mail erin zien. Lezen en schrijven: ook mail als gelezen markeren, markeren met een ster, inzetten en verwijderen. Alles: ook mappen erin maken, hem hernoemen en verder delen.",
+      "calendar": "Lezen: de agenda en zijn afspraken zien. Lezen en schrijven: ook afspraken toevoegen, wijzigen en verwijderen. Alles: ook hem hernoemen, zijn kleur wijzigen en verder delen."
+    },
+    "current": "Wie toegang heeft",
+    "nobody": "Nog met niemand gedeeld.",
+    "levelFor": "Toegang voor {{name}}",
+    "remove": "Niet meer delen met {{name}}",
+    "removed": "Niet meer gedeeld met {{name}}",
+    "add": "Met iemand delen",
+    "share": "Delen",
+    "shared": "Gedeeld met {{name}}",
+    "search": "Naam of adres van iemand op deze server",
+    "loadingPeople": "Personen laden …",
+    "peopleFailed": "De personen op deze server konden niet worden geladen.",
+    "noPeople": "Er past verder niemand.",
+    "level": {
+      "read": "Lezen",
+      "write": "Lezen en schrijven",
+      "all": "Alles"
+    }
   }
 }

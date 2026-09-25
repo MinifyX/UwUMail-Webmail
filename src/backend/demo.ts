@@ -7,7 +7,16 @@ import { DemoContacts } from "./demo-contacts";
 import { rulesToSieve } from "@/lib/sieveRules";
 import { resolveLanguage } from "@/i18n";
 import { useSettings } from "@/state/settings";
-import { buildFolders, buildMessages, DEMO_ACCOUNTS, demoRules, welcomeMessage } from "./demo-data";
+import {
+  ALL_RIGHTS,
+  buildFolders,
+  buildMessages,
+  buildSharedMailbox,
+  DEMO_ACCOUNTS,
+  DEMO_PEOPLE,
+  demoRules,
+  welcomeMessage,
+} from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
 import type {
   BlockedSender,
@@ -23,15 +32,19 @@ import type {
   EventInput,
   FlagChange,
   Folder,
+  FolderRights,
   Identity,
   MailtoDraft,
   MovedMessage,
   Message,
   OutgoingMessage,
+  Person,
   ScheduledSend,
   SendOptions,
   SendReceipt,
   SenderPicture,
+  ShareLevel,
+  SharedAccount,
   Signature,
   ThreadDetail,
   ThreadPage,
@@ -89,13 +102,21 @@ export class DemoBackend implements Backend {
   readonly kind = "demo";
 
   private accounts: Account[] = structuredClone(DEMO_ACCOUNTS);
-  private folders: Folder[] = DEMO_ACCOUNTS.flatMap((a) => buildFolders(a.id, lang()));
+  /** Somebody on the demo "server" who shares two folders with the demo. */
+  private shared = buildSharedMailbox(lang());
+  private folders: Folder[] = [
+    ...DEMO_ACCOUNTS.flatMap((a) => buildFolders(a.id, lang())).map((folder) => ({ ...folder, rights: ALL_RIGHTS })),
+    ...this.shared.folders,
+  ];
   // Newsletters and offers carry a List-Unsubscribe like the real ones.
-  private messages: Message[] = buildMessages(lang()).map((message) =>
-    /newsletter|aktion|offer|deal/i.test(message.subject)
-      ? { ...message, unsubscribe: { oneClick: true, url: "https://pixelparts.example/unsubscribe" } }
-      : message,
-  );
+  private messages: Message[] = [
+    ...buildMessages(lang()).map((message) =>
+      /newsletter|aktion|offer|deal/i.test(message.subject)
+        ? { ...message, unsubscribe: { oneClick: true, url: "https://pixelparts.example/unsubscribe" } }
+        : message,
+    ),
+    ...this.shared.messages,
+  ];
   private listeners = new Set<(event: BackendEvent) => void>();
   private nextId = 1000;
   private attachmentUrls = new Map<string, string>();
@@ -239,6 +260,9 @@ export class DemoBackend implements Backend {
     await wait(120);
     const parent = input.parentId ? this.folders.find((f) => f.id === input.parentId) : undefined;
     if (input.parentId && !parent) throw new BackendError("not_found", "This folder no longer exists.");
+    if (parent?.rights && !parent.rights.mayCreateChild) {
+      throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+    }
     const accountId = parent?.accountId ?? input.accountId ?? this.accounts[0]!.id;
     this.assertFreeName(accountId, input.parentId, input.name);
     const id = `${accountId}:f${this.nextId++}`;
@@ -252,6 +276,8 @@ export class DemoBackend implements Backend {
       selectable: true,
       unread: 0,
       total: 0,
+      rights: parent?.rights ?? ALL_RIGHTS,
+      ...(parent?.shared ? { shared: true } : {}),
     });
     this.emit({ type: "mail:changed", accountId });
     return id;
@@ -346,7 +372,48 @@ export class DemoBackend implements Backend {
     return { thread: this.summarize(threadId, list), messages: structuredClone(messages) };
   }
 
+  /** Like a server with shared folders: what the folder's owner didn't allow is refused. */
+  private allowed(messages: Message[], right: keyof FolderRights) {
+    for (const message of messages) {
+      const rights = this.folders.find((f) => f.id === message.folderId)?.rights;
+      if (rights && !rights[right]) throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+    }
+  }
+
+  private isShared(message: Message) {
+    return message.accountId === this.shared.account.id;
+  }
+
+  async sharedAccounts(): Promise<SharedAccount[]> {
+    await wait(40);
+    return [structuredClone(this.shared.account)];
+  }
+
+  async sharingAvailable() {
+    return true;
+  }
+
+  async people(): Promise<Person[]> {
+    await wait(80);
+    return structuredClone(DEMO_PEOPLE);
+  }
+
+  async shareFolder(folderId: string, personId: string, level: ShareLevel | null) {
+    await wait(150);
+    const folder = this.folders.find((f) => f.id === folderId);
+    if (!folder) throw new BackendError("not_found", "This folder no longer exists.");
+    if (folder.rights && !folder.rights.mayAdmin) throw new BackendError("forbidden", "You may not share this folder.");
+    const sharedWith = { ...folder.sharedWith };
+    if (level) sharedWith[personId] = level;
+    else delete sharedWith[personId];
+    folder.sharedWith = sharedWith;
+    this.emit({ type: "mail:changed", accountId: folder.accountId });
+  }
+
   async setFlags(messageIds: string[], change: FlagChange) {
+    const touched = this.messages.filter((m) => messageIds.includes(m.id));
+    if (change.seen !== undefined) this.allowed(touched, "maySetSeen");
+    if (change.flagged !== undefined) this.allowed(touched, "maySetKeywords");
     for (const message of this.messages) {
       if (!messageIds.includes(message.id)) continue;
       if (change.seen !== undefined) message.flags.seen = change.seen;
@@ -365,8 +432,12 @@ export class DemoBackend implements Backend {
 
   async deleteForever(messageIds: string[]) {
     await wait(120);
+    const shared = this.messages.filter((m) => messageIds.includes(m.id) && this.isShared(m));
+    this.allowed(shared, "mayRemoveItems");
     const doomed = new Set(
-      this.messages.filter((m) => messageIds.includes(m.id) && this.roleOf(m) === "trash").map((m) => m.id),
+      this.messages
+        .filter((m) => messageIds.includes(m.id) && (this.roleOf(m) === "trash" || this.isShared(m)))
+        .map((m) => m.id),
     );
     this.emitChanged([...doomed]);
     this.messages = this.messages.filter((m) => !doomed.has(m.id));
@@ -378,6 +449,11 @@ export class DemoBackend implements Backend {
     const folder = this.folders.find((f) => f.id === folderId);
     if (!folder) throw new BackendError("not_found", "This folder no longer exists.");
     const moved: MovedMessage[] = [];
+    const moving = this.messages.filter((m) => messageIds.includes(m.id) && m.folderId !== folderId);
+    this.allowed(moving, "mayRemoveItems");
+    if (folder.rights && !folder.rights.mayAddItems) {
+      throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+    }
     for (const message of this.messages) {
       if (!messageIds.includes(message.id) || message.folderId === folderId) continue;
       if (message.accountId !== folder.accountId) {
@@ -881,6 +957,9 @@ export class DemoBackend implements Backend {
   }
 
   private moveToRole(messageIds: string[], role: "archive" | "trash" | "junk" | "inbox") {
+    if (this.messages.some((m) => messageIds.includes(m.id) && this.isShared(m))) {
+      throw new BackendError("forbidden", "Mail in a shared folder stays in its owner's folders.");
+    }
     const moved: MovedMessage[] = [];
     for (const message of this.messages) {
       const target = `${message.accountId}:${role}`;
@@ -900,6 +979,8 @@ export class DemoBackend implements Backend {
     const { view } = query;
     if (query.accountIds && !query.accountIds.includes(message.accountId)) return false;
     if (view.kind === "folder") return message.folderId === view.folderId;
+    // The views across the mailbox are the account's own mail.
+    if (this.isShared(message)) return false;
     const role = this.roleOf(message);
     switch (view.role) {
       case "inbox":

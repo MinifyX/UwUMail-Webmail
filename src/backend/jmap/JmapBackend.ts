@@ -32,14 +32,18 @@ import type {
   EventInput,
   FlagChange,
   Folder,
+  FolderRights,
   Identity,
   MailtoDraft,
   MovedMessage,
   OutgoingMessage,
+  Person,
   ScheduledSend,
   SendOptions,
   SendReceipt,
   SenderPicture,
+  ShareLevel,
+  SharedAccount,
   Signature,
   ThreadDetail,
   ThreadPage,
@@ -83,6 +87,8 @@ import {
   downloadBlob,
   jmapSession,
   loadJmapSession,
+  reloadJmapSession,
+  whenSessionChanges,
   one,
   remoteImagePath,
   responseOf,
@@ -111,6 +117,18 @@ import {
   type JmapIdentityWithSignature,
 } from "./identitySignatures";
 import { SUGGEST, suggestionLimit, suggestionsToContacts, type JmapAddressSuggestion } from "./suggest";
+import {
+  PRINCIPALS,
+  groupByAccount,
+  peopleFrom,
+  scopeEmail,
+  scopeId,
+  sharedAccountsFrom,
+  sharedWithFrom,
+  toFolderRights,
+  unscopeId,
+  type JmapPrincipal,
+} from "./sharing";
 import {
   maxDelayOf,
   scheduledFrom,
@@ -327,11 +345,25 @@ export class JmapBackend implements Backend {
     if (!this.ready) {
       this.ready = (async () => {
         await loadJmapSession();
+        whenSessionChanges(() => void this.sessionChanged());
         await this.loadFolders();
         this.listenForPush();
       })();
     }
     return this.ready;
+  }
+
+  /** Somebody started or stopped sharing folders (or the account changed): read who shares what anew. */
+  private async sessionChanged(): Promise<void> {
+    try {
+      await reloadJmapSession();
+      await this.loadFolders();
+    } catch {
+      return;
+    }
+    this.principalList = null;
+    this.emit({ type: "accounts:changed" });
+    this.emit({ type: "mail:changed", accountId: this.accountId });
   }
 
   private get accountId(): string {
@@ -344,7 +376,15 @@ export class JmapBackend implements Backend {
 
   private listenForPush(): void {
     this.stopPush?.();
-    this.stopPush = watchPush((changed) => {
+    this.stopPush = watchPush((all) => {
+      // Folders somebody shares: only their mail and folders, under their account.
+      for (const [accountId, types] of Object.entries(all)) {
+        if (accountId === this.accountId || !this.sharedIds().includes(accountId)) continue;
+        if (types.Mailbox) void this.loadFolders();
+        if (types.Email || types.Mailbox) this.emit({ type: "mail:changed", accountId });
+      }
+      const changed = all[this.accountId];
+      if (!changed) return;
       if (changed.Mailbox) void this.loadFolders();
       if (changed.Email || changed.Mailbox) this.emit({ type: "mail:changed", accountId: this.accountId });
       if (changed.EmailSubmission) this.emit({ type: "scheduled:changed" });
@@ -360,16 +400,65 @@ export class JmapBackend implements Backend {
     });
   }
 
+  /** The ids of the accounts that share folders with this one. */
+  private sharedIds(): string[] {
+    const { accounts } = jmapSession();
+    return Object.keys(accounts).filter((id) => id !== this.accountId && !accounts[id]!.isPersonal);
+  }
+
+  /**
+   * The own folders and those every sharing person shares, in one request. A shared account's
+   * folders carry its account in their ids (see ./sharing) and never a role: somebody else's
+   * Inbox is not this account's Inbox.
+   */
   private async loadFolders(): Promise<Folder[]> {
-    const response = await one<GetResponse<JmapMailbox>>("Mailbox/get", { ids: null });
-    const boxes = response.list;
-    this.folders = boxes.map((box) => toFolder(box, this.accountId, boxes));
-    this.folderMap = new Map(this.folders.map((folder) => [folder.id, folder]));
-    return this.folders;
+    const own = this.accountId;
+    const accounts = [own, ...this.sharedIds()];
+    const body = await call(accounts.map((accountId, index) => ["Mailbox/get", { accountId, ids: null }, `m${index}`]));
+    const folders: Folder[] = [];
+    accounts.forEach((accountId, index) => {
+      let boxes: JmapMailbox[];
+      try {
+        boxes = responseOf<GetResponse<JmapMailbox>>(body, `m${index}`).list;
+      } catch {
+        return;
+      }
+      for (const box of boxes) {
+        const folder = toFolder(box, accountId, boxes);
+        folder.rights = toFolderRights(box.myRights);
+        const sharedWith = sharedWithFrom(box.shareWith);
+        if (sharedWith) folder.sharedWith = sharedWith;
+        if (accountId !== own) {
+          folder.id = scopeId(accountId, folder.id, own);
+          folder.parentId = folder.parentId ? scopeId(accountId, folder.parentId, own) : null;
+          folder.role = null;
+          folder.shared = true;
+        }
+        folders.push(folder);
+      }
+    });
+    this.folders = folders;
+    this.folderMap = new Map(folders.map((folder) => [folder.id, folder]));
+    return folders;
+  }
+
+  /** The folder an id names, or a clear refusal when it is gone. */
+  private folderOf(folderId: string): Folder {
+    const folder = this.folderMap.get(folderId);
+    if (!folder) throw new BackendError("not_found", "That folder is gone.");
+    return folder;
+  }
+
+  /** Refuses what the owner of a shared folder didn't allow, before the server has to. */
+  private allowed(folderIds: string[], right: keyof FolderRights): void {
+    for (const id of folderIds) {
+      const rights = this.folderMap.get(id)?.rights;
+      if (rights && !rights[right]) throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+    }
   }
 
   private folderWithRole(role: Folder["role"]): Folder | undefined {
-    return this.folders.find((folder) => folder.role === role);
+    return this.folders.find((folder) => folder.role === role && folder.accountId === this.accountId);
   }
 
   private messageProperties(): string[] {
@@ -528,6 +617,58 @@ export class JmapBackend implements Backend {
     if (store === "settings") await patchUserSettings({ [signatureKey(signatureId)]: null });
   }
 
+  /** The people who share folders with this account, each an account of their own. */
+  async sharedAccounts(): Promise<SharedAccount[]> {
+    await this.start();
+    const principals = this.sharedIds().length > 0 ? await this.principals() : [];
+    return sharedAccountsFrom(jmapSession().accounts, this.accountId, principals);
+  }
+
+  async sharingAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(PRINCIPALS);
+  }
+
+  private principalList: Promise<JmapPrincipal[]> | null = null;
+
+  /** Everyone on the server, as the server lists them for sharing; asked once per session. */
+  private principals(): Promise<JmapPrincipal[]> {
+    if (!supports(PRINCIPALS)) return Promise.resolve([]);
+    this.principalList ??= one<GetResponse<JmapPrincipal>>(
+      "Principal/get",
+      { ids: null, properties: ["id", "type", "name", "email", "accounts"] },
+      [CORE, PRINCIPALS],
+    )
+      .then((response) => response.list)
+      .catch((error: unknown) => {
+        this.principalList = null;
+        throw error;
+      });
+    return this.principalList;
+  }
+
+  async people(): Promise<Person[]> {
+    await this.start();
+    const own = accountCapability<{ currentUserPrincipalId?: string }>(PRINCIPALS)?.currentUserPrincipalId ?? null;
+    const { account } = (await import("../server")).currentSession();
+    return peopleFrom(await this.principals(), own, account.login);
+  }
+
+  /** Shares a folder with somebody at a level, or stops sharing it with them (`null`). */
+  async shareFolder(folderId: string, personId: string, level: ShareLevel | null): Promise<void> {
+    await this.start();
+    this.allowed([folderId], "mayAdmin");
+    const { accountId, id } = unscopeId(folderId, this.accountId);
+    const response = await one<SetResponse>(
+      "Mailbox/set",
+      { accountId, update: { [id]: { [`shareWith/${personId}`]: level } } },
+      [CORE, MAIL, PRINCIPALS],
+    );
+    throwOnMailboxError(response);
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId });
+  }
+
   async syncNow(): Promise<void> {
     await this.start();
     await this.loadFolders();
@@ -539,34 +680,55 @@ export class JmapBackend implements Backend {
     return this.folders.length > 0 ? this.folders : this.loadFolders();
   }
 
+  /** Inside a shared folder it goes into its owner's mailbox, where they allowed that. */
   async createFolder(input: { name: string; parentId: string | null }): Promise<string> {
     await this.start();
+    const own = this.accountId;
+    const parent = input.parentId ? unscopeId(input.parentId, own) : { accountId: own, id: null };
+    if (input.parentId) this.allowed([input.parentId], "mayCreateChild");
     const response = await one<SetResponse>("Mailbox/set", {
-      create: { new: { name: input.name, parentId: input.parentId } },
+      accountId: parent.accountId,
+      create: { new: { name: input.name, parentId: parent.id } },
     });
     throwOnMailboxError(response);
     const id = response.created?.new?.id;
     if (!id) throw new BackendError("internal", "The server didn't create the folder.");
     await this.loadFolders();
-    this.emit({ type: "mail:changed", accountId: this.accountId });
-    return id;
+    this.emit({ type: "mail:changed", accountId: parent.accountId });
+    return scopeId(parent.accountId, id, own);
   }
 
   async renameFolder(folderId: string, name: string): Promise<void> {
     await this.start();
-    throwOnMailboxError(await one<SetResponse>("Mailbox/set", { update: { [folderId]: { name } } }));
+    this.allowed([folderId], "mayRename");
+    const { accountId, id } = unscopeId(folderId, this.accountId);
+    throwOnMailboxError(await one<SetResponse>("Mailbox/set", { accountId, update: { [id]: { name } } }));
     await this.loadFolders();
-    this.emit({ type: "mail:changed", accountId: this.accountId });
+    this.emit({ type: "mail:changed", accountId });
   }
 
   async deleteFolder(folderId: string): Promise<void> {
     await this.start();
     await this.loadFolders();
-    const folder = this.folderMap.get(folderId);
-    if (!folder) throw new BackendError("not_found", "That folder is gone.");
+    const folder = this.folderOf(folderId);
     if (folder.role) throw new BackendError("invalid_input", "System folders stay.");
     if (this.folders.some((other) => other.parentId === folderId)) {
       throw new BackendError("invalid_input", "This folder still holds folders.");
+    }
+    if (folder.accountId !== this.accountId) {
+      // Somebody else's folder: its mail can't go to this account's trash, so it has to be empty.
+      this.allowed([folderId], "mayDelete");
+      const { id } = unscopeId(folderId, this.accountId);
+      throwOnMailboxError(
+        await one<SetResponse>("Mailbox/set", {
+          accountId: folder.accountId,
+          destroy: [id],
+          onDestroyRemoveEmails: false,
+        }),
+      );
+      await this.loadFolders();
+      this.emit({ type: "mail:changed", accountId: folder.accountId });
+      return;
     }
     const trash = this.folderOrFail("trash");
     // Page by page: whatever moved has left the folder, so the next page starts at 0 again.
@@ -603,7 +765,7 @@ export class JmapBackend implements Backend {
     const conditions: Record<string, unknown>[] = [];
     const view = query.view;
     if (view.kind === "folder") {
-      conditions.push({ inMailbox: view.folderId });
+      conditions.push({ inMailbox: unscopeId(view.folderId, this.accountId).id });
     } else {
       const role = view.role === "unread" || view.role === "flagged" ? "inbox" : view.role;
       const folder = this.folderWithRole(role);
@@ -633,12 +795,15 @@ export class JmapBackend implements Backend {
     const position = query.cursor ? Number.parseInt(query.cursor, 10) || 0 : 0;
     const filter = this.filterFor(query);
     const collapse = query.conversations;
+    const own = this.accountId;
+    // A shared folder is asked for in its owner's account; everything else is the own mail.
+    const accountId = query.view.kind === "folder" ? unscopeId(query.view.folderId, own).accountId : own;
 
     const calls: [string, Record<string, unknown>, string][] = [
       [
         "Email/query",
         {
-          accountId: this.accountId,
+          accountId,
           filter,
           sort: [{ property: "receivedAt", isAscending: false }],
           collapseThreads: collapse,
@@ -651,7 +816,7 @@ export class JmapBackend implements Backend {
       [
         "Email/get",
         {
-          accountId: this.accountId,
+          accountId,
           "#ids": { resultOf: "q", name: "Email/query", path: "/ids" },
           properties: LIST_PROPERTIES,
         },
@@ -662,7 +827,7 @@ export class JmapBackend implements Backend {
       calls.push([
         "Thread/get",
         {
-          accountId: this.accountId,
+          accountId,
           "#ids": { resultOf: "e", name: "Email/get", path: "/list/*/threadId" },
         },
         "t",
@@ -670,7 +835,7 @@ export class JmapBackend implements Backend {
       calls.push([
         "Email/get",
         {
-          accountId: this.accountId,
+          accountId,
           "#ids": { resultOf: "t", name: "Thread/get", path: "/list/*/emailIds" },
           properties: LIST_PROPERTIES,
         },
@@ -680,21 +845,25 @@ export class JmapBackend implements Backend {
 
     const body = await call(calls);
     const found = responseOf<QueryResponse>(body, "q");
-    const heads = responseOf<GetResponse<JmapEmail>>(body, "e").list;
+    const scope = (email: JmapEmail) => scopeEmail(email, accountId, own);
+    const heads = responseOf<GetResponse<JmapEmail>>(body, "e").list.map(scope);
 
     let threads: ThreadSummary[];
     if (collapse) {
-      const threadList = responseOf<GetResponse<JmapThread>>(body, "t").list;
-      const members = responseOf<GetResponse<JmapEmail>>(body, "m").list;
+      const threadList = responseOf<GetResponse<JmapThread>>(body, "t").list.map((thread) => ({
+        id: scopeId(accountId, thread.id, own),
+        emailIds: thread.emailIds.map((id) => scopeId(accountId, id, own)),
+      }));
+      const members = responseOf<GetResponse<JmapEmail>>(body, "m").list.map(scope);
       const byId = new Map(members.map((email) => [email.id, email]));
       const byThread = new Map(threadList.map((thread) => [thread.id, thread]));
       threads = heads.map((head) => {
         const thread = byThread.get(head.threadId);
         const emails = (thread?.emailIds ?? [head.id]).map((id) => byId.get(id)).filter((e): e is JmapEmail => !!e);
-        return toThreadSummary(head.threadId, emails.length > 0 ? emails : [head], this.accountId);
+        return toThreadSummary(head.threadId, emails.length > 0 ? emails : [head], accountId);
       });
     } else {
-      threads = heads.map((email) => toThreadSummary(`${SINGLE}${email.id}`, [email], this.accountId));
+      threads = heads.map((email) => toThreadSummary(`${SINGLE}${email.id}`, [email], accountId));
     }
 
     const next = position + found.ids.length;
@@ -706,18 +875,20 @@ export class JmapBackend implements Backend {
 
   async getThread(threadId: string, conversations: boolean): Promise<ThreadDetail> {
     await this.start();
+    const own = this.accountId;
     const properties = this.messageProperties();
     const single = threadId.startsWith(SINGLE);
-    const ids = single ? [threadId.slice(SINGLE.length)] : null;
+    const target = unscopeId(single ? threadId.slice(SINGLE.length) : threadId, own);
+    const accountId = target.accountId;
 
     const calls: [string, Record<string, unknown>, string][] = single
-      ? [["Email/get", { accountId: this.accountId, ids, properties, fetchAllBodyValues: true }, "e"]]
+      ? [["Email/get", { accountId, ids: [target.id], properties, fetchAllBodyValues: true }, "e"]]
       : [
-          ["Thread/get", { accountId: this.accountId, ids: [threadId] }, "t"],
+          ["Thread/get", { accountId, ids: [target.id] }, "t"],
           [
             "Email/get",
             {
-              accountId: this.accountId,
+              accountId,
               "#ids": { resultOf: "t", name: "Thread/get", path: "/list/*/emailIds" },
               properties,
               fetchAllBodyValues: true,
@@ -726,17 +897,17 @@ export class JmapBackend implements Backend {
           ],
         ];
     const body = await call(calls, supports(WEBMAIL) ? [CORE, MAIL, WEBMAIL] : [CORE, MAIL]);
-    let emails = responseOf<GetResponse<JmapEmail>>(body, "e").list;
+    let emails = responseOf<GetResponse<JmapEmail>>(body, "e").list.map((email) => scopeEmail(email, accountId, own));
     if (emails.length === 0) throw new BackendError("not_found", "That mail is gone.");
     if (!conversations && !single) {
       const newest = [...emails].sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))[0]!;
       emails = [newest];
     }
     const messages = emails
-      .map((email) => toMessage(email, this.accountId, this.folderMap))
+      .map((email) => toMessage(email, accountId, this.folderMap))
       .sort((a, b) => a.date.localeCompare(b.date));
     return {
-      thread: toThreadSummary(threadId, emails, this.accountId),
+      thread: toThreadSummary(threadId, emails, accountId),
       messages,
     };
   }
@@ -747,36 +918,72 @@ export class JmapBackend implements Backend {
     if (change.seen !== undefined) patch["keywords/$seen"] = change.seen ? true : null;
     if (change.flagged !== undefined) patch["keywords/$flagged"] = change.flagged ? true : null;
     if (Object.keys(patch).length === 0) return;
-    const update = Object.fromEntries(messageIds.map((id) => [id, patch]));
-    throwOnError(await one<SetResponse>("Email/set", { update }));
-    this.emit({ type: "mail:changed", accountId: this.accountId });
+    const groups = groupByAccount(messageIds, this.accountId);
+    for (const [accountId, ids] of groups) {
+      const update = Object.fromEntries(ids.map((id) => [id, patch]));
+      const response = await one<SetResponse>("Email/set", { accountId, update });
+      if (Object.values(response.notUpdated ?? {}).some((problem) => problem.type === "forbidden")) {
+        throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+      }
+      throwOnError(response);
+      this.emit({ type: "mail:changed", accountId });
+    }
   }
 
-  /** Moves mail into one folder and reports where each message came from. */
+  /**
+   * Moves mail into one folder and reports where each message came from. Mail stays in its own
+   * account: somebody else's folder only takes mail from their own mailbox.
+   */
   private async moveTo(
     messageIds: string[],
     targetId: string,
     keywords?: Record<string, unknown>,
   ): Promise<MovedMessage[]> {
     await this.start();
+    const own = this.accountId;
+    const target = unscopeId(targetId, own);
+    const groups = groupByAccount(messageIds, own);
+    if ([...groups.keys()].some((accountId) => accountId !== target.accountId)) {
+      throw new BackendError("invalid_input", "Mail can only move to folders of its own mailbox.");
+    }
+    const accountId = target.accountId;
     const current = await one<GetResponse<JmapEmail>>("Email/get", {
-      ids: messageIds,
+      accountId,
+      ids: groups.get(accountId) ?? [],
       properties: ["id", "mailboxIds", "keywords"],
     });
     const update: Record<string, Record<string, unknown>> = {};
     const moved: MovedMessage[] = [];
     for (const email of current.list) {
       const from = Object.keys(email.mailboxIds).filter((id) => email.mailboxIds[id]);
-      if (from.includes(targetId) && from.length === 1) continue;
-      update[email.id] = { mailboxIds: { [targetId]: true }, ...(keywords ?? {}) };
-      const fromFolderId = from.find((id) => id !== targetId) ?? from[0] ?? "";
-      moved.push({ id: email.id, fromFolderId });
+      if (from.includes(target.id) && from.length === 1) continue;
+      if (accountId !== own) {
+        this.allowed([targetId], "mayAddItems");
+        this.allowed(
+          from.map((id) => scopeId(accountId, id, own)),
+          "mayRemoveItems",
+        );
+      }
+      update[email.id] = { mailboxIds: { [target.id]: true }, ...(keywords ?? {}) };
+      const fromFolderId = from.find((id) => id !== target.id) ?? from[0] ?? "";
+      moved.push({ id: scopeId(accountId, email.id, own), fromFolderId: scopeId(accountId, fromFolderId, own) });
     }
     if (moved.length === 0) return [];
-    throwOnError(await one<SetResponse>("Email/set", { update }));
+    const response = await one<SetResponse>("Email/set", { accountId, update });
+    if (Object.values(response.notUpdated ?? {}).some((problem) => problem.type === "forbidden")) {
+      throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+    }
+    throwOnError(response);
     await this.loadFolders();
-    this.emit({ type: "mail:changed", accountId: this.accountId });
+    this.emit({ type: "mail:changed", accountId });
     return moved;
+  }
+
+  /** Archive, trash and junk are the account's own: mail somebody shares can't go there. */
+  private ownOnly(messageIds: string[]): void {
+    if ([...groupByAccount(messageIds, this.accountId).keys()].some((id) => id !== this.accountId)) {
+      throw new BackendError("forbidden", "Mail in a shared folder stays in its owner's folders.");
+    }
   }
 
   private folderOrFail(role: Exclude<Folder["role"], null>): Folder {
@@ -787,11 +994,13 @@ export class JmapBackend implements Backend {
 
   async archive(messageIds: string[]): Promise<MovedMessage[]> {
     await this.start();
+    this.ownOnly(messageIds);
     return this.moveTo(messageIds, this.folderOrFail("archive").id);
   }
 
   async trash(messageIds: string[]): Promise<MovedMessage[]> {
     await this.start();
+    this.ownOnly(messageIds);
     return this.moveTo(messageIds, this.folderOrFail("trash").id);
   }
 
@@ -801,6 +1010,7 @@ export class JmapBackend implements Backend {
 
   async markSpam(messageIds: string[], spam: boolean): Promise<MovedMessage[]> {
     await this.start();
+    this.ownOnly(messageIds);
     const target = spam ? this.folderOrFail("junk") : this.folderOrFail("inbox");
     // The keywords teach the server's filter; the move alone would not.
     const keywords = spam
@@ -809,20 +1019,42 @@ export class JmapBackend implements Backend {
     return this.moveTo(messageIds, target.id, keywords);
   }
 
+  /**
+   * Deletes mail for good: the own account's only from its trash, so deleting twice can never take
+   * mail elsewhere; a shared folder has no trash of this account, so its mail goes straight away
+   * where the owner allows removing it.
+   */
   async deleteForever(messageIds: string[]): Promise<number> {
     await this.start();
-    const trash = this.folderOrFail("trash");
-    const current = await one<GetResponse<JmapEmail>>("Email/get", {
-      ids: messageIds,
-      properties: ["id", "mailboxIds"],
-    });
-    // Only what really lies in the trash, so deleting twice can never take mail elsewhere.
-    const destroy = current.list.filter((email) => email.mailboxIds[trash.id] === true).map((email) => email.id);
-    if (destroy.length === 0) return 0;
-    const response = await one<SetResponse>("Email/set", { destroy });
+    const own = this.accountId;
+    let count = 0;
+    for (const [accountId, ids] of groupByAccount(messageIds, own)) {
+      let destroy = ids;
+      if (accountId === own) {
+        const trash = this.folderOrFail("trash");
+        const current = await one<GetResponse<JmapEmail>>("Email/get", { ids, properties: ["id", "mailboxIds"] });
+        destroy = current.list.filter((email) => email.mailboxIds[trash.id] === true).map((email) => email.id);
+      } else {
+        const current = await one<GetResponse<JmapEmail>>("Email/get", {
+          accountId,
+          ids,
+          properties: ["id", "mailboxIds"],
+        });
+        const folders = current.list.flatMap((email) =>
+          Object.keys(email.mailboxIds).map((id) => scopeId(accountId, id, own)),
+        );
+        this.allowed(folders, "mayRemoveItems");
+      }
+      if (destroy.length === 0) continue;
+      const response = await one<SetResponse>("Email/set", { accountId, destroy });
+      if (Object.values(response.notDestroyed ?? {}).some((problem) => problem.type === "forbidden")) {
+        throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+      }
+      count += response.destroyed?.length ?? 0;
+      this.emit({ type: "mail:changed", accountId });
+    }
     await this.loadFolders();
-    this.emit({ type: "mail:changed", accountId: this.accountId });
-    return response.destroyed?.length ?? 0;
+    return count;
   }
 
   async blockedSenders(): Promise<BlockedSender[]> {
@@ -862,8 +1094,10 @@ export class JmapBackend implements Backend {
    */
   async unsubscribe(messageId: string): Promise<UnsubscribeOutcome> {
     await this.start();
+    const target = unscopeId(messageId, this.accountId);
     const response = await one<GetResponse<JmapEmail>>("Email/get", {
-      ids: [messageId],
+      accountId: target.accountId,
+      ids: [target.id],
       properties: ["id", "to", "subject", "header:List-Unsubscribe:asURLs", "header:List-Unsubscribe-Post:asText"],
     });
     const email = response.list[0];
@@ -953,8 +1187,11 @@ export class JmapBackend implements Backend {
     // The draft key is the message id, so every version of one draft replaces the last.
     if (message.draftKey) object.messageId = [message.draftKey];
     if (message.inReplyTo) {
+      // The answered mail may lie in a folder somebody shares; the answer is this account's own.
+      const answered = unscopeId(message.inReplyTo, this.accountId);
       const original = await one<GetResponse<JmapEmail>>("Email/get", {
-        ids: [message.inReplyTo],
+        accountId: answered.accountId,
+        ids: [answered.id],
         properties: ["messageId", "references"],
       });
       const parent = original.list[0];
@@ -1633,20 +1870,24 @@ export class JmapBackend implements Backend {
     return { emailId: attachmentId.slice(0, separator), blobId: attachmentId.slice(separator + 1) };
   }
 
+  /** From the account the mail belongs to: a shared folder's mail downloads from its owner's. */
   private async attachmentBlob(attachmentId: string, filename: string): Promise<Blob> {
-    const { blobId } = this.splitAttachmentId(attachmentId);
-    return downloadBlob(blobId, filename);
+    const { emailId, blobId } = this.splitAttachmentId(attachmentId);
+    return downloadBlob(blobId, filename, unscopeId(emailId, this.accountId).accountId);
   }
 
   async getAttachment(attachmentId: string): Promise<AttachmentContent> {
     await this.start();
     const { emailId } = this.splitAttachmentId(attachmentId);
+    const target = unscopeId(emailId, this.accountId);
     const response = await one<GetResponse<JmapEmail>>("Email/get", {
-      ids: [emailId],
+      accountId: target.accountId,
+      ids: [target.id],
       properties: ["id", "attachments"],
     });
     const email = response.list[0];
     const part = email?.attachments?.find((candidate) => `${emailId}:${candidate.blobId}` === attachmentId);
+    // (`emailId` is the id as the interface knows it, so the comparison holds for shared mail too.)
     if (!part) throw new BackendError("not_found", "That attachment is gone.");
     const filename = part.name ?? "attachment";
     const blob = await this.attachmentBlob(attachmentId, filename);
@@ -1678,14 +1919,16 @@ export class JmapBackend implements Backend {
 
   async saveMessage(messageId: string): Promise<boolean> {
     await this.start();
+    const target = unscopeId(messageId, this.accountId);
     const response = await one<GetResponse<JmapEmail & { blobId?: string }>>("Email/get", {
-      ids: [messageId],
+      accountId: target.accountId,
+      ids: [target.id],
       properties: ["id", "blobId", "subject"],
     });
     const email = response.list[0];
     if (!email?.blobId) throw new BackendError("not_found", "That mail is gone.");
     const name = `${(email.subject ?? "mail").replace(/[\\/:*?"<>|]/g, "_").slice(0, 60) || "mail"}.eml`;
-    const blob = await downloadBlob(email.blobId, name);
+    const blob = await downloadBlob(email.blobId, name, target.accountId);
     const url = URL.createObjectURL(blob);
     offerDownload(url, name);
     setTimeout(() => URL.revokeObjectURL(url), 60_000);

@@ -55,6 +55,50 @@ export interface Signature {
 
 export type FolderRole = "inbox" | "sent" | "drafts" | "archive" | "trash" | "junk";
 
+/**
+ * What the account may do in a folder (RFC 8621 `myRights`, plus `mayAdmin` for sharing). Its own
+ * folders allow everything; folders somebody shares allow what they chose.
+ */
+export interface FolderRights {
+  mayReadItems: boolean;
+  mayAddItems: boolean;
+  mayRemoveItems: boolean;
+  maySetSeen: boolean;
+  maySetKeywords: boolean;
+  mayCreateChild: boolean;
+  mayRename: boolean;
+  mayDelete: boolean;
+  /** May share it with others. */
+  mayAdmin: boolean;
+}
+
+/** How much a folder or calendar is shared: read, read and write, or everything including sharing on. */
+export type ShareLevel = "read" | "write" | "all";
+
+/** Somebody on the same server, to share with (a JMAP Principal). */
+export interface Person {
+  /** The principal id, e.g. `p7`. */
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface Share {
+  person: Person;
+  level: ShareLevel;
+}
+
+/** Somebody who shares folders with this account: their mailbox as far as they share it. */
+export interface SharedAccount {
+  id: string;
+  /** The owner's login address. */
+  email: string;
+  /** The owner's name, or their address when the server doesn't say. */
+  name: string;
+  /** Every folder they share is read-only here. */
+  readOnly: boolean;
+}
+
 export interface Folder {
   id: string;
   accountId: string;
@@ -67,6 +111,12 @@ export interface Folder {
   selectable: boolean;
   unread: number;
   total: number;
+  /** What the account may do here; left out where the server doesn't say, which means everything. */
+  rights?: FolderRights;
+  /** Somebody else's folder, shared with the account: its `accountId` is theirs (see SharedAccount). */
+  shared?: boolean;
+  /** Who else sees it, by principal id; only for folders the account may share. */
+  sharedWith?: Record<string, ShareLevel>;
 }
 
 export interface Address {
@@ -484,6 +534,8 @@ export type BackendEvent =
   | { type: "compose:mailto" }
   /** The account's shared settings changed, here or on another device (e.g. signatures). */
   | { type: "settings:changed"; accountId: string; state?: string }
+  /** Folders shared with the account came or went, or changed between read-only and writable. */
+  | { type: "accounts:changed" }
   /** Calendars or events changed, here or on another device. */
   | { type: "calendar:changed" }
   /** Address books or contacts changed, here or on another device. */

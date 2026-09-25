@@ -13,7 +13,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type { Account, Folder, FolderRole, MailboxView } from "@/backend/types";
 import { useT } from "@/i18n";
-import { useAccounts, useFolders } from "@/lib/queries";
+import { useAccounts, useFolders, useSharedAccounts } from "@/lib/queries";
+import { folderRights, type MailRights } from "./rights";
 
 export const ROLE_ICONS: Record<FolderRole, LucideIcon> = {
   inbox: Inbox,
@@ -55,12 +56,15 @@ export interface ViewInfo {
   isTrash: boolean;
   /** Mail here is spam already, so "spam" means "not spam". */
   isJunk: boolean;
+  /** What the list's actions may do here: everything but in folders somebody shares. */
+  rights: MailRights;
 }
 
 export function useViewInfo(view: MailboxView): ViewInfo {
   const { t } = useT();
   const { data: accounts = [] } = useAccounts();
   const { data: folders = [] } = useFolders();
+  const { data: shared = [] } = useSharedAccounts();
 
   if (view.kind === "unified") {
     const title = view.role === "inbox" ? t("nav.inbox") : t(`nav.${view.role}`);
@@ -70,18 +74,22 @@ export function useViewInfo(view: MailboxView): ViewInfo {
       isDrafts: view.role === "drafts",
       isTrash: false,
       isJunk: false,
+      rights: folderRights(undefined),
     };
   }
   const folder = folders.find((f) => f.id === view.folderId);
   const account = accounts.find((a) => a.id === view.accountId);
+  const owner = folder?.shared ? shared.find((entry) => entry.id === folder.accountId) : undefined;
   return {
     title: folder?.name ?? "",
-    subtitle: account?.email,
+    subtitle: owner ? t("sharing.sharedBy", { name: owner.name }) : account?.email,
     account,
     folder,
     isInbox: folder?.role === "inbox",
     isDrafts: folder?.role === "drafts",
-    isTrash: folder?.role === "trash",
+    // A shared folder has no trash of this account: deleting there is for good.
+    isTrash: folder?.role === "trash" || folder?.shared === true,
     isJunk: folder?.role === "junk",
+    rights: folderRights(folder),
   };
 }

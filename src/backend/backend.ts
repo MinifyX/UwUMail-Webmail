@@ -19,10 +19,13 @@ import type {
   MailtoDraft,
   MovedMessage,
   OutgoingMessage,
+  Person,
   ScheduledSend,
   SendOptions,
   SendReceipt,
   SenderPicture,
+  ShareLevel,
+  SharedAccount,
   Signature,
   ThreadDetail,
   ThreadPage,
@@ -96,7 +99,16 @@ export interface Backend {
   deleteSignature(signatureId: string): Promise<void>;
   syncNow(accountId?: string): Promise<void>;
 
+  /** The own folders, then those of every person who shares folders with the account (see sharedAccounts). */
   listFolders(accountId?: string): Promise<Folder[]>;
+  /** People who share folders with this account; their folders come with listFolders under their account id. */
+  sharedAccounts(): Promise<SharedAccount[]>;
+  /** Whether folders (and calendars) can be shared from here: the server lists its people. */
+  sharingAvailable(): Promise<boolean>;
+  /** The people on the server to share with, without the account itself. */
+  people(): Promise<Person[]>;
+  /** Shares a folder with a person at a level; `null` stops sharing it with them. */
+  shareFolder(folderId: string, personId: string, level: ShareLevel | null): Promise<void>;
   /** Returns the new folder's id; `parentId` null puts it at the top level. */
   createFolder(input: { accountId?: string; name: string; parentId: string | null }): Promise<string>;
   renameFolder(folderId: string, name: string): Promise<void>;
