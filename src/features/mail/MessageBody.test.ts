@@ -69,8 +69,10 @@ describe("buildDocument", () => {
     const mail = message({ bodyHtml: '<img src="https://track.example/open.gif"><img src="cid:logo">' });
     const allowed = buildDocument(mail, true, "light", new Map(), proxy);
     expect(allowed).toContain('src="/jmap/image/a1?url=https%3A%2F%2Ftrack.example%2Fopen.gif"');
-    expect(allowed).toContain("img-src data: cid: blob: 'self';");
-    expect(allowed).not.toContain("https:");
+    // The origin itself, not 'self': Firefox takes 'self' in a srcdoc frame for about:srcdoc.
+    expect(allowed).toContain(`img-src data: cid: blob: ${window.location.origin};`);
+    expect(allowed).not.toContain("'self'");
+    expect(allowed).not.toMatch(/img-src[^;]* https?:[ ;]/);
     const blocked = buildDocument(mail, false, "light", new Map(), proxy);
     expect(blocked).toContain('src="https://track.example/open.gif"');
     expect(blocked).toContain("img-src data: cid: blob:;");

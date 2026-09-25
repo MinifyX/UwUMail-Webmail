@@ -75,8 +75,10 @@ export function fixViewportHeightUnits(html: string): string {
  */
 function withRemoteImages(html: string, allowRemote: boolean, imageProxy: ImageProxy | null | undefined) {
   if (!allowRemote) return { html, remote: "" };
-  // Our own origin only: whatever was not sent through the server can't reach its sender.
-  if (imageProxy) return { html: proxyRemoteImages(html, imageProxy), remote: " 'self'" };
+  // Our own origin only: whatever was not sent through the server can't reach its sender. Named
+  // outright: Firefox reads 'self' in the frame's <meta> policy as about:srcdoc, which is no origin
+  // at all, so every picture the server fetched stayed blocked there.
+  if (imageProxy) return { html: proxyRemoteImages(html, imageProxy), remote: ` ${window.location.origin}` };
   return { html, remote: " https: http:" };
 }
 
