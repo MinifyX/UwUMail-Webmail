@@ -85,12 +85,18 @@ export function whenSessionChanges(listener: (() => void) | null): void {
 
 /** Loads the session anew, e.g. after somebody started or stopped sharing folders with the account. */
 export async function reloadJmapSession(): Promise<JmapSession> {
-  session = null;
-  return loadJmapSession();
+  // The old one stays in use until the new one is there.
+  session = await fetchJmapSession();
+  return session;
 }
 
 export async function loadJmapSession(): Promise<JmapSession> {
   if (session) return session;
+  session = await fetchJmapSession();
+  return session;
+}
+
+async function fetchJmapSession(): Promise<JmapSession> {
   let response: Response;
   try {
     response = await fetch("/jmap/session", {
@@ -117,7 +123,7 @@ export async function loadJmapSession(): Promise<JmapSession> {
       },
     ]),
   );
-  session = {
+  return {
     accountId,
     accounts,
     apiUrl: onOwnOrigin(raw.apiUrl),
@@ -127,7 +133,6 @@ export async function loadJmapSession(): Promise<JmapSession> {
     capabilities: raw.capabilities ?? {},
     state: raw.state,
   };
-  return session;
 }
 
 export function jmapSession(): JmapSession {

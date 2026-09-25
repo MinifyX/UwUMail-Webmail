@@ -428,8 +428,17 @@ export class JmapBackend implements Backend {
    */
   private async loadFolders(): Promise<Folder[]> {
     const own = this.accountId;
-    const accounts = [own, ...this.sharedIds()];
-    const body = await call(accounts.map((accountId, index) => ["Mailbox/get", { accountId, ids: null }, `m${index}`]));
+    let accounts = [own, ...this.sharedIds()];
+    const ask = () => call(accounts.map((accountId, index) => ["Mailbox/get", { accountId, ids: null }, `m${index}`]));
+    let body: Awaited<ReturnType<typeof call>>;
+    try {
+      body = await ask();
+    } catch (error) {
+      // A share that just went away must not take the own folders with it.
+      if (accounts.length === 1) throw error;
+      accounts = [own];
+      body = await ask();
+    }
     const folders: Folder[] = [];
     accounts.forEach((accountId, index) => {
       let boxes: JmapMailbox[];
