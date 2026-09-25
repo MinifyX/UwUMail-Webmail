@@ -187,7 +187,7 @@ export interface Backend {
   /** Changes what the editor shows and leaves the rest of the card as it is. */
   updateContact(id: string, input: ContactInput): Promise<void>;
   deleteContact(id: string): Promise<void>;
-  /** Address suggestions for the composer from the address books; the demo adds its mail history. */
+  /** Address suggestions for the composer: the server ranks address books and mail history, older ones only the address books. */
   searchContacts(query: string): Promise<Contact[]>;
 
   /** Downloads the attachment and hands out a blob URL for it. */

@@ -110,6 +110,7 @@ import {
   signatureMigration,
   type JmapIdentityWithSignature,
 } from "./identitySignatures";
+import { SUGGEST, suggestionLimit, suggestionsToContacts, type JmapAddressSuggestion } from "./suggest";
 import {
   maxDelayOf,
   scheduledFrom,
@@ -1565,11 +1566,31 @@ export class JmapBackend implements Backend {
     this.emit({ type: "contacts:changed" });
   }
 
-  /** The address books' matches by name, address or company, fetched in the same request. */
+  /**
+   * Recipient suggestions: ranked by the server from the address books and the mail history where
+   * it offers that (`AddressSuggestion/query`), otherwise the address books' matches.
+   */
   async searchContacts(query: string): Promise<Contact[]> {
     const wanted = query.trim();
     if (!wanted) return [];
     await this.start();
+    if (supports(SUGGEST)) {
+      try {
+        const response = await one<{ list: JmapAddressSuggestion[] }>(
+          "AddressSuggestion/query",
+          { text: wanted.slice(0, 256), limit: suggestionLimit(SUGGESTIONS, accountCapability(SUGGEST)) },
+          [CORE, SUGGEST],
+        );
+        return suggestionsToContacts(response.list ?? []);
+      } catch {
+        // The address books still know some.
+      }
+    }
+    return this.searchAddressBooks(wanted);
+  }
+
+  /** The address books' matches by name, address or company, fetched in the same request. */
+  private async searchAddressBooks(wanted: string): Promise<Contact[]> {
     if (!supports(CONTACTS)) return [];
     const accountId = this.accountId;
     const body = await call(
