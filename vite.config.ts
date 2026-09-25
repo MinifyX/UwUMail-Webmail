@@ -34,7 +34,8 @@ export default defineConfig(({ mode }) => {
       proxy: proxy
         ? {
             "/api": proxy,
-            "/jmap": proxy,
+            // The WebSocket for push goes through too (RFC 8887).
+            "/jmap": { ...proxy, ws: true },
             "/.well-known/jmap": proxy,
             // The server's colours and logo, see lib/brand.
             "/branding": proxy,
