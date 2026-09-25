@@ -65,7 +65,8 @@
     "messageSaved": "Mail sicher abgelegt (˘ω˘)",
     "deletedForever_one": "Für immer weg (｡•́︿•̀｡)",
     "deletedForever_other": "{{count}} Mails für immer weg (｡•́︿•̀｡)",
-    "sending": "Nyu flitzt gleich los … ✉︎"
+    "sending": "Nyu flitzt gleich los … ✉︎",
+    "scheduled": "Nyu bringt sie {{time}} vorbei ✉︎"
   },
   "status": {
     "syncing": "Hole frische Mails…",

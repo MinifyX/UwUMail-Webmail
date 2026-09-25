@@ -10,25 +10,34 @@ import {
   PenLine,
   Settings,
   SlidersHorizontal,
+  Users,
   WifiOff,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
-import type { Account, Folder, MailboxView } from "@/backend/types";
+import type { Account, Folder, FolderRights, MailboxView, SharedAccount } from "@/backend/types";
 import { AccountDot } from "@/components/ui/Avatar";
 import { Button, IconButton } from "@/components/ui/Button";
 import { Wordmark } from "@/components/ui/Logo";
 import { ContextMenu } from "@/components/ui/Menu";
 import { Badge } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
-import { useFolders, useMessageActions, useVisibleAccounts } from "@/lib/queries";
+import {
+  useFolders,
+  useMessageActions,
+  useSharedAccounts,
+  useSharingAvailable,
+  useVisibleAccounts,
+} from "@/lib/queries";
 import { openFolderDialog } from "@/state/folderDialog";
 import { toast } from "@/state/toasts";
 import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
 import { PORTAL_URL } from "@/backend/server";
+import { ScheduledNavItem } from "../compose/ScheduledSends";
 import { AppSwitch } from "../shell/AppSwitch";
+import { ShareDialog } from "../sharing/ShareDialog";
 import { buildFolderTree, countsUnread, type FolderNode } from "./folderTree";
 import { draggedThreadIds, THREAD_DRAG_TYPE, useSelectionActions } from "./selection";
 import { folderIcon, sameView, UNIFIED_ICONS } from "./view";
@@ -69,21 +78,31 @@ function Glyph({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) {
   );
 }
 
-/** What can be done to a folder from its menu. Role folders keep their name and stay. */
-function useFolderMenuItems(folder: Folder, account: Account) {
+/**
+ * What can be done to a folder from its menu. Role folders keep their name and stay; a folder
+ * somebody shares offers what its owner allows. "Share…" wherever the server lets the account.
+ */
+function useFolderMenuItems(folder: Folder, accountId: string, onShare: () => void) {
   const { t } = useT();
+  const { data: sharing = false } = useSharingAvailable();
   const items: { label: string; onSelect: () => void; danger?: boolean }[] = [];
+  const may = (right: keyof FolderRights) => folder.rights?.[right] ?? true;
   if (folder.role === "trash" || folder.role === "junk") {
     const role = folder.role;
     items.push({ label: t(`folders.empty.${role}`), onSelect: () => openFolderDialog({ kind: "empty", folder }) });
     return items;
   }
-  items.push({
-    label: t("folders.newInside"),
-    onSelect: () => openFolderDialog({ kind: "create", accountId: account.id, parent: folder }),
-  });
-  if (!folder.role) {
+  if (may("mayCreateChild")) {
+    items.push({
+      label: t("folders.newInside"),
+      onSelect: () => openFolderDialog({ kind: "create", accountId, parent: folder }),
+    });
+  }
+  if (!folder.role && may("mayRename")) {
     items.push({ label: t("folders.rename"), onSelect: () => openFolderDialog({ kind: "rename", folder }) });
+  }
+  if (sharing && folder.rights?.mayAdmin) items.push({ label: t("sharing.shareFolder"), onSelect: onShare });
+  if (!folder.role && may("mayDelete")) {
     items.push({
       label: t("folders.delete"),
       danger: true,
@@ -96,18 +115,19 @@ function useFolderMenuItems(folder: Folder, account: Account) {
 /** How long a finger rests on a folder before its menu opens. */
 const LONG_PRESS = 550;
 
-function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
+function FolderItem({ node, accountId }: { node: FolderNode; accountId: string }) {
   const { t } = useT();
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+  const [sharing, setSharing] = useState(false);
   const press = useRef<{ timer: number; x: number; y: number; fired: boolean } | null>(null);
-  const menuItems = useFolderMenuItems(node.folder, account);
+  const menuItems = useFolderMenuItems(node.folder, accountId, () => setSharing(true));
   const view = useUi((s) => s.view);
   const setView = useUi((s) => s.setView);
   const collapsed = useSettings((s) => s.collapsedFolders.includes(node.folder.id));
   const toggleFolder = useSettings((s) => s.toggleFolder);
   const { folder, depth, children } = node;
   const hasChildren = children.length > 0;
-  const target: MailboxView = { kind: "folder", accountId: account.id, folderId: folder.id };
+  const target: MailboxView = { kind: "folder", accountId, folderId: folder.id };
   const active = sameView(view, target);
   const icon = folder.selectable ? folderIcon(folder) : FolderOpen;
   // A collapsed folder also shows what's unread inside it.
@@ -116,7 +136,13 @@ function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
   const selection = useSelectionActions();
   const actions = useMessageActions();
   const [dropping, setDropping] = useState(false);
-  const accepts = (event: React.DragEvent) => folder.selectable && event.dataTransfer.types.includes(THREAD_DRAG_TYPE);
+  const accepts = (event: React.DragEvent) =>
+    folder.selectable &&
+    // A folder somebody shares only takes mail where they allowed adding it.
+    folder.rights?.mayAddItems !== false &&
+    event.dataTransfer.types.includes(THREAD_DRAG_TYPE);
+  const sharedWith = folder.sharedWith ?? {};
+  const sharedCount = Object.keys(sharedWith).length;
 
   return (
     <li role="treeitem" aria-expanded={hasChildren ? !collapsed : undefined} aria-selected={active}>
@@ -135,7 +161,7 @@ function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
           const threadIds = draggedThreadIds(event.dataTransfer.getData(THREAD_DRAG_TYPE));
           if (threadIds.length === 0) return;
           void selection.messagesOf(threadIds).then((messages) => {
-            const here = messages.filter((message) => message.accountId === account.id).map((message) => message.id);
+            const here = messages.filter((message) => message.accountId === accountId).map((message) => message.id);
             if (here.length === 0) {
               toast(t("move.mixedAccounts"), "error");
               return;
@@ -215,6 +241,12 @@ function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
         >
           <Glyph icon={icon} active={active} />
           <span className="min-w-0 flex-1 truncate">{label}</span>
+          {sharedCount > 0 && (
+            <Users
+              className="size-3.5 shrink-0 text-muted"
+              aria-label={t("sharing.sharedWithCount", { count: sharedCount })}
+            />
+          )}
           {count > 0 && (
             <Badge count={count} className={clsx(menuAt === null && "pointer-fine:group-hover:invisible")} />
           )}
@@ -243,10 +275,18 @@ function FolderItem({ node, account }: { node: FolderNode; account: Account }) {
           label={t("folders.actions", { name: label })}
         />
       </div>
+      <ShareDialog
+        open={sharing}
+        onClose={() => setSharing(false)}
+        name={label}
+        kind="folder"
+        sharedWith={sharedWith}
+        onShare={(personId, level) => backend().shareFolder(folder.id, personId, level)}
+      />
       {hasChildren && !collapsed && (
         <ul role="group" className="flex flex-col gap-0.5 pt-0.5">
           {children.map((child) => (
-            <FolderItem key={child.folder.id} node={child} account={account} />
+            <FolderItem key={child.folder.id} node={child} accountId={accountId} />
           ))}
         </ul>
       )}
@@ -298,7 +338,39 @@ function AccountSection({ account, folders }: { account: Account; folders: Folde
       {open && (
         <ul role="tree" aria-label={account.email} className="flex flex-col gap-0.5">
           {tree.map((node) => (
-            <FolderItem key={node.folder.id} node={node} account={account} />
+            <FolderItem key={node.folder.id} node={node} accountId={account.id} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** The folders one person shares with the account, under their name. */
+function SharedSection({ owner, folders }: { owner: SharedAccount; folders: Folder[] }) {
+  const [open, setOpen] = useState(true);
+  const { t } = useT();
+  const title = t("sharing.sharedBy", { name: owner.name });
+  const tree = buildFolderTree(folders);
+  if (tree.length === 0) return null;
+  return (
+    <section className="flex flex-col gap-0.5">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        title={owner.email}
+        className="flex h-8 min-w-0 items-center gap-2 rounded-lg pr-1 pl-3 text-[12px] font-bold text-muted hover:text-ink"
+      >
+        <Users className="size-3.5 shrink-0" aria-hidden />
+        <span className="min-w-0 flex-1 truncate text-left">{title}</span>
+        {owner.readOnly && <span className="shrink-0 text-[11px] font-semibold">{t("sharing.readOnlyShort")}</span>}
+        <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
+      </button>
+      {open && (
+        <ul role="tree" aria-label={title} className="flex flex-col gap-0.5">
+          {tree.map((node) => (
+            <FolderItem key={node.folder.id} node={node} accountId={owner.id} />
           ))}
         </ul>
       )}
@@ -324,6 +396,7 @@ export function MailboxNav({ className }: { className?: string }) {
   const hops = useNewMailHops();
   const { accounts } = useVisibleAccounts();
   const { data: allFolders = [] } = useFolders();
+  const { data: sharedAccounts = [] } = useSharedAccounts();
   const view = useUi((s) => s.view);
   const setView = useUi((s) => s.setView);
   const openCompose = useUi((s) => s.openCompose);
@@ -365,6 +438,7 @@ export function MailboxNav({ className }: { className?: string }) {
               />
             );
           })}
+          <ScheduledNavItem />
         </section>
 
         {accounts.map((account) => (
@@ -373,6 +447,10 @@ export function MailboxNav({ className }: { className?: string }) {
             account={account}
             folders={folders.filter((f) => f.accountId === account.id)}
           />
+        ))}
+
+        {sharedAccounts.map((owner) => (
+          <SharedSection key={owner.id} owner={owner} folders={allFolders.filter((f) => f.accountId === owner.id)} />
         ))}
       </div>
 

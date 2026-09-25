@@ -65,7 +65,8 @@
     "messageSaved": "Mail tucked away safely (˘ω˘)",
     "deletedForever_one": "Gone forever (｡•́︿•̀｡)",
     "deletedForever_other": "{{count}} messages gone forever (｡•́︿•̀｡)",
-    "sending": "Nyu is about to dash off … ✉︎"
+    "sending": "Nyu is about to dash off … ✉︎",
+    "scheduled": "Nyu will deliver it {{time}} ✉︎"
   },
   "status": {
     "syncing": "Fetching fresh mail…",

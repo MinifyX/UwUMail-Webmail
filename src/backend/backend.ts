@@ -16,11 +16,18 @@ import type {
   FlagChange,
   Folder,
   Identity,
+  MailInvitation,
   MailtoDraft,
   MovedMessage,
   OutgoingMessage,
-  QueuedSend,
+  ParticipationStatus,
+  Person,
+  ScheduledSend,
+  SendOptions,
+  SendReceipt,
   SenderPicture,
+  ShareLevel,
+  SharedAccount,
   Signature,
   ThreadDetail,
   ThreadPage,
@@ -40,7 +47,13 @@ export type BackendErrorCode =
   /** The session ended: the portal has to sign in again. */
   | "signed_out"
   /** An administrator switched the webmail off for this server or this account. */
-  | "webmail_disabled";
+  | "webmail_disabled"
+  /** The mail is already on its way and can't be taken back. */
+  | "too_late"
+  /** The folder's owner didn't allow this (a folder shared with the account). */
+  | "forbidden";
+
+export type SignatureStore = "identity" | "settings" | null;
 
 export class BackendError extends Error {
   readonly code: BackendErrorCode;
@@ -68,8 +81,11 @@ export interface Backend {
   listAccounts(): Promise<Account[]>;
   /** The mailbox's own address first, then the aliases the server knows. */
   listIdentities(): Promise<Identity[]>;
-  /** Whether the server keeps signatures (its settings extension); without it there are none. */
-  signaturesAvailable(): Promise<boolean>;
+  /**
+   * Where signatures live: on the sending addresses (`Identity` signatures, one per address), in
+   * the settings extension (several per address, older servers), or nowhere.
+   */
+  signatureStore(): Promise<SignatureStore>;
   /** Whether the server keeps the account's settings (its settings extension) for the settings sync. */
   userSettingsAvailable(): Promise<boolean>;
   /** The account's shared settings, see lib/settingsSync. */
@@ -77,12 +93,24 @@ export interface Backend {
   /** Sets keys (`null` removes); with `ifInState` only if nothing was written since. */
   saveUserSettings(patch: Record<string, unknown>, ifInState?: string): Promise<SaveOutcome>;
   listSignatures(): Promise<Signature[]>;
-  /** Creates the signature when its id is empty. Taking a default for an address takes it from the others. */
+  /**
+   * Creates the signature when its id is empty. Taking a default for an address takes it from the
+   * others. With identity signatures, sets the one signature of `signature.email`.
+   */
   saveSignature(signature: Signature): Promise<Signature>;
   deleteSignature(signatureId: string): Promise<void>;
   syncNow(accountId?: string): Promise<void>;
 
+  /** The own folders, then those of every person who shares folders with the account (see sharedAccounts). */
   listFolders(accountId?: string): Promise<Folder[]>;
+  /** People who share folders with this account; their folders come with listFolders under their account id. */
+  sharedAccounts(): Promise<SharedAccount[]>;
+  /** Whether folders (and calendars) can be shared from here: the server lists its people. */
+  sharingAvailable(): Promise<boolean>;
+  /** The people on the server to share with, without the account itself. */
+  people(): Promise<Person[]>;
+  /** Shares a folder with a person at a level; `null` stops sharing it with them. */
+  shareFolder(folderId: string, personId: string, level: ShareLevel | null): Promise<void>;
   /** Returns the new folder's id; `parentId` null puts it at the top level. */
   createFolder(input: { accountId?: string; name: string; parentId: string | null }): Promise<string>;
   renameFolder(folderId: string, name: string): Promise<void>;
@@ -110,11 +138,20 @@ export interface Backend {
   inboxMessagesFrom(email: string): Promise<string[]>;
   blockSender(entry: string, accountId?: string): Promise<BlockedSender>;
   unblockSender(sender: BlockedSender): Promise<void>;
-  send(message: OutgoingMessage): Promise<void>;
-  /** Sends after `delaySeconds` unless `cancelSend` comes first; the result arrives as send:done or send:failed. */
-  queueSend(message: OutgoingMessage, delaySeconds: number): Promise<QueuedSend>;
-  /** Takes a queued mail back and returns it for the composer. */
-  cancelSend(sendId: string): Promise<OutgoingMessage>;
+  /**
+   * Hands the mail to the server, which holds it back for the "undo send" window, or until
+   * `options.sendAt`. Resolves once the server has it, not once it went.
+   */
+  send(message: OutgoingMessage, options?: SendOptions): Promise<SendReceipt>;
+  /**
+   * Stops a mail the server still holds back and puts it into Drafts again, for the composer.
+   * Throws `too_late` once it is on its way.
+   */
+  cancelSend(submissionId: string): Promise<DraftContent>;
+  /** Mail the server still holds back, soonest first. */
+  scheduledSends(): Promise<ScheduledSend[]>;
+  /** How far ahead "send later" may go, in seconds; 0 where the server can't hold mail. */
+  maxSendDelay(): Promise<number>;
   /** Saves into the Drafts folder, replacing the draft's earlier version. */
   saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult>;
   deleteDraft(accountId: string, draftKey: string): Promise<void>;
@@ -139,6 +176,12 @@ export interface Backend {
    */
   updateEvent(eventId: string, input: EventInput, occurrenceStart?: string): Promise<void>;
   deleteEvent(occurrenceId: string, scope: EventDeleteScope): Promise<void>;
+  /** Answers an invitation (the event's `invitation`); the organizer is told. */
+  respondToInvitation(eventId: string, participantKey: string, status: ParticipationStatus): Promise<void>;
+  /** The invitation a mail carries, as it sits in the calendar; null when there is none. */
+  mailInvitation(messageId: string): Promise<MailInvitation | null>;
+  /** Shares a calendar with a person at a level; `null` stops sharing it with them. */
+  shareCalendar(calendarId: string, personId: string, level: ShareLevel | null): Promise<void>;
 
   /** Whether the server filters incoming mail with rules (JMAP Sieve); without an id, whether any mailbox does. */
   mailRulesAvailable(accountId?: string): Promise<boolean>;
@@ -164,7 +207,7 @@ export interface Backend {
   /** Changes what the editor shows and leaves the rest of the card as it is. */
   updateContact(id: string, input: ContactInput): Promise<void>;
   deleteContact(id: string): Promise<void>;
-  /** Address suggestions for the composer from the address books; the demo adds its mail history. */
+  /** Address suggestions for the composer: the server ranks address books and mail history, older ones only the address books. */
   searchContacts(query: string): Promise<Contact[]>;
 
   /** Downloads the attachment and hands out a blob URL for it. */

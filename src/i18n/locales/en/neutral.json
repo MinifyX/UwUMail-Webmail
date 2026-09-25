@@ -16,7 +16,8 @@
       "mail": "Mail",
       "calendar": "Calendar",
       "contacts": "Contacts"
-    }
+    },
+    "scheduled": "Scheduled"
   },
   "filter": {
     "all": "All",
@@ -156,7 +157,22 @@
     "draftLocal": "Only saved on this device",
     "signature": "Signature",
     "noSignature": "No signature",
-    "editSignatures": "Edit signatures …"
+    "editSignatures": "Edit signatures …",
+    "later": {
+      "open": "Send later",
+      "title": "Send later",
+      "laterToday": "This evening",
+      "tomorrowMorning": "Tomorrow morning",
+      "tomorrowAfternoon": "Tomorrow afternoon",
+      "mondayMorning": "Monday morning",
+      "pick": "Pick a date and time",
+      "schedule": "Schedule",
+      "problem": {
+        "invalid": "Pick a date and a time.",
+        "tooSoon": "Pick a time at least a few minutes from now.",
+        "tooFar": "Your server holds mail for at most {{days}} days."
+      }
+    }
   },
   "toast": {
     "sent": "Message sent",
@@ -189,8 +205,9 @@
     "undo": "Undo",
     "sendUndone": "Sending stopped. The mail is open again.",
     "undoTooLate": "Too late — the mail is already on its way.",
-    "sendFailedKept": "The mail could not be sent and is still with you. {{reason}}",
-    "sending": "Sending mail …"
+    "sending": "Sending mail …",
+    "scheduled": "Sends {{time}}",
+    "undoFailed": "The mail couldn't be taken back. {{reason}}"
   },
   "status": {
     "syncing": "Checking for mail",
@@ -263,7 +280,7 @@
     "sendersFromServer": "The addresses this mailbox may send from. They belong to the server; new ones are made in the portal.",
     "manageAddresses": "Manage addresses in the portal",
     "undoSend": "Undo send",
-    "undoSendDesc": "How long you can still take a sent mail back. Meanwhile it waits as a draft in this tab. If you close the tab in that time, it isn’t sent and stays in Drafts.",
+    "undoSendDesc": "How long you can still take a sent mail back. Your server holds it that long, also if you close this page.",
     "undoSendOff": "Off",
     "seconds_one": "{{count}} second",
     "seconds_other": "{{count}} s",
@@ -296,7 +313,9 @@
     "linkDomainsEmpty": "None yet. You add sites right when you open a link.",
     "linkDomainsInactive": "Right now every link opens without asking.",
     "forgetLinkDomain": "Remove {{domain}}",
-    "rules": "Rules"
+    "rules": "Rules",
+    "signaturesPerAddressDesc": "One per sender address, with bold, links and pictures, added to new mail and replies. It's kept on your mail server, so the portal and your other mail apps use the same one.",
+    "addSignature": "Add signature"
   },
   "theme": {
     "system": "System",
@@ -863,5 +882,71 @@
       "bookCreated": "Address book “{{name}}” created",
       "bookDeleted": "Address book “{{name}}” deleted"
     }
+  },
+  "scheduled": {
+    "title": "Scheduled mail",
+    "desc": "Your server sends these at the time you chose, also while this page is closed.",
+    "empty": "Nothing is waiting to be sent.",
+    "to": "To {{names}}",
+    "edit": "Edit",
+    "stop": "Don't send",
+    "stopped": "Not sent. The mail is back in Drafts."
+  },
+  "sharing": {
+    "notAllowed": "The owner of this folder didn't allow that.",
+    "sharedBy": "Shared by {{name}}",
+    "readOnly": "Read only",
+    "readOnlyShort": "read only",
+    "shareFolder": "Share …",
+    "sharedWithCount_one": "Shared with {{count}} person",
+    "sharedWithCount_other": "Shared with {{count}} people",
+    "title": "Share “{{name}}”",
+    "levelsDesc": {
+      "folder": "Read: see the folder and its mail. Read and write: also mark mail read, flag, file in and delete. Everything: also make folders inside, rename it and share it on.",
+      "calendar": "Read: see the calendar and its events. Read and write: also add, change and delete events. Everything: also rename it, change its colour and share it on."
+    },
+    "current": "Who has access",
+    "nobody": "Not shared with anybody yet.",
+    "levelFor": "Access for {{name}}",
+    "remove": "Stop sharing with {{name}}",
+    "removed": "No longer shared with {{name}}",
+    "add": "Share with somebody",
+    "share": "Share",
+    "shared": "Shared with {{name}}",
+    "search": "Name or address of somebody on this server",
+    "loadingPeople": "Loading people …",
+    "peopleFailed": "The people on this server couldn't be loaded.",
+    "noPeople": "Nobody else fits.",
+    "level": {
+      "read": "Read",
+      "write": "Read and write",
+      "all": "Everything"
+    },
+    "shareCalendar": "Share …",
+    "leaveCalendar": "Remove from my calendars",
+    "leaveCalendarTitle": "Remove “{{name}}” from your calendars?",
+    "leaveCalendarBody": "The calendar stays {{name}}'s. You only stop seeing it, until they share it again."
+  },
+  "invitation": {
+    "title": "Invitation",
+    "from": "Invitation from {{name}}",
+    "answer": "Your answer",
+    "accepted": "Accept",
+    "tentative": "Maybe",
+    "declined": "Decline",
+    "status": {
+      "needs-action": "You haven't answered yet.",
+      "accepted": "You accepted.",
+      "tentative": "You answered maybe.",
+      "declined": "You declined."
+    },
+    "answered": {
+      "needs-action": "Answer taken back",
+      "accepted": "Accepted. The organizer is told.",
+      "tentative": "Answered maybe. The organizer is told.",
+      "declined": "Declined. The organizer is told."
+    },
+    "failed": "The answer couldn't be sent. {{reason}}",
+    "cancelled": "The organizer cancelled this event."
   }
 }

@@ -67,7 +67,9 @@ export function initialDraft(
     };
   }
   const source = request.source;
-  const accountId = source?.accountId ?? accounts[0]?.id ?? "";
+  // Answers to mail in a folder somebody shares still come from this account.
+  const own = source && accounts.some((account) => account.id === source.accountId);
+  const accountId = (own ? source?.accountId : undefined) ?? accounts[0]?.id ?? "";
   const empty: DraftState = {
     accountId,
     fromEmail: source ? null : "",

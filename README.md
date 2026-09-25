@@ -44,6 +44,13 @@ for the whole server or for single accounts.
   spam and blocking, keyboard shortcuts, dark mode, German, English, French,
   Dutch, Japanese and Simplified Chinese, playful or plain — the same Nyu, the
   same colours, or the name, logo and colour the server's admin chose.
+- **Held back by the server.** "Undo send" and "send later" are the
+  server's: a mail waits there, not in the tab, and can be taken back until
+  it goes. Signatures live on the sending addresses, recipients are
+  suggested from the address books and the mail history.
+- **Shared folders and calendars.** Folders and calendars other people on
+  the server share show up under their name, as far as they allow; your own
+  can be shared from their menu.
 - **Calendar and contacts.** When the server keeps them for the account, the
   calendar and the address books sit next to the mail, the same ones a phone
   syncs over CalDAV and CardDAV.

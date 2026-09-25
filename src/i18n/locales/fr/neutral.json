@@ -16,7 +16,8 @@
       "mail": "E-mails",
       "calendar": "Agenda",
       "contacts": "Contacts"
-    }
+    },
+    "scheduled": "Programmés"
   },
   "filter": {
     "all": "Tous",
@@ -160,7 +161,22 @@
     "draftLocal": "Enregistré uniquement sur cet appareil",
     "signature": "Signature",
     "noSignature": "Aucune signature",
-    "editSignatures": "Modifier les signatures …"
+    "editSignatures": "Modifier les signatures …",
+    "later": {
+      "open": "Envoyer plus tard",
+      "title": "Envoyer plus tard",
+      "laterToday": "Ce soir",
+      "tomorrowMorning": "Demain matin",
+      "tomorrowAfternoon": "Demain après-midi",
+      "mondayMorning": "Lundi matin",
+      "pick": "Choisir une date et une heure",
+      "schedule": "Programmer",
+      "problem": {
+        "invalid": "Choisissez une date et une heure.",
+        "tooSoon": "Choisissez une heure au moins quelques minutes plus tard.",
+        "tooFar": "Votre serveur garde les e-mails au plus {{days}} jours."
+      }
+    }
   },
   "toast": {
     "sent": "Message envoyé",
@@ -196,8 +212,9 @@
     "undo": "Annuler",
     "sendUndone": "Envoi interrompu. L'e-mail est de nouveau ouvert.",
     "undoTooLate": "Trop tard — l'e-mail est déjà en route.",
-    "sendFailedKept": "L'e-mail n'a pas pu être envoyé et reste chez vous. {{reason}}",
-    "sending": "Envoi de l'e-mail …"
+    "sending": "Envoi de l'e-mail …",
+    "scheduled": "Envoi prévu : {{time}}",
+    "undoFailed": "L'e-mail n'a pas pu être repris. {{reason}}"
   },
   "status": {
     "syncing": "Relève des e-mails",
@@ -270,7 +287,7 @@
     "sendersFromServer": "Les adresses depuis lesquelles cette boîte mail peut envoyer. Elles appartiennent au serveur ; les nouvelles se créent dans le portail.",
     "manageAddresses": "Gérer les adresses dans le portail",
     "undoSend": "Annuler l'envoi",
-    "undoSendDesc": "Combien de temps vous pouvez encore reprendre un e-mail envoyé. Pendant ce temps, il attend comme brouillon dans cet onglet. Si vous fermez l'onglet entre-temps, il n'est pas envoyé et reste dans Brouillons.",
+    "undoSendDesc": "Combien de temps vous pouvez encore reprendre un e-mail envoyé. Votre serveur le retient pendant ce temps, même si vous fermez cette page.",
     "undoSendOff": "Désactivé",
     "seconds_one": "{{count}} seconde",
     "seconds_many": "{{count}} s",
@@ -304,7 +321,9 @@
     "linkDomainsEmpty": "Aucun pour l'instant. Vous ajoutez des sites directement en ouvrant un lien.",
     "linkDomainsInactive": "Pour l'instant, chaque lien s'ouvre sans demander.",
     "forgetLinkDomain": "Retirer {{domain}}",
-    "rules": "Règles"
+    "rules": "Règles",
+    "signaturesPerAddressDesc": "Une par adresse d'expéditeur, avec gras, liens et images, ajoutée aux nouveaux e-mails et aux réponses. Elle est conservée sur votre serveur de messagerie : le portail et vos autres applications de messagerie utilisent la même.",
+    "addSignature": "Ajouter une signature"
   },
   "theme": {
     "system": "Système",
@@ -890,5 +909,71 @@
       "bookCreated": "Carnet d'adresses « {{name}} » créé",
       "bookDeleted": "Carnet d'adresses « {{name}} » supprimé"
     }
+  },
+  "scheduled": {
+    "title": "E-mails programmés",
+    "desc": "Votre serveur les envoie à l'heure choisie, même si cette page est fermée.",
+    "empty": "Rien n'attend d'être envoyé.",
+    "to": "À {{names}}",
+    "edit": "Modifier",
+    "stop": "Ne pas envoyer",
+    "stopped": "Non envoyé. L'e-mail est de retour dans Brouillons."
+  },
+  "sharing": {
+    "notAllowed": "La personne à qui appartient ce dossier ne l'a pas autorisé.",
+    "sharedBy": "Partagé par {{name}}",
+    "readOnly": "Lecture seule",
+    "readOnlyShort": "lecture seule",
+    "shareFolder": "Partager …",
+    "sharedWithCount_one": "Partagé avec {{count}} personne",
+    "sharedWithCount_other": "Partagé avec {{count}} personnes",
+    "title": "Partager « {{name}} »",
+    "levelsDesc": {
+      "folder": "Lecture : voir le dossier et ses e-mails. Lecture et écriture : aussi marquer comme lu, signaler, classer et supprimer. Tout : aussi créer des dossiers dedans, le renommer et le partager à son tour.",
+      "calendar": "Lecture : voir l'agenda et ses événements. Lecture et écriture : aussi ajouter, modifier et supprimer des événements. Tout : aussi le renommer, changer sa couleur et le partager à son tour."
+    },
+    "current": "Qui y a accès",
+    "nobody": "Partagé avec personne pour l'instant.",
+    "levelFor": "Accès pour {{name}}",
+    "remove": "Ne plus partager avec {{name}}",
+    "removed": "N'est plus partagé avec {{name}}",
+    "add": "Partager avec quelqu'un",
+    "share": "Partager",
+    "shared": "Partagé avec {{name}}",
+    "search": "Nom ou adresse de quelqu'un sur ce serveur",
+    "loadingPeople": "Chargement des personnes …",
+    "peopleFailed": "Les personnes de ce serveur n'ont pas pu être chargées.",
+    "noPeople": "Personne d'autre ne correspond.",
+    "level": {
+      "read": "Lecture",
+      "write": "Lecture et écriture",
+      "all": "Tout"
+    },
+    "shareCalendar": "Partager …",
+    "leaveCalendar": "Retirer de mes agendas",
+    "leaveCalendarTitle": "Retirer « {{name}} » de vos agendas ?",
+    "leaveCalendarBody": "L'agenda reste celui de {{name}}. Vous cessez seulement de le voir, jusqu'à ce qu'il soit à nouveau partagé avec vous."
+  },
+  "invitation": {
+    "title": "Invitation",
+    "from": "Invitation de {{name}}",
+    "answer": "Votre réponse",
+    "accepted": "Accepter",
+    "tentative": "Peut-être",
+    "declined": "Refuser",
+    "status": {
+      "needs-action": "Vous n'avez pas encore répondu.",
+      "accepted": "Vous avez accepté.",
+      "tentative": "Vous avez répondu peut-être.",
+      "declined": "Vous avez refusé."
+    },
+    "answered": {
+      "needs-action": "Réponse retirée",
+      "accepted": "Accepté. L'organisateur en est informé.",
+      "tentative": "Répondu peut-être. L'organisateur en est informé.",
+      "declined": "Refusé. L'organisateur en est informé."
+    },
+    "failed": "La réponse n'a pas pu être envoyée. {{reason}}",
+    "cancelled": "L'organisateur a annulé cet événement."
   }
 }

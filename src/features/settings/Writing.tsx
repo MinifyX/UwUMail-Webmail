@@ -12,8 +12,8 @@ import { Signatures } from "./Signatures";
  * Writing settings.
  *
  * Sender addresses belong to the server, so they are shown but not edited
- * here: new addresses and aliases are made in the portal. Signatures live in
- * the server's shared settings, next to the app's.
+ * here: new addresses and aliases are made in the portal. Signatures live on
+ * the server too, on each sending address (older servers: in the shared settings).
  */
 export function Writing() {
   const { t } = useT();

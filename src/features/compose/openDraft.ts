@@ -1,4 +1,5 @@
 import { backend } from "@/backend/backend";
+import type { DraftContent } from "@/backend/types";
 import { translate } from "@/i18n";
 import { toast } from "@/state/toasts";
 import { useUi } from "@/state/ui";
@@ -6,29 +7,33 @@ import { useUi } from "@/state/ui";
 /** Opens a draft from the Drafts folder in the composer, to keep writing it. */
 export async function openDraftMessage(messageId: string) {
   try {
-    const draft = await backend().openDraft(messageId);
-    const mode = draft.inReplyTo ? "reply" : "new";
-    useUi.getState().openCompose({
-      mode,
-      restore: {
-        mode,
-        accountId: draft.accountId,
-        to: draft.to,
-        cc: draft.cc,
-        bcc: draft.bcc,
-        subject: draft.subject,
-        html: draft.html,
-        inReplyTo: draft.inReplyTo ?? undefined,
-        draftKey: draft.draftKey ?? undefined,
-        fromEmail: draft.fromEmail ?? undefined,
-        savedToServer: true,
-      },
-      attachments: draft.attachments,
-    });
+    openDraftContent(await backend().openDraft(messageId));
   } catch (reason) {
     const message = reason instanceof Error ? reason.message : String(reason);
     toast(translate("toast.draftOpenFailed", { reason: message }), "error");
   }
+}
+
+/** Puts a draft read back from the server into the composer. */
+export function openDraftContent(draft: DraftContent) {
+  const mode = draft.inReplyTo ? "reply" : "new";
+  useUi.getState().openCompose({
+    mode,
+    restore: {
+      mode,
+      accountId: draft.accountId,
+      to: draft.to,
+      cc: draft.cc,
+      bcc: draft.bcc,
+      subject: draft.subject,
+      html: draft.html,
+      inReplyTo: draft.inReplyTo ?? undefined,
+      draftKey: draft.draftKey ?? undefined,
+      fromEmail: draft.fromEmail ?? undefined,
+      savedToServer: true,
+    },
+    attachments: draft.attachments,
+  });
 }
 
 /**

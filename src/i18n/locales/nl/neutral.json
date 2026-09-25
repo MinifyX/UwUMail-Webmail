@@ -16,7 +16,8 @@
       "mail": "Mail",
       "calendar": "Agenda",
       "contacts": "Contacten"
-    }
+    },
+    "scheduled": "Gepland"
   },
   "filter": {
     "all": "Alle",
@@ -156,7 +157,22 @@
     "draftLocal": "Alleen op dit apparaat opgeslagen",
     "signature": "Handtekening",
     "noSignature": "Geen handtekening",
-    "editSignatures": "Handtekeningen bewerken …"
+    "editSignatures": "Handtekeningen bewerken …",
+    "later": {
+      "open": "Later verzenden",
+      "title": "Later verzenden",
+      "laterToday": "Vanavond",
+      "tomorrowMorning": "Morgenochtend",
+      "tomorrowAfternoon": "Morgenmiddag",
+      "mondayMorning": "Maandagochtend",
+      "pick": "Kies een datum en tijd",
+      "schedule": "Inplannen",
+      "problem": {
+        "invalid": "Kies een datum en een tijd.",
+        "tooSoon": "Kies een tijd die minstens een paar minuten later is.",
+        "tooFar": "Je server houdt mail hoogstens {{days}} dagen vast."
+      }
+    }
   },
   "toast": {
     "sent": "Bericht verzonden",
@@ -189,8 +205,9 @@
     "undo": "Ongedaan maken",
     "sendUndone": "Verzenden gestopt. De mail is weer geopend.",
     "undoTooLate": "Te laat — de mail is al onderweg.",
-    "sendFailedKept": "De mail kon niet worden verzonden en staat nog bij jou. {{reason}}",
-    "sending": "Mail verzenden …"
+    "sending": "Mail verzenden …",
+    "scheduled": "Wordt verzonden: {{time}}",
+    "undoFailed": "De mail kon niet worden teruggehaald. {{reason}}"
   },
   "status": {
     "syncing": "Op mail controleren",
@@ -263,7 +280,7 @@
     "sendersFromServer": "De adressen waarvanaf deze mailbox mag verzenden. Ze horen bij de server; nieuwe maak je aan in het portaal.",
     "manageAddresses": "Adressen beheren in het portaal",
     "undoSend": "Verzenden ongedaan maken",
-    "undoSendDesc": "Hoelang je een verzonden mail nog terug kunt halen. Intussen wacht die als concept in dit tabblad. Sluit je het tabblad in die tijd, dan wordt de mail niet verzonden en blijft hij in Concepten.",
+    "undoSendDesc": "Hoelang je een verzonden mail nog terug kunt halen. Je server houdt hem zo lang vast, ook als je deze pagina sluit.",
     "undoSendOff": "Uit",
     "seconds_one": "{{count}} seconde",
     "seconds_other": "{{count}} s",
@@ -296,7 +313,9 @@
     "linkDomainsEmpty": "Nog geen. Je voegt sites direct toe wanneer je een link opent.",
     "linkDomainsInactive": "Op dit moment gaat elke link open zonder te vragen.",
     "forgetLinkDomain": "{{domain}} verwijderen",
-    "rules": "Regels"
+    "rules": "Regels",
+    "signaturesPerAddressDesc": "Eén per afzenderadres, met vet, links en afbeeldingen, voor nieuwe mail en antwoorden. Hij staat op je mailserver, dus het portaal en je andere mailapps gebruiken dezelfde.",
+    "addSignature": "Handtekening toevoegen"
   },
   "theme": {
     "system": "Systeem",
@@ -863,5 +882,71 @@
       "bookCreated": "Adresboek “{{name}}” aangemaakt",
       "bookDeleted": "Adresboek “{{name}}” verwijderd"
     }
+  },
+  "scheduled": {
+    "title": "Geplande mail",
+    "desc": "Je server verzendt ze op het gekozen moment, ook als deze pagina gesloten is.",
+    "empty": "Er wacht niets om verzonden te worden.",
+    "to": "Aan {{names}}",
+    "edit": "Bewerken",
+    "stop": "Niet verzenden",
+    "stopped": "Niet verzonden. De mail staat weer in Concepten."
+  },
+  "sharing": {
+    "notAllowed": "De eigenaar van deze map heeft dat niet toegestaan.",
+    "sharedBy": "Gedeeld door {{name}}",
+    "readOnly": "Alleen lezen",
+    "readOnlyShort": "alleen lezen",
+    "shareFolder": "Delen …",
+    "sharedWithCount_one": "Gedeeld met {{count}} persoon",
+    "sharedWithCount_other": "Gedeeld met {{count}} personen",
+    "title": "‘{{name}}’ delen",
+    "levelsDesc": {
+      "folder": "Lezen: de map en de mail erin zien. Lezen en schrijven: ook mail als gelezen markeren, markeren met een ster, inzetten en verwijderen. Alles: ook mappen erin maken, hem hernoemen en verder delen.",
+      "calendar": "Lezen: de agenda en zijn afspraken zien. Lezen en schrijven: ook afspraken toevoegen, wijzigen en verwijderen. Alles: ook hem hernoemen, zijn kleur wijzigen en verder delen."
+    },
+    "current": "Wie toegang heeft",
+    "nobody": "Nog met niemand gedeeld.",
+    "levelFor": "Toegang voor {{name}}",
+    "remove": "Niet meer delen met {{name}}",
+    "removed": "Niet meer gedeeld met {{name}}",
+    "add": "Met iemand delen",
+    "share": "Delen",
+    "shared": "Gedeeld met {{name}}",
+    "search": "Naam of adres van iemand op deze server",
+    "loadingPeople": "Personen laden …",
+    "peopleFailed": "De personen op deze server konden niet worden geladen.",
+    "noPeople": "Er past verder niemand.",
+    "level": {
+      "read": "Lezen",
+      "write": "Lezen en schrijven",
+      "all": "Alles"
+    },
+    "shareCalendar": "Delen …",
+    "leaveCalendar": "Uit mijn agenda's verwijderen",
+    "leaveCalendarTitle": "‘{{name}}’ uit je agenda's verwijderen?",
+    "leaveCalendarBody": "De agenda blijft van {{name}}. Je ziet hem alleen niet meer, tot hij weer met je gedeeld wordt."
+  },
+  "invitation": {
+    "title": "Uitnodiging",
+    "from": "Uitnodiging van {{name}}",
+    "answer": "Je antwoord",
+    "accepted": "Accepteren",
+    "tentative": "Misschien",
+    "declined": "Afwijzen",
+    "status": {
+      "needs-action": "Je hebt nog niet geantwoord.",
+      "accepted": "Je hebt geaccepteerd.",
+      "tentative": "Je hebt misschien geantwoord.",
+      "declined": "Je hebt afgewezen."
+    },
+    "answered": {
+      "needs-action": "Antwoord ingetrokken",
+      "accepted": "Geaccepteerd. De organisator hoort het.",
+      "tentative": "Misschien geantwoord. De organisator hoort het.",
+      "declined": "Afgewezen. De organisator hoort het."
+    },
+    "failed": "Het antwoord kon niet worden verzonden. {{reason}}",
+    "cancelled": "De organisator heeft deze afspraak geannuleerd."
   }
 }

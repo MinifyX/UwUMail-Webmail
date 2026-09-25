@@ -16,7 +16,8 @@
       "mail": "Mail",
       "calendar": "Kalender",
       "contacts": "Kontakte"
-    }
+    },
+    "scheduled": "Geplant"
   },
   "filter": {
     "all": "Alle",
@@ -156,7 +157,22 @@
     "draftLocal": "Nur auf diesem Gerät gespeichert",
     "signature": "Signatur",
     "noSignature": "Keine Signatur",
-    "editSignatures": "Signaturen bearbeiten …"
+    "editSignatures": "Signaturen bearbeiten …",
+    "later": {
+      "open": "Später senden",
+      "title": "Später senden",
+      "laterToday": "Heute Abend",
+      "tomorrowMorning": "Morgen früh",
+      "tomorrowAfternoon": "Morgen Nachmittag",
+      "mondayMorning": "Montag früh",
+      "pick": "Datum und Uhrzeit wählen",
+      "schedule": "Planen",
+      "problem": {
+        "invalid": "Wähle ein Datum und eine Uhrzeit.",
+        "tooSoon": "Wähle eine Zeit, die mindestens ein paar Minuten entfernt ist.",
+        "tooFar": "Dein Server hält Mails höchstens {{days}} Tage zurück."
+      }
+    }
   },
   "toast": {
     "sent": "Mail gesendet",
@@ -189,8 +205,9 @@
     "undo": "Rückgängig",
     "sendUndone": "Senden gestoppt. Die Mail ist wieder offen.",
     "undoTooLate": "Zu spät — die Mail ist schon unterwegs.",
-    "sendFailedKept": "Die Mail konnte nicht gesendet werden und liegt weiter bei dir. {{reason}}",
-    "sending": "Mail wird gesendet …"
+    "sending": "Mail wird gesendet …",
+    "scheduled": "Wird gesendet: {{time}}",
+    "undoFailed": "Die Mail konnte nicht zurückgeholt werden. {{reason}}"
   },
   "status": {
     "syncing": "Suche nach neuen Mails",
@@ -263,7 +280,7 @@
     "sendersFromServer": "Die Adressen, von denen dieses Postfach senden darf. Sie gehören zum Server; neue legst du im Portal an.",
     "manageAddresses": "Adressen im Portal verwalten",
     "undoSend": "Senden rückgängig machen",
-    "undoSendDesc": "So lange kannst du eine gesendete Mail noch zurückholen. Sie wartet dafür als Entwurf in diesem Tab. Schließt du den Tab in der Zeit, geht sie nicht raus und bleibt in den Entwürfen.",
+    "undoSendDesc": "So lange kannst du eine gesendete Mail noch zurückholen. Dein Server hält sie so lange zurück, auch wenn du diese Seite schließt.",
     "undoSendOff": "Aus",
     "seconds_one": "{{count}} Sekunde",
     "seconds_other": "{{count}} s",
@@ -296,7 +313,9 @@
     "linkDomainsEmpty": "Noch keine. Du fügst Seiten direkt beim Öffnen eines Links hinzu.",
     "linkDomainsInactive": "Gerade öffnen alle Links ohne Nachfrage.",
     "forgetLinkDomain": "{{domain}} entfernen",
-    "rules": "Regeln"
+    "rules": "Regeln",
+    "signaturesPerAddressDesc": "Eine pro Absenderadresse, mit Fett, Links und Bildern, für neue Mails und Antworten. Sie liegt auf deinem Mailserver, also nutzen das Portal und deine anderen Mail-Apps dieselbe.",
+    "addSignature": "Signatur hinzufügen"
   },
   "theme": {
     "system": "System",
@@ -863,5 +882,71 @@
       "bookCreated": "Adressbuch „{{name}}“ angelegt",
       "bookDeleted": "Adressbuch „{{name}}“ gelöscht"
     }
+  },
+  "scheduled": {
+    "title": "Geplante Mails",
+    "desc": "Dein Server sendet sie zur gewählten Zeit, auch wenn diese Seite geschlossen ist.",
+    "empty": "Nichts wartet aufs Senden.",
+    "to": "An {{names}}",
+    "edit": "Bearbeiten",
+    "stop": "Nicht senden",
+    "stopped": "Nicht gesendet. Die Mail liegt wieder in den Entwürfen."
+  },
+  "sharing": {
+    "notAllowed": "Die Person, der dieser Ordner gehört, hat das nicht erlaubt.",
+    "sharedBy": "Geteilt von {{name}}",
+    "readOnly": "Nur lesen",
+    "readOnlyShort": "nur lesen",
+    "shareFolder": "Teilen …",
+    "sharedWithCount_one": "Mit {{count}} Person geteilt",
+    "sharedWithCount_other": "Mit {{count}} Personen geteilt",
+    "title": "„{{name}}“ teilen",
+    "levelsDesc": {
+      "folder": "Lesen: den Ordner und seine Mails sehen. Lesen und schreiben: außerdem Mails als gelesen markieren, markieren, einsortieren und löschen. Alles: außerdem Ordner darin anlegen, ihn umbenennen und weiter teilen.",
+      "calendar": "Lesen: den Kalender und seine Termine sehen. Lesen und schreiben: außerdem Termine anlegen, ändern und löschen. Alles: außerdem ihn umbenennen, seine Farbe ändern und weiter teilen."
+    },
+    "current": "Wer Zugriff hat",
+    "nobody": "Noch mit niemandem geteilt.",
+    "levelFor": "Zugriff für {{name}}",
+    "remove": "Nicht mehr mit {{name}} teilen",
+    "removed": "Nicht mehr mit {{name}} geteilt",
+    "add": "Mit jemandem teilen",
+    "share": "Teilen",
+    "shared": "Mit {{name}} geteilt",
+    "search": "Name oder Adresse von jemandem auf diesem Server",
+    "loadingPeople": "Personen werden geladen …",
+    "peopleFailed": "Die Personen auf diesem Server konnten nicht geladen werden.",
+    "noPeople": "Sonst passt niemand.",
+    "level": {
+      "read": "Lesen",
+      "write": "Lesen und schreiben",
+      "all": "Alles"
+    },
+    "shareCalendar": "Teilen …",
+    "leaveCalendar": "Aus meinen Kalendern entfernen",
+    "leaveCalendarTitle": "„{{name}}“ aus deinen Kalendern entfernen?",
+    "leaveCalendarBody": "Der Kalender gehört weiter {{name}}. Du siehst ihn nur nicht mehr, bis er wieder mit dir geteilt wird."
+  },
+  "invitation": {
+    "title": "Einladung",
+    "from": "Einladung von {{name}}",
+    "answer": "Deine Antwort",
+    "accepted": "Zusagen",
+    "tentative": "Vielleicht",
+    "declined": "Absagen",
+    "status": {
+      "needs-action": "Du hast noch nicht geantwortet.",
+      "accepted": "Du hast zugesagt.",
+      "tentative": "Du hast mit Vielleicht geantwortet.",
+      "declined": "Du hast abgesagt."
+    },
+    "answered": {
+      "needs-action": "Antwort zurückgenommen",
+      "accepted": "Zugesagt. Die einladende Person erfährt es.",
+      "tentative": "Mit Vielleicht geantwortet. Die einladende Person erfährt es.",
+      "declined": "Abgesagt. Die einladende Person erfährt es."
+    },
+    "failed": "Die Antwort konnte nicht gesendet werden. {{reason}}",
+    "cancelled": "Dieser Termin wurde abgesagt."
   }
 }

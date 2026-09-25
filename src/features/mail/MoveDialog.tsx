@@ -40,6 +40,8 @@ function MoveChoices({ request, onDone }: { request: MoveRequest; onDone: () => 
   const shown = nodes.filter(
     (node) =>
       node.folder.selectable &&
+      // A folder somebody shares only takes mail where they allowed adding it.
+      node.folder.rights?.mayAddItems !== false &&
       (!query || label(node.folder).toLowerCase().includes(query) || node.folder.path.toLowerCase().includes(query)),
   );
 

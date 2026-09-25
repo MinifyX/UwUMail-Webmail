@@ -1024,4 +1024,43 @@ describe.skipIf(!SERVER)("webmail backend against a real UwUMail server", { time
       expect((await folderByRole("trash")).total).toBe(0);
     });
   });
+
+  // -------------------------------------------------------------------------------------------
+  // Sending later, and suggestions
+  // -------------------------------------------------------------------------------------------
+
+  describe("sending later", () => {
+    it("holds a mail for later, lists it and takes it back into Drafts", async () => {
+      expect(await backend.maxSendDelay()).toBeGreaterThan(0);
+      const subject = `Later ${RUN}`;
+      const receipt = await backend.send(
+        {
+          accountId,
+          to: [{ email: FORWARD_LOGIN }],
+          cc: [],
+          bcc: [],
+          subject,
+          html: "<p>Later</p>",
+          text: "Later",
+          attachments: [],
+        },
+        { sendAt: new Date(Date.now() + 60 * 60 * 1000).toISOString() },
+      );
+      expect(receipt.pending).toBe(true);
+      expect(receipt.submissionId).toBeTruthy();
+      expect((await backend.scheduledSends()).find((entry) => entry.id === receipt.submissionId)?.subject).toBe(
+        subject,
+      );
+
+      const draft = await backend.cancelSend(receipt.submissionId!);
+      expect(draft.subject).toBe(subject);
+      expect((await backend.scheduledSends()).map((entry) => entry.id)).not.toContain(receipt.submissionId);
+      if (draft.draftKey) await backend.deleteDraft(accountId, draft.draftKey);
+    });
+
+    it("suggests recipients from the server", async () => {
+      const found = await backend.searchContacts(FORWARD_LOGIN.slice(0, 3));
+      expect(Array.isArray(found)).toBe(true);
+    });
+  });
 });

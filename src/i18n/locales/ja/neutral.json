@@ -16,7 +16,8 @@
       "mail": "メール",
       "calendar": "カレンダー",
       "contacts": "連絡先"
-    }
+    },
+    "scheduled": "予約済み"
   },
   "filter": {
     "all": "すべて",
@@ -152,7 +153,22 @@
     "draftLocal": "このデバイスにのみ保存されています",
     "signature": "署名",
     "noSignature": "署名なし",
-    "editSignatures": "署名を編集…"
+    "editSignatures": "署名を編集…",
+    "later": {
+      "open": "あとで送信",
+      "title": "あとで送信",
+      "laterToday": "今晩",
+      "tomorrowMorning": "明日の朝",
+      "tomorrowAfternoon": "明日の午後",
+      "mondayMorning": "月曜日の朝",
+      "pick": "日時を選ぶ",
+      "schedule": "予約",
+      "problem": {
+        "invalid": "日付と時刻を選んでください。",
+        "tooSoon": "少なくとも数分後の時刻を選んでください。",
+        "tooFar": "サーバーがメールを保留できるのは最長 {{days}} 日です。"
+      }
+    }
   },
   "toast": {
     "sent": "メールを送信しました",
@@ -182,8 +198,9 @@
     "undo": "元に戻す",
     "sendUndone": "送信を取り消しました。メールを再び開いています。",
     "undoTooLate": "間に合いませんでした。メールはすでに送信されています。",
-    "sendFailedKept": "メールを送信できませんでしたが、内容は残っています。{{reason}}",
-    "sending": "メールを送信中…"
+    "sending": "メールを送信中…",
+    "scheduled": "{{time}} に送信します",
+    "undoFailed": "メールを取り消せませんでした。{{reason}}"
   },
   "status": {
     "syncing": "メールを確認中",
@@ -256,7 +273,7 @@
     "sendersFromServer": "このメールボックスが送信に使えるアドレスです。アドレスはサーバーで管理されており、新しいアドレスはポータルで作成します。",
     "manageAddresses": "ポータルでアドレスを管理",
     "undoSend": "送信の取り消し",
-    "undoSendDesc": "送信したメールを取り消せる時間です。その間、メールはこのタブで下書きとして待機します。その間にタブを閉じると、メールは送信されず下書きに残ります。",
+    "undoSendDesc": "送信したメールを取り消せる時間です。その間はサーバーがメールを保留します。このページを閉じても変わりません。",
     "undoSendOff": "オフ",
     "seconds_other": "{{count}} 秒",
     "signatures": "署名",
@@ -288,7 +305,9 @@
     "linkDomainsEmpty": "まだありません。サイトはリンクを開くときに直接追加できます。",
     "linkDomainsInactive": "現在、すべてのリンクを確認せずに開きます。",
     "forgetLinkDomain": "{{domain}} を削除",
-    "rules": "ルール"
+    "rules": "ルール",
+    "signaturesPerAddressDesc": "送信元アドレスごとに 1 つ。太字・リンク・画像が使え、新規メールと返信に追加されます。メールサーバーに保存されるので、ポータルや他のメールアプリでも同じものが使われます。",
+    "addSignature": "署名を追加"
   },
   "theme": {
     "system": "システム",
@@ -836,5 +855,70 @@
       "bookCreated": "アドレス帳「{{name}}」を作成しました",
       "bookDeleted": "アドレス帳「{{name}}」を削除しました"
     }
+  },
+  "scheduled": {
+    "title": "予約済みのメール",
+    "desc": "このページを閉じていても、サーバーが選んだ時刻に送信します。",
+    "empty": "送信待ちのメールはありません。",
+    "to": "宛先: {{names}}",
+    "edit": "編集",
+    "stop": "送信しない",
+    "stopped": "送信しませんでした。メールは下書きに戻りました。"
+  },
+  "sharing": {
+    "notAllowed": "このフォルダーの所有者がそれを許可していません。",
+    "sharedBy": "{{name}} さんが共有",
+    "readOnly": "閲覧のみ",
+    "readOnlyShort": "閲覧のみ",
+    "shareFolder": "共有…",
+    "sharedWithCount_other": "{{count}} 人と共有中",
+    "title": "「{{name}}」を共有",
+    "levelsDesc": {
+      "folder": "閲覧: フォルダーとメールを見られます。閲覧と編集: さらにメールの既読・フラグ・振り分け・削除ができます。すべて: さらにフォルダーの作成、名前の変更、ほかの人への共有ができます。",
+      "calendar": "閲覧: カレンダーと予定を見られます。閲覧と編集: さらに予定の追加・変更・削除ができます。すべて: さらに名前や色の変更、ほかの人への共有ができます。"
+    },
+    "current": "アクセスできる人",
+    "nobody": "まだ誰とも共有していません。",
+    "levelFor": "{{name}} さんのアクセス",
+    "remove": "{{name}} さんとの共有をやめる",
+    "removed": "{{name}} さんとの共有をやめました",
+    "add": "ほかの人と共有",
+    "share": "共有",
+    "shared": "{{name}} さんと共有しました",
+    "search": "このサーバーの人の名前またはアドレス",
+    "loadingPeople": "ユーザーを読み込み中…",
+    "peopleFailed": "このサーバーのユーザーを読み込めませんでした。",
+    "noPeople": "該当する人はいません。",
+    "level": {
+      "read": "閲覧",
+      "write": "閲覧と編集",
+      "all": "すべて"
+    },
+    "shareCalendar": "共有…",
+    "leaveCalendar": "自分のカレンダーから外す",
+    "leaveCalendarTitle": "「{{name}}」をカレンダーから外しますか?",
+    "leaveCalendarBody": "カレンダーは引き続き {{name}} さんのものです。再び共有されるまで表示されなくなるだけです。"
+  },
+  "invitation": {
+    "title": "招待",
+    "from": "{{name}} さんからの招待",
+    "answer": "あなたの返答",
+    "accepted": "参加",
+    "tentative": "未定",
+    "declined": "辞退",
+    "status": {
+      "needs-action": "まだ返答していません。",
+      "accepted": "参加と返答しました。",
+      "tentative": "未定と返答しました。",
+      "declined": "辞退しました。"
+    },
+    "answered": {
+      "needs-action": "返答を取り消しました",
+      "accepted": "参加と返答しました。主催者に通知されます。",
+      "tentative": "未定と返答しました。主催者に通知されます。",
+      "declined": "辞退しました。主催者に通知されます。"
+    },
+    "failed": "返答を送信できませんでした。{{reason}}",
+    "cancelled": "主催者がこの予定をキャンセルしました。"
   }
 }

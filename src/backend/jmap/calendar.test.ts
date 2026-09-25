@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { CalendarInfo, EventInput } from "../types";
 import {
+  calendarRightsFor,
+  calendarSharedWith,
   eventPatch,
   fromRecurrence,
+  icsInvitation,
+  invitationOf,
   newEventObject,
   safeColor,
   toCalendarInfo,
@@ -318,5 +322,81 @@ describe("calendars", () => {
     expect(toCalendarInfo({ id: "c", name: "Own" }, "a")).toMatchObject({ mayWrite: true, mayDelete: true });
     expect(safeColor("red; background: url(x)")).toBeNull();
     expect(safeColor("#abc")).toBe("#aabbcc");
+  });
+});
+
+describe("invitations and shared calendars", () => {
+  const invite = {
+    id: "v7_20261027T090000",
+    baseEventId: "v7",
+    isOrigin: false,
+    organizerCalendarAddress: "mailto:mini@example.org",
+    participants: {
+      mini: { name: "Mini", calendarAddress: "mailto:mini@example.org", participationStatus: "accepted" },
+      nyu: { calendarAddress: "mailto:NYU@example.com", participationStatus: "needs-action" },
+    },
+  };
+
+  it("finds the account among an invitation's participants and answers on the series", () => {
+    expect(invitationOf(invite, ["nyu@example.com"])).toEqual({
+      eventId: "v7",
+      participantKey: "nyu",
+      status: "needs-action",
+      organizer: "Mini",
+    });
+  });
+
+  it("is no invitation for the account's own events or without it", () => {
+    expect(invitationOf({ ...invite, isOrigin: true }, ["nyu@example.com"])).toBeNull();
+    expect(invitationOf(invite, ["kai@example.net"])).toBeNull();
+    expect(invitationOf({ ...invite, participants: null }, ["nyu@example.com"])).toBeNull();
+  });
+
+  it("reads the UID and method of an invitation, also folded", () => {
+    const ics = [
+      "BEGIN:VCALENDAR",
+      "METHOD:REQUEST",
+      "BEGIN:VEVENT",
+      "UID:c3566f06-58ec-4c0c",
+      " -9d78270c6b9b2@example.org",
+      "SUMMARY:Coffee",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+    expect(icsInvitation(ics)).toEqual({ uid: "c3566f06-58ec-4c0c-9d78270c6b9b2@example.org", method: "REQUEST" });
+    expect(icsInvitation("BEGIN:VCALENDAR\r\nEND:VCALENDAR")).toBeNull();
+  });
+
+  it("turns levels into calendar rights and back", () => {
+    expect(calendarRightsFor("read")).toEqual({ mayReadFreeBusy: true, mayReadItems: true });
+    expect(calendarRightsFor("write").mayWriteAll).toBe(true);
+    expect(calendarRightsFor("all").mayShare).toBe(true);
+    expect(
+      calendarSharedWith({
+        p3: calendarRightsFor("read"),
+        p5: calendarRightsFor("write"),
+        p9: calendarRightsFor("all"),
+        p4: null,
+      }),
+    ).toEqual({ p3: "read", p5: "write", p9: "all" });
+  });
+
+  it("names who shares a calendar", () => {
+    const info = toCalendarInfo(
+      {
+        id: "c12",
+        name: "Team",
+        myRights: { mayWriteAll: false, mayDelete: true, mayShare: false },
+        uwuSharedBy: { email: "mini@example.org", name: "Mini" },
+        shareWith: null,
+      },
+      "a7",
+    );
+    expect(info).toMatchObject({
+      mayWrite: false,
+      mayShare: false,
+      sharedBy: { email: "mini@example.org", name: "Mini" },
+    });
+    expect(info.sharedWith).toBeUndefined();
   });
 });

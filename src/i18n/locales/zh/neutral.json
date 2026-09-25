@@ -16,7 +16,8 @@
       "mail": "邮件",
       "calendar": "日历",
       "contacts": "联系人"
-    }
+    },
+    "scheduled": "定时发送"
   },
   "filter": {
     "all": "全部",
@@ -152,7 +153,22 @@
     "draftLocal": "仅保存在此设备上",
     "signature": "签名",
     "noSignature": "无签名",
-    "editSignatures": "编辑签名…"
+    "editSignatures": "编辑签名…",
+    "later": {
+      "open": "稍后发送",
+      "title": "稍后发送",
+      "laterToday": "今晚",
+      "tomorrowMorning": "明天上午",
+      "tomorrowAfternoon": "明天下午",
+      "mondayMorning": "周一上午",
+      "pick": "选择日期和时间",
+      "schedule": "定时",
+      "problem": {
+        "invalid": "请选择日期和时间。",
+        "tooSoon": "请选择至少几分钟之后的时间。",
+        "tooFar": "你的服务器最多保留邮件 {{days}} 天。"
+      }
+    }
   },
   "toast": {
     "sent": "邮件已发送",
@@ -182,8 +198,9 @@
     "undo": "撤销",
     "sendUndone": "已停止发送，邮件已重新打开。",
     "undoTooLate": "太迟了——邮件已经发出。",
-    "sendFailedKept": "邮件未能发送，仍保留在你这里。{{reason}}",
-    "sending": "正在发送邮件…"
+    "sending": "正在发送邮件…",
+    "scheduled": "将于 {{time}} 发送",
+    "undoFailed": "无法撤回邮件。{{reason}}"
   },
   "status": {
     "syncing": "正在检查邮件",
@@ -256,7 +273,7 @@
     "sendersFromServer": "此邮箱可用于发信的地址。它们由服务器管理，新地址需在门户中创建。",
     "manageAddresses": "在门户中管理地址",
     "undoSend": "撤销发送",
-    "undoSendDesc": "发送后还能撤回邮件的时长。在此期间，邮件会作为草稿在此标签页中等待。如果你在这段时间内关闭标签页，邮件不会发送，而是保留在草稿中。",
+    "undoSendDesc": "发送后还能撤回邮件的时长。在此期间服务器会暂存邮件，即使你关闭此页面也一样。",
     "undoSendOff": "关闭",
     "seconds_other": "{{count}} 秒",
     "signatures": "签名",
@@ -288,7 +305,9 @@
     "linkDomainsEmpty": "暂无。你可以在打开链接时直接添加网站。",
     "linkDomainsInactive": "目前所有链接都会直接打开，无需询问。",
     "forgetLinkDomain": "移除 {{domain}}",
-    "rules": "规则"
+    "rules": "规则",
+    "signaturesPerAddressDesc": "每个发件地址一个，可使用粗体、链接和图片，会添加到新邮件和回复中。它保存在你的邮件服务器上，因此门户和你的其他邮件应用都使用同一个。",
+    "addSignature": "添加签名"
   },
   "theme": {
     "system": "系统",
@@ -836,5 +855,70 @@
       "bookCreated": "已创建通讯录“{{name}}”",
       "bookDeleted": "已删除通讯录“{{name}}”"
     }
+  },
+  "scheduled": {
+    "title": "定时邮件",
+    "desc": "即使关闭此页面，服务器也会在你选择的时间发送它们。",
+    "empty": "没有等待发送的邮件。",
+    "to": "收件人：{{names}}",
+    "edit": "编辑",
+    "stop": "不发送",
+    "stopped": "未发送。邮件已回到草稿。"
+  },
+  "sharing": {
+    "notAllowed": "此文件夹的所有者不允许这样做。",
+    "sharedBy": "{{name}} 共享",
+    "readOnly": "只读",
+    "readOnlyShort": "只读",
+    "shareFolder": "共享…",
+    "sharedWithCount_other": "已与 {{count}} 人共享",
+    "title": "共享“{{name}}”",
+    "levelsDesc": {
+      "folder": "只读：查看文件夹及其中的邮件。读写：还可以标为已读、加旗标、归档和删除邮件。全部：还可以在其中新建文件夹、重命名并继续共享。",
+      "calendar": "只读：查看日历及其日程。读写：还可以添加、修改和删除日程。全部：还可以重命名、更改颜色并继续共享。"
+    },
+    "current": "有权访问的人",
+    "nobody": "尚未与任何人共享。",
+    "levelFor": "{{name}} 的权限",
+    "remove": "停止与 {{name}} 共享",
+    "removed": "已不再与 {{name}} 共享",
+    "add": "与他人共享",
+    "share": "共享",
+    "shared": "已与 {{name}} 共享",
+    "search": "此服务器上某人的姓名或地址",
+    "loadingPeople": "正在加载用户…",
+    "peopleFailed": "无法加载此服务器上的用户。",
+    "noPeople": "没有其他匹配的人。",
+    "level": {
+      "read": "只读",
+      "write": "读写",
+      "all": "全部"
+    },
+    "shareCalendar": "共享…",
+    "leaveCalendar": "从我的日历中移除",
+    "leaveCalendarTitle": "要将“{{name}}”从你的日历中移除吗？",
+    "leaveCalendarBody": "该日历仍属于 {{name}}。你只是不再看到它，直到对方再次与你共享。"
+  },
+  "invitation": {
+    "title": "邀请",
+    "from": "来自 {{name}} 的邀请",
+    "answer": "你的答复",
+    "accepted": "接受",
+    "tentative": "暂定",
+    "declined": "拒绝",
+    "status": {
+      "needs-action": "你还没有答复。",
+      "accepted": "你已接受。",
+      "tentative": "你已答复暂定。",
+      "declined": "你已拒绝。"
+    },
+    "answered": {
+      "needs-action": "已撤回答复",
+      "accepted": "已接受，组织者会收到通知。",
+      "tentative": "已答复暂定，组织者会收到通知。",
+      "declined": "已拒绝，组织者会收到通知。"
+    },
+    "failed": "无法发送答复。{{reason}}",
+    "cancelled": "组织者已取消此日程。"
   }
 }

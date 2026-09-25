@@ -32,6 +32,7 @@ import { domainEntry, isDomainEntry, matchingEntries } from "@/lib/trustedSender
 import { useSettings } from "@/state/settings";
 import { toast } from "@/state/toasts";
 import { AttachmentTiles } from "../attachments/AttachmentTiles";
+import { MailInvitationCard } from "../calendar/Invitation";
 import { contactWithEmail, draftFromSender } from "../contacts/format";
 import { startNewContact, useContactsUi } from "../contacts/state";
 import { useContacts, useContactsAvailable } from "../contacts/useContactsData";
@@ -321,6 +322,8 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
           imageProxy={imageProxy}
         />
       </div>
+
+      <MailInvitationCard message={message} />
 
       <AttachmentTiles
         attachments={message.attachments.filter((attachment) => !inlineImages.shown.has(attachment.id))}

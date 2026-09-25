@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { backend } from "@/backend/backend";
+import { backend, BackendError } from "@/backend/backend";
 import type {
   FlagChange,
   Folder,
@@ -16,7 +16,6 @@ import { useSettings } from "@/state/settings";
 import { toast } from "@/state/toasts";
 import { announceMove } from "@/state/undo";
 import { useUi } from "@/state/ui";
-import { composeAgain } from "@/features/compose/undoSend";
 
 export const queryKeys = {
   accounts: ["accounts"] as const,
@@ -29,7 +28,31 @@ export const queryKeys = {
   calendarEvents: ["calendarEvents"] as const,
   addressBooks: ["addressBooks"] as const,
   contacts: ["contacts"] as const,
+  scheduled: ["scheduled"] as const,
+  sharedAccounts: ["sharedAccounts"] as const,
+  people: ["people"] as const,
 };
+
+/** What went wrong, for a toast: a refusal of a shared folder's owner in the reader's words. */
+export function errorText(error: unknown): string {
+  if (error instanceof BackendError && error.code === "forbidden") return translate("sharing.notAllowed");
+  return error instanceof Error ? error.message : String(error);
+}
+
+/** People who share folders with the account; their folders come with useFolders. */
+export function useSharedAccounts() {
+  return useQuery({ queryKey: queryKeys.sharedAccounts, queryFn: () => backend().sharedAccounts() });
+}
+
+/** Whether folders and calendars can be shared from here. */
+export function useSharingAvailable() {
+  return useQuery({ queryKey: ["sharingAvailable"], queryFn: () => backend().sharingAvailable(), staleTime: Infinity });
+}
+
+/** The people on the server to share with. */
+export function usePeople(enabled = true) {
+  return useQuery({ queryKey: queryKeys.people, queryFn: () => backend().people(), enabled, staleTime: 5 * 60_000 });
+}
 
 export function useAccounts() {
   return useQuery({ queryKey: queryKeys.accounts, queryFn: () => backend().listAccounts() });
@@ -50,13 +73,29 @@ export function useSignatures() {
   return useQuery({ queryKey: queryKeys.signatures, queryFn: () => backend().listSignatures() });
 }
 
-/** Whether this server keeps signatures at all (its settings extension). */
-export function useSignaturesAvailable() {
+/** Where this server keeps signatures: on the sending addresses, in the settings extension, or not at all. */
+export function useSignatureStore() {
   return useQuery({
-    queryKey: ["signaturesAvailable"],
-    queryFn: () => backend().signaturesAvailable(),
+    queryKey: ["signatureStore"],
+    queryFn: () => backend().signatureStore(),
     staleTime: Infinity,
   });
+}
+
+/** Mail the server still holds back. Checked every minute too, since mail that went is no push of its own. */
+export function useScheduledSends() {
+  const { data: maxDelay = 0 } = useMaxSendDelay();
+  return useQuery({
+    queryKey: queryKeys.scheduled,
+    queryFn: () => backend().scheduledSends(),
+    enabled: maxDelay > 0,
+    refetchInterval: 60_000,
+  });
+}
+
+/** How far ahead "send later" may go, in seconds; 0 where the server can't hold mail. */
+export function useMaxSendDelay() {
+  return useQuery({ queryKey: ["maxSendDelay"], queryFn: () => backend().maxSendDelay(), staleTime: Infinity });
 }
 
 export function useFolders() {
@@ -143,11 +182,17 @@ function invalidateMail(client: QueryClient) {
   ]);
 }
 
-/** Whether all these messages lie in their mailbox's trash, where deleting means for good. */
+/**
+ * Whether deleting these messages means for good: they all lie in their mailbox's trash, or in
+ * folders somebody shares, which have no trash of this account to go to.
+ */
 export function inTrash(messages: Pick<Message, "folderId">[], folders: Folder[]) {
   return (
     messages.length > 0 &&
-    messages.every((message) => folders.find((folder) => folder.id === message.folderId)?.role === "trash")
+    messages.every((message) => {
+      const folder = folders.find((candidate) => candidate.id === message.folderId);
+      return folder?.role === "trash" || folder?.shared === true;
+    })
   );
 }
 
@@ -166,7 +211,7 @@ export async function trashMail(client: QueryClient, messages: Message[], leave?
   const ids = messages.map((message) => message.id);
   const refresh = () => invalidateMail(client);
   const fail = (error: unknown) => {
-    toast(error instanceof Error ? error.message : String(error), "error");
+    toast(errorText(error), "error");
     return false;
   };
   let forever: boolean;
@@ -207,7 +252,7 @@ export function useMessageActions() {
       await action();
       if (success) toast(success, "success");
     } catch (error) {
-      toast(error instanceof Error ? error.message : String(error), "error");
+      toast(errorText(error), "error");
     } finally {
       await invalidate();
     }
@@ -218,7 +263,7 @@ export function useMessageActions() {
     try {
       announceMove(await move(), success, invalidate);
     } catch (error) {
-      toast(error instanceof Error ? error.message : String(error), "error");
+      toast(errorText(error), "error");
     } finally {
       await invalidate();
     }
@@ -251,7 +296,7 @@ export function useThreadActions() {
       });
       await act(detail.messages);
     } catch (error) {
-      toast(error instanceof Error ? error.message : String(error), "error");
+      toast(errorText(error), "error");
     }
   };
   const ids = (messages: Message[]) => messages.map((message) => message.id);
@@ -305,16 +350,12 @@ export function useBackendEvents() {
           void client.invalidateQueries({ queryKey: queryKeys.thread });
           void client.invalidateQueries({ queryKey: queryKeys.folders });
           break;
-        case "send:done":
-          toast(t("toast.sent"), "success", "sent");
-          void client.invalidateQueries({ queryKey: queryKeys.threads });
+        case "accounts:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.sharedAccounts });
+          void client.invalidateQueries({ queryKey: queryKeys.folders });
           break;
-        case "send:failed":
-          toast(t("toast.sendFailedKept", { reason: event.reason }), "error", undefined, {
-            duration: 15_000,
-            action: { label: t("toast.open"), run: () => composeAgain(event.message) },
-          });
-          void client.invalidateQueries({ queryKey: queryKeys.threads });
+        case "scheduled:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.scheduled });
           break;
         case "mail:received":
           toast(t("toast.newMail", { count: event.messageIds.length }), "info");
@@ -324,6 +365,7 @@ export function useBackendEvents() {
           break;
         case "settings:changed":
           void client.invalidateQueries({ queryKey: queryKeys.signatures });
+          void client.invalidateQueries({ queryKey: queryKeys.identities });
           break;
         case "calendar:changed":
           void client.invalidateQueries({ queryKey: queryKeys.calendars });

@@ -39,6 +39,8 @@ import { useSelectionActions } from "../mail/selection";
 import { PullToRefresh } from "./PullToRefresh";
 import { SwipeRow } from "./SwipeRow";
 import { useThreadActions } from "./threadActions";
+import type { MailRights } from "../mail/rights";
+import type { SwipeAction } from "@/state/settings";
 
 const FILTERS: ListFilter[] = ["all", "unread", "flagged", "attachments"];
 
@@ -132,15 +134,23 @@ export function MobileList() {
             <p className="min-w-0 flex-1 truncate text-[15px] font-bold">
               {t("mobile.selected", { count: selected.size })}
             </p>
-            <IconButton icon={MailCheck} label={t("mobile.swipe.read")} onClick={() => runOnSelection("read")} />
-            <IconButton icon={Star} label={t("reader.flag")} onClick={() => runOnSelection("flag")} />
-            <IconButton icon={Archive} label={t("reader.archive")} onClick={() => runOnSelection("archive")} />
-            <IconButton
-              icon={Trash}
-              label={info.isTrash ? t("reader.deleteForever") : t("reader.trash")}
-              onClick={() => runOnSelection("trash")}
-            />
-            <IconButton icon={FolderInput} label={t("reader.move")} onClick={moveSelection} />
+            {info.rights.markSeen && (
+              <IconButton icon={MailCheck} label={t("mobile.swipe.read")} onClick={() => runOnSelection("read")} />
+            )}
+            {info.rights.flag && (
+              <IconButton icon={Star} label={t("reader.flag")} onClick={() => runOnSelection("flag")} />
+            )}
+            {info.rights.archive && (
+              <IconButton icon={Archive} label={t("reader.archive")} onClick={() => runOnSelection("archive")} />
+            )}
+            {info.rights.remove && (
+              <IconButton
+                icon={Trash}
+                label={info.isTrash ? t("reader.deleteForever") : t("reader.trash")}
+                onClick={() => runOnSelection("trash")}
+              />
+            )}
+            {info.rights.remove && <IconButton icon={FolderInput} label={t("reader.move")} onClick={moveSelection} />}
           </div>
         ) : (
           <div className="flex h-12 items-center gap-1">
@@ -232,8 +242,8 @@ export function MobileList() {
                 return (
                   <li key={thread.id}>
                     <SwipeRow
-                      right={swipeRight}
-                      left={swipeLeft}
+                      right={swipeAllowed(swipeRight, info.rights) ? swipeRight : "none"}
+                      left={swipeAllowed(swipeLeft, info.rights) ? swipeLeft : "none"}
                       unread={thread.unreadCount > 0}
                       selecting={selecting}
                       inJunk={info.isJunk}
@@ -251,6 +261,7 @@ export function MobileList() {
                           actions={cardActions}
                           inTrash={info.isTrash}
                           inJunk={info.isJunk}
+                          rights={info.rights}
                           onSelect={() =>
                             selecting
                               ? toggle(thread.id)
@@ -301,4 +312,22 @@ export function MobileList() {
       )}
     </section>
   );
+}
+
+/** A swipe only does what the folder allows; in a folder shared to read, swipes do nothing. */
+function swipeAllowed(action: SwipeAction, rights: MailRights): boolean {
+  switch (action) {
+    case "read":
+      return rights.markSeen;
+    case "flag":
+      return rights.flag;
+    case "archive":
+      return rights.archive;
+    case "spam":
+      return rights.spam;
+    case "trash":
+      return rights.remove;
+    case "none":
+      return true;
+  }
 }

@@ -1,6 +1,5 @@
 import { BackendError, type Backend } from "./backend";
 import { isDangerous } from "@/lib/attachments";
-import { SendQueue } from "@/lib/sendQueue";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
@@ -8,7 +7,16 @@ import { DemoContacts } from "./demo-contacts";
 import { rulesToSieve } from "@/lib/sieveRules";
 import { resolveLanguage } from "@/i18n";
 import { useSettings } from "@/state/settings";
-import { buildFolders, buildMessages, DEMO_ACCOUNTS, demoRules, welcomeMessage } from "./demo-data";
+import {
+  ALL_RIGHTS,
+  buildFolders,
+  buildMessages,
+  buildSharedMailbox,
+  DEMO_ACCOUNTS,
+  DEMO_PEOPLE,
+  demoRules,
+  welcomeMessage,
+} from "./demo-data";
 import { demoSenderPicture } from "./demo-pictures";
 import type {
   BlockedSender,
@@ -24,13 +32,21 @@ import type {
   EventInput,
   FlagChange,
   Folder,
+  FolderRights,
   Identity,
+  MailInvitation,
   MailtoDraft,
   MovedMessage,
   Message,
   OutgoingMessage,
-  QueuedSend,
+  ParticipationStatus,
+  Person,
+  ScheduledSend,
+  SendOptions,
+  SendReceipt,
   SenderPicture,
+  ShareLevel,
+  SharedAccount,
   Signature,
   ThreadDetail,
   ThreadPage,
@@ -88,13 +104,21 @@ export class DemoBackend implements Backend {
   readonly kind = "demo";
 
   private accounts: Account[] = structuredClone(DEMO_ACCOUNTS);
-  private folders: Folder[] = DEMO_ACCOUNTS.flatMap((a) => buildFolders(a.id, lang()));
+  /** Somebody on the demo "server" who shares two folders with the demo. */
+  private shared = buildSharedMailbox(lang());
+  private folders: Folder[] = [
+    ...DEMO_ACCOUNTS.flatMap((a) => buildFolders(a.id, lang())).map((folder) => ({ ...folder, rights: ALL_RIGHTS })),
+    ...this.shared.folders,
+  ];
   // Newsletters and offers carry a List-Unsubscribe like the real ones.
-  private messages: Message[] = buildMessages(lang()).map((message) =>
-    /newsletter|aktion|offer|deal/i.test(message.subject)
-      ? { ...message, unsubscribe: { oneClick: true, url: "https://pixelparts.example/unsubscribe" } }
-      : message,
-  );
+  private messages: Message[] = [
+    ...buildMessages(lang()).map((message) =>
+      /newsletter|aktion|offer|deal/i.test(message.subject)
+        ? { ...message, unsubscribe: { oneClick: true, url: "https://pixelparts.example/unsubscribe" } }
+        : message,
+    ),
+    ...this.shared.messages,
+  ];
   private listeners = new Set<(event: BackendEvent) => void>();
   private nextId = 1000;
   private attachmentUrls = new Map<string, string>();
@@ -104,7 +128,8 @@ export class DemoBackend implements Backend {
   private blocked: BlockedSender[] = [];
   private signatures: Signature[] = [
     {
-      id: "sig-demo",
+      // Like the server's identity signatures: one per address, under the address's id.
+      id: DEMO_ACCOUNTS[0]!.id,
       email: DEMO_ACCOUNTS[0]!.email,
       name: lang() === "de" ? "Lang" : "Long",
       html:
@@ -125,11 +150,8 @@ export class DemoBackend implements Backend {
       fromServer: true,
     },
   ];
-  private sendQueue = new SendQueue({
-    done: (sendId, message) => this.emit({ type: "send:done", sendId, accountId: message.accountId }),
-    failed: (sendId, message, reason) =>
-      this.emit({ type: "send:failed", sendId, accountId: message.accountId, reason, message }),
-  });
+  /** Mail "the server" still holds back, by submission id, like UwUMail's delayed sending. */
+  private held = new Map<string, { messageId: string; draft: OutgoingMessage; sendAt: string; timer: number }>();
 
   constructor() {
     setTimeout(() => {
@@ -158,8 +180,9 @@ export class DemoBackend implements Backend {
     return structuredClone(own.flatMap((o) => [o, ...this.identities.filter((i) => i.accountId === o.accountId)]));
   }
 
-  async signaturesAvailable() {
-    return true;
+  /** The demo plays a server that keeps one signature per sending address. */
+  async signatureStore() {
+    return "identity" as const;
   }
 
   /** The demo plays a server with the settings extension, kept in memory like everything else. */
@@ -195,19 +218,15 @@ export class DemoBackend implements Backend {
     return structuredClone(this.signatures);
   }
 
-  /** Kept in memory only, like everything in the demo. */
+  /** Kept in memory only, like everything in the demo: the one signature of its address. */
   async saveSignature(signature: Signature) {
     await wait(120);
-    const saved = { ...signature, id: signature.id || `sig-${this.nextId++}` };
-    const email = saved.email.toLowerCase();
-    this.signatures = this.signatures.map((s) =>
-      s.email.toLowerCase() === email && s.id !== saved.id
-        ? { ...s, forNew: saved.forNew ? false : s.forNew, forReplies: saved.forReplies ? false : s.forReplies }
-        : s,
+    const identity = (await this.listIdentities()).find(
+      (entry) => entry.email.toLowerCase() === signature.email.toLowerCase(),
     );
-    const index = this.signatures.findIndex((s) => s.id === saved.id);
-    if (index >= 0) this.signatures[index] = saved;
-    else this.signatures.push(saved);
+    if (!identity) throw new BackendError("not_found", "That sender address is gone.");
+    const saved = { ...signature, id: identity.id, name: identity.name, forNew: true, forReplies: true };
+    this.signatures = [...this.signatures.filter((s) => s.id !== identity.id), saved];
     return structuredClone(saved);
   }
 
@@ -243,6 +262,9 @@ export class DemoBackend implements Backend {
     await wait(120);
     const parent = input.parentId ? this.folders.find((f) => f.id === input.parentId) : undefined;
     if (input.parentId && !parent) throw new BackendError("not_found", "This folder no longer exists.");
+    if (parent?.rights && !parent.rights.mayCreateChild) {
+      throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+    }
     const accountId = parent?.accountId ?? input.accountId ?? this.accounts[0]!.id;
     this.assertFreeName(accountId, input.parentId, input.name);
     const id = `${accountId}:f${this.nextId++}`;
@@ -256,6 +278,8 @@ export class DemoBackend implements Backend {
       selectable: true,
       unread: 0,
       total: 0,
+      rights: parent?.rights ?? ALL_RIGHTS,
+      ...(parent?.shared ? { shared: true } : {}),
     });
     this.emit({ type: "mail:changed", accountId });
     return id;
@@ -350,7 +374,48 @@ export class DemoBackend implements Backend {
     return { thread: this.summarize(threadId, list), messages: structuredClone(messages) };
   }
 
+  /** Like a server with shared folders: what the folder's owner didn't allow is refused. */
+  private allowed(messages: Message[], right: keyof FolderRights) {
+    for (const message of messages) {
+      const rights = this.folders.find((f) => f.id === message.folderId)?.rights;
+      if (rights && !rights[right]) throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+    }
+  }
+
+  private isShared(message: Message) {
+    return message.accountId === this.shared.account.id;
+  }
+
+  async sharedAccounts(): Promise<SharedAccount[]> {
+    await wait(40);
+    return [structuredClone(this.shared.account)];
+  }
+
+  async sharingAvailable() {
+    return true;
+  }
+
+  async people(): Promise<Person[]> {
+    await wait(80);
+    return structuredClone(DEMO_PEOPLE);
+  }
+
+  async shareFolder(folderId: string, personId: string, level: ShareLevel | null) {
+    await wait(150);
+    const folder = this.folders.find((f) => f.id === folderId);
+    if (!folder) throw new BackendError("not_found", "This folder no longer exists.");
+    if (folder.rights && !folder.rights.mayAdmin) throw new BackendError("forbidden", "You may not share this folder.");
+    const sharedWith = { ...folder.sharedWith };
+    if (level) sharedWith[personId] = level;
+    else delete sharedWith[personId];
+    folder.sharedWith = sharedWith;
+    this.emit({ type: "mail:changed", accountId: folder.accountId });
+  }
+
   async setFlags(messageIds: string[], change: FlagChange) {
+    const touched = this.messages.filter((m) => messageIds.includes(m.id));
+    if (change.seen !== undefined) this.allowed(touched, "maySetSeen");
+    if (change.flagged !== undefined) this.allowed(touched, "maySetKeywords");
     for (const message of this.messages) {
       if (!messageIds.includes(message.id)) continue;
       if (change.seen !== undefined) message.flags.seen = change.seen;
@@ -369,8 +434,12 @@ export class DemoBackend implements Backend {
 
   async deleteForever(messageIds: string[]) {
     await wait(120);
+    const shared = this.messages.filter((m) => messageIds.includes(m.id) && this.isShared(m));
+    this.allowed(shared, "mayRemoveItems");
     const doomed = new Set(
-      this.messages.filter((m) => messageIds.includes(m.id) && this.roleOf(m) === "trash").map((m) => m.id),
+      this.messages
+        .filter((m) => messageIds.includes(m.id) && (this.roleOf(m) === "trash" || this.isShared(m)))
+        .map((m) => m.id),
     );
     this.emitChanged([...doomed]);
     this.messages = this.messages.filter((m) => !doomed.has(m.id));
@@ -382,6 +451,11 @@ export class DemoBackend implements Backend {
     const folder = this.folders.find((f) => f.id === folderId);
     if (!folder) throw new BackendError("not_found", "This folder no longer exists.");
     const moved: MovedMessage[] = [];
+    const moving = this.messages.filter((m) => messageIds.includes(m.id) && m.folderId !== folderId);
+    this.allowed(moving, "mayRemoveItems");
+    if (folder.rights && !folder.rights.mayAddItems) {
+      throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+    }
     for (const message of this.messages) {
       if (!messageIds.includes(message.id) || message.folderId === folderId) continue;
       if (message.accountId !== folder.accountId) {
@@ -448,22 +522,61 @@ export class DemoBackend implements Backend {
     );
   }
 
-  /** Like the server's webmail: the mail waits as a draft, then goes out when the time is up. */
-  async queueSend(message: OutgoingMessage, delaySeconds: number): Promise<QueuedSend> {
-    if (message.to.length + message.cc.length + message.bcc.length === 0) {
+  /** Like the server: the mail sits in Sent at once and goes after the undo window, or at `sendAt`. */
+  async send(outgoing: OutgoingMessage, options: SendOptions = {}): Promise<SendReceipt> {
+    await wait(500);
+    if (outgoing.to.length + outgoing.cc.length + outgoing.bcc.length === 0) {
       throw new BackendError("invalid_input", "No recipients");
     }
-    const { draftKey } = await this.saveDraft(message);
-    const waiting = { ...message, draftKey };
-    return this.sendQueue.add(waiting, delaySeconds, () => this.send(waiting));
+    const messageId = this.deliver(outgoing);
+    const delay = options.sendAt
+      ? Date.parse(options.sendAt) - Date.now()
+      : useSettings.getState().undoSendSeconds * 1000;
+    if (delay <= 0) return { submissionId: null, sendAt: new Date().toISOString(), pending: false };
+    const id = `sub-${this.nextId++}`;
+    const sendAt = new Date(Date.now() + delay).toISOString();
+    const timer = window.setTimeout(() => {
+      this.held.delete(id);
+      this.emit({ type: "scheduled:changed" });
+    }, delay);
+    this.held.set(id, { messageId, draft: outgoing, sendAt, timer });
+    this.emit({ type: "scheduled:changed" });
+    return { submissionId: id, sendAt, pending: true };
   }
 
-  async cancelSend(sendId: string) {
-    try {
-      return this.sendQueue.cancel(sendId);
-    } catch {
-      throw new BackendError("invalid_input", "This mail is already on its way.");
+  async cancelSend(submissionId: string): Promise<DraftContent> {
+    await wait(150);
+    const entry = this.held.get(submissionId);
+    if (!entry) throw new BackendError("too_late", "This mail is already on its way.");
+    window.clearTimeout(entry.timer);
+    this.held.delete(submissionId);
+    const message = this.messages.find((m) => m.id === entry.messageId);
+    if (message) {
+      message.folderId = `${message.accountId}:drafts`;
+      message.flags.draft = true;
+      const draftKey = entry.draft.draftKey ?? `demo-${this.nextId++}@uwumail.example`;
+      this.drafts.set(draftKey, { messageId: message.id, draft: { ...entry.draft, draftKey } });
     }
+    this.emit({ type: "mail:changed", accountId: entry.draft.accountId });
+    this.emit({ type: "scheduled:changed" });
+    return this.openDraft(entry.messageId);
+  }
+
+  async scheduledSends(): Promise<ScheduledSend[]> {
+    await wait(60);
+    return [...this.held.entries()]
+      .map(([id, entry]) => ({
+        id,
+        emailId: entry.messageId,
+        sendAt: entry.sendAt,
+        subject: entry.draft.subject,
+        to: entry.draft.to,
+      }))
+      .sort((a, b) => a.sendAt.localeCompare(b.sendAt));
+  }
+
+  async maxSendDelay() {
+    return 30 * 24 * 60 * 60;
   }
 
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
@@ -546,11 +659,8 @@ export class DemoBackend implements Backend {
     this.drafts.delete(draftKey);
   }
 
-  async send(outgoing: OutgoingMessage) {
-    await wait(900);
-    if (outgoing.to.length + outgoing.cc.length + outgoing.bcc.length === 0) {
-      throw new BackendError("invalid_input", "No recipients");
-    }
+  /** Files the mail into Sent and returns its id. */
+  private deliver(outgoing: OutgoingMessage): string {
     const account = this.accounts.find((a) => a.id === outgoing.accountId);
     if (!account) throw new BackendError("not_found", "Account not found");
     if (outgoing.draftKey) this.removeDraftMessage(outgoing.draftKey);
@@ -583,6 +693,7 @@ export class DemoBackend implements Backend {
       })),
     });
     this.emit({ type: "mail:changed", accountId: account.id });
+    return id;
   }
 
   async getAttachment(attachmentId: string): Promise<AttachmentContent> {
@@ -685,6 +796,23 @@ export class DemoBackend implements Backend {
   }
 
   /** The demo keeps every time in the viewer's zone, so there is nothing to convert. */
+  async respondToInvitation(eventId: string, _participantKey: string, status: ParticipationStatus) {
+    await wait(200);
+    this.calendar.respond(eventId, status);
+  }
+
+  async mailInvitation(messageId: string): Promise<MailInvitation | null> {
+    await wait(120);
+    const message = this.messages.find((m) => m.id === messageId);
+    const carries = message?.attachments.some((a) => a.mimeType.startsWith("text/calendar"));
+    return carries ? this.calendar.invitation() : null;
+  }
+
+  async shareCalendar(calendarId: string, personId: string, level: ShareLevel | null) {
+    await wait(150);
+    this.calendar.share(calendarId, personId, level);
+  }
+
   async calendarEvents(from: string, to: string) {
     await wait(120);
     return this.calendar.occurrences(from, to);
@@ -848,6 +976,9 @@ export class DemoBackend implements Backend {
   }
 
   private moveToRole(messageIds: string[], role: "archive" | "trash" | "junk" | "inbox") {
+    if (this.messages.some((m) => messageIds.includes(m.id) && this.isShared(m))) {
+      throw new BackendError("forbidden", "Mail in a shared folder stays in its owner's folders.");
+    }
     const moved: MovedMessage[] = [];
     for (const message of this.messages) {
       const target = `${message.accountId}:${role}`;
@@ -867,6 +998,8 @@ export class DemoBackend implements Backend {
     const { view } = query;
     if (query.accountIds && !query.accountIds.includes(message.accountId)) return false;
     if (view.kind === "folder") return message.folderId === view.folderId;
+    // The views across the mailbox are the account's own mail.
+    if (this.isShared(message)) return false;
     const role = this.roleOf(message);
     switch (view.role) {
       case "inbox":

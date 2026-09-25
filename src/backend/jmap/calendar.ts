@@ -17,7 +17,16 @@ import {
   zonedWall,
   type WallTime,
 } from "@/lib/calendarDates";
-import type { CalendarInfo, CalendarOccurrence, EventInput, Recurrence, Weekday } from "../types";
+import type {
+  CalendarInfo,
+  CalendarOccurrence,
+  EventInput,
+  Invitation,
+  ParticipationStatus,
+  Recurrence,
+  ShareLevel,
+  Weekday,
+} from "../types";
 
 export interface JmapCalendar {
   id: string;
@@ -26,7 +35,18 @@ export interface JmapCalendar {
   sortOrder?: number;
   isVisible?: boolean;
   isDefault?: boolean;
-  myRights?: { mayWriteAll?: boolean; mayWriteOwn?: boolean; mayDelete?: boolean } | null;
+  myRights?: { mayWriteAll?: boolean; mayWriteOwn?: boolean; mayDelete?: boolean; mayShare?: boolean } | null;
+  shareWith?: Record<string, Record<string, boolean> | null> | null;
+  uwuSharedBy?: { email?: string; name?: string | null } | null;
+}
+
+export interface JmapParticipant {
+  name?: string | null;
+  email?: string | null;
+  calendarAddress?: string | null;
+  sendTo?: Record<string, string> | null;
+  participationStatus?: string | null;
+  roles?: Record<string, boolean> | null;
 }
 
 export interface JmapRecurrenceRule {
@@ -59,6 +79,9 @@ export interface JmapCalendarEvent {
   color?: string | null;
   utcStart?: string | null;
   utcEnd?: string | null;
+  participants?: Record<string, JmapParticipant> | null;
+  organizerCalendarAddress?: string | null;
+  status?: string | null;
 }
 
 /** What calendarEvents asks for of every occurrence. */
@@ -79,6 +102,8 @@ export const EVENT_PROPERTIES = [
   "color",
   "utcStart",
   "utcEnd",
+  "participants",
+  "organizerCalendarAddress",
 ];
 
 /** What a series needs besides its occurrences: its rule. */
@@ -125,7 +150,86 @@ export function toCalendarInfo(calendar: JmapCalendar, accountId: string): Calen
     // Servers that leave out the rights mean the account's own calendars.
     mayWrite: calendar.myRights ? rights.mayWriteAll === true || rights.mayWriteOwn === true : true,
     mayDelete: calendar.myRights ? rights.mayDelete === true : true,
+    mayShare: calendar.myRights ? rights.mayShare === true : false,
+    sharedBy: calendar.uwuSharedBy?.email
+      ? { email: calendar.uwuSharedBy.email, name: calendar.uwuSharedBy.name?.trim() || calendar.uwuSharedBy.email }
+      : null,
+    ...(calendar.shareWith && typeof calendar.shareWith === "object"
+      ? { sharedWith: calendarSharedWith(calendar.shareWith) }
+      : {}),
   };
+}
+
+/** `shareWith` of a calendar as principal id → level: sharing on means everything, writing means write. */
+export function calendarSharedWith(
+  shareWith: Record<string, Record<string, boolean> | null>,
+): Record<string, ShareLevel> {
+  const levels: Record<string, ShareLevel> = {};
+  for (const [principal, rights] of Object.entries(shareWith)) {
+    if (!rights) continue;
+    levels[principal] = rights.mayShare
+      ? "all"
+      : rights.mayWriteAll || rights.mayWriteOwn || rights.mayUpdatePrivate || rights.mayRSVP
+        ? "write"
+        : "read";
+  }
+  return levels;
+}
+
+/** The CalendarRights a level stands for, as `shareWith` takes them. */
+export function calendarRightsFor(level: ShareLevel): Record<string, boolean> {
+  const read = { mayReadFreeBusy: true, mayReadItems: true };
+  if (level === "read") return read;
+  const write = { ...read, mayWriteAll: true, mayWriteOwn: true, mayUpdatePrivate: true, mayRSVP: true };
+  return level === "write" ? write : { ...write, mayShare: true };
+}
+
+const STATUSES = new Set(["needs-action", "accepted", "tentative", "declined"]);
+
+function addressOf(participant: JmapParticipant): string {
+  const raw = participant.calendarAddress ?? participant.sendTo?.imip ?? participant.email ?? "";
+  return raw
+    .replace(/^mailto:/i, "")
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * The account's part in somebody else's event: the participant with one of its addresses, and
+ * how it answered. Null for its own events (it is the origin) and for events without it.
+ */
+export function invitationOf(
+  event: Pick<JmapCalendarEvent, "id" | "baseEventId" | "isOrigin" | "participants" | "organizerCalendarAddress">,
+  ownAddresses: string[],
+): Invitation | null {
+  if (event.isOrigin !== false || !event.participants) return null;
+  const own = new Set(ownAddresses.map((address) => address.toLowerCase()));
+  const found = Object.entries(event.participants).find(([, participant]) => own.has(addressOf(participant)));
+  if (!found) return null;
+  const [participantKey, participant] = found;
+  const status = STATUSES.has(participant.participationStatus ?? "")
+    ? (participant.participationStatus as ParticipationStatus)
+    : "needs-action";
+  const organizerAddress = event.organizerCalendarAddress?.replace(/^mailto:/i, "") ?? null;
+  const organizer = Object.values(event.participants).find(
+    (entry) => organizerAddress && addressOf(entry) === organizerAddress.toLowerCase(),
+  );
+  return {
+    eventId: event.baseEventId ?? event.id,
+    participantKey,
+    status,
+    organizer: organizer?.name?.trim() || organizerAddress || null,
+  };
+}
+
+/** The UID and METHOD of an iCalendar invitation (RFC 5545 with folded lines, RFC 5546). */
+export function icsInvitation(text: string): { uid: string; method: string | null } | null {
+  const unfolded = text.replace(/\r?\n[ \t]/g, "");
+  const inEvent = unfolded.split(/BEGIN:VEVENT/i)[1] ?? "";
+  const uid = /^UID(?:;[^:\r\n]*)?:(.+)$/im.exec(inEvent)?.[1]?.trim();
+  if (!uid) return null;
+  const method = /^METHOD(?:;[^:\r\n]*)?:(.+)$/im.exec(unfolded)?.[1]?.trim().toUpperCase() ?? null;
+  return { uid, method };
 }
 
 const FREQUENCIES = new Set(["daily", "weekly", "monthly", "yearly"]);
@@ -233,6 +337,8 @@ interface OccurrenceContext {
   calendar: CalendarInfo | undefined;
   /** The base event of a series, for its rule. */
   base: JmapCalendarEvent | undefined;
+  /** The account's addresses, to find it among an invitation's participants. */
+  ownAddresses?: string[];
 }
 
 export function toOccurrence(event: JmapCalendarEvent, context: OccurrenceContext): CalendarOccurrence {
@@ -269,6 +375,7 @@ export function toOccurrence(event: JmapCalendarEvent, context: OccurrenceContex
     recurrenceId: event.recurrenceId ?? null,
     readOnly: !(context.calendar?.mayWrite ?? true) || event.isOrigin === false,
     color: safeColor(event.color),
+    invitation: invitationOf(event, context.ownAddresses ?? []),
   };
 }
 

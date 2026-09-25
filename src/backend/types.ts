@@ -55,6 +55,50 @@ export interface Signature {
 
 export type FolderRole = "inbox" | "sent" | "drafts" | "archive" | "trash" | "junk";
 
+/**
+ * What the account may do in a folder (RFC 8621 `myRights`, plus `mayAdmin` for sharing). Its own
+ * folders allow everything; folders somebody shares allow what they chose.
+ */
+export interface FolderRights {
+  mayReadItems: boolean;
+  mayAddItems: boolean;
+  mayRemoveItems: boolean;
+  maySetSeen: boolean;
+  maySetKeywords: boolean;
+  mayCreateChild: boolean;
+  mayRename: boolean;
+  mayDelete: boolean;
+  /** May share it with others. */
+  mayAdmin: boolean;
+}
+
+/** How much a folder or calendar is shared: read, read and write, or everything including sharing on. */
+export type ShareLevel = "read" | "write" | "all";
+
+/** Somebody on the same server, to share with (a JMAP Principal). */
+export interface Person {
+  /** The principal id, e.g. `p7`. */
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface Share {
+  person: Person;
+  level: ShareLevel;
+}
+
+/** Somebody who shares folders with this account: their mailbox as far as they share it. */
+export interface SharedAccount {
+  id: string;
+  /** The owner's login address. */
+  email: string;
+  /** The owner's name, or their address when the server doesn't say. */
+  name: string;
+  /** Every folder they share is read-only here. */
+  readOnly: boolean;
+}
+
 export interface Folder {
   id: string;
   accountId: string;
@@ -67,6 +111,12 @@ export interface Folder {
   selectable: boolean;
   unread: number;
   total: number;
+  /** What the account may do here; left out where the server doesn't say, which means everything. */
+  rights?: FolderRights;
+  /** Somebody else's folder, shared with the account: its `accountId` is theirs (see SharedAccount). */
+  shared?: boolean;
+  /** Who else sees it, by principal id; only for folders the account may share. */
+  sharedWith?: Record<string, ShareLevel>;
 }
 
 export interface Address {
@@ -208,10 +258,32 @@ export interface MovedMessage {
   fromFolderId: string;
 }
 
-/** A mail waiting for its "undo send" time. */
-export interface QueuedSend {
-  id: string;
+/**
+ * What sending handed back. The server holds every mail back for the person's "undo send" window
+ * (or until the time they chose) and only then sends it; until `sendAt` it can be cancelled.
+ */
+export interface SendReceipt {
+  /** The server's submission; null where nothing can be taken back (the demo without a window). */
+  submissionId: string | null;
+  /** When the mail goes, or went. */
   sendAt: string;
+  /** Still waiting on the server. False for servers that send at once. */
+  pending: boolean;
+}
+
+export interface SendOptions {
+  /** A later time to send at (ISO 8601), within `maxSendDelay`. Without it the undo window applies. */
+  sendAt?: string;
+}
+
+/** A mail the server still holds back: sent later, or within its undo window. */
+export interface ScheduledSend {
+  /** The submission, for cancelling. */
+  id: string;
+  emailId: string;
+  sendAt: string;
+  subject: string;
+  to: Address[];
 }
 
 export interface DraftSaveResult {
@@ -316,6 +388,36 @@ export interface CalendarInfo {
   sortOrder: number;
   mayWrite: boolean;
   mayDelete: boolean;
+  /** May change its name and colour and share it (own calendars, or shared with everything). */
+  mayShare?: boolean;
+  /** Who owns it, for a calendar somebody shares with the account; null for its own. */
+  sharedBy?: { email: string; name: string } | null;
+  /** Who else sees it, by principal id; only where the account may share it. */
+  sharedWith?: Record<string, ShareLevel>;
+}
+
+/** An answer to an invitation (iTIP): the participant's `participationStatus`. */
+export type ParticipationStatus = "needs-action" | "accepted" | "tentative" | "declined";
+
+/** An event somebody invited the account to, and how it answered so far. */
+export interface Invitation {
+  /** The stored event (the series for a repeating one), where the answer goes. */
+  eventId: string;
+  /** The account's participant in it. */
+  participantKey: string;
+  status: ParticipationStatus;
+  /** Who invited, as an address (or a name) where the event says. */
+  organizer: string | null;
+}
+
+/** The invitation a mail carries (its text/calendar part), as the server put it into the calendar. */
+export interface MailInvitation extends Invitation {
+  title: string;
+  /** UTC start, or the date of an all-day event. */
+  start: string | null;
+  allDay: boolean;
+  /** The organizer cancelled it. */
+  cancelled: boolean;
 }
 
 export type Weekday = "mo" | "tu" | "we" | "th" | "fr" | "sa" | "su";
@@ -358,6 +460,8 @@ export interface CalendarOccurrence {
   /** No write right, or somebody else's invitation. */
   readOnly: boolean;
   color: string | null;
+  /** Somebody else's event the account was invited to, with its answer; null for its own. */
+  invitation?: Invitation | null;
 }
 
 /** What the event editor saves. */
@@ -457,11 +561,13 @@ export type BackendEvent =
   | { type: "mail:changed"; accountId: string }
   | { type: "mail:received"; accountId: string; messageIds: string[] }
   | { type: "account:status"; accountId: string; status: AccountStatus }
-  | { type: "send:done"; sendId: string; accountId: string }
-  | { type: "send:failed"; sendId: string; accountId: string; reason: string; message: OutgoingMessage }
+  /** Mail waiting to be sent changed: a new one, a cancelled one, or one that went. */
+  | { type: "scheduled:changed" }
   | { type: "compose:mailto" }
   /** The account's shared settings changed, here or on another device (e.g. signatures). */
   | { type: "settings:changed"; accountId: string; state?: string }
+  /** Folders shared with the account came or went, or changed between read-only and writable. */
+  | { type: "accounts:changed" }
   /** Calendars or events changed, here or on another device. */
   | { type: "calendar:changed" }
   /** Address books or contacts changed, here or on another device. */

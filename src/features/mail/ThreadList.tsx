@@ -185,42 +185,54 @@ export function ThreadList({ variant, className }: ThreadListProps) {
             <span className="min-w-0 flex-1 truncate px-1 text-[13px] font-bold">
               {t("list.selected", { count: checked.length })}
             </span>
-            <IconButton
-              icon={Archive}
-              size="sm"
-              label={t("reader.archive")}
-              onClick={() => runOnChecked(selection.archive)}
-            />
-            <IconButton
-              icon={Trash}
-              size="sm"
-              label={info.isTrash ? t("reader.deleteForever") : t("reader.trash")}
-              onClick={() => runOnChecked(selection.trash)}
-            />
-            <IconButton
-              icon={MailOpen}
-              size="sm"
-              label={anyUnread ? t("list.markRead") : t("reader.markUnread")}
-              onClick={() => runOnChecked((ids) => selection.read(ids, anyUnread))}
-            />
-            <IconButton
-              icon={Star}
-              size="sm"
-              label={t("reader.flag")}
-              onClick={() => runOnChecked((ids) => selection.flag(ids, !allFlagged))}
-            />
-            <IconButton
-              icon={FolderInput}
-              size="sm"
-              label={t("reader.move")}
-              onClick={() => runOnChecked(selection.move)}
-            />
-            <IconButton
-              icon={info.isJunk ? ShieldCheck : ShieldAlert}
-              size="sm"
-              label={info.isJunk ? t("reader.notSpam") : t("reader.spam")}
-              onClick={() => runOnChecked((ids) => selection.spam(ids, !info.isJunk))}
-            />
+            {info.rights.archive && (
+              <IconButton
+                icon={Archive}
+                size="sm"
+                label={t("reader.archive")}
+                onClick={() => runOnChecked(selection.archive)}
+              />
+            )}
+            {info.rights.remove && (
+              <IconButton
+                icon={Trash}
+                size="sm"
+                label={info.isTrash ? t("reader.deleteForever") : t("reader.trash")}
+                onClick={() => runOnChecked(selection.trash)}
+              />
+            )}
+            {info.rights.markSeen && (
+              <IconButton
+                icon={MailOpen}
+                size="sm"
+                label={anyUnread ? t("list.markRead") : t("reader.markUnread")}
+                onClick={() => runOnChecked((ids) => selection.read(ids, anyUnread))}
+              />
+            )}
+            {info.rights.flag && (
+              <IconButton
+                icon={Star}
+                size="sm"
+                label={t("reader.flag")}
+                onClick={() => runOnChecked((ids) => selection.flag(ids, !allFlagged))}
+              />
+            )}
+            {info.rights.remove && (
+              <IconButton
+                icon={FolderInput}
+                size="sm"
+                label={t("reader.move")}
+                onClick={() => runOnChecked(selection.move)}
+              />
+            )}
+            {info.rights.spam && (
+              <IconButton
+                icon={info.isJunk ? ShieldCheck : ShieldAlert}
+                size="sm"
+                label={info.isJunk ? t("reader.notSpam") : t("reader.spam")}
+                onClick={() => runOnChecked((ids) => selection.spam(ids, !info.isJunk))}
+              />
+            )}
           </div>
         ) : (
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="toolbar" aria-label={t("list.search")}>
@@ -268,6 +280,7 @@ export function ThreadList({ variant, className }: ThreadListProps) {
                 dragIds={checked.includes(thread.id) ? checked : [thread.id]}
                 inTrash={info.isTrash}
                 inJunk={info.isJunk}
+                rights={info.rights}
                 onSelect={(event) => {
                   const anchor = useUi.getState().selectionAnchor ?? selectedThreadId;
                   if (event.ctrlKey || event.metaKey) {
