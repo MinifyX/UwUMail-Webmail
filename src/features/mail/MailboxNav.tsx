@@ -28,6 +28,7 @@ import { toast } from "@/state/toasts";
 import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
 import { PORTAL_URL } from "@/backend/server";
+import { ScheduledNavItem } from "../compose/ScheduledSends";
 import { AppSwitch } from "../shell/AppSwitch";
 import { buildFolderTree, countsUnread, type FolderNode } from "./folderTree";
 import { draggedThreadIds, THREAD_DRAG_TYPE, useSelectionActions } from "./selection";
@@ -365,6 +366,7 @@ export function MailboxNav({ className }: { className?: string }) {
               />
             );
           })}
+          <ScheduledNavItem />
         </section>
 
         {accounts.map((account) => (

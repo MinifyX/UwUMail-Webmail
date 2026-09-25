@@ -63,7 +63,8 @@
     "unsubscribed": "已退订 (≧▽≦) 不会再收到 {{name}} 的邮件了",
     "messageSaved": "邮件已经安全收好 (˘ω˘)",
     "deletedForever_other": "{{count}} 封邮件永远消失了 (｡•́︿•̀｡)",
-    "sending": "Nyu 马上就要出发啦… ✉︎"
+    "sending": "Nyu 马上就要出发啦… ✉︎",
+    "scheduled": "Nyu 会在 {{time}} 送达 ✉︎"
   },
   "status": {
     "syncing": "正在取新鲜的邮件…",

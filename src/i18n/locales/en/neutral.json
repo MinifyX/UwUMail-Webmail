@@ -16,7 +16,8 @@
       "mail": "Mail",
       "calendar": "Calendar",
       "contacts": "Contacts"
-    }
+    },
+    "scheduled": "Scheduled"
   },
   "filter": {
     "all": "All",
@@ -156,7 +157,22 @@
     "draftLocal": "Only saved on this device",
     "signature": "Signature",
     "noSignature": "No signature",
-    "editSignatures": "Edit signatures …"
+    "editSignatures": "Edit signatures …",
+    "later": {
+      "open": "Send later",
+      "title": "Send later",
+      "laterToday": "This evening",
+      "tomorrowMorning": "Tomorrow morning",
+      "tomorrowAfternoon": "Tomorrow afternoon",
+      "mondayMorning": "Monday morning",
+      "pick": "Pick a date and time",
+      "schedule": "Schedule",
+      "problem": {
+        "invalid": "Pick a date and a time.",
+        "tooSoon": "Pick a time at least a few minutes from now.",
+        "tooFar": "Your server holds mail for at most {{days}} days."
+      }
+    }
   },
   "toast": {
     "sent": "Message sent",
@@ -189,8 +205,9 @@
     "undo": "Undo",
     "sendUndone": "Sending stopped. The mail is open again.",
     "undoTooLate": "Too late — the mail is already on its way.",
-    "sendFailedKept": "The mail could not be sent and is still with you. {{reason}}",
-    "sending": "Sending mail …"
+    "sending": "Sending mail …",
+    "scheduled": "Sends {{time}}",
+    "undoFailed": "The mail couldn't be taken back. {{reason}}"
   },
   "status": {
     "syncing": "Checking for mail",
@@ -263,7 +280,7 @@
     "sendersFromServer": "The addresses this mailbox may send from. They belong to the server; new ones are made in the portal.",
     "manageAddresses": "Manage addresses in the portal",
     "undoSend": "Undo send",
-    "undoSendDesc": "How long you can still take a sent mail back. Meanwhile it waits as a draft in this tab. If you close the tab in that time, it isn’t sent and stays in Drafts.",
+    "undoSendDesc": "How long you can still take a sent mail back. Your server holds it that long, also if you close this page.",
     "undoSendOff": "Off",
     "seconds_one": "{{count}} second",
     "seconds_other": "{{count}} s",
@@ -863,5 +880,14 @@
       "bookCreated": "Address book “{{name}}” created",
       "bookDeleted": "Address book “{{name}}” deleted"
     }
+  },
+  "scheduled": {
+    "title": "Scheduled mail",
+    "desc": "Your server sends these at the time you chose, also while this page is closed.",
+    "empty": "Nothing is waiting to be sent.",
+    "to": "To {{names}}",
+    "edit": "Edit",
+    "stop": "Don't send",
+    "stopped": "Not sent. The mail is back in Drafts."
   }
 }

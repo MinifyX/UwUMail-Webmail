@@ -16,7 +16,8 @@
       "mail": "Mail",
       "calendar": "Agenda",
       "contacts": "Contacten"
-    }
+    },
+    "scheduled": "Gepland"
   },
   "filter": {
     "all": "Alle",
@@ -156,7 +157,22 @@
     "draftLocal": "Alleen op dit apparaat opgeslagen",
     "signature": "Handtekening",
     "noSignature": "Geen handtekening",
-    "editSignatures": "Handtekeningen bewerken …"
+    "editSignatures": "Handtekeningen bewerken …",
+    "later": {
+      "open": "Later verzenden",
+      "title": "Later verzenden",
+      "laterToday": "Vanavond",
+      "tomorrowMorning": "Morgenochtend",
+      "tomorrowAfternoon": "Morgenmiddag",
+      "mondayMorning": "Maandagochtend",
+      "pick": "Kies een datum en tijd",
+      "schedule": "Inplannen",
+      "problem": {
+        "invalid": "Kies een datum en een tijd.",
+        "tooSoon": "Kies een tijd die minstens een paar minuten later is.",
+        "tooFar": "Je server houdt mail hoogstens {{days}} dagen vast."
+      }
+    }
   },
   "toast": {
     "sent": "Bericht verzonden",
@@ -189,8 +205,9 @@
     "undo": "Ongedaan maken",
     "sendUndone": "Verzenden gestopt. De mail is weer geopend.",
     "undoTooLate": "Te laat — de mail is al onderweg.",
-    "sendFailedKept": "De mail kon niet worden verzonden en staat nog bij jou. {{reason}}",
-    "sending": "Mail verzenden …"
+    "sending": "Mail verzenden …",
+    "scheduled": "Wordt verzonden: {{time}}",
+    "undoFailed": "De mail kon niet worden teruggehaald. {{reason}}"
   },
   "status": {
     "syncing": "Op mail controleren",
@@ -263,7 +280,7 @@
     "sendersFromServer": "De adressen waarvanaf deze mailbox mag verzenden. Ze horen bij de server; nieuwe maak je aan in het portaal.",
     "manageAddresses": "Adressen beheren in het portaal",
     "undoSend": "Verzenden ongedaan maken",
-    "undoSendDesc": "Hoelang je een verzonden mail nog terug kunt halen. Intussen wacht die als concept in dit tabblad. Sluit je het tabblad in die tijd, dan wordt de mail niet verzonden en blijft hij in Concepten.",
+    "undoSendDesc": "Hoelang je een verzonden mail nog terug kunt halen. Je server houdt hem zo lang vast, ook als je deze pagina sluit.",
     "undoSendOff": "Uit",
     "seconds_one": "{{count}} seconde",
     "seconds_other": "{{count}} s",
@@ -863,5 +880,14 @@
       "bookCreated": "Adresboek “{{name}}” aangemaakt",
       "bookDeleted": "Adresboek “{{name}}” verwijderd"
     }
+  },
+  "scheduled": {
+    "title": "Geplande mail",
+    "desc": "Je server verzendt ze op het gekozen moment, ook als deze pagina gesloten is.",
+    "empty": "Er wacht niets om verzonden te worden.",
+    "to": "Aan {{names}}",
+    "edit": "Bewerken",
+    "stop": "Niet verzenden",
+    "stopped": "Niet verzonden. De mail staat weer in Concepten."
   }
 }

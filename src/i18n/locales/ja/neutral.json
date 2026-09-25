@@ -16,7 +16,8 @@
       "mail": "メール",
       "calendar": "カレンダー",
       "contacts": "連絡先"
-    }
+    },
+    "scheduled": "予約済み"
   },
   "filter": {
     "all": "すべて",
@@ -152,7 +153,22 @@
     "draftLocal": "このデバイスにのみ保存されています",
     "signature": "署名",
     "noSignature": "署名なし",
-    "editSignatures": "署名を編集…"
+    "editSignatures": "署名を編集…",
+    "later": {
+      "open": "あとで送信",
+      "title": "あとで送信",
+      "laterToday": "今晩",
+      "tomorrowMorning": "明日の朝",
+      "tomorrowAfternoon": "明日の午後",
+      "mondayMorning": "月曜日の朝",
+      "pick": "日時を選ぶ",
+      "schedule": "予約",
+      "problem": {
+        "invalid": "日付と時刻を選んでください。",
+        "tooSoon": "少なくとも数分後の時刻を選んでください。",
+        "tooFar": "サーバーがメールを保留できるのは最長 {{days}} 日です。"
+      }
+    }
   },
   "toast": {
     "sent": "メールを送信しました",
@@ -182,8 +198,9 @@
     "undo": "元に戻す",
     "sendUndone": "送信を取り消しました。メールを再び開いています。",
     "undoTooLate": "間に合いませんでした。メールはすでに送信されています。",
-    "sendFailedKept": "メールを送信できませんでしたが、内容は残っています。{{reason}}",
-    "sending": "メールを送信中…"
+    "sending": "メールを送信中…",
+    "scheduled": "{{time}} に送信します",
+    "undoFailed": "メールを取り消せませんでした。{{reason}}"
   },
   "status": {
     "syncing": "メールを確認中",
@@ -256,7 +273,7 @@
     "sendersFromServer": "このメールボックスが送信に使えるアドレスです。アドレスはサーバーで管理されており、新しいアドレスはポータルで作成します。",
     "manageAddresses": "ポータルでアドレスを管理",
     "undoSend": "送信の取り消し",
-    "undoSendDesc": "送信したメールを取り消せる時間です。その間、メールはこのタブで下書きとして待機します。その間にタブを閉じると、メールは送信されず下書きに残ります。",
+    "undoSendDesc": "送信したメールを取り消せる時間です。その間はサーバーがメールを保留します。このページを閉じても変わりません。",
     "undoSendOff": "オフ",
     "seconds_other": "{{count}} 秒",
     "signatures": "署名",
@@ -836,5 +853,14 @@
       "bookCreated": "アドレス帳「{{name}}」を作成しました",
       "bookDeleted": "アドレス帳「{{name}}」を削除しました"
     }
+  },
+  "scheduled": {
+    "title": "予約済みのメール",
+    "desc": "このページを閉じていても、サーバーが選んだ時刻に送信します。",
+    "empty": "送信待ちのメールはありません。",
+    "to": "宛先: {{names}}",
+    "edit": "編集",
+    "stop": "送信しない",
+    "stopped": "送信しませんでした。メールは下書きに戻りました。"
   }
 }

@@ -1,6 +1,5 @@
 import { BackendError, type Backend } from "./backend";
 import { isDangerous } from "@/lib/attachments";
-import { SendQueue } from "@/lib/sendQueue";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
@@ -29,7 +28,9 @@ import type {
   MovedMessage,
   Message,
   OutgoingMessage,
-  QueuedSend,
+  ScheduledSend,
+  SendOptions,
+  SendReceipt,
   SenderPicture,
   Signature,
   ThreadDetail,
@@ -125,11 +126,8 @@ export class DemoBackend implements Backend {
       fromServer: true,
     },
   ];
-  private sendQueue = new SendQueue({
-    done: (sendId, message) => this.emit({ type: "send:done", sendId, accountId: message.accountId }),
-    failed: (sendId, message, reason) =>
-      this.emit({ type: "send:failed", sendId, accountId: message.accountId, reason, message }),
-  });
+  /** Mail "the server" still holds back, by submission id, like UwUMail's delayed sending. */
+  private held = new Map<string, { messageId: string; draft: OutgoingMessage; sendAt: string; timer: number }>();
 
   constructor() {
     setTimeout(() => {
@@ -448,22 +446,61 @@ export class DemoBackend implements Backend {
     );
   }
 
-  /** Like the server's webmail: the mail waits as a draft, then goes out when the time is up. */
-  async queueSend(message: OutgoingMessage, delaySeconds: number): Promise<QueuedSend> {
-    if (message.to.length + message.cc.length + message.bcc.length === 0) {
+  /** Like the server: the mail sits in Sent at once and goes after the undo window, or at `sendAt`. */
+  async send(outgoing: OutgoingMessage, options: SendOptions = {}): Promise<SendReceipt> {
+    await wait(500);
+    if (outgoing.to.length + outgoing.cc.length + outgoing.bcc.length === 0) {
       throw new BackendError("invalid_input", "No recipients");
     }
-    const { draftKey } = await this.saveDraft(message);
-    const waiting = { ...message, draftKey };
-    return this.sendQueue.add(waiting, delaySeconds, () => this.send(waiting));
+    const messageId = this.deliver(outgoing);
+    const delay = options.sendAt
+      ? Date.parse(options.sendAt) - Date.now()
+      : useSettings.getState().undoSendSeconds * 1000;
+    if (delay <= 0) return { submissionId: null, sendAt: new Date().toISOString(), pending: false };
+    const id = `sub-${this.nextId++}`;
+    const sendAt = new Date(Date.now() + delay).toISOString();
+    const timer = window.setTimeout(() => {
+      this.held.delete(id);
+      this.emit({ type: "scheduled:changed" });
+    }, delay);
+    this.held.set(id, { messageId, draft: outgoing, sendAt, timer });
+    this.emit({ type: "scheduled:changed" });
+    return { submissionId: id, sendAt, pending: true };
   }
 
-  async cancelSend(sendId: string) {
-    try {
-      return this.sendQueue.cancel(sendId);
-    } catch {
-      throw new BackendError("invalid_input", "This mail is already on its way.");
+  async cancelSend(submissionId: string): Promise<DraftContent> {
+    await wait(150);
+    const entry = this.held.get(submissionId);
+    if (!entry) throw new BackendError("too_late", "This mail is already on its way.");
+    window.clearTimeout(entry.timer);
+    this.held.delete(submissionId);
+    const message = this.messages.find((m) => m.id === entry.messageId);
+    if (message) {
+      message.folderId = `${message.accountId}:drafts`;
+      message.flags.draft = true;
+      const draftKey = entry.draft.draftKey ?? `demo-${this.nextId++}@uwumail.example`;
+      this.drafts.set(draftKey, { messageId: message.id, draft: { ...entry.draft, draftKey } });
     }
+    this.emit({ type: "mail:changed", accountId: entry.draft.accountId });
+    this.emit({ type: "scheduled:changed" });
+    return this.openDraft(entry.messageId);
+  }
+
+  async scheduledSends(): Promise<ScheduledSend[]> {
+    await wait(60);
+    return [...this.held.entries()]
+      .map(([id, entry]) => ({
+        id,
+        emailId: entry.messageId,
+        sendAt: entry.sendAt,
+        subject: entry.draft.subject,
+        to: entry.draft.to,
+      }))
+      .sort((a, b) => a.sendAt.localeCompare(b.sendAt));
+  }
+
+  async maxSendDelay() {
+    return 30 * 24 * 60 * 60;
   }
 
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
@@ -546,11 +583,8 @@ export class DemoBackend implements Backend {
     this.drafts.delete(draftKey);
   }
 
-  async send(outgoing: OutgoingMessage) {
-    await wait(900);
-    if (outgoing.to.length + outgoing.cc.length + outgoing.bcc.length === 0) {
-      throw new BackendError("invalid_input", "No recipients");
-    }
+  /** Files the mail into Sent and returns its id. */
+  private deliver(outgoing: OutgoingMessage): string {
     const account = this.accounts.find((a) => a.id === outgoing.accountId);
     if (!account) throw new BackendError("not_found", "Account not found");
     if (outgoing.draftKey) this.removeDraftMessage(outgoing.draftKey);
@@ -583,6 +617,7 @@ export class DemoBackend implements Backend {
       })),
     });
     this.emit({ type: "mail:changed", accountId: account.id });
+    return id;
   }
 
   async getAttachment(attachmentId: string): Promise<AttachmentContent> {

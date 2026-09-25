@@ -16,7 +16,6 @@ import { useSettings } from "@/state/settings";
 import { toast } from "@/state/toasts";
 import { announceMove } from "@/state/undo";
 import { useUi } from "@/state/ui";
-import { composeAgain } from "@/features/compose/undoSend";
 
 export const queryKeys = {
   accounts: ["accounts"] as const,
@@ -29,6 +28,7 @@ export const queryKeys = {
   calendarEvents: ["calendarEvents"] as const,
   addressBooks: ["addressBooks"] as const,
   contacts: ["contacts"] as const,
+  scheduled: ["scheduled"] as const,
 };
 
 export function useAccounts() {
@@ -57,6 +57,22 @@ export function useSignaturesAvailable() {
     queryFn: () => backend().signaturesAvailable(),
     staleTime: Infinity,
   });
+}
+
+/** Mail the server still holds back. Checked every minute too, since mail that went is no push of its own. */
+export function useScheduledSends() {
+  const { data: maxDelay = 0 } = useMaxSendDelay();
+  return useQuery({
+    queryKey: queryKeys.scheduled,
+    queryFn: () => backend().scheduledSends(),
+    enabled: maxDelay > 0,
+    refetchInterval: 60_000,
+  });
+}
+
+/** How far ahead "send later" may go, in seconds; 0 where the server can't hold mail. */
+export function useMaxSendDelay() {
+  return useQuery({ queryKey: ["maxSendDelay"], queryFn: () => backend().maxSendDelay(), staleTime: Infinity });
 }
 
 export function useFolders() {
@@ -305,16 +321,8 @@ export function useBackendEvents() {
           void client.invalidateQueries({ queryKey: queryKeys.thread });
           void client.invalidateQueries({ queryKey: queryKeys.folders });
           break;
-        case "send:done":
-          toast(t("toast.sent"), "success", "sent");
-          void client.invalidateQueries({ queryKey: queryKeys.threads });
-          break;
-        case "send:failed":
-          toast(t("toast.sendFailedKept", { reason: event.reason }), "error", undefined, {
-            duration: 15_000,
-            action: { label: t("toast.open"), run: () => composeAgain(event.message) },
-          });
-          void client.invalidateQueries({ queryKey: queryKeys.threads });
+        case "scheduled:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.scheduled });
           break;
         case "mail:received":
           toast(t("toast.newMail", { count: event.messageIds.length }), "info");

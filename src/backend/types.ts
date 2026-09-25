@@ -208,10 +208,32 @@ export interface MovedMessage {
   fromFolderId: string;
 }
 
-/** A mail waiting for its "undo send" time. */
-export interface QueuedSend {
-  id: string;
+/**
+ * What sending handed back. The server holds every mail back for the person's "undo send" window
+ * (or until the time they chose) and only then sends it; until `sendAt` it can be cancelled.
+ */
+export interface SendReceipt {
+  /** The server's submission; null where nothing can be taken back (the demo without a window). */
+  submissionId: string | null;
+  /** When the mail goes, or went. */
   sendAt: string;
+  /** Still waiting on the server. False for servers that send at once. */
+  pending: boolean;
+}
+
+export interface SendOptions {
+  /** A later time to send at (ISO 8601), within `maxSendDelay`. Without it the undo window applies. */
+  sendAt?: string;
+}
+
+/** A mail the server still holds back: sent later, or within its undo window. */
+export interface ScheduledSend {
+  /** The submission, for cancelling. */
+  id: string;
+  emailId: string;
+  sendAt: string;
+  subject: string;
+  to: Address[];
 }
 
 export interface DraftSaveResult {
@@ -457,8 +479,8 @@ export type BackendEvent =
   | { type: "mail:changed"; accountId: string }
   | { type: "mail:received"; accountId: string; messageIds: string[] }
   | { type: "account:status"; accountId: string; status: AccountStatus }
-  | { type: "send:done"; sendId: string; accountId: string }
-  | { type: "send:failed"; sendId: string; accountId: string; reason: string; message: OutgoingMessage }
+  /** Mail waiting to be sent changed: a new one, a cancelled one, or one that went. */
+  | { type: "scheduled:changed" }
   | { type: "compose:mailto" }
   /** The account's shared settings changed, here or on another device (e.g. signatures). */
   | { type: "settings:changed"; accountId: string; state?: string }

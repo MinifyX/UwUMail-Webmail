@@ -24,8 +24,18 @@ export const WEBMAIL = "urn:uwumail:jmap:webmail";
 /** Our own: a mail's remote pictures, fetched by the server so their senders never see the reader. */
 export const REMOTE = "urn:uwumail:jmap:remote";
 
+/** An account of the session: the person's own, or one somebody shares folders from. */
+export interface JmapAccount {
+  name: string;
+  isPersonal: boolean;
+  isReadOnly: boolean;
+  accountCapabilities: Record<string, unknown>;
+}
+
 export interface JmapSession {
   accountId: string;
+  /** Every account of the session by id, the own one included. */
+  accounts: Record<string, JmapAccount>;
   apiUrl: string;
   downloadUrl: string;
   uploadUrl: string;
@@ -38,7 +48,7 @@ export type Invocation = [string, Record<string, unknown>, string];
 
 interface RawSession {
   primaryAccounts?: Record<string, string>;
-  accounts?: Record<string, unknown>;
+  accounts?: Record<string, Partial<JmapAccount>>;
   apiUrl: string;
   downloadUrl: string;
   uploadUrl: string;
@@ -82,8 +92,20 @@ export async function loadJmapSession(): Promise<JmapSession> {
   const raw = (await response.json()) as RawSession;
   const accountId = raw.primaryAccounts?.[MAIL] ?? Object.keys(raw.accounts ?? {})[0];
   if (!accountId) throw new BackendError("not_supported", "This login has no mailbox on the server.");
+  const accounts = Object.fromEntries(
+    Object.entries(raw.accounts ?? {}).map(([id, account]) => [
+      id,
+      {
+        name: typeof account.name === "string" ? account.name : id,
+        isPersonal: account.isPersonal !== false,
+        isReadOnly: account.isReadOnly === true,
+        accountCapabilities: account.accountCapabilities ?? {},
+      },
+    ]),
+  );
   session = {
     accountId,
+    accounts,
     apiUrl: onOwnOrigin(raw.apiUrl),
     downloadUrl: raw.downloadUrl,
     uploadUrl: onOwnOrigin(raw.uploadUrl),
@@ -101,6 +123,13 @@ export function jmapSession(): JmapSession {
 
 export function supports(capability: string): boolean {
   return capability in jmapSession().capabilities;
+}
+
+/** What the own account says about a capability, e.g. the submission limits; null without it. */
+export function accountCapability<T = Record<string, unknown>>(capability: string): T | null {
+  const current = jmapSession();
+  const value = current.accounts[current.accountId]?.accountCapabilities[capability];
+  return value && typeof value === "object" ? (value as T) : null;
 }
 
 export interface MethodResponse {

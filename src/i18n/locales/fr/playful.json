@@ -67,7 +67,8 @@
     "deletedForever_one": "Parti pour toujours (｡•́︿•̀｡)",
     "deletedForever_many": "{{count}} messages partis pour toujours (｡•́︿•̀｡)",
     "deletedForever_other": "{{count}} messages partis pour toujours (｡•́︿•̀｡)",
-    "sending": "Nyu s'apprête à filer … ✉︎"
+    "sending": "Nyu s'apprête à filer … ✉︎",
+    "scheduled": "Nyu le livrera {{time}} ✉︎"
   },
   "status": {
     "syncing": "Je vais chercher des e-mails tout frais…",

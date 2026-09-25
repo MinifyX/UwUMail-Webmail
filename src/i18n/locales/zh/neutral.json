@@ -16,7 +16,8 @@
       "mail": "邮件",
       "calendar": "日历",
       "contacts": "联系人"
-    }
+    },
+    "scheduled": "定时发送"
   },
   "filter": {
     "all": "全部",
@@ -152,7 +153,22 @@
     "draftLocal": "仅保存在此设备上",
     "signature": "签名",
     "noSignature": "无签名",
-    "editSignatures": "编辑签名…"
+    "editSignatures": "编辑签名…",
+    "later": {
+      "open": "稍后发送",
+      "title": "稍后发送",
+      "laterToday": "今晚",
+      "tomorrowMorning": "明天上午",
+      "tomorrowAfternoon": "明天下午",
+      "mondayMorning": "周一上午",
+      "pick": "选择日期和时间",
+      "schedule": "定时",
+      "problem": {
+        "invalid": "请选择日期和时间。",
+        "tooSoon": "请选择至少几分钟之后的时间。",
+        "tooFar": "你的服务器最多保留邮件 {{days}} 天。"
+      }
+    }
   },
   "toast": {
     "sent": "邮件已发送",
@@ -182,8 +198,9 @@
     "undo": "撤销",
     "sendUndone": "已停止发送，邮件已重新打开。",
     "undoTooLate": "太迟了——邮件已经发出。",
-    "sendFailedKept": "邮件未能发送，仍保留在你这里。{{reason}}",
-    "sending": "正在发送邮件…"
+    "sending": "正在发送邮件…",
+    "scheduled": "将于 {{time}} 发送",
+    "undoFailed": "无法撤回邮件。{{reason}}"
   },
   "status": {
     "syncing": "正在检查邮件",
@@ -256,7 +273,7 @@
     "sendersFromServer": "此邮箱可用于发信的地址。它们由服务器管理，新地址需在门户中创建。",
     "manageAddresses": "在门户中管理地址",
     "undoSend": "撤销发送",
-    "undoSendDesc": "发送后还能撤回邮件的时长。在此期间，邮件会作为草稿在此标签页中等待。如果你在这段时间内关闭标签页，邮件不会发送，而是保留在草稿中。",
+    "undoSendDesc": "发送后还能撤回邮件的时长。在此期间服务器会暂存邮件，即使你关闭此页面也一样。",
     "undoSendOff": "关闭",
     "seconds_other": "{{count}} 秒",
     "signatures": "签名",
@@ -836,5 +853,14 @@
       "bookCreated": "已创建通讯录“{{name}}”",
       "bookDeleted": "已删除通讯录“{{name}}”"
     }
+  },
+  "scheduled": {
+    "title": "定时邮件",
+    "desc": "即使关闭此页面，服务器也会在你选择的时间发送它们。",
+    "empty": "没有等待发送的邮件。",
+    "to": "收件人：{{names}}",
+    "edit": "编辑",
+    "stop": "不发送",
+    "stopped": "未发送。邮件已回到草稿。"
   }
 }

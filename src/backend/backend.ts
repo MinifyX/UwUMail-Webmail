@@ -19,7 +19,9 @@ import type {
   MailtoDraft,
   MovedMessage,
   OutgoingMessage,
-  QueuedSend,
+  ScheduledSend,
+  SendOptions,
+  SendReceipt,
   SenderPicture,
   Signature,
   ThreadDetail,
@@ -40,7 +42,11 @@ export type BackendErrorCode =
   /** The session ended: the portal has to sign in again. */
   | "signed_out"
   /** An administrator switched the webmail off for this server or this account. */
-  | "webmail_disabled";
+  | "webmail_disabled"
+  /** The mail is already on its way and can't be taken back. */
+  | "too_late"
+  /** The folder's owner didn't allow this (a folder shared with the account). */
+  | "forbidden";
 
 export class BackendError extends Error {
   readonly code: BackendErrorCode;
@@ -110,11 +116,20 @@ export interface Backend {
   inboxMessagesFrom(email: string): Promise<string[]>;
   blockSender(entry: string, accountId?: string): Promise<BlockedSender>;
   unblockSender(sender: BlockedSender): Promise<void>;
-  send(message: OutgoingMessage): Promise<void>;
-  /** Sends after `delaySeconds` unless `cancelSend` comes first; the result arrives as send:done or send:failed. */
-  queueSend(message: OutgoingMessage, delaySeconds: number): Promise<QueuedSend>;
-  /** Takes a queued mail back and returns it for the composer. */
-  cancelSend(sendId: string): Promise<OutgoingMessage>;
+  /**
+   * Hands the mail to the server, which holds it back for the "undo send" window, or until
+   * `options.sendAt`. Resolves once the server has it, not once it went.
+   */
+  send(message: OutgoingMessage, options?: SendOptions): Promise<SendReceipt>;
+  /**
+   * Stops a mail the server still holds back and puts it into Drafts again, for the composer.
+   * Throws `too_late` once it is on its way.
+   */
+  cancelSend(submissionId: string): Promise<DraftContent>;
+  /** Mail the server still holds back, soonest first. */
+  scheduledSends(): Promise<ScheduledSend[]>;
+  /** How far ahead "send later" may go, in seconds; 0 where the server can't hold mail. */
+  maxSendDelay(): Promise<number>;
   /** Saves into the Drafts folder, replacing the draft's earlier version. */
   saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult>;
   deleteDraft(accountId: string, draftKey: string): Promise<void>;

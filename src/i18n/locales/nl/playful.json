@@ -65,7 +65,8 @@
     "messageSaved": "Mail veilig opgeborgen (˘ω˘)",
     "deletedForever_one": "Voor altijd weg (｡•́︿•̀｡)",
     "deletedForever_other": "{{count}} berichten voor altijd weg (｡•́︿•̀｡)",
-    "sending": "Nyu gaat er zo vandoor … ✉︎"
+    "sending": "Nyu gaat er zo vandoor … ✉︎",
+    "scheduled": "Nyu bezorgt hem {{time}} ✉︎"
   },
   "status": {
     "syncing": "Verse mail ophalen…",

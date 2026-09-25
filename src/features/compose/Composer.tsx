@@ -4,6 +4,7 @@ import {
   Bold,
   Check,
   ChevronDown,
+  Clock,
   Italic,
   Link,
   List,
@@ -31,13 +32,13 @@ import { useT } from "@/i18n";
 import { formatSize } from "@/lib/format";
 import { modKey } from "@/lib/platform";
 import { htmlToPlainText, isSafeLinkTarget, quotableHtml } from "@/lib/safeHtml";
-import { useAccounts, useIdentities, useMessageActions, useSignatures } from "@/lib/queries";
-import { useSettings } from "@/state/settings";
+import { useAccounts, useIdentities, useMaxSendDelay, useMessageActions, useSignatures } from "@/lib/queries";
 import { toast } from "@/state/toasts";
 import { useUi, type ComposeRequest } from "@/state/ui";
 import { initialDraft, replyFrom, type DraftState } from "./draft";
 import { RecipientInput } from "./RecipientInput";
-import { undoSend } from "./undoSend";
+import { SendLaterDialog } from "./SendLater";
+import { announceSent } from "./undoSend";
 
 /** Quiet for this long after the last change, then the draft goes to the server. */
 const DRAFT_SAVE_DELAY = 2500;
@@ -80,6 +81,8 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   const [large, setLarge] = useState(false);
   const [attachments, setAttachments] = useState<OutgoingAttachment[]>(request.attachments ?? []);
   const [sending, setSending] = useState(false);
+  const [pickingTime, setPickingTime] = useState(false);
+  const { data: maxSendDelay = 0 } = useMaxSendDelay();
   const [error, setError] = useState<string | null>(null);
   const editor = useRef<HTMLDivElement | null>(null);
   /** A drag that started in the editor itself: moving text, not markup from elsewhere. */
@@ -325,7 +328,8 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
     document.execCommand(command);
   };
 
-  const send = async () => {
+  /** Hands the mail to the server: it goes after the undo window, or at `sendAt`. */
+  const send = async (sendAt?: string) => {
     if (draft.to.length + draft.cc.length + draft.bcc.length === 0) {
       setError(t("compose.noRecipients"));
       return;
@@ -349,10 +353,8 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         attachments,
         draftKey: savedAccount.current === accountId ? draftKey.current : undefined,
       };
-      // With "undo send" the mail waits as a draft in this page, then goes out (lib/sendQueue).
-      const delay = useSettings.getState().undoSendSeconds;
-      const queued = delay > 0 ? await backend().queueSend(message, delay) : null;
-      if (!queued) await backend().send(message);
+      // The server holds it back for the undo window (or until `sendAt`) and says until when.
+      const receipt = await backend().send(message, sendAt ? { sendAt } : {});
       // Written in another mailbox before: sending there doesn't remove that copy.
       if (draftKey.current && savedAccount.current && savedAccount.current !== accountId) {
         void backend()
@@ -361,15 +363,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       }
       clearLocalDraft();
       closeCompose();
-      if (queued) {
-        // It goes out when the toast does; "sent" follows from the backend (send:done).
-        toast(t("toast.sending"), "info", undefined, {
-          duration: delay * 1000,
-          action: { label: t("toast.undo"), run: () => void undoSend(queued.id) },
-        });
-      } else {
-        toast(t("toast.sent"), "success", "sent");
-      }
+      announceSent(receipt, sendAt !== undefined);
       void refresh();
     } catch (reason) {
       finished.current = false;
@@ -656,6 +650,35 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         >
           {sending ? t("compose.sending") : t("compose.send")}
         </Button>
+        {maxSendDelay > 0 && (
+          <>
+            <IconButton
+              icon={Clock}
+              size="sm"
+              label={t("compose.later.open")}
+              disabled={sending}
+              onClick={() => {
+                if (draft.to.length + draft.cc.length + draft.bcc.length === 0) {
+                  setError(t("compose.noRecipients"));
+                  return;
+                }
+                setPickingTime(true);
+              }}
+            />
+            {/* Keys in the dialog are its own: Escape must not shrink the composer behind it. */}
+            <div onKeyDown={(event) => event.stopPropagation()}>
+              <SendLaterDialog
+                open={pickingTime}
+                maxDelay={maxSendDelay}
+                onClose={() => setPickingTime(false)}
+                onPick={(sendAt) => {
+                  setPickingTime(false);
+                  void send(sendAt);
+                }}
+              />
+            </div>
+          </>
+        )}
         <span className="mx-1.5 h-5 w-px bg-line" aria-hidden />
         <IconButton
           icon={Bold}

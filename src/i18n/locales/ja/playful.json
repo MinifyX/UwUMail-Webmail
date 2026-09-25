@@ -63,7 +63,8 @@
     "unsubscribed": "配信を停止しました (≧▽≦) {{name}} からのメールはもう届きません",
     "messageSaved": "メールを大事にしまいました (˘ω˘)",
     "deletedForever_other": "{{count}} 件のメールが永遠に消えました (｡•́︿•̀｡)",
-    "sending": "Nyu がいまから走っていきます… ✉︎"
+    "sending": "Nyu がいまから走っていきます… ✉︎",
+    "scheduled": "Nyu が {{time}} に届けます ✉︎"
   },
   "status": {
     "syncing": "新しいメールを取ってきています…",

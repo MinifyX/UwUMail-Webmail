@@ -16,7 +16,8 @@
       "mail": "E-mails",
       "calendar": "Agenda",
       "contacts": "Contacts"
-    }
+    },
+    "scheduled": "Programmés"
   },
   "filter": {
     "all": "Tous",
@@ -160,7 +161,22 @@
     "draftLocal": "Enregistré uniquement sur cet appareil",
     "signature": "Signature",
     "noSignature": "Aucune signature",
-    "editSignatures": "Modifier les signatures …"
+    "editSignatures": "Modifier les signatures …",
+    "later": {
+      "open": "Envoyer plus tard",
+      "title": "Envoyer plus tard",
+      "laterToday": "Ce soir",
+      "tomorrowMorning": "Demain matin",
+      "tomorrowAfternoon": "Demain après-midi",
+      "mondayMorning": "Lundi matin",
+      "pick": "Choisir une date et une heure",
+      "schedule": "Programmer",
+      "problem": {
+        "invalid": "Choisissez une date et une heure.",
+        "tooSoon": "Choisissez une heure au moins quelques minutes plus tard.",
+        "tooFar": "Votre serveur garde les e-mails au plus {{days}} jours."
+      }
+    }
   },
   "toast": {
     "sent": "Message envoyé",
@@ -196,8 +212,9 @@
     "undo": "Annuler",
     "sendUndone": "Envoi interrompu. L'e-mail est de nouveau ouvert.",
     "undoTooLate": "Trop tard — l'e-mail est déjà en route.",
-    "sendFailedKept": "L'e-mail n'a pas pu être envoyé et reste chez vous. {{reason}}",
-    "sending": "Envoi de l'e-mail …"
+    "sending": "Envoi de l'e-mail …",
+    "scheduled": "Envoi prévu : {{time}}",
+    "undoFailed": "L'e-mail n'a pas pu être repris. {{reason}}"
   },
   "status": {
     "syncing": "Relève des e-mails",
@@ -270,7 +287,7 @@
     "sendersFromServer": "Les adresses depuis lesquelles cette boîte mail peut envoyer. Elles appartiennent au serveur ; les nouvelles se créent dans le portail.",
     "manageAddresses": "Gérer les adresses dans le portail",
     "undoSend": "Annuler l'envoi",
-    "undoSendDesc": "Combien de temps vous pouvez encore reprendre un e-mail envoyé. Pendant ce temps, il attend comme brouillon dans cet onglet. Si vous fermez l'onglet entre-temps, il n'est pas envoyé et reste dans Brouillons.",
+    "undoSendDesc": "Combien de temps vous pouvez encore reprendre un e-mail envoyé. Votre serveur le retient pendant ce temps, même si vous fermez cette page.",
     "undoSendOff": "Désactivé",
     "seconds_one": "{{count}} seconde",
     "seconds_many": "{{count}} s",
@@ -890,5 +907,14 @@
       "bookCreated": "Carnet d'adresses « {{name}} » créé",
       "bookDeleted": "Carnet d'adresses « {{name}} » supprimé"
     }
+  },
+  "scheduled": {
+    "title": "E-mails programmés",
+    "desc": "Votre serveur les envoie à l'heure choisie, même si cette page est fermée.",
+    "empty": "Rien n'attend d'être envoyé.",
+    "to": "À {{names}}",
+    "edit": "Modifier",
+    "stop": "Ne pas envoyer",
+    "stopped": "Non envoyé. L'e-mail est de retour dans Brouillons."
   }
 }

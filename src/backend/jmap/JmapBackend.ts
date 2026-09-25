@@ -10,7 +10,6 @@
 
 import { deviceTimeZone } from "@/lib/calendarDates";
 import { textToHtml } from "@/lib/format";
-import { SendQueue } from "@/lib/sendQueue";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { unsubscribeMail } from "@/lib/unsubscribe";
@@ -36,7 +35,9 @@ import type {
   MailtoDraft,
   MovedMessage,
   OutgoingMessage,
-  QueuedSend,
+  ScheduledSend,
+  SendOptions,
+  SendReceipt,
   SenderPicture,
   Signature,
   ThreadDetail,
@@ -76,6 +77,7 @@ import {
   SIEVE,
   SUBMISSION,
   WEBMAIL,
+  accountCapability,
   call,
   downloadBlob,
   jmapSession,
@@ -99,6 +101,14 @@ import {
   signaturePatch,
   signaturesFrom,
 } from "./userSettings";
+import {
+  maxDelayOf,
+  scheduledFrom,
+  submissionReceipt,
+  submissionSendAt,
+  type JmapCreatedSubmission,
+  type JmapSubmission,
+} from "./submission";
 import {
   toAddresses,
   toFolder,
@@ -305,11 +315,6 @@ export class JmapBackend implements Backend {
   private stopPush: (() => void) | null = null;
   private ready: Promise<void> | null = null;
   private mailtoTaken = false;
-  private sendQueue = new SendQueue({
-    done: (sendId) => this.emit({ type: "send:done", sendId, accountId: this.accountId }),
-    failed: (sendId, message, reason) =>
-      this.emit({ type: "send:failed", sendId, accountId: this.accountId, reason, message }),
-  });
 
   private async start(): Promise<void> {
     if (!this.ready) {
@@ -335,6 +340,7 @@ export class JmapBackend implements Backend {
     this.stopPush = watchPush((changed) => {
       if (changed.Mailbox) void this.loadFolders();
       if (changed.Email || changed.Mailbox) this.emit({ type: "mail:changed", accountId: this.accountId });
+      if (changed.EmailSubmission) this.emit({ type: "scheduled:changed" });
       if (changed.Calendar || changed.CalendarEvent) this.emit({ type: "calendar:changed" });
       if (changed.AddressBook || changed.ContactCard) this.emit({ type: "contacts:changed" });
       if (changed.UserSettings) {
@@ -885,7 +891,12 @@ export class JmapBackend implements Backend {
     return found.id;
   }
 
-  async send(message: OutgoingMessage): Promise<void> {
+  /**
+   * Stores the mail and submits it in one request. The server holds the submission back for the
+   * person's undo window (or until `options.sendAt`) and moves the mail to Sent right away; the
+   * receipt says until when it can still be taken back with `cancelSend`.
+   */
+  async send(message: OutgoingMessage, options: SendOptions = {}): Promise<SendReceipt> {
     await this.start();
     const drafts = this.folderOrFail("drafts");
     const sent = this.folderOrFail("sent");
@@ -896,6 +907,10 @@ export class JmapBackend implements Backend {
       rcptTo: [...message.to, ...message.cc, ...message.bcc].map((address) => ({ email: address.email })),
     };
     if (envelope.rcptTo.length === 0) throw new BackendError("invalid_input", "There is nobody to send this to.");
+    const later = options.sendAt ? { sendAt: submissionSendAt(options.sendAt) } : {};
+    if (later.sendAt && (await this.maxSendDelay()) === 0) {
+      throw new BackendError("not_supported", "This server can't send mail later.");
+    }
 
     const body = await call(
       [
@@ -909,6 +924,7 @@ export class JmapBackend implements Backend {
                 emailId: "#draft",
                 identityId: this.identityIdFor(message.fromEmail, identities),
                 envelope,
+                ...later,
               },
             },
             onSuccessUpdateEmail: {
@@ -925,72 +941,92 @@ export class JmapBackend implements Backend {
       [CORE, MAIL, SUBMISSION],
     );
     throwOnError(responseOf<SetResponse>(body, "e"));
-    throwOnError(responseOf<SetResponse>(body, "s"));
+    const submitted = responseOf<SetResponse>(body, "s");
+    throwOnError(submitted);
+    const created = submitted.created?.send as JmapCreatedSubmission | undefined;
+    if (!created) throw new BackendError("internal", "The server didn't take the mail.");
     // An earlier version of this draft, from another device or a previous save.
     if (message.draftKey) await this.destroyDrafts(message.draftKey, drafts.id);
     await this.loadFolders();
     this.emit({ type: "mail:changed", accountId: this.accountId });
+    const receipt = submissionReceipt(created);
+    if (receipt.pending) this.emit({ type: "scheduled:changed" });
+    return receipt;
   }
 
   /**
-   * Holds a mail back for "undo send". The server sends at once on submission, so the wait
-   * happens in this page (see lib/sendQueue): the mail is saved as a draft first, and that very
-   * draft is submitted when the time is up. Closing the tab meanwhile leaves it in Drafts, unsent.
+   * Stops a held-back mail. The server already moved it to Sent when it took it, so it goes back
+   * into Drafts here, as a draft again, and comes back for the composer.
    */
-  async queueSend(message: OutgoingMessage, delaySeconds: number): Promise<QueuedSend> {
-    await this.start();
-    if (message.to.length + message.cc.length + message.bcc.length === 0) {
-      throw new BackendError("invalid_input", "There is nobody to send this to.");
-    }
-    const saved = await this.storeDraft(message);
-    const waiting = { ...message, draftKey: saved.draftKey };
-    return this.sendQueue.add(waiting, delaySeconds, () => this.submitDraft(saved.emailId, waiting));
-  }
-
-  /** Takes a held-back mail back; its draft stays in the Drafts folder. */
-  async cancelSend(sendId: string): Promise<OutgoingMessage> {
-    try {
-      return this.sendQueue.cancel(sendId);
-    } catch {
-      throw new BackendError("invalid_input", "This mail is already on its way.");
-    }
-  }
-
-  /** Sends a draft that already lies in the Drafts folder and moves it to Sent. */
-  private async submitDraft(emailId: string, message: OutgoingMessage): Promise<void> {
+  async cancelSend(submissionId: string): Promise<DraftContent> {
     await this.start();
     const drafts = this.folderOrFail("drafts");
-    const sent = this.folderOrFail("sent");
-    const identities = await this.listIdentities();
-    const envelope = {
-      mailFrom: { email: message.fromEmail ?? identities.find((i) => i.primary)?.email ?? "" },
-      rcptTo: [...message.to, ...message.cc, ...message.bcc].map((address) => ({ email: address.email })),
-    };
     const body = await call(
       [
+        ["EmailSubmission/get", { accountId: this.accountId, ids: [submissionId], properties: ["id", "emailId"] }, "g"],
         [
           "EmailSubmission/set",
-          {
-            accountId: this.accountId,
-            create: { send: { emailId, identityId: this.identityIdFor(message.fromEmail, identities), envelope } },
-            onSuccessUpdateEmail: {
-              "#send": {
-                [`mailboxIds/${drafts.id}`]: null,
-                [`mailboxIds/${sent.id}`]: true,
-                "keywords/$draft": null,
-              },
-            },
-          },
-          "s",
+          { accountId: this.accountId, update: { [submissionId]: { undoStatus: "canceled" } } },
+          "c",
         ],
       ],
       [CORE, MAIL, SUBMISSION],
     );
-    const submitted = responseOf<SetResponse>(body, "s");
-    throwOnError(submitted);
-    if (!submitted.created?.send) throw new BackendError("internal", "The server didn't take the mail.");
+    const cancelled = responseOf<SetResponse>(body, "c");
+    const problem = cancelled.notUpdated?.[submissionId];
+    if (problem?.type === "cannotUnsend") throw new BackendError("too_late", "This mail is already on its way.");
+    if (problem?.type === "notFound") throw new BackendError("too_late", "This mail is already on its way.");
+    throwOnError(cancelled);
+    const emailId = responseOf<GetResponse<JmapSubmission>>(body, "g").list[0]?.emailId;
+    if (!emailId) throw new BackendError("not_found", "The mail is gone.");
+    throwOnError(
+      await one<SetResponse>("Email/set", {
+        update: { [emailId]: { mailboxIds: { [drafts.id]: true }, "keywords/$draft": true, "keywords/$seen": true } },
+      }),
+    );
     await this.loadFolders();
     this.emit({ type: "mail:changed", accountId: this.accountId });
+    this.emit({ type: "scheduled:changed" });
+    return this.openDraft(emailId);
+  }
+
+  async scheduledSends(): Promise<ScheduledSend[]> {
+    await this.start();
+    if ((await this.maxSendDelay()) === 0) return [];
+    const accountId = this.accountId;
+    const body = await call(
+      [
+        ["EmailSubmission/query", { accountId, filter: { undoStatus: "pending" } }, "q"],
+        [
+          "EmailSubmission/get",
+          {
+            accountId,
+            "#ids": { resultOf: "q", name: "EmailSubmission/query", path: "/ids" },
+            properties: ["id", "emailId", "sendAt", "undoStatus", "envelope"],
+          },
+          "g",
+        ],
+        [
+          "Email/get",
+          {
+            accountId,
+            "#ids": { resultOf: "g", name: "EmailSubmission/get", path: "/list/*/emailId" },
+            properties: ["id", "subject", "to"],
+          },
+          "e",
+        ],
+      ],
+      [CORE, MAIL, SUBMISSION],
+    );
+    return scheduledFrom(
+      responseOf<GetResponse<JmapSubmission>>(body, "g").list,
+      responseOf<GetResponse<JmapEmail>>(body, "e").list,
+    );
+  }
+
+  async maxSendDelay(): Promise<number> {
+    await this.start();
+    return maxDelayOf(accountCapability(SUBMISSION));
   }
 
   /** Every draft carrying this key, newest first. */

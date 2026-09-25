@@ -16,7 +16,8 @@
       "mail": "Mail",
       "calendar": "Kalender",
       "contacts": "Kontakte"
-    }
+    },
+    "scheduled": "Geplant"
   },
   "filter": {
     "all": "Alle",
@@ -156,7 +157,22 @@
     "draftLocal": "Nur auf diesem Gerät gespeichert",
     "signature": "Signatur",
     "noSignature": "Keine Signatur",
-    "editSignatures": "Signaturen bearbeiten …"
+    "editSignatures": "Signaturen bearbeiten …",
+    "later": {
+      "open": "Später senden",
+      "title": "Später senden",
+      "laterToday": "Heute Abend",
+      "tomorrowMorning": "Morgen früh",
+      "tomorrowAfternoon": "Morgen Nachmittag",
+      "mondayMorning": "Montag früh",
+      "pick": "Datum und Uhrzeit wählen",
+      "schedule": "Planen",
+      "problem": {
+        "invalid": "Wähle ein Datum und eine Uhrzeit.",
+        "tooSoon": "Wähle eine Zeit, die mindestens ein paar Minuten entfernt ist.",
+        "tooFar": "Dein Server hält Mails höchstens {{days}} Tage zurück."
+      }
+    }
   },
   "toast": {
     "sent": "Mail gesendet",
@@ -189,8 +205,9 @@
     "undo": "Rückgängig",
     "sendUndone": "Senden gestoppt. Die Mail ist wieder offen.",
     "undoTooLate": "Zu spät — die Mail ist schon unterwegs.",
-    "sendFailedKept": "Die Mail konnte nicht gesendet werden und liegt weiter bei dir. {{reason}}",
-    "sending": "Mail wird gesendet …"
+    "sending": "Mail wird gesendet …",
+    "scheduled": "Wird gesendet: {{time}}",
+    "undoFailed": "Die Mail konnte nicht zurückgeholt werden. {{reason}}"
   },
   "status": {
     "syncing": "Suche nach neuen Mails",
@@ -263,7 +280,7 @@
     "sendersFromServer": "Die Adressen, von denen dieses Postfach senden darf. Sie gehören zum Server; neue legst du im Portal an.",
     "manageAddresses": "Adressen im Portal verwalten",
     "undoSend": "Senden rückgängig machen",
-    "undoSendDesc": "So lange kannst du eine gesendete Mail noch zurückholen. Sie wartet dafür als Entwurf in diesem Tab. Schließt du den Tab in der Zeit, geht sie nicht raus und bleibt in den Entwürfen.",
+    "undoSendDesc": "So lange kannst du eine gesendete Mail noch zurückholen. Dein Server hält sie so lange zurück, auch wenn du diese Seite schließt.",
     "undoSendOff": "Aus",
     "seconds_one": "{{count}} Sekunde",
     "seconds_other": "{{count}} s",
@@ -863,5 +880,14 @@
       "bookCreated": "Adressbuch „{{name}}“ angelegt",
       "bookDeleted": "Adressbuch „{{name}}“ gelöscht"
     }
+  },
+  "scheduled": {
+    "title": "Geplante Mails",
+    "desc": "Dein Server sendet sie zur gewählten Zeit, auch wenn diese Seite geschlossen ist.",
+    "empty": "Nichts wartet aufs Senden.",
+    "to": "An {{names}}",
+    "edit": "Bearbeiten",
+    "stop": "Nicht senden",
+    "stopped": "Nicht gesendet. Die Mail liegt wieder in den Entwürfen."
   }
 }
