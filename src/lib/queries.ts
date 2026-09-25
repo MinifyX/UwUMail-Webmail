@@ -50,11 +50,11 @@ export function useSignatures() {
   return useQuery({ queryKey: queryKeys.signatures, queryFn: () => backend().listSignatures() });
 }
 
-/** Whether this server keeps signatures at all (its settings extension). */
-export function useSignaturesAvailable() {
+/** Where this server keeps signatures: on the sending addresses, in the settings extension, or not at all. */
+export function useSignatureStore() {
   return useQuery({
-    queryKey: ["signaturesAvailable"],
-    queryFn: () => backend().signaturesAvailable(),
+    queryKey: ["signatureStore"],
+    queryFn: () => backend().signatureStore(),
     staleTime: Infinity,
   });
 }
@@ -332,6 +332,7 @@ export function useBackendEvents() {
           break;
         case "settings:changed":
           void client.invalidateQueries({ queryKey: queryKeys.signatures });
+          void client.invalidateQueries({ queryKey: queryKeys.identities });
           break;
         case "calendar:changed":
           void client.invalidateQueries({ queryKey: queryKeys.calendars });

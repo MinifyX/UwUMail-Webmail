@@ -305,7 +305,9 @@
     "linkDomainsEmpty": "暂无。你可以在打开链接时直接添加网站。",
     "linkDomainsInactive": "目前所有链接都会直接打开，无需询问。",
     "forgetLinkDomain": "移除 {{domain}}",
-    "rules": "规则"
+    "rules": "规则",
+    "signaturesPerAddressDesc": "每个发件地址一个，可使用粗体、链接和图片，会添加到新邮件和回复中。它保存在你的邮件服务器上，因此门户和你的其他邮件应用都使用同一个。",
+    "addSignature": "添加签名"
   },
   "theme": {
     "system": "系统",

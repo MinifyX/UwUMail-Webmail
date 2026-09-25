@@ -7,7 +7,7 @@ import { Button, IconButton } from "@/components/ui/Button";
 import { Select, TextInput, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { pictureAsDataUrl } from "@/lib/images";
-import { queryKeys, useIdentities, useSignatures, useSignaturesAvailable } from "@/lib/queries";
+import { queryKeys, useIdentities, useSignatureStore, useSignatures } from "@/lib/queries";
 import { isSafeLinkTarget } from "@/lib/safeHtml";
 import { cleanSignatureHtml, SIGNATURE_MAX_BYTES, signatureValue, valueSize } from "@/lib/signatures";
 import { toast } from "@/state/toasts";
@@ -19,24 +19,27 @@ import { Row } from "./Row";
 const PICTURE_HEADROOM = 2048;
 
 /**
- * Signatures per sender address. They live in the server's shared settings, so the UwUMail app
- * sees the same ones; a server without that extension keeps none, and this says so instead.
+ * Signatures per sender address. A current server keeps one on each address (its `Identity`), so
+ * the portal and every mail program of the account see the same one; older servers kept several
+ * per address in the shared settings, next to the app's. Without either there are none, and this
+ * says so instead.
  */
 export function Signatures() {
   const { t } = useT();
-  const { data: available } = useSignaturesAvailable();
-  if (available === undefined) return null;
-  if (!available) {
+  const { data: store } = useSignatureStore();
+  if (store === undefined) return null;
+  if (store === null) {
     return (
       <Row label={t("settings.signatures")} description={t("settings.signaturesUnavailable")}>
         {null}
       </Row>
     );
   }
-  return <SignatureList />;
+  return <SignatureList perAddress={store === "identity"} />;
 }
 
-function SignatureList() {
+/** `perAddress`: one signature for each address, for new mail and replies alike. */
+function SignatureList({ perAddress }: { perAddress: boolean }) {
   const { t } = useT();
   const client = useQueryClient();
   const { data: identities = [] } = useIdentities();
@@ -56,7 +59,10 @@ function SignatureList() {
   const failed = (reason: unknown) => toast(reason instanceof Error ? reason.message : String(reason), "error");
 
   return (
-    <Row label={t("settings.signatures")} description={t("settings.signaturesDesc")}>
+    <Row
+      label={t("settings.signatures")}
+      description={t(perAddress ? "settings.signaturesPerAddressDesc" : "settings.signaturesDesc")}
+    >
       {identities.length > 1 && (
         <Select
           aria-label={t("settings.signatureFor")}
@@ -78,6 +84,7 @@ function SignatureList() {
         <SignatureEditor
           key={editing.id || "new"}
           signature={editing}
+          simple={perAddress}
           onCancel={() => setEditing(null)}
           onSave={async (signature) => {
             try {
@@ -101,9 +108,11 @@ function SignatureList() {
               {own.map((signature) => (
                 <li key={signature.id} className="rounded-2xl border border-hairline p-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold">{signature.name}</span>
-                    {signature.forNew && <Badge>{t("settings.signatureDefaultNew")}</Badge>}
-                    {signature.forReplies && <Badge>{t("settings.signatureDefaultReplies")}</Badge>}
+                    <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold">
+                      {perAddress ? signature.email : signature.name}
+                    </span>
+                    {!perAddress && signature.forNew && <Badge>{t("settings.signatureDefaultNew")}</Badge>}
+                    {!perAddress && signature.forReplies && <Badge>{t("settings.signatureDefaultReplies")}</Badge>}
                     <IconButton
                       icon={Pencil}
                       size="sm"
@@ -126,18 +135,27 @@ function SignatureList() {
               ))}
             </ul>
           )}
-          <Button
-            size="sm"
-            variant="ghost"
-            icon={Plus}
-            className="self-start"
-            disabled={!email}
-            onClick={() =>
-              setEditing({ id: "", email, name: "", html: "", forNew: own.length === 0, forReplies: own.length === 0 })
-            }
-          >
-            {t("settings.newSignature")}
-          </Button>
+          {(!perAddress || own.length === 0) && (
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={Plus}
+              className="self-start"
+              disabled={!email}
+              onClick={() =>
+                setEditing({
+                  id: "",
+                  email,
+                  name: "",
+                  html: "",
+                  forNew: perAddress || own.length === 0,
+                  forReplies: perAddress || own.length === 0,
+                })
+              }
+            >
+              {t(perAddress ? "settings.addSignature" : "settings.newSignature")}
+            </Button>
+          )}
         </>
       )}
     </Row>
@@ -152,10 +170,13 @@ function Badge({ children }: { children: string }) {
 
 function SignatureEditor({
   signature,
+  simple,
   onSave,
   onCancel,
 }: {
   signature: Signature;
+  /** One signature per address: no name, used for new mail and replies alike. */
+  simple: boolean;
   onSave: (signature: Signature) => Promise<void>;
   onCancel: () => void;
 }) {
@@ -203,14 +224,16 @@ function SignatureEditor({
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-line p-3">
-      <TextInput
-        aria-label={t("settings.signatureName")}
-        placeholder={t("settings.signatureNamePlaceholder")}
-        value={name}
-        maxLength={100}
-        onChange={(event) => setName(event.target.value)}
-        className="h-10"
-      />
+      {!simple && (
+        <TextInput
+          aria-label={t("settings.signatureName")}
+          placeholder={t("settings.signatureNamePlaceholder")}
+          value={name}
+          maxLength={100}
+          onChange={(event) => setName(event.target.value)}
+          className="h-10"
+        />
+      )}
       <div className="overflow-hidden rounded-xl border border-line">
         <div className="flex items-center gap-1 border-b border-hairline bg-canvas px-1.5 py-1">
           <IconButton
@@ -295,8 +318,12 @@ function SignatureEditor({
           className="min-h-28 px-3 py-2 text-[14px] leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_img]:inline-block [&_img]:max-w-full [&_p]:min-h-[1.4em]"
         />
       </div>
-      <Toggle checked={forNew} onChange={setForNew} label={t("settings.signatureForNew")} />
-      <Toggle checked={forReplies} onChange={setForReplies} label={t("settings.signatureForReplies")} />
+      {!simple && (
+        <>
+          <Toggle checked={forNew} onChange={setForNew} label={t("settings.signatureForNew")} />
+          <Toggle checked={forReplies} onChange={setForReplies} label={t("settings.signatureForReplies")} />
+        </>
+      )}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onCancel}>
           {t("common.cancel")}

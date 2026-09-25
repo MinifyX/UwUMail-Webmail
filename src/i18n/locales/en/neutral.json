@@ -313,7 +313,9 @@
     "linkDomainsEmpty": "None yet. You add sites right when you open a link.",
     "linkDomainsInactive": "Right now every link opens without asking.",
     "forgetLinkDomain": "Remove {{domain}}",
-    "rules": "Rules"
+    "rules": "Rules",
+    "signaturesPerAddressDesc": "One per sender address, with bold, links and pictures, added to new mail and replies. It's kept on your mail server, so the portal and your other mail apps use the same one.",
+    "addSignature": "Add signature"
   },
   "theme": {
     "system": "System",

@@ -321,7 +321,9 @@
     "linkDomainsEmpty": "Aucun pour l'instant. Vous ajoutez des sites directement en ouvrant un lien.",
     "linkDomainsInactive": "Pour l'instant, chaque lien s'ouvre sans demander.",
     "forgetLinkDomain": "Retirer {{domain}}",
-    "rules": "Règles"
+    "rules": "Règles",
+    "signaturesPerAddressDesc": "Une par adresse d'expéditeur, avec gras, liens et images, ajoutée aux nouveaux e-mails et aux réponses. Elle est conservée sur votre serveur de messagerie : le portail et vos autres applications de messagerie utilisent la même.",
+    "addSignature": "Ajouter une signature"
   },
   "theme": {
     "system": "Système",

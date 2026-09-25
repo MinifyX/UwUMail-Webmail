@@ -305,7 +305,9 @@
     "linkDomainsEmpty": "まだありません。サイトはリンクを開くときに直接追加できます。",
     "linkDomainsInactive": "現在、すべてのリンクを確認せずに開きます。",
     "forgetLinkDomain": "{{domain}} を削除",
-    "rules": "ルール"
+    "rules": "ルール",
+    "signaturesPerAddressDesc": "送信元アドレスごとに 1 つ。太字・リンク・画像が使え、新規メールと返信に追加されます。メールサーバーに保存されるので、ポータルや他のメールアプリでも同じものが使われます。",
+    "addSignature": "署名を追加"
   },
   "theme": {
     "system": "システム",

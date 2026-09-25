@@ -313,7 +313,9 @@
     "linkDomainsEmpty": "Noch keine. Du fügst Seiten direkt beim Öffnen eines Links hinzu.",
     "linkDomainsInactive": "Gerade öffnen alle Links ohne Nachfrage.",
     "forgetLinkDomain": "{{domain}} entfernen",
-    "rules": "Regeln"
+    "rules": "Regeln",
+    "signaturesPerAddressDesc": "Eine pro Absenderadresse, mit Fett, Links und Bildern, für neue Mails und Antworten. Sie liegt auf deinem Mailserver, also nutzen das Portal und deine anderen Mail-Apps dieselbe.",
+    "addSignature": "Signatur hinzufügen"
   },
   "theme": {
     "system": "System",

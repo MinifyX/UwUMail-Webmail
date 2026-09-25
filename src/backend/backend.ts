@@ -48,6 +48,8 @@ export type BackendErrorCode =
   /** The folder's owner didn't allow this (a folder shared with the account). */
   | "forbidden";
 
+export type SignatureStore = "identity" | "settings" | null;
+
 export class BackendError extends Error {
   readonly code: BackendErrorCode;
 
@@ -74,8 +76,11 @@ export interface Backend {
   listAccounts(): Promise<Account[]>;
   /** The mailbox's own address first, then the aliases the server knows. */
   listIdentities(): Promise<Identity[]>;
-  /** Whether the server keeps signatures (its settings extension); without it there are none. */
-  signaturesAvailable(): Promise<boolean>;
+  /**
+   * Where signatures live: on the sending addresses (`Identity` signatures, one per address), in
+   * the settings extension (several per address, older servers), or nowhere.
+   */
+  signatureStore(): Promise<SignatureStore>;
   /** Whether the server keeps the account's settings (its settings extension) for the settings sync. */
   userSettingsAvailable(): Promise<boolean>;
   /** The account's shared settings, see lib/settingsSync. */
@@ -83,7 +88,10 @@ export interface Backend {
   /** Sets keys (`null` removes); with `ifInState` only if nothing was written since. */
   saveUserSettings(patch: Record<string, unknown>, ifInState?: string): Promise<SaveOutcome>;
   listSignatures(): Promise<Signature[]>;
-  /** Creates the signature when its id is empty. Taking a default for an address takes it from the others. */
+  /**
+   * Creates the signature when its id is empty. Taking a default for an address takes it from the
+   * others. With identity signatures, sets the one signature of `signature.email`.
+   */
   saveSignature(signature: Signature): Promise<Signature>;
   deleteSignature(signatureId: string): Promise<void>;
   syncNow(accountId?: string): Promise<void>;

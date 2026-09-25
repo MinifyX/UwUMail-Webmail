@@ -10,10 +10,11 @@
 
 import { deviceTimeZone } from "@/lib/calendarDates";
 import { textToHtml } from "@/lib/format";
+import { cleanSignatureHtml } from "@/lib/signatures";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { unsubscribeMail } from "@/lib/unsubscribe";
-import { BackendError, type Backend } from "../backend";
+import { BackendError, type Backend, type SignatureStore } from "../backend";
 import type {
   Account,
   AddressBookInfo,
@@ -101,6 +102,14 @@ import {
   signaturePatch,
   signaturesFrom,
 } from "./userSettings";
+import {
+  IDENTITY_SIGNATURE_MAX_BYTES,
+  hasIdentitySignatures,
+  identitySignature,
+  identitySignaturePatch,
+  signatureMigration,
+  type JmapIdentityWithSignature,
+} from "./identitySignatures";
 import {
   maxDelayOf,
   scheduledFrom,
@@ -200,11 +209,7 @@ interface SetResponse {
   notDestroyed?: Record<string, { type: string; description?: string }>;
 }
 
-interface JmapIdentity {
-  id: string;
-  name: string;
-  email: string;
-}
+type JmapIdentity = JmapIdentityWithSignature;
 
 interface JmapSenderEntry {
   id: string;
@@ -311,6 +316,7 @@ export class JmapBackend implements Backend {
   private folders: Folder[] = [];
   private folderMap = new Map<string, Folder>();
   private identities: Identity[] | null = null;
+  private rawIdentities: JmapIdentity[] | null = null;
   private listeners = new Set<(event: BackendEvent) => void>();
   private stopPush: (() => void) | null = null;
   private ready: Promise<void> | null = null;
@@ -343,6 +349,10 @@ export class JmapBackend implements Backend {
       if (changed.EmailSubmission) this.emit({ type: "scheduled:changed" });
       if (changed.Calendar || changed.CalendarEvent) this.emit({ type: "calendar:changed" });
       if (changed.AddressBook || changed.ContactCard) this.emit({ type: "contacts:changed" });
+      if (changed.Identity) {
+        this.forgetIdentities();
+        this.emit({ type: "settings:changed", accountId: this.accountId });
+      }
       if (changed.UserSettings) {
         this.emit({ type: "settings:changed", accountId: this.accountId, state: changed.UserSettings });
       }
@@ -384,11 +394,17 @@ export class JmapBackend implements Backend {
   }
 
   async listIdentities(): Promise<Identity[]> {
+    return (await this.loadIdentities()).identities;
+  }
+
+  /** The sending addresses, with their signatures as the server hands them out. */
+  private async loadIdentities(): Promise<{ identities: Identity[]; raw: JmapIdentity[] }> {
     await this.start();
-    if (this.identities) return this.identities;
+    if (this.identities && this.rawIdentities) return { identities: this.identities, raw: this.rawIdentities };
     const response = await one<GetResponse<JmapIdentity>>("Identity/get", { ids: null }, [CORE, SUBMISSION]);
     const { account } = (await import("../server")).currentSession();
     const own = account.login.toLowerCase();
+    this.rawIdentities = response.list;
     this.identities = response.list
       .map((identity) => ({
         id: identity.id,
@@ -399,13 +415,17 @@ export class JmapBackend implements Backend {
         fromServer: true,
       }))
       .sort((a, b) => Number(b.primary) - Number(a.primary) || a.email.localeCompare(b.email));
-    return this.identities;
+    return { identities: this.identities, raw: this.rawIdentities };
   }
 
-  /** Signatures live in the server's settings extension, shared with the app. */
-  async signaturesAvailable(): Promise<boolean> {
-    await this.start();
-    return supports(SETTINGS);
+  /**
+   * Signatures are the sending addresses' own (`Identity` signatures) on servers that keep them;
+   * older ones only had the settings extension, where the app keeps several per address.
+   */
+  async signatureStore(): Promise<SignatureStore> {
+    const { raw } = await this.loadIdentities();
+    if (hasIdentitySignatures(raw)) return "identity";
+    return supports(SETTINGS) ? "settings" : null;
   }
 
   async userSettingsAvailable(): Promise<boolean> {
@@ -424,14 +444,67 @@ export class JmapBackend implements Backend {
   }
 
   async listSignatures(): Promise<Signature[]> {
-    if (!(await this.signaturesAvailable())) return [];
-    return signaturesFrom((await loadUserSettings()).values);
+    const store = await this.signatureStore();
+    if (store === "settings") return signaturesFrom((await loadUserSettings()).values);
+    if (store !== "identity") return [];
+    await this.migrateSignatures();
+    const { raw, identities } = await this.loadIdentities();
+    const order = new Map(identities.map((identity, index) => [identity.id, index]));
+    return raw
+      .map(identitySignature)
+      .filter((signature): signature is Signature => signature !== null)
+      .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
   }
 
+  private migration: Promise<void> | null = null;
+
+  /**
+   * Once per account and browser: signatures the webmail kept in the settings extension go to
+   * the addresses that have none of their own yet. The settings keys stay for the app.
+   */
+  private migrateSignatures(): Promise<void> {
+    this.migration ??= (async () => {
+      const flag = `uwu-signatures-migrated:${this.accountId}`;
+      try {
+        if (localStorage.getItem(flag) || !supports(SETTINGS)) return;
+        const { raw } = await this.loadIdentities();
+        const plan = signatureMigration(raw, signaturesFrom((await loadUserSettings()).values));
+        if (Object.keys(plan).length > 0) {
+          const update = Object.fromEntries(
+            Object.entries(plan).map(([id, html]) => [id, identitySignaturePatch(cleanSignatureHtml(html))]),
+          );
+          throwOnError(await one<SetResponse>("Identity/set", { update }, [CORE, SUBMISSION]));
+          this.forgetIdentities();
+        }
+        localStorage.setItem(flag, new Date().toISOString());
+      } catch {
+        // Tried again with the next page load; the signatures are still where they were.
+      }
+    })();
+    return this.migration;
+  }
+
+  private forgetIdentities(): void {
+    this.identities = null;
+    this.rawIdentities = null;
+  }
+
+  /** On the address the signature is for; `id` doesn't matter, an address has exactly one. */
   async saveSignature(signature: Signature): Promise<Signature> {
-    if (!(await this.signaturesAvailable())) {
-      throw new BackendError("not_supported", "This server can't keep signatures.");
+    const store = await this.signatureStore();
+    if (store === "identity") {
+      const { identities } = await this.loadIdentities();
+      const identity = identities.find((entry) => entry.email.toLowerCase() === signature.email.toLowerCase());
+      if (!identity) throw new BackendError("not_found", "That sender address is gone.");
+      const patch = identitySignaturePatch(cleanSignatureHtml(signature.html));
+      if (new TextEncoder().encode(patch.htmlSignature).length > IDENTITY_SIGNATURE_MAX_BYTES) {
+        throw new BackendError("invalid_input", "The signature is too big. Try a smaller picture.");
+      }
+      throwOnError(await one<SetResponse>("Identity/set", { update: { [identity.id]: patch } }, [CORE, SUBMISSION]));
+      this.forgetIdentities();
+      return { ...signature, id: identity.id, forNew: true, forReplies: true };
     }
+    if (store !== "settings") throw new BackendError("not_supported", "This server can't keep signatures.");
     const saved = { ...signature, id: signature.id || newSignatureId() };
     // Read right before writing, so the defaults of the address's other signatures are current.
     const existing = signaturesFrom((await loadUserSettings()).values);
@@ -440,8 +513,18 @@ export class JmapBackend implements Backend {
   }
 
   async deleteSignature(signatureId: string): Promise<void> {
-    if (!(await this.signaturesAvailable())) return;
-    await patchUserSettings({ [signatureKey(signatureId)]: null });
+    const store = await this.signatureStore();
+    if (store === "identity") {
+      throwOnError(
+        await one<SetResponse>("Identity/set", { update: { [signatureId]: identitySignaturePatch("") } }, [
+          CORE,
+          SUBMISSION,
+        ]),
+      );
+      this.forgetIdentities();
+      return;
+    }
+    if (store === "settings") await patchUserSettings({ [signatureKey(signatureId)]: null });
   }
 
   async syncNow(): Promise<void> {

@@ -313,7 +313,9 @@
     "linkDomainsEmpty": "Nog geen. Je voegt sites direct toe wanneer je een link opent.",
     "linkDomainsInactive": "Op dit moment gaat elke link open zonder te vragen.",
     "forgetLinkDomain": "{{domain}} verwijderen",
-    "rules": "Regels"
+    "rules": "Regels",
+    "signaturesPerAddressDesc": "Eén per afzenderadres, met vet, links en afbeeldingen, voor nieuwe mail en antwoorden. Hij staat op je mailserver, dus het portaal en je andere mailapps gebruiken dezelfde.",
+    "addSignature": "Handtekening toevoegen"
   },
   "theme": {
     "system": "Systeem",

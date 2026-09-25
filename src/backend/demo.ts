@@ -105,7 +105,8 @@ export class DemoBackend implements Backend {
   private blocked: BlockedSender[] = [];
   private signatures: Signature[] = [
     {
-      id: "sig-demo",
+      // Like the server's identity signatures: one per address, under the address's id.
+      id: DEMO_ACCOUNTS[0]!.id,
       email: DEMO_ACCOUNTS[0]!.email,
       name: lang() === "de" ? "Lang" : "Long",
       html:
@@ -156,8 +157,9 @@ export class DemoBackend implements Backend {
     return structuredClone(own.flatMap((o) => [o, ...this.identities.filter((i) => i.accountId === o.accountId)]));
   }
 
-  async signaturesAvailable() {
-    return true;
+  /** The demo plays a server that keeps one signature per sending address. */
+  async signatureStore() {
+    return "identity" as const;
   }
 
   /** The demo plays a server with the settings extension, kept in memory like everything else. */
@@ -193,19 +195,15 @@ export class DemoBackend implements Backend {
     return structuredClone(this.signatures);
   }
 
-  /** Kept in memory only, like everything in the demo. */
+  /** Kept in memory only, like everything in the demo: the one signature of its address. */
   async saveSignature(signature: Signature) {
     await wait(120);
-    const saved = { ...signature, id: signature.id || `sig-${this.nextId++}` };
-    const email = saved.email.toLowerCase();
-    this.signatures = this.signatures.map((s) =>
-      s.email.toLowerCase() === email && s.id !== saved.id
-        ? { ...s, forNew: saved.forNew ? false : s.forNew, forReplies: saved.forReplies ? false : s.forReplies }
-        : s,
+    const identity = (await this.listIdentities()).find(
+      (entry) => entry.email.toLowerCase() === signature.email.toLowerCase(),
     );
-    const index = this.signatures.findIndex((s) => s.id === saved.id);
-    if (index >= 0) this.signatures[index] = saved;
-    else this.signatures.push(saved);
+    if (!identity) throw new BackendError("not_found", "That sender address is gone.");
+    const saved = { ...signature, id: identity.id, name: identity.name, forNew: true, forReplies: true };
+    this.signatures = [...this.signatures.filter((s) => s.id !== identity.id), saved];
     return structuredClone(saved);
   }
 
