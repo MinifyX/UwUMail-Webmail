@@ -13,7 +13,17 @@ import {
 } from "@/lib/calendarDates";
 import { expandRecurrence, weekdayOf } from "@/lib/recurrence";
 import { BackendError } from "./backend";
-import type { CalendarInfo, CalendarOccurrence, EventDeleteScope, EventInput, Recurrence } from "./types";
+import type {
+  CalendarInfo,
+  CalendarOccurrence,
+  EventDeleteScope,
+  EventInput,
+  Invitation,
+  MailInvitation,
+  ParticipationStatus,
+  Recurrence,
+  ShareLevel,
+} from "./types";
 
 type Lang = "de" | "en";
 
@@ -30,6 +40,8 @@ interface DemoEvent {
   recurrence: Recurrence | null;
   /** Starts of occurrences taken out of a series. */
   excluded: string[];
+  /** Somebody else's event the demo was invited to. */
+  invitation?: Invitation;
 }
 
 /** Occurrence ids of a series: the event's id and the occurrence's original start. */
@@ -37,7 +49,7 @@ const SEPARATOR = "~";
 
 function sampleCalendars(lang: Lang, accountId: string): CalendarInfo[] {
   const base = { accountId, isVisible: true, mayWrite: true, mayDelete: true };
-  return [
+  const list: CalendarInfo[] = [
     {
       ...base,
       id: "cal-private",
@@ -48,7 +60,18 @@ function sampleCalendars(lang: Lang, accountId: string): CalendarInfo[] {
     },
     { ...base, id: "cal-studio", name: "Studio", color: "#8b5cf6", isDefault: false, sortOrder: 1 },
     { ...base, id: "cal-sport", name: "Sport", color: "#10b981", isDefault: false, sortOrder: 2 },
+    {
+      ...base,
+      id: "cal-leni",
+      name: "Team",
+      color: "#f59e0b",
+      isDefault: false,
+      sortOrder: 3,
+      mayWrite: false,
+      sharedBy: { email: "leni@uwumail.example", name: "Leni" },
+    },
   ];
+  return list.map((calendar) => ({ ...calendar, mayShare: !calendar.sharedBy, sharedBy: calendar.sharedBy ?? null }));
 }
 
 function sampleEvents(lang: Lang): DemoEvent[] {
@@ -161,6 +184,27 @@ function sampleEvents(lang: Lang): DemoEvent[] {
       start: at(-2, "07:00"),
       end: at(-2, "08:00"),
     }),
+    event({
+      id: "ev-standup",
+      calendarId: "cal-leni",
+      title: de ? "Team-Runde" : "Team check-in",
+      start: at(1, "09:30"),
+      end: at(1, "10:00"),
+    }),
+    event({
+      id: "ev-invite",
+      title: de ? "Logo-Besprechung" : "Logo review",
+      location: "Video",
+      start: at(2, "10:00"),
+      end: at(2, "11:00"),
+      // The invitation that came with Emma's mail about the logo draft.
+      invitation: {
+        eventId: "ev-invite",
+        participantKey: "mini",
+        status: "needs-action",
+        organizer: "Emma",
+      },
+    }),
   ];
 }
 
@@ -179,6 +223,36 @@ export class DemoCalendar {
     this.events = sampleEvents(lang);
   }
 
+  /** Like the server: the answer goes into the event (and, for real, to the organizer). */
+  respond(eventId: string, status: ParticipationStatus) {
+    const event = this.events.find((candidate) => candidate.id === eventId);
+    if (!event?.invitation) throw new BackendError("not_found", "That invitation is gone.");
+    event.invitation.status = status;
+    this.changed();
+  }
+
+  /** The invitation the demo's mail with an .ics part belongs to. */
+  invitation(): MailInvitation | null {
+    const event = this.events.find((candidate) => candidate.invitation);
+    if (!event?.invitation) return null;
+    return {
+      ...event.invitation,
+      title: event.title,
+      start: new Date(event.start).toISOString(),
+      allDay: event.allDay,
+      cancelled: false,
+    };
+  }
+
+  share(calendarId: string, personId: string, level: ShareLevel | null) {
+    const calendar = this.calendar(calendarId);
+    const sharedWith = { ...calendar.sharedWith };
+    if (level) sharedWith[personId] = level;
+    else delete sharedWith[personId];
+    calendar.sharedWith = sharedWith;
+    this.changed();
+  }
+
   calendars(): CalendarInfo[] {
     return structuredClone(this.calendarList).sort((a, b) => a.sortOrder - b.sortOrder);
   }
@@ -194,6 +268,8 @@ export class DemoCalendar {
       sortOrder: this.calendarList.length,
       mayWrite: true,
       mayDelete: true,
+      mayShare: true,
+      sharedBy: null,
     };
     this.calendarList.push(calendar);
     this.changed();
@@ -240,8 +316,9 @@ export class DemoCalendar {
         timeZone: null,
         recurrence: event.recurrence ? structuredClone(event.recurrence) : null,
         recurrenceEditable: true,
-        readOnly: !colors.get(event.calendarId)!.mayWrite,
+        readOnly: !colors.get(event.calendarId)!.mayWrite || event.invitation !== undefined,
         color: null,
+        invitation: event.invitation ? { ...event.invitation } : null,
       };
       if (!event.recurrence) {
         if (event.start < to && event.end > from) {

@@ -16,9 +16,11 @@ import type {
   FlagChange,
   Folder,
   Identity,
+  MailInvitation,
   MailtoDraft,
   MovedMessage,
   OutgoingMessage,
+  ParticipationStatus,
   Person,
   ScheduledSend,
   SendOptions,
@@ -174,6 +176,12 @@ export interface Backend {
    */
   updateEvent(eventId: string, input: EventInput, occurrenceStart?: string): Promise<void>;
   deleteEvent(occurrenceId: string, scope: EventDeleteScope): Promise<void>;
+  /** Answers an invitation (the event's `invitation`); the organizer is told. */
+  respondToInvitation(eventId: string, participantKey: string, status: ParticipationStatus): Promise<void>;
+  /** The invitation a mail carries, as it sits in the calendar; null when there is none. */
+  mailInvitation(messageId: string): Promise<MailInvitation | null>;
+  /** Shares a calendar with a person at a level; `null` stops sharing it with them. */
+  shareCalendar(calendarId: string, personId: string, level: ShareLevel | null): Promise<void>;
 
   /** Whether the server filters incoming mail with rules (JMAP Sieve); without an id, whether any mailbox does. */
   mailRulesAvailable(accountId?: string): Promise<boolean>;

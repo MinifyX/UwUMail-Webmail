@@ -34,10 +34,12 @@ import type {
   Folder,
   FolderRights,
   Identity,
+  MailInvitation,
   MailtoDraft,
   MovedMessage,
   Message,
   OutgoingMessage,
+  ParticipationStatus,
   Person,
   ScheduledSend,
   SendOptions,
@@ -794,6 +796,23 @@ export class DemoBackend implements Backend {
   }
 
   /** The demo keeps every time in the viewer's zone, so there is nothing to convert. */
+  async respondToInvitation(eventId: string, _participantKey: string, status: ParticipationStatus) {
+    await wait(200);
+    this.calendar.respond(eventId, status);
+  }
+
+  async mailInvitation(messageId: string): Promise<MailInvitation | null> {
+    await wait(120);
+    const message = this.messages.find((m) => m.id === messageId);
+    const carries = message?.attachments.some((a) => a.mimeType.startsWith("text/calendar"));
+    return carries ? this.calendar.invitation() : null;
+  }
+
+  async shareCalendar(calendarId: string, personId: string, level: ShareLevel | null) {
+    await wait(150);
+    this.calendar.share(calendarId, personId, level);
+  }
+
   async calendarEvents(from: string, to: string) {
     await wait(120);
     return this.calendar.occurrences(from, to);

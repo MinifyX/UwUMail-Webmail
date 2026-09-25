@@ -921,6 +921,32 @@
       "read": "Lezen",
       "write": "Lezen en schrijven",
       "all": "Alles"
-    }
+    },
+    "shareCalendar": "Delen …",
+    "leaveCalendar": "Uit mijn agenda's verwijderen",
+    "leaveCalendarTitle": "‘{{name}}’ uit je agenda's verwijderen?",
+    "leaveCalendarBody": "De agenda blijft van {{name}}. Je ziet hem alleen niet meer, tot hij weer met je gedeeld wordt."
+  },
+  "invitation": {
+    "title": "Uitnodiging",
+    "from": "Uitnodiging van {{name}}",
+    "answer": "Je antwoord",
+    "accepted": "Accepteren",
+    "tentative": "Misschien",
+    "declined": "Afwijzen",
+    "status": {
+      "needs-action": "Je hebt nog niet geantwoord.",
+      "accepted": "Je hebt geaccepteerd.",
+      "tentative": "Je hebt misschien geantwoord.",
+      "declined": "Je hebt afgewezen."
+    },
+    "answered": {
+      "needs-action": "Antwoord ingetrokken",
+      "accepted": "Geaccepteerd. De organisator hoort het.",
+      "tentative": "Misschien geantwoord. De organisator hoort het.",
+      "declined": "Afgewezen. De organisator hoort het."
+    },
+    "failed": "Het antwoord kon niet worden verzonden. {{reason}}",
+    "cancelled": "De organisator heeft deze afspraak geannuleerd."
   }
 }

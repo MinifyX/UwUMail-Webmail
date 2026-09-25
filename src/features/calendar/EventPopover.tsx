@@ -1,4 +1,4 @@
-import { AlignLeft, CalendarDays, Clock, MapPin, Pencil, Repeat, Trash, X } from "lucide-react";
+import { AlignLeft, CalendarDays, Clock, Mail, MapPin, Pencil, Repeat, Trash, X } from "lucide-react";
 import { Fragment, useState } from "react";
 import { Button, IconButton } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/Field";
@@ -6,6 +6,7 @@ import { useT } from "@/i18n";
 import { deviceTimeZone } from "@/lib/calendarDates";
 import { requestOpenLink } from "@/state/links";
 import { describeRecurrence, eventColor, formatWhen } from "./format";
+import { InvitationAnswer, invitationStatusKey } from "./Invitation";
 import { Popover } from "./Popover";
 import { useCalendarUi } from "./state";
 import { useCalendars, useEventActions } from "./useCalendarData";
@@ -101,6 +102,18 @@ export function EventPopover() {
             <p className="text-[13px] text-muted">{formatWhen(occurrence)}</p>
           </div>
         </div>
+        {occurrence.invitation && (
+          <Detail icon={Mail}>
+            <p className="mb-2 text-muted">
+              {occurrence.invitation.organizer
+                ? t("invitation.from", { name: occurrence.invitation.organizer })
+                : t("invitation.title")}
+              {" · "}
+              {t(invitationStatusKey(occurrence.invitation.status))}
+            </p>
+            <InvitationAnswer invitation={occurrence.invitation} compact onAnswered={close} />
+          </Detail>
+        )}
         {occurrence.recurrence && (
           <Detail icon={Repeat}>
             {describeRecurrence(occurrence.recurrence, t)}
@@ -129,7 +142,12 @@ export function EventPopover() {
         {calendar && (
           <Detail icon={CalendarDays}>
             {calendar.name}
-            {occurrence.readOnly && <span className="text-muted"> · {t("calendar.readOnly")}</span>}
+            {calendar.sharedBy && (
+              <span className="text-muted"> · {t("sharing.sharedBy", { name: calendar.sharedBy.name })}</span>
+            )}
+            {occurrence.readOnly && !occurrence.invitation && (
+              <span className="text-muted"> · {t("calendar.readOnly")}</span>
+            )}
           </Detail>
         )}
       </div>

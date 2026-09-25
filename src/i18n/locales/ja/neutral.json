@@ -893,6 +893,32 @@
       "read": "閲覧",
       "write": "閲覧と編集",
       "all": "すべて"
-    }
+    },
+    "shareCalendar": "共有…",
+    "leaveCalendar": "自分のカレンダーから外す",
+    "leaveCalendarTitle": "「{{name}}」をカレンダーから外しますか?",
+    "leaveCalendarBody": "カレンダーは引き続き {{name}} さんのものです。再び共有されるまで表示されなくなるだけです。"
+  },
+  "invitation": {
+    "title": "招待",
+    "from": "{{name}} さんからの招待",
+    "answer": "あなたの返答",
+    "accepted": "参加",
+    "tentative": "未定",
+    "declined": "辞退",
+    "status": {
+      "needs-action": "まだ返答していません。",
+      "accepted": "参加と返答しました。",
+      "tentative": "未定と返答しました。",
+      "declined": "辞退しました。"
+    },
+    "answered": {
+      "needs-action": "返答を取り消しました",
+      "accepted": "参加と返答しました。主催者に通知されます。",
+      "tentative": "未定と返答しました。主催者に通知されます。",
+      "declined": "辞退しました。主催者に通知されます。"
+    },
+    "failed": "返答を送信できませんでした。{{reason}}",
+    "cancelled": "主催者がこの予定をキャンセルしました。"
   }
 }

@@ -921,6 +921,32 @@
       "read": "Read",
       "write": "Read and write",
       "all": "Everything"
-    }
+    },
+    "shareCalendar": "Share …",
+    "leaveCalendar": "Remove from my calendars",
+    "leaveCalendarTitle": "Remove “{{name}}” from your calendars?",
+    "leaveCalendarBody": "The calendar stays {{name}}'s. You only stop seeing it, until they share it again."
+  },
+  "invitation": {
+    "title": "Invitation",
+    "from": "Invitation from {{name}}",
+    "answer": "Your answer",
+    "accepted": "Accept",
+    "tentative": "Maybe",
+    "declined": "Decline",
+    "status": {
+      "needs-action": "You haven't answered yet.",
+      "accepted": "You accepted.",
+      "tentative": "You answered maybe.",
+      "declined": "You declined."
+    },
+    "answered": {
+      "needs-action": "Answer taken back",
+      "accepted": "Accepted. The organizer is told.",
+      "tentative": "Answered maybe. The organizer is told.",
+      "declined": "Declined. The organizer is told."
+    },
+    "failed": "The answer couldn't be sent. {{reason}}",
+    "cancelled": "The organizer cancelled this event."
   }
 }

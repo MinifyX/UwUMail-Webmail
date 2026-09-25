@@ -893,6 +893,32 @@
       "read": "只读",
       "write": "读写",
       "all": "全部"
-    }
+    },
+    "shareCalendar": "共享…",
+    "leaveCalendar": "从我的日历中移除",
+    "leaveCalendarTitle": "要将“{{name}}”从你的日历中移除吗？",
+    "leaveCalendarBody": "该日历仍属于 {{name}}。你只是不再看到它，直到对方再次与你共享。"
+  },
+  "invitation": {
+    "title": "邀请",
+    "from": "来自 {{name}} 的邀请",
+    "answer": "你的答复",
+    "accepted": "接受",
+    "tentative": "暂定",
+    "declined": "拒绝",
+    "status": {
+      "needs-action": "你还没有答复。",
+      "accepted": "你已接受。",
+      "tentative": "你已答复暂定。",
+      "declined": "你已拒绝。"
+    },
+    "answered": {
+      "needs-action": "已撤回答复",
+      "accepted": "已接受，组织者会收到通知。",
+      "tentative": "已答复暂定，组织者会收到通知。",
+      "declined": "已拒绝，组织者会收到通知。"
+    },
+    "failed": "无法发送答复。{{reason}}",
+    "cancelled": "组织者已取消此日程。"
   }
 }

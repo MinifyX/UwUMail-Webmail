@@ -388,6 +388,36 @@ export interface CalendarInfo {
   sortOrder: number;
   mayWrite: boolean;
   mayDelete: boolean;
+  /** May change its name and colour and share it (own calendars, or shared with everything). */
+  mayShare?: boolean;
+  /** Who owns it, for a calendar somebody shares with the account; null for its own. */
+  sharedBy?: { email: string; name: string } | null;
+  /** Who else sees it, by principal id; only where the account may share it. */
+  sharedWith?: Record<string, ShareLevel>;
+}
+
+/** An answer to an invitation (iTIP): the participant's `participationStatus`. */
+export type ParticipationStatus = "needs-action" | "accepted" | "tentative" | "declined";
+
+/** An event somebody invited the account to, and how it answered so far. */
+export interface Invitation {
+  /** The stored event (the series for a repeating one), where the answer goes. */
+  eventId: string;
+  /** The account's participant in it. */
+  participantKey: string;
+  status: ParticipationStatus;
+  /** Who invited, as an address (or a name) where the event says. */
+  organizer: string | null;
+}
+
+/** The invitation a mail carries (its text/calendar part), as the server put it into the calendar. */
+export interface MailInvitation extends Invitation {
+  title: string;
+  /** UTC start, or the date of an all-day event. */
+  start: string | null;
+  allDay: boolean;
+  /** The organizer cancelled it. */
+  cancelled: boolean;
 }
 
 export type Weekday = "mo" | "tu" | "we" | "th" | "fr" | "sa" | "su";
@@ -430,6 +460,8 @@ export interface CalendarOccurrence {
   /** No write right, or somebody else's invitation. */
   readOnly: boolean;
   color: string | null;
+  /** Somebody else's event the account was invited to, with its answer; null for its own. */
+  invitation?: Invitation | null;
 }
 
 /** What the event editor saves. */

@@ -921,6 +921,32 @@
       "read": "Lesen",
       "write": "Lesen und schreiben",
       "all": "Alles"
-    }
+    },
+    "shareCalendar": "Teilen …",
+    "leaveCalendar": "Aus meinen Kalendern entfernen",
+    "leaveCalendarTitle": "„{{name}}“ aus deinen Kalendern entfernen?",
+    "leaveCalendarBody": "Der Kalender gehört weiter {{name}}. Du siehst ihn nur nicht mehr, bis er wieder mit dir geteilt wird."
+  },
+  "invitation": {
+    "title": "Einladung",
+    "from": "Einladung von {{name}}",
+    "answer": "Deine Antwort",
+    "accepted": "Zusagen",
+    "tentative": "Vielleicht",
+    "declined": "Absagen",
+    "status": {
+      "needs-action": "Du hast noch nicht geantwortet.",
+      "accepted": "Du hast zugesagt.",
+      "tentative": "Du hast mit Vielleicht geantwortet.",
+      "declined": "Du hast abgesagt."
+    },
+    "answered": {
+      "needs-action": "Antwort zurückgenommen",
+      "accepted": "Zugesagt. Die einladende Person erfährt es.",
+      "tentative": "Mit Vielleicht geantwortet. Die einladende Person erfährt es.",
+      "declined": "Abgesagt. Die einladende Person erfährt es."
+    },
+    "failed": "Die Antwort konnte nicht gesendet werden. {{reason}}",
+    "cancelled": "Dieser Termin wurde abgesagt."
   }
 }

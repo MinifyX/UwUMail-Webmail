@@ -34,9 +34,11 @@ import type {
   Folder,
   FolderRights,
   Identity,
+  MailInvitation,
   MailtoDraft,
   MovedMessage,
   OutgoingMessage,
+  ParticipationStatus,
   Person,
   ScheduledSend,
   SendOptions,
@@ -55,6 +57,9 @@ import {
   EDIT_PROPERTIES,
   EVENT_PROPERTIES,
   RULE_PROPERTIES,
+  calendarRightsFor,
+  icsInvitation,
+  invitationOf,
   eventPatch,
   newEventObject,
   toCalendarInfo,
@@ -244,7 +249,17 @@ interface JmapSieveScript {
   isActive: boolean;
 }
 
-const CALENDAR_PROPERTIES = ["id", "name", "color", "sortOrder", "isVisible", "isDefault", "myRights"];
+const CALENDAR_PROPERTIES = [
+  "id",
+  "name",
+  "color",
+  "sortOrder",
+  "isVisible",
+  "isDefault",
+  "myRights",
+  "shareWith",
+  "uwuSharedBy",
+];
 
 /** The one script the rules editor owns, see lib/sieveRules. */
 const RULES_SCRIPT = "UwUMail";
@@ -1584,6 +1599,7 @@ export class JmapBackend implements Backend {
       ]),
     );
     const events = responseOf<GetResponse<JmapCalendarEvent>>(body, "e").list;
+    const ownAddresses = await this.ownAddresses();
     const baseIds = [...new Set(events.map((event) => event.baseEventId).filter((id): id is string => !!id))];
     const bases = new Map<string, JmapCalendarEvent>();
     if (baseIds.length > 0) {
@@ -1599,6 +1615,7 @@ export class JmapBackend implements Backend {
         viewerZone: timeZone,
         calendar: calendars.get(Object.keys(event.calendarIds)[0] ?? ""),
         base: event.baseEventId ? bases.get(event.baseEventId) : undefined,
+        ownAddresses,
       }),
     );
   }
@@ -1641,6 +1658,107 @@ export class JmapBackend implements Backend {
       target = found.list[0]?.baseEventId ?? occurrenceId;
     }
     throwOnError(await this.calendarCall<SetResponse>("CalendarEvent/set", { destroy: [target] }));
+    this.emit({ type: "calendar:changed" });
+  }
+
+  /** Every address of the account, to find it among an event's participants. */
+  private async ownAddresses(): Promise<string[]> {
+    try {
+      return (await this.listIdentities()).map((identity) => identity.email);
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Answers an invitation: the account's participant gets the status, and the server tells the
+   * organizer (iTIP), straight into their calendar on this server or by mail elsewhere.
+   */
+  async respondToInvitation(eventId: string, participantKey: string, status: ParticipationStatus): Promise<void> {
+    await this.start();
+    const response = await one<SetResponse>(
+      "CalendarEvent/set",
+      {
+        update: { [eventId]: { [`participants/${participantKey}/participationStatus`]: status } },
+        sendSchedulingMessages: true,
+      },
+      [CORE, CALENDARS],
+    );
+    throwOnError(response);
+    this.emit({ type: "calendar:changed" });
+  }
+
+  /**
+   * The invitation a mail carries: its iCalendar part names the event by UID, and the server put
+   * that event into the default calendar when the mail arrived. Null when there is none, or the
+   * account is the organizer.
+   */
+  async mailInvitation(messageId: string): Promise<MailInvitation | null> {
+    await this.start();
+    if (!supports(CALENDARS)) return null;
+    const target = unscopeId(messageId, this.accountId);
+    // Only the account's own mail: a shared folder's invitations are its owner's.
+    if (target.accountId !== this.accountId) return null;
+    const found = await one<GetResponse<JmapEmail>>("Email/get", {
+      ids: [target.id],
+      properties: ["id", "attachments"],
+    });
+    const part = (found.list[0]?.attachments ?? []).find(
+      (entry) =>
+        !!entry.blobId &&
+        ((entry.type ?? "").toLowerCase().startsWith("text/calendar") || /\.ics$/i.test(entry.name ?? "")),
+    );
+    if (!part?.blobId) return null;
+    const text = await (await downloadBlob(part.blobId, part.name ?? "invite.ics")).text();
+    const ics = icsInvitation(text);
+    if (!ics) return null;
+    const body = await call(
+      [
+        ["CalendarEvent/query", { accountId: this.accountId, filter: { uid: ics.uid }, limit: 1 }, "q"],
+        [
+          "CalendarEvent/get",
+          {
+            accountId: this.accountId,
+            "#ids": { resultOf: "q", name: "CalendarEvent/query", path: "/ids" },
+            properties: [
+              "id",
+              "baseEventId",
+              "isOrigin",
+              "title",
+              "start",
+              "showWithoutTime",
+              "utcStart",
+              "participants",
+              "organizerCalendarAddress",
+              "status",
+            ],
+          },
+          "g",
+        ],
+      ],
+      [CORE, CALENDARS],
+    );
+    const event = responseOf<GetResponse<JmapCalendarEvent>>(body, "g").list[0];
+    if (!event) return null;
+    const invitation = invitationOf(event, await this.ownAddresses());
+    if (!invitation) return null;
+    const allDay = event.showWithoutTime === true;
+    return {
+      ...invitation,
+      title: event.title ?? "",
+      start: allDay ? event.start.slice(0, 10) : (event.utcStart ?? null),
+      allDay,
+      cancelled: event.status === "cancelled" || ics.method === "CANCEL",
+    };
+  }
+
+  async shareCalendar(calendarId: string, personId: string, level: ShareLevel | null): Promise<void> {
+    await this.start();
+    throwOnError(
+      await this.calendarCall<SetResponse>("Calendar/set", {
+        update: { [calendarId]: { [`shareWith/${personId}`]: level ? calendarRightsFor(level) : null } },
+      }),
+    );
     this.emit({ type: "calendar:changed" });
   }
 

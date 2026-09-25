@@ -948,6 +948,32 @@
       "read": "Lecture",
       "write": "Lecture et écriture",
       "all": "Tout"
-    }
+    },
+    "shareCalendar": "Partager …",
+    "leaveCalendar": "Retirer de mes agendas",
+    "leaveCalendarTitle": "Retirer « {{name}} » de vos agendas ?",
+    "leaveCalendarBody": "L'agenda reste celui de {{name}}. Vous cessez seulement de le voir, jusqu'à ce qu'il soit à nouveau partagé avec vous."
+  },
+  "invitation": {
+    "title": "Invitation",
+    "from": "Invitation de {{name}}",
+    "answer": "Votre réponse",
+    "accepted": "Accepter",
+    "tentative": "Peut-être",
+    "declined": "Refuser",
+    "status": {
+      "needs-action": "Vous n'avez pas encore répondu.",
+      "accepted": "Vous avez accepté.",
+      "tentative": "Vous avez répondu peut-être.",
+      "declined": "Vous avez refusé."
+    },
+    "answered": {
+      "needs-action": "Réponse retirée",
+      "accepted": "Accepté. L'organisateur en est informé.",
+      "tentative": "Répondu peut-être. L'organisateur en est informé.",
+      "declined": "Refusé. L'organisateur en est informé."
+    },
+    "failed": "La réponse n'a pas pu être envoyée. {{reason}}",
+    "cancelled": "L'organisateur a annulé cet événement."
   }
 }
