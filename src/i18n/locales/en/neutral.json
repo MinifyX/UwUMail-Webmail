@@ -948,5 +948,24 @@
     },
     "failed": "The answer couldn't be sent. {{reason}}",
     "cancelled": "The organizer cancelled this event."
+  },
+  "push": {
+    "label": "Notify me about new mail when the webmail is closed",
+    "description": "Your browser shows new mail in the inbox even while no {{brand}} tab is open. Only the news that something changed goes through your browser's push service; sender and subject come straight from your server.",
+    "showContent": "Show sender and subject",
+    "showContentDesc": "When this is off, a notification only says that new mail came.",
+    "enabled": "Notifications are on",
+    "problem": {
+      "unsupported": "This browser can't show notifications for websites. On an iPhone or iPad, add the webmail to your home screen first and open it from there.",
+      "denied": "Your browser blocks notifications for this site. Allow them in the site settings, then switch this on again.",
+      "unverified": "Your browser's push service didn't answer in time. Try again in a moment.",
+      "failed": "Notifications could not be switched on. Try again in a moment."
+    },
+    "notification": {
+      "newMail": "New mail",
+      "newMails": "{{count}} new messages",
+      "noSubject": "(no subject)",
+      "hidden": "Open {{brand}} to read it."
+    }
   }
 }

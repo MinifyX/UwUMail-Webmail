@@ -204,5 +204,11 @@
       "created": "In de agenda geschreven ✿",
       "deleted": "Poef, weg uit de agenda (・ω・)"
     }
+  },
+  "push": {
+    "enabled": "Meldingen staan aan – Nyu tikt op je raam als er post komt (=^･ω･^=)",
+    "notification": {
+      "newMail": "Post voor jou! ✉"
+    }
   }
 }

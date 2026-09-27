@@ -948,5 +948,24 @@
     },
     "failed": "Die Antwort konnte nicht gesendet werden. {{reason}}",
     "cancelled": "Dieser Termin wurde abgesagt."
+  },
+  "push": {
+    "label": "Bei neuen Mails benachrichtigen, auch wenn die Webmail geschlossen ist",
+    "description": "Dein Browser zeigt neue Mails im Posteingang an, auch wenn kein {{brand}}-Tab offen ist. Über den Push-Dienst deines Browsers geht nur die Nachricht, dass sich etwas geändert hat; Absender und Betreff kommen direkt von deinem Server.",
+    "showContent": "Absender und Betreff zeigen",
+    "showContentDesc": "Ist das aus, sagt eine Benachrichtigung nur, dass neue Post da ist.",
+    "enabled": "Benachrichtigungen sind an",
+    "problem": {
+      "unsupported": "Dieser Browser kann für Websites keine Benachrichtigungen zeigen. Auf dem iPhone oder iPad lege die Webmail zuerst auf den Home-Bildschirm und öffne sie von dort.",
+      "denied": "Dein Browser blockiert Benachrichtigungen für diese Seite. Erlaube sie in den Website-Einstellungen und schalte das dann noch einmal an.",
+      "unverified": "Der Push-Dienst deines Browsers hat nicht rechtzeitig geantwortet. Versuch es gleich noch einmal.",
+      "failed": "Benachrichtigungen ließen sich nicht einschalten. Versuch es gleich noch einmal."
+    },
+    "notification": {
+      "newMail": "Neue Mail",
+      "newMails": "{{count}} neue Nachrichten",
+      "noSubject": "(kein Betreff)",
+      "hidden": "Öffne {{brand}}, um sie zu lesen."
+    }
   }
 }

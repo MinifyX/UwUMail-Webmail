@@ -32,6 +32,7 @@ import { MailRules } from "../rules/MailRules";
 import { useMailRulesAccounts } from "../rules/useMailRules";
 import { BlockedSenders } from "./BlockedSenders";
 import { LinkSettings } from "./LinkSettings";
+import { PushSettings } from "./PushSettings";
 import { Row } from "./Row";
 import { Writing } from "./Writing";
 import { useUi, type SettingsSection } from "@/state/ui";
@@ -209,6 +210,7 @@ function Reading() {
           description={t("settings.conversationsDesc")}
         />
       </div>
+      <PushSettings />
       <Row label={t("settings.remoteImages")} description={t("settings.remoteImagesDesc")}>
         <Segmented
           label={t("settings.remoteImages")}

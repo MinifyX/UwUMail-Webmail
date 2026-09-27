@@ -204,5 +204,11 @@
       "created": "Steht im Kalender ✿",
       "deleted": "Puff, aus dem Kalender verschwunden (・ω・)"
     }
+  },
+  "push": {
+    "enabled": "Benachrichtigungen sind an – Nyu klopft, wenn Post kommt (=^･ω･^=)",
+    "notification": {
+      "newMail": "Post für dich! ✉"
+    }
   }
 }

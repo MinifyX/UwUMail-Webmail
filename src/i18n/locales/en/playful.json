@@ -204,5 +204,11 @@
       "created": "Written into the calendar ✿",
       "deleted": "Poof, gone from the calendar (・ω・)"
     }
+  },
+  "push": {
+    "enabled": "Notifications are on – Nyu will tap on your window when mail comes (=^･ω･^=)",
+    "notification": {
+      "newMail": "New mail for you! ✉"
+    }
   }
 }

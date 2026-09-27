@@ -920,5 +920,24 @@
     },
     "failed": "无法发送答复。{{reason}}",
     "cancelled": "组织者已取消此日程。"
+  },
+  "push": {
+    "label": "网页邮箱关闭时也通知我新邮件",
+    "description": "即使没有打开 {{brand}} 标签页，浏览器也会提示收件箱里的新邮件。经过浏览器推送服务的只有“有变化”这一消息；发件人和主题直接来自你的服务器。",
+    "showContent": "显示发件人和主题",
+    "showContentDesc": "关闭后，通知只会说明有新邮件到达。",
+    "enabled": "通知已开启",
+    "problem": {
+      "unsupported": "此浏览器无法显示网站通知。在 iPhone 或 iPad 上，请先把网页邮箱添加到主屏幕，再从那里打开。",
+      "denied": "你的浏览器屏蔽了此网站的通知。请在网站设置中允许后，再重新开启。",
+      "unverified": "浏览器的推送服务没有及时响应。请稍后再试。",
+      "failed": "无法开启通知。请稍后再试。"
+    },
+    "notification": {
+      "newMail": "新邮件",
+      "newMails": "{{count}} 封新邮件",
+      "noSubject": "（无主题）",
+      "hidden": "打开 {{brand}} 阅读。"
+    }
   }
 }

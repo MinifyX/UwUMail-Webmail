@@ -975,5 +975,24 @@
     },
     "failed": "La réponse n'a pas pu être envoyée. {{reason}}",
     "cancelled": "L'organisateur a annulé cet événement."
+  },
+  "push": {
+    "label": "Me prévenir des nouveaux messages quand la messagerie web est fermée",
+    "description": "Votre navigateur signale les nouveaux messages de la boîte de réception même quand aucun onglet {{brand}} n'est ouvert. Seule l'information qu'il y a du nouveau passe par le service push de votre navigateur ; l'expéditeur et l'objet viennent directement de votre serveur.",
+    "showContent": "Afficher l'expéditeur et l'objet",
+    "showContentDesc": "Si c'est désactivé, une notification indique seulement qu'un message est arrivé.",
+    "enabled": "Les notifications sont activées",
+    "problem": {
+      "unsupported": "Ce navigateur ne peut pas afficher de notifications pour les sites web. Sur iPhone ou iPad, ajoutez d'abord la messagerie web à l'écran d'accueil et ouvrez-la depuis là.",
+      "denied": "Votre navigateur bloque les notifications pour ce site. Autorisez-les dans les réglages du site, puis réactivez cette option.",
+      "unverified": "Le service push de votre navigateur n'a pas répondu à temps. Réessayez dans un instant.",
+      "failed": "Impossible d'activer les notifications. Réessayez dans un instant."
+    },
+    "notification": {
+      "newMail": "Nouveau message",
+      "newMails": "{{count}} nouveaux messages",
+      "noSubject": "(sans objet)",
+      "hidden": "Ouvrez {{brand}} pour le lire."
+    }
   }
 }
