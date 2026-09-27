@@ -38,37 +38,81 @@ interface Call {
   body?: { methodCalls: [string, Record<string, unknown>, string][] };
 }
 
+interface FakeMail {
+  id: string;
+  subject?: string;
+  name?: string;
+  receivedAt: string;
+  /** "a1" (the own account) unless said otherwise. */
+  account?: string;
+  /** The inbox of its account unless said otherwise. */
+  mailbox?: string;
+  seen?: boolean;
+}
+
+/** Each account's folders: the own one, and support@ that shares its inbox and a folder, not its spam. */
+const MAILBOXES: Record<string, { id: string; role: string | null }[]> = {
+  a1: [
+    { id: "m1", role: "inbox" },
+    { id: "m9", role: "junk" },
+  ],
+  a3: [
+    { id: "s1", role: "inbox" },
+    { id: "s2", role: null },
+    { id: "s9", role: "junk" },
+  ],
+};
+
+const SESSION_ACCOUNTS = {
+  a1: { name: "mini@example.org", isPersonal: true, accountCapabilities: { "urn:ietf:params:jmap:mail": {} } },
+  a3: { name: "support@example.org", isPersonal: false, accountCapabilities: { "urn:ietf:params:jmap:mail": {} } },
+};
+
 /** A server that answers the JMAP calls the service worker makes. */
 function fakeServer(
-  mails: { id: string; subject?: string; name?: string; receivedAt: string }[],
+  mails: FakeMail[],
   session: () => Response = () => Response.json({ csrfToken: "csrf-1", account: { login: "mini@example.org" } }),
 ) {
   const calls: Call[] = [];
+  const inboxOf = (account: string) => MAILBOXES[account]!.find((m) => m.role === "inbox")!.id;
+  const matching = (args: Record<string, unknown>) => {
+    const filter = args.filter as { inMailbox?: string; inMailboxOtherThan?: string[]; after: string };
+    return mails.filter((m) => {
+      const account = m.account ?? "a1";
+      const mailbox = m.mailbox ?? inboxOf(account);
+      return (
+        account === args.accountId &&
+        !m.seen &&
+        m.receivedAt >= filter.after &&
+        (!filter.inMailbox || filter.inMailbox === mailbox) &&
+        !filter.inMailboxOtherThan?.includes(mailbox)
+      );
+    });
+  };
   const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     const body = init?.body ? (JSON.parse(String(init.body)) as Call["body"]) : undefined;
     calls.push({ url, init, body });
     if (url === "/api/session") return session();
+    if (url === "/jmap/session") return Response.json({ accounts: SESSION_ACCOUNTS });
     if ((init?.headers as Record<string, string>)["x-csrf-token"] !== "csrf-1") {
       return new Response(null, { status: 401 });
     }
     const responses = body!.methodCalls.map(([name, args, id]) => {
-      if (name === "Mailbox/query") return [name, { ids: ["m1"] }, id];
-      if (name === "Email/query") {
-        const after = (args.filter as { after: string }).after;
-        return [name, { ids: mails.filter((m) => m.receivedAt >= after).map((m) => m.id) }, id];
+      if (name === "Mailbox/get") {
+        const list = MAILBOXES[args.accountId as string];
+        return list ? [name, { list }, id] : ["error", { type: "accountNotFound" }, id];
       }
+      if (name === "Email/query") return [name, { ids: matching(args).map((m) => m.id) }, id];
       if (name === "Email/get") {
-        const after = (body!.methodCalls[0]![1].filter as { after: string }).after;
-        const list = mails
-          .filter((m) => m.receivedAt >= after)
-          .map((m) => ({
-            id: m.id,
-            threadId: `t${m.id}`,
-            subject: m.subject,
-            from: [{ name: m.name, email: "someone@example.org" }],
-            receivedAt: m.receivedAt,
-          }));
+        const list = matching(body!.methodCalls[0]![1]).map((m) => ({
+          id: m.id,
+          threadId: `t${m.id}`,
+          subject: m.subject,
+          from: [{ name: m.name, email: "someone@example.org" }],
+          mailboxIds: { [m.mailbox ?? inboxOf(m.account ?? "a1")]: true },
+          receivedAt: m.receivedAt,
+        }));
         return [name, { list }, id];
       }
       if (name === "PushSubscription/set") {
@@ -112,6 +156,8 @@ function environment(kv: KeyValue, fetch: typeof globalThis.fetch, inFront = fal
 }
 
 const NEW_MAIL = { "@type": "StateChange", changed: { a1: { EmailDelivery: "12" } } };
+const START: PushProgress = { since: "2026-09-27T11:00:00Z", accounts: {} };
+const GENERIC = { title: DEFAULT_TEXTS.newMail, options: { tag: "uwumail-new", body: DEFAULT_TEXTS.hidden, data: {} } };
 
 describe("the service worker", () => {
   it("sends the verification code back with the session's CSRF token", async () => {
@@ -131,7 +177,7 @@ describe("the service worker", () => {
   it("announces new unread mail once, newest first", async () => {
     const kv = memory({
       [CONFIG_KEY]: CONFIG,
-      [PROGRESS_KEY]: { since: "2026-09-27T11:00:00Z", announced: [] } satisfies PushProgress,
+      [PROGRESS_KEY]: START satisfies PushProgress,
     });
     const server = fakeServer([
       { id: "e1", subject: "Older", name: "Mini", receivedAt: "2026-09-27T10:00:00Z" },
@@ -144,18 +190,20 @@ describe("the service worker", () => {
       ["someone@example.org", DEFAULT_TEXTS.noSubject, "uwumail-mail-e3", { emailId: "e3", threadId: "te3" }],
       ["Nyu", "Lunch?", "uwumail-mail-e2", { emailId: "e2", threadId: "te2" }],
     ]);
-    expect(kv.data.get(PROGRESS_KEY)).toMatchObject({ since: "2026-09-27T11:45:00Z", inboxId: "m1" });
+    expect(kv.data.get(PROGRESS_KEY)).toMatchObject({
+      accounts: { a1: { since: "2026-09-27T11:45:00Z", announced: ["e3", "e2"], mailboxes: { inbox: "m1" } } },
+    });
 
-    // The same push again finds nothing new.
+    // The same push again finds nothing new: a browser has to show something all the same.
     shown.length = 0;
     await handlePush(env, NEW_MAIL);
-    expect(shown).toEqual([]);
+    expect(shown).toEqual([GENERIC]);
   });
 
   it("hides sender and subject when asked to", async () => {
     const kv = memory({
       [CONFIG_KEY]: { ...CONFIG, showContent: false },
-      [PROGRESS_KEY]: { since: "2026-09-27T11:00:00Z", announced: [] },
+      [PROGRESS_KEY]: START,
     });
     const server = fakeServer([{ id: "e2", subject: "Secret", name: "Nyu", receivedAt: "2026-09-27T11:30:00Z" }]);
     const { env, shown } = environment(kv, server.fetch);
@@ -167,7 +215,7 @@ describe("the service worker", () => {
   });
 
   it("sums up many messages in one notification", async () => {
-    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: { since: "2026-09-27T11:00:00Z", announced: [] } });
+    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: START });
     const mails = ["1", "2", "3", "4", "5"].map((n) => ({
       id: `e${n}`,
       subject: `S${n}`,
@@ -182,23 +230,77 @@ describe("the service worker", () => {
   });
 
   it("stays quiet while the webmail is in front, and for changes that are not new mail", async () => {
-    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: { since: "2026-09-27T11:00:00Z", announced: [] } });
+    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: START });
     const server = fakeServer([{ id: "e2", subject: "Hi", name: "Nyu", receivedAt: "2026-09-27T11:30:00Z" }]);
     const front = environment(kv, server.fetch, true);
     await handlePush(front.env, { "@type": "StateChange", changed: { a1: { Email: "13" } } });
-    expect(server.calls).toEqual([]);
-    await handlePush(front.env, { "@type": "StateChange", changed: { a9: { EmailDelivery: "13" } } });
     expect(server.calls).toEqual([]);
     await handlePush(front.env, NEW_MAIL);
     expect(front.shown).toEqual([]);
     // It was seen there, so it is not announced later either.
     const back = environment(kv, server.fetch, false);
     await handlePush(back.env, NEW_MAIL);
-    expect(back.shown).toEqual([]);
+    expect(back.shown).toEqual([GENERIC]);
+  });
+
+  it("announces new mail of a shared mailbox, named, and leading to its folder", async () => {
+    const kv = memory({
+      [CONFIG_KEY]: { ...CONFIG, accounts: { a1: "mini@example.org", a3: "support@example.org" } },
+      [PROGRESS_KEY]: START,
+    });
+    const server = fakeServer([
+      { id: "e1", subject: "Hi", name: "Nyu", receivedAt: "2026-09-27T11:10:00Z" },
+      { id: "x1", subject: "Refund?", name: "Kim", receivedAt: "2026-09-27T11:20:00Z", account: "a3" },
+      { id: "x2", subject: "Order", name: "Lee", receivedAt: "2026-09-27T11:30:00Z", account: "a3", mailbox: "s2" },
+      { id: "x3", subject: "Spam", name: "Bot", receivedAt: "2026-09-27T11:40:00Z", account: "a3", mailbox: "s9" },
+    ]);
+    const { env, shown } = environment(kv, server.fetch);
+    await handlePush(env, { "@type": "StateChange", changed: { a3: { EmailDelivery: "4" } } });
+    expect(shown.map((spec) => [spec.title, spec.options.body, spec.options.data])).toEqual([
+      ["support@example.org · Lee", "Order", { emailId: "x2", threadId: "tx2", accountId: "a3", mailboxId: "s2" }],
+      ["support@example.org · Kim", "Refund?", { emailId: "x1", threadId: "tx1", accountId: "a3", mailboxId: "s1" }],
+    ]);
+    // Spam is left out there, and the own inbox was not asked about.
+    const asked = server.calls
+      .flatMap((call) => call.body?.methodCalls ?? [])
+      .filter(([name]) => name === "Email/query");
+    expect(
+      asked.map(([, args]) => [args.accountId, (args.filter as { inMailboxOtherThan?: string[] }).inMailboxOtherThan]),
+    ).toEqual([["a3", ["s9"]]]);
+
+    // Both at once: newest first, the own one without an account name.
+    const both = environment(memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: START }), server.fetch);
+    await handlePush(both.env, {
+      "@type": "StateChange",
+      changed: { a1: { EmailDelivery: "5" }, a3: { EmailDelivery: "4" } },
+    });
+    expect(both.shown.map((spec) => spec.title)).toEqual([
+      "support@example.org · Lee",
+      "support@example.org · Kim",
+      "Nyu",
+    ]);
+  });
+
+  it("learns the name of a mailbox shared after push was set up, and skips accounts it doesn't have", async () => {
+    const kv = memory({ [CONFIG_KEY]: { ...CONFIG, accounts: { a1: "mini@example.org" } }, [PROGRESS_KEY]: START });
+    const server = fakeServer([
+      { id: "x1", subject: "Refund?", name: "Kim", receivedAt: "2026-09-27T11:20:00Z", account: "a3" },
+    ]);
+    const { env, shown } = environment(kv, server.fetch);
+    await handlePush(env, { "@type": "StateChange", changed: { a3: { EmailDelivery: "4" } } });
+    expect(shown[0]!.title).toBe("support@example.org · Kim");
+    expect((kv.data.get(CONFIG_KEY) as PushConfig).accounts).toEqual({
+      a1: "mini@example.org",
+      a3: "support@example.org",
+    });
+
+    const gone = environment(kv, server.fetch);
+    await handlePush(gone.env, { "@type": "StateChange", changed: { a7: { EmailDelivery: "1" } } });
+    expect(gone.shown).toEqual([GENERIC]);
   });
 
   it("asks the server with the session's CSRF token, fetched once per push", async () => {
-    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: { since: "2026-09-27T11:00:00Z", announced: [] } });
+    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: START });
     const server = fakeServer([{ id: "e2", subject: "Hi", name: "Nyu", receivedAt: "2026-09-27T11:30:00Z" }]);
     const { env, shown } = environment(kv, server.fetch);
     await handlePush(env, NEW_MAIL);
@@ -223,11 +325,12 @@ describe("the service worker", () => {
     ["the session is refused", () => new Response(null, { status: 401 })],
     ["somebody else signed in", () => Response.json({ csrfToken: "csrf-1", account: { login: "other@example.org" } })],
   ])("takes push down when %s", async (_, session) => {
-    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: { since: "2026-09-27T11:00:00Z", announced: [] } });
+    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: START });
     const server = fakeServer([{ id: "e2", subject: "Hi", name: "Nyu", receivedAt: "2026-09-27T11:30:00Z" }], session);
     const { env, shown, browser } = environment(kv, server.fetch);
     await expect(handlePush(env, NEW_MAIL)).resolves.toBeUndefined();
-    expect(shown).toEqual([]);
+    // Nothing of the mail, but something: the push has to show.
+    expect(shown).toEqual([GENERIC]);
     expect(browser.subscribed).toBe(false);
     expect([...kv.data.keys()]).toEqual([]);
     expect(server.calls.filter((call) => call.url === "/jmap/api")).toEqual([]);
@@ -235,8 +338,9 @@ describe("the service worker", () => {
 
   it("keeps everything when the server is only away", async () => {
     const kv = memory({ [CONFIG_KEY]: CONFIG });
-    const { env, browser } = environment(kv, async () => new Response(null, { status: 502 }));
+    const { env, browser, shown } = environment(kv, async () => new Response(null, { status: 502 }));
     await handlePush(env, NEW_MAIL);
+    expect(shown).toEqual([GENERIC]);
     expect(browser.subscribed).toBe(true);
     expect(kv.data.get(CONFIG_KEY)).toEqual(CONFIG);
     const offline = environment(kv, async () => {
@@ -248,7 +352,7 @@ describe("the service worker", () => {
 
   it("extends the subscription when it would end within three days", async () => {
     const soon = { ...CONFIG, expires: "2026-09-29T12:00:00Z" };
-    const kv = memory({ [CONFIG_KEY]: soon, [PROGRESS_KEY]: { since: "2026-09-27T11:00:00Z", announced: [] } });
+    const kv = memory({ [CONFIG_KEY]: soon, [PROGRESS_KEY]: START });
     const server = fakeServer([]);
     const { env } = environment(kv, server.fetch);
     await handlePush(env, NEW_MAIL);

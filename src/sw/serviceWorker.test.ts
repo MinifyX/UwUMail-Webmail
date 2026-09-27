@@ -106,7 +106,7 @@ function fakeScope(windows: Partial<WindowClient>[] = []) {
               id,
             ];
           }
-          if (name === "Mailbox/query") return [name, { ids: ["m1"] }, id];
+          if (name === "Mailbox/get") return [name, { list: [{ id: "m1", role: "inbox" }] }, id];
           if (name === "Email/query") return [name, { ids: ["e1"] }, id];
           if (name === "Email/get") {
             const mail = {
@@ -212,6 +212,17 @@ describe("the service worker's events", () => {
     expect(focused).toEqual([2]);
     expect(messages).toEqual([[], [], [{ type: MESSAGE_OPEN, emailId: "e1", threadId: "t1" }]]);
     expect(opened).toEqual([]);
+  });
+
+  it("hands on which shared mailbox and folder a message is in", async () => {
+    const { fire, messages } = started([{ url: "https://mail.example.org/mail/" }]);
+    const data = { emailId: "x1", threadId: "tx1", accountId: "a3", mailboxId: "s2" };
+    await fire("notificationclick", { notification: { data, close: () => {} } });
+    expect(messages[0]).toEqual([{ type: MESSAGE_OPEN, ...data }]);
+
+    const closed = started();
+    await closed.fire("notificationclick", { notification: { data, close: () => {} } });
+    expect(closed.opened).toEqual(["/mail/?open=x1&thread=tx1&account=a3&mailbox=s2"]);
   });
 
   it("opens a new window on the message when the webmail is closed", async () => {

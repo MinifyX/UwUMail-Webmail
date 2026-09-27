@@ -41,7 +41,13 @@ export const DEFAULT_TEXTS: PushTexts = {
 export interface PushConfig {
   /** The login it was set up for; another login in this browser starts over. */
   login: string;
+  /** The own mail account; its new mail is looked for in the inbox. */
   accountId: string;
+  /**
+   * Every account of the session with mail, by id, with its name (for a shared mailbox its
+   * address): the own one and those others share folders from, whose new mail comes too.
+   */
+  accounts?: Record<string, string>;
   apiUrl: string;
   /** This browser's `deviceClientId`, for a subscription the service worker makes anew. */
   deviceClientId: string;
@@ -56,13 +62,21 @@ export interface PushConfig {
   expires?: string;
 }
 
-/** What the service worker remembers between pushes. */
-export interface PushProgress {
+/** What the service worker remembers about one account between pushes. */
+export interface AccountProgress {
   /** Mail received before this (UTCDate) was already seen or announced. */
   since: string;
   /** Ids announced at `since` or later, so a message is never announced twice. */
   announced: string[];
-  inboxId?: string;
+  /** The account's folders as far as they matter: its inbox, and those whose mail is no news. */
+  mailboxes?: { inbox: string | null; skip: string[] };
+}
+
+/** What the service worker remembers between pushes. */
+export interface PushProgress {
+  /** Where an account seen for the first time starts: when push was switched on. */
+  since: string;
+  accounts: Record<string, AccountProgress>;
 }
 
 /** A UTCDate as JMAP writes it: no fractions of a second. */
@@ -139,17 +153,43 @@ export function parsePayload(data: unknown): PushPayload {
   return { kind: "unknown" };
 }
 
-/** Whether a StateChange says new mail was delivered to this account. */
-export function newMailIn(payload: PushPayload, accountId: string): boolean {
-  if (payload.kind !== "state") return false;
-  const types = payload.changed[accountId];
-  return !!types && typeof types === "object" && "EmailDelivery" in types;
+/** The accounts a StateChange says new mail was delivered to: the own one, or one shared with it. */
+export function deliveredTo(payload: PushPayload): string[] {
+  if (payload.kind !== "state") return [];
+  return Object.entries(payload.changed)
+    .filter(([, types]) => !!types && typeof types === "object" && "EmailDelivery" in types)
+    .map(([accountId]) => accountId);
 }
 
-/** Where a click on a notification leads when the webmail is not open: the message, in the inbox. */
-export function openUrl(base: string, emailId: string, threadId: string): string {
-  const params = new URLSearchParams({ open: emailId, thread: threadId });
+/** Which message a notification is about, and where it is: in the own inbox, or a shared folder. */
+export interface MessageTarget {
+  emailId: string;
+  threadId: string;
+  /** Left out for the own account, whose mail opens in the inbox. */
+  accountId?: string;
+  /** The shared folder the message is in. */
+  mailboxId?: string;
+}
+
+/** Where a click on a notification leads when the webmail is not open: the message. */
+export function openUrl(base: string, target: MessageTarget): string {
+  const params = new URLSearchParams({ open: target.emailId, thread: target.threadId });
+  if (target.accountId) params.set("account", target.accountId);
+  if (target.mailboxId) params.set("mailbox", target.mailboxId);
   return `${base}?${params.toString()}`;
+}
+
+/** Reads a MessageTarget back from a notification's data or a message, or null. */
+export function messageTarget(data: unknown): MessageTarget | null {
+  if (typeof data !== "object" || data === null) return null;
+  const { emailId, threadId, accountId, mailboxId } = data as Record<string, unknown>;
+  if (typeof emailId !== "string" || typeof threadId !== "string") return null;
+  return {
+    emailId,
+    threadId,
+    ...(typeof accountId === "string" ? { accountId } : {}),
+    ...(typeof mailboxId === "string" ? { mailboxId } : {}),
+  };
 }
 
 /** A message the service worker announces. */
@@ -158,12 +198,15 @@ export interface NewMail {
   threadId: string;
   subject?: string | null;
   from?: { name?: string | null; email?: string | null }[] | null;
+  mailboxIds?: Record<string, boolean> | null;
   receivedAt: string;
+  /** For mail of a shared account: its id, its name, and the folder to open. */
+  shared?: { accountId: string; name: string; mailboxId?: string };
 }
 
 export interface NotificationSpec {
   title: string;
-  options: NotificationOptions & { data: { emailId?: string; threadId?: string } };
+  options: NotificationOptions & { data: Partial<MessageTarget> };
 }
 
 /** How many single notifications at most; more new mail than that becomes one summary. */
@@ -183,19 +226,42 @@ export function notificationsFor(
         options: {
           tag: "uwumail-summary",
           body: config.showContent ? mails.map((mail) => sender(mail, texts)).join(", ") : texts.hidden,
-          data: { emailId: newest.id, threadId: newest.threadId },
+          data: target(newest),
         },
       },
     ];
   }
   return mails.map((mail) => ({
-    title: config.showContent ? sender(mail, texts) : texts.newMail,
+    title: inAccount(mail, config.showContent ? sender(mail, texts) : texts.newMail),
     options: {
-      tag: `uwumail-mail-${mail.id}`,
+      tag: `uwumail-mail-${mail.shared?.accountId ?? ""}${mail.id}`,
       body: config.showContent ? mail.subject?.trim() || texts.noSubject : texts.hidden,
-      data: { emailId: mail.id, threadId: mail.threadId },
+      data: target(mail),
     },
   }));
+}
+
+/**
+ * For a push that said new mail came but where nothing new could be found (read elsewhere in the
+ * meantime, the server away): a browser has to show something for every push, and says something
+ * vaguer and stranger itself otherwise.
+ */
+export function genericNotification(config: Pick<PushConfig, "texts">): NotificationSpec {
+  return { title: config.texts.newMail, options: { tag: "uwumail-new", body: config.texts.hidden, data: {} } };
+}
+
+function target(mail: NewMail): MessageTarget {
+  return {
+    emailId: mail.id,
+    threadId: mail.threadId,
+    ...(mail.shared ? { accountId: mail.shared.accountId } : {}),
+    ...(mail.shared?.mailboxId ? { mailboxId: mail.shared.mailboxId } : {}),
+  };
+}
+
+/** Mail of a shared mailbox says which one: "support@example.org · Nyu". */
+function inAccount(mail: NewMail, title: string): string {
+  return mail.shared ? `${mail.shared.name} · ${title}` : title;
 }
 
 function sender(mail: NewMail, texts: PushTexts): string {

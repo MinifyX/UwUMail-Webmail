@@ -7,7 +7,7 @@
  * so the few parts used here are described below.
  */
 
-import { MESSAGE_OPEN, openUrl, type KeyValue } from "@/push/shared";
+import { MESSAGE_OPEN, messageTarget, openUrl, type KeyValue } from "@/push/shared";
 import { handlePush, resubscribe, type SubscriptionJson, type WorkerEnv } from "@/push/worker";
 
 export interface ExtendableEvent {
@@ -120,16 +120,15 @@ async function replacement(
 
 /** Opens the message a notification was for: in a webmail window that is open, or in a new one. */
 async function openFromNotification(scope: ServiceWorkerScope, data: unknown): Promise<void> {
-  const { emailId, threadId } = (data ?? {}) as { emailId?: unknown; threadId?: unknown };
-  const message = typeof emailId === "string" && typeof threadId === "string" ? { emailId, threadId } : null;
+  const target = messageTarget(data);
   const [open] = await webmailWindows(scope);
   if (open) {
     await open.focus();
-    if (message) open.postMessage({ type: MESSAGE_OPEN, ...message });
+    if (target) open.postMessage({ type: MESSAGE_OPEN, ...target });
     return;
   }
   const base = basePath(scope);
-  await scope.clients.openWindow(message ? openUrl(base, message.emailId, message.threadId) : base);
+  await scope.clients.openWindow(target ? openUrl(base, target) : base);
 }
 
 export function attach(scope: ServiceWorkerScope, env: WorkerEnv): void {

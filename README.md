@@ -57,8 +57,9 @@ for the whole server or for single accounts.
 - **Fits a phone.** Below 700 px it turns into the app's phone layout, with
   swipes and a full-screen composer, and it can be put on the home screen.
 - **Notifications with the tab closed.** Switched on in the settings, the
-  browser announces new mail in the inbox even when no webmail tab is open
-  (Web Push through the server's JMAP push subscriptions). Only the news that
+  browser announces new mail in the inbox, and in mailboxes shared with you,
+  even when no webmail tab is open (Web Push through the server's JMAP push
+  subscriptions). Only the news that
   something changed goes through the browser's push service, encrypted;
   sender and subject come from the server itself, and can be left out too.
 

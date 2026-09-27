@@ -4,7 +4,7 @@
  */
 
 import { isDemo } from "@/backend/backend";
-import { CORE, call, jmapSession, loadJmapSession } from "@/backend/jmap/client";
+import { CORE, MAIL, call, jmapSession, loadJmapSession } from "@/backend/jmap/client";
 import { currentSession } from "@/backend/server";
 import { i18n } from "@/i18n";
 import { useBrand } from "@/state/brand";
@@ -26,6 +26,8 @@ import {
   MESSAGE_VERIFIED,
   WEBPUSH_VAPID,
   idbKeyValue,
+  messageTarget,
+  type MessageTarget,
   type PushConfig,
   type PushTexts,
 } from "./shared";
@@ -154,15 +156,12 @@ function listen(): void {
 /** Handles a message from the service worker. */
 export function handleWorkerMessage(data: unknown): void {
   if (typeof data !== "object" || data === null) return;
-  const message = data as { type?: unknown; emailId?: unknown; threadId?: unknown };
-  if (message.type === MESSAGE_VERIFIED) {
+  const type = (data as { type?: unknown }).type;
+  if (type === MESSAGE_VERIFIED) {
     for (const wake of [...verificationWaiters]) wake();
-  } else if (
-    message.type === MESSAGE_OPEN &&
-    typeof message.emailId === "string" &&
-    typeof message.threadId === "string"
-  ) {
-    void openMessage(message.emailId, message.threadId);
+  } else if (type === MESSAGE_OPEN) {
+    const target = messageTarget(data);
+    if (target) void openMessage(target);
   }
 }
 
@@ -173,7 +172,17 @@ function deps(): PushDeps {
     serverKey,
     account: () => {
       const session = jmapSession();
-      return { login: currentSession().account.login, accountId: session.accountId, apiUrl: session.apiUrl };
+      const accounts = Object.fromEntries(
+        Object.entries(session.accounts)
+          .filter(([, account]) => MAIL in account.accountCapabilities)
+          .map(([id, account]) => [id, account.name]),
+      );
+      return {
+        login: currentSession().account.login,
+        accountId: session.accountId,
+        apiUrl: session.apiUrl,
+        accounts,
+      };
     },
     pushManager,
     unregister,
@@ -250,26 +259,48 @@ export async function forgetWebPush(): Promise<void> {
   }
 }
 
-/** `?open=<email>&thread=<thread>`: a notification opened the webmail for this message. */
+/** `?open=<email>&thread=<thread>[&account=…&mailbox=…]`: a notification opened the webmail for this message. */
 function openFromAddress(): void {
   const params = new URLSearchParams(window.location.search);
-  const emailId = params.get("open");
-  const threadId = params.get("thread");
-  if (!emailId || !threadId) return;
-  params.delete("open");
-  params.delete("thread");
+  const target = messageTarget({
+    emailId: params.get("open"),
+    threadId: params.get("thread"),
+    accountId: params.get("account"),
+    mailboxId: params.get("mailbox"),
+  });
+  if (!target) return;
+  for (const key of ["open", "thread", "account", "mailbox"]) params.delete(key);
   const rest = params.toString();
   window.history.replaceState(window.history.state, "", `${window.location.pathname}${rest ? `?${rest}` : ""}`);
-  void openMessage(emailId, threadId);
+  void openMessage(target);
 }
 
-/** Shows a message of the own inbox, the way clicking it in the list would. */
-export async function openMessage(emailId: string, threadId: string): Promise<void> {
-  const { listThreadId } = await import("@/backend/jmap/JmapBackend");
+/**
+ * Shows the message a notification was about, the way clicking it in the list would: mail of the
+ * own account in the inbox, mail of a shared account in its folder there.
+ */
+export async function openMessage(target: MessageTarget): Promise<void> {
+  const [{ listThreadId }, { scopeId }] = await Promise.all([
+    import("@/backend/jmap/JmapBackend"),
+    import("@/backend/jmap/sharing"),
+  ]);
+  let own: string | null = null;
+  try {
+    own = jmapSession().accountId;
+  } catch {
+    // Not loaded yet: only the own inbox can be opened.
+  }
+  const shared = own !== null && target.accountId && target.accountId !== own ? target.accountId : null;
   const ui = useUi.getState();
   ui.closeSettings();
-  ui.setView({ kind: "unified", role: "inbox" });
+  if (shared && target.mailboxId) {
+    ui.setView({ kind: "folder", accountId: shared, folderId: scopeId(shared, target.mailboxId, own!) });
+  } else {
+    ui.setView({ kind: "unified", role: "inbox" });
+  }
   ui.setFilter("all");
   ui.setSearch("");
-  useUi.getState().selectThread(listThreadId(emailId, threadId, useSettings.getState().conversations));
+  const scope = (id: string) => (shared ? scopeId(shared, id, own!) : id);
+  const conversations = useSettings.getState().conversations;
+  useUi.getState().selectThread(listThreadId(scope(target.emailId), scope(target.threadId), conversations));
 }

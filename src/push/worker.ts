@@ -1,8 +1,9 @@
 /**
  * What the service worker does with a push, apart from the browser around it (see src/sw), so it
  * can be tested: send a new subscription's verification code back, turn "new mail arrived" into
- * notifications by asking the server what is new in the inbox, keep the server's subscription from
- * running out, and make a new one when the browser replaces its own.
+ * notifications by asking the server what is new (in the own inbox, and in the folders others share
+ * with the account), keep the server's subscription from running out, and make a new one when the
+ * browser replaces its own.
  *
  * The service worker has the session cookie like the page, so it signs in the same way: the cookie
  * and, since the server wants it with every JMAP request, the session's CSRF token, which
@@ -17,12 +18,14 @@ import {
   MESSAGE_VERIFIED,
   PROGRESS_KEY,
   PUSH_TYPES,
-  newMailIn,
+  deliveredTo,
+  genericNotification,
   notificationsFor,
   parsePayload,
   utcDate,
   type KeyValue,
   type NewMail,
+  type AccountProgress,
   type NotificationSpec,
   type PushConfig,
   type PushProgress,
@@ -71,9 +74,22 @@ class Server {
   private csrf: Promise<string> | null = null;
 
   constructor(
-    private readonly env: WorkerEnv,
+    readonly env: WorkerEnv,
     private readonly config: PushConfig,
   ) {}
+
+  /** The JMAP session document, for the accounts there are now. */
+  async session(): Promise<{
+    accounts?: Record<string, { name?: string; accountCapabilities?: Record<string, unknown> }>;
+  }> {
+    const response = await this.env.fetch("/jmap/session", {
+      credentials: "same-origin",
+      headers: { accept: "application/json" },
+    });
+    if (response.status === 401) throw new SignedOut();
+    if (!response.ok) throw new Error(`The server answered ${response.status}.`);
+    return (await response.json()) as Awaited<ReturnType<Server["session"]>>;
+  }
 
   private token(): Promise<string> {
     this.csrf ??= (async () => {
@@ -149,7 +165,8 @@ export async function handlePush(env: WorkerEnv, data: unknown): Promise<void> {
       await verify(env, server, payload.subscriptionId, payload.code);
       return;
     }
-    if (newMailIn(payload, config.accountId)) await announceNewMail(env, server, config);
+    const accounts = deliveredTo(payload);
+    if (accounts.length > 0) await announceNewMail(env, server, config, accounts);
     await renewIfDue(env, server, config);
   });
 }
@@ -183,28 +200,60 @@ async function renewIfDue(env: WorkerEnv, server: Server, config: PushConfig): P
   }
 }
 
-/** Asks the server what is new and unread in the inbox since last time, and shows it. */
-async function announceNewMail(env: WorkerEnv, server: Server, config: PushConfig): Promise<void> {
-  const now = env.now();
-  const floor = utcDate(new Date(now.getTime() - LOOK_BACK_MS));
-  const stored = await env.kv.get<PushProgress>(PROGRESS_KEY);
-  const progress: PushProgress = stored ?? { since: utcDate(now), announced: [] };
-  const since = progress.since > floor ? progress.since : floor;
+/** Folders whose new mail is no news: nobody wants to hear about spam, or their own sent mail. */
+const QUIET_ROLES = ["junk", "trash", "sent", "drafts"];
 
-  let inboxId = progress.inboxId;
-  if (!inboxId) {
-    const found = await server.call([
-      ["Mailbox/query", { accountId: config.accountId, filter: { role: "inbox" } }, "m"],
-    ]);
-    inboxId = responseOf<{ ids: string[] }>(found, "m").ids[0];
-    if (!inboxId) return;
+/** The accounts' names, from the session, for a shared account that came after push was set up. */
+async function accountNames(server: Server, config: PushConfig): Promise<Record<string, string>> {
+  const session = await server.session();
+  const names: Record<string, string> = {};
+  for (const [id, account] of Object.entries(session.accounts ?? {})) {
+    if (account.accountCapabilities && "urn:ietf:params:jmap:mail" in account.accountCapabilities) {
+      names[id] = account.name ?? id;
+    }
   }
+  const current = (await server.env.kv.get<PushConfig>(CONFIG_KEY)) ?? config;
+  await server.env.kv.set(CONFIG_KEY, { ...current, accounts: names } satisfies PushConfig);
+  return names;
+}
+
+/**
+ * What is new and unread in one account since last time: in the own inbox, or, in an account
+ * someone shares folders with this one from (a shared mailbox like support@), in every folder it
+ * may read but spam, trash, sent and drafts. The server only sends EmailDelivery for those to
+ * people who may read the folder the mail came into.
+ */
+async function newIn(
+  server: Server,
+  config: PushConfig,
+  accountId: string,
+  name: string,
+  known: AccountProgress,
+  floor: string,
+): Promise<{ fresh: NewMail[]; progress: AccountProgress }> {
+  const own = accountId === config.accountId;
+  let mailboxes = known.mailboxes;
+  if (!mailboxes) {
+    const found = await server.call([["Mailbox/get", { accountId, ids: null, properties: ["id", "role"] }, "m"]]);
+    const list = responseOf<{ list: { id: string; role?: string | null }[] }>(found, "m").list;
+    mailboxes = {
+      inbox: list.find((mailbox) => mailbox.role === "inbox")?.id ?? null,
+      skip: list.filter((mailbox) => QUIET_ROLES.includes(mailbox.role ?? "")).map((mailbox) => mailbox.id),
+    };
+  }
+  if (own && !mailboxes.inbox) return { fresh: [], progress: { ...known, mailboxes } };
+  const since = known.since > floor ? known.since : floor;
+  const where = own
+    ? { inMailbox: mailboxes.inbox }
+    : mailboxes.skip.length > 0
+      ? { inMailboxOtherThan: mailboxes.skip }
+      : {};
   const body = await server.call([
     [
       "Email/query",
       {
-        accountId: config.accountId,
-        filter: { inMailbox: inboxId, notKeyword: "$seen", after: since },
+        accountId,
+        filter: { ...where, notKeyword: "$seen", after: since },
         sort: [{ property: "receivedAt", isAscending: false }],
         limit: MAX_NEW,
       },
@@ -213,26 +262,79 @@ async function announceNewMail(env: WorkerEnv, server: Server, config: PushConfi
     [
       "Email/get",
       {
-        accountId: config.accountId,
+        accountId,
         "#ids": { resultOf: "q", name: "Email/query", path: "/ids" },
-        properties: ["id", "threadId", "from", "subject", "receivedAt"],
+        properties: ["id", "threadId", "from", "subject", "mailboxIds", "receivedAt"],
       },
       "g",
     ],
   ]);
-  const fresh: NewMail[] = responseOf<{ list: NewMail[] }>(body, "g")
-    .list.filter((mail) => !progress.announced.includes(mail.id))
-    .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt));
-
-  const newest = fresh[0]?.receivedAt;
-  const next: PushProgress = {
-    since: newest && newest > progress.since ? newest : progress.since,
-    announced: [...fresh.map((mail) => mail.id), ...progress.announced].slice(0, MAX_REMEMBERED),
-    inboxId,
+  const skip = mailboxes.skip;
+  const fresh = responseOf<{ list: NewMail[] }>(body, "g")
+    .list.filter((mail) => !known.announced.includes(mail.id))
+    .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))
+    .map((mail): NewMail => {
+      if (own) return mail;
+      const folders = Object.keys(mail.mailboxIds ?? {});
+      const mailboxId = folders.find((id) => id === mailboxes.inbox) ?? folders.find((id) => !skip.includes(id));
+      return { ...mail, shared: { accountId, name, ...(mailboxId ? { mailboxId } : {}) } };
+    });
+  const newest = fresh.reduce((latest, mail) => (mail.receivedAt > latest ? mail.receivedAt : latest), known.since);
+  return {
+    fresh,
+    progress: {
+      since: newest,
+      announced: [...fresh.map((mail) => mail.id), ...known.announced].slice(0, MAX_REMEMBERED),
+      mailboxes,
+    },
   };
-  await env.kv.set(PROGRESS_KEY, next);
-  if (fresh.length === 0 || (await env.webmailInFront())) return;
-  for (const spec of notificationsFor(fresh, config)) await env.showNotification(spec);
+}
+
+/**
+ * Asks the server what is new and unread in the accounts a push named, and shows it. When nothing
+ * can be found (read elsewhere in the meantime, the server away), a plain "New mail" is shown all
+ * the same: a browser has to show something for every push, and would say something stranger.
+ */
+async function announceNewMail(env: WorkerEnv, server: Server, config: PushConfig, accounts: string[]): Promise<void> {
+  const now = env.now();
+  const floor = utcDate(new Date(now.getTime() - LOOK_BACK_MS));
+  const stored = await env.kv.get<PushProgress>(PROGRESS_KEY);
+  const progress: PushProgress =
+    stored && typeof stored.accounts === "object"
+      ? { since: stored.since, accounts: { ...stored.accounts } }
+      : { since: utcDate(now), accounts: {} };
+
+  const fresh: NewMail[] = [];
+  let failure: unknown = null;
+  let names = config.accounts ?? {};
+  for (const accountId of accounts) {
+    const own = accountId === config.accountId;
+    try {
+      if (!own && !(accountId in names)) names = await accountNames(server, config);
+      // Not an account of this session (any more): nothing of it to show.
+      if (!own && !(accountId in names)) continue;
+      const known = progress.accounts[accountId] ?? { since: progress.since, announced: [] };
+      const found = await newIn(server, config, accountId, names[accountId] ?? accountId, known, floor);
+      fresh.push(...found.fresh);
+      progress.accounts[accountId] = found.progress;
+    } catch (error) {
+      if (error instanceof SignedOut) {
+        failure = error;
+        break;
+      }
+      // An account that failed looks its folders up again next time.
+      const known = progress.accounts[accountId];
+      if (known) progress.accounts[accountId] = { since: known.since, announced: known.announced };
+    }
+  }
+  fresh.sort((a, b) => b.receivedAt.localeCompare(a.receivedAt));
+  if (!failure) await env.kv.set(PROGRESS_KEY, progress);
+
+  if (!(await env.webmailInFront())) {
+    const specs = fresh.length > 0 ? notificationsFor(fresh, config) : [genericNotification(config)];
+    for (const spec of specs) await env.showNotification(spec);
+  }
+  if (failure) throw failure;
 }
 
 /**

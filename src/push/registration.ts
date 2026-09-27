@@ -49,7 +49,13 @@ export interface PushDeps {
   /** The server's applicationServerKey, base64url; null when it offers none. */
   serverKey: () => string | null;
   /** Who is signed in, and where the API is. */
-  account: () => { login: string; accountId: string; apiUrl: string };
+  account: () => {
+    login: string;
+    accountId: string;
+    apiUrl: string;
+    /** The session's accounts with mail by id, with their names; the own one among them. */
+    accounts?: Record<string, string>;
+  };
   /**
    * The service worker's push manager. With `register`, the worker is registered (again) and this
    * waits until it is active; without, it answers null when there is none.
@@ -140,6 +146,7 @@ async function writeConfig(deps: PushDeps, showContent: boolean, subscribed: Sub
   const config: PushConfig = {
     login: account.login,
     accountId: account.accountId,
+    ...(account.accounts ? { accounts: account.accounts } : {}),
     apiUrl: account.apiUrl,
     deviceClientId: deps.deviceClientId(),
     showContent,
@@ -170,7 +177,7 @@ export async function enablePush(deps: PushDeps, showContent: boolean, ask = tru
   // The service worker needs to know where to send the code before it can arrive.
   await writeConfig(deps, showContent);
   // Old mail waiting unread is not news.
-  await deps.kv.set(PROGRESS_KEY, { since: utcDate(deps.now()), announced: [] } satisfies PushProgress);
+  await deps.kv.set(PROGRESS_KEY, { since: utcDate(deps.now()), accounts: {} } satisfies PushProgress);
 
   const stale = await ownSubscriptions(deps);
   const asked = expires(deps);

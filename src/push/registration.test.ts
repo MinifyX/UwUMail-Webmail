@@ -121,7 +121,12 @@ function world(
     kv: store,
     jmap,
     serverKey: () => state.serverKey,
-    account: () => ({ login: "mini@example.org", accountId: "a1", apiUrl: "/jmap/api" }),
+    account: () => ({
+      login: "mini@example.org",
+      accountId: "a1",
+      apiUrl: "/jmap/api",
+      accounts: { a1: "mini@example.org", a3: "support@example.org" },
+    }),
     pushManager: async (register) => {
       if (register) state.registered = true;
       return state.registered ? manager : null;
@@ -165,6 +170,7 @@ describe("setting Web Push up", () => {
     expect(kv.get(CONFIG_KEY)).toEqual({
       login: "mini@example.org",
       accountId: "a1",
+      accounts: { a1: "mini@example.org", a3: "support@example.org" },
       apiUrl: "/jmap/api",
       deviceClientId: "device-1",
       showContent: true,
@@ -175,7 +181,7 @@ describe("setting Web Push up", () => {
       expires: "2026-10-04T11:59:59Z",
     } satisfies PushConfig);
     // Mail that was already waiting is not news.
-    expect(kv.get(PROGRESS_KEY)).toEqual({ since: "2026-09-27T12:00:00Z", announced: [] });
+    expect(kv.get(PROGRESS_KEY)).toEqual({ since: "2026-09-27T12:00:00Z", accounts: {} });
   });
 
   it("stops when notifications are not allowed", async () => {
