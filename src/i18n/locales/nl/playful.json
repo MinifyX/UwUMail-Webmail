@@ -210,5 +210,9 @@
     "notification": {
       "newMail": "Post voor jou! ✉"
     }
+  },
+  "masked": {
+    "empty": "Nog geen gemaskeerde adressen. Zin in een kleine vermomming voor de volgende site waar je je aanmeldt? (｀・ω・´)",
+    "created": "Tada, je nieuwe vermomming is klaar ✿"
   }
 }

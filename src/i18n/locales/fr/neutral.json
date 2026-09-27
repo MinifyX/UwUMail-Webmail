@@ -322,6 +322,7 @@
     "linkDomainsInactive": "Pour l'instant, chaque lien s'ouvre sans demander.",
     "forgetLinkDomain": "Retirer {{domain}}",
     "rules": "Règles",
+    "masked": "Adresses masquées",
     "signaturesPerAddressDesc": "Une par adresse d'expéditeur, avec gras, liens et images, ajoutée aux nouveaux e-mails et aux réponses. Elle est conservée sur votre serveur de messagerie : le portail et vos autres applications de messagerie utilisent la même.",
     "addSignature": "Ajouter une signature"
   },
@@ -993,6 +994,77 @@
       "newMails": "{{count}} nouveaux messages",
       "noSubject": "(sans objet)",
       "hidden": "Ouvrez {{brand}} pour le lire."
+    }
+  },
+  "masked": {
+    "title": "Adresses masquées",
+    "description": "Une adresse masquée est une adresse aléatoire pour un seul site web. Les e-mails qui lui sont envoyés arrivent ici, mais le site ne connaît jamais votre vraie adresse. Si l'une d'elles reçoit du spam, vous savez qui l'a transmise et vous la désactivez. Les gestionnaires de mots de passe peuvent aussi en créer pour vous.",
+    "closedTitle": "Les adresses masquées ne sont pas activées pour vous",
+    "closedBody": "Votre administrateur n'a pas activé les nouvelles adresses masquées pour votre compte. Celles que vous avez déjà continuent de fonctionner et se gèrent ici.",
+    "new": "Nouvelle adresse masquée",
+    "create": "Créer l'adresse",
+    "created": "Votre nouvelle adresse est prête :",
+    "done": "Terminé",
+    "copy": "Copier {{email}}",
+    "copied": "Adresse copiée",
+    "copyFailed": "Impossible de copier l'adresse. Sélectionnez-la et copiez-la à la main.",
+    "field": {
+      "description": "Description",
+      "site": "Site web",
+      "url": "Lien (facultatif)",
+      "prefix": "Préfixe (facultatif)",
+      "domain": "Domaine"
+    },
+    "placeholder": {
+      "description": "p. ex. Boutique en ligne"
+    },
+    "hint": {
+      "url": "Là où vous l'utilisez, par exemple la page de votre compte ou une entrée du gestionnaire de mots de passe.",
+      "prefix": "Se place devant la partie aléatoire, comme shop.maple.otter482@…"
+    },
+    "domainAutomatic": "Automatique",
+    "onDomain": "Les nouvelles adresses se terminent par @{{domain}}.",
+    "problem": {
+      "tooLong": "{{max}} caractères au maximum.",
+      "control": "Les sauts de ligne et les caractères de contrôle ne sont pas acceptés ici.",
+      "spaces": "Un lien ne peut pas contenir d'espaces.",
+      "prefix": "Uniquement des lettres minuscules a–z, des chiffres et _, {{max}} caractères au maximum."
+    },
+    "loading": "Chargement des adresses masquées …",
+    "loadFailed": "Impossible de charger les adresses masquées. {{reason}}",
+    "empty": "Aucune adresse masquée pour l'instant. Créez-en une pour le prochain site où vous vous inscrivez.",
+    "emptyFilter": {
+      "active": "Aucune adresse masquée active.",
+      "disabled": "Aucune n'est désactivée.",
+      "deleted": "Aucune n'est supprimée."
+    },
+    "noMatch": "Aucune adresse masquée ne correspond à votre recherche.",
+    "search": "Rechercher des adresses masquées",
+    "filter": {
+      "label": "Afficher",
+      "active": "Actives",
+      "disabled": "Désactivées",
+      "deleted": "Supprimées"
+    },
+    "onOff": "Activer ou désactiver {{email}}",
+    "edit": "Modifier {{email}}",
+    "delete": "Supprimer {{email}}",
+    "restore": "Restaurer",
+    "openUrl": "Ouvrir le lien de {{email}}",
+    "createdAt": "Créée le {{date}}",
+    "lastMessage": "dernier e-mail le {{date}}",
+    "noMessage": "aucun e-mail pour l'instant",
+    "pending": "En attente de son premier e-mail. Sans e-mail sous 24 heures, elle est supprimée.",
+    "saved": "Modifications enregistrées",
+    "deleted": "{{email}} supprimée. Les e-mails qui lui sont envoyés sont désormais refusés.",
+    "restored": "{{email}} fonctionne à nouveau",
+    "error": {
+      "forbidden": "Impossible de créer cette adresse : le domaine ne vous est pas autorisé, ou vous avez atteint le nombre maximal d'adresses masquées.",
+      "invalid": "Le serveur n'a pas accepté ces informations. Vérifiez les champs et réessayez.",
+      "notFound": "Cette adresse masquée n'existe plus. La liste a été actualisée.",
+      "connection": "Le serveur est injoignable. Réessayez dans un instant.",
+      "signedOut": "Votre session a expiré. Reconnectez-vous pour continuer.",
+      "generic": "Un problème est survenu. Réessayez dans un instant."
     }
   }
 }

@@ -51,6 +51,10 @@ for the whole server or for single accounts.
 - **Shared folders and calendars.** Folders and calendars other people on
   the server share show up under their name, as far as they allow; your own
   can be shared from their menu.
+- **Masked addresses.** Where the server makes them, the settings list the
+  account's masked addresses — random ones for single websites, the same the
+  portal and password managers make — to copy, describe, switch off, delete
+  and bring back, and make new ones on the domains the admin allows.
 - **Calendar and contacts.** When the server keeps them for the account, the
   calendar and the address books sit next to the mail, the same ones a phone
   syncs over CalDAV and CardDAV.

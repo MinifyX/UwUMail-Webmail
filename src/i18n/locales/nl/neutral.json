@@ -314,6 +314,7 @@
     "linkDomainsInactive": "Op dit moment gaat elke link open zonder te vragen.",
     "forgetLinkDomain": "{{domain}} verwijderen",
     "rules": "Regels",
+    "masked": "Gemaskeerde adressen",
     "signaturesPerAddressDesc": "Eén per afzenderadres, met vet, links en afbeeldingen, voor nieuwe mail en antwoorden. Hij staat op je mailserver, dus het portaal en je andere mailapps gebruiken dezelfde.",
     "addSignature": "Handtekening toevoegen"
   },
@@ -966,6 +967,77 @@
       "newMails": "{{count}} nieuwe berichten",
       "noSubject": "(geen onderwerp)",
       "hidden": "Open {{brand}} om hem te lezen."
+    }
+  },
+  "masked": {
+    "title": "Gemaskeerde adressen",
+    "description": "Een gemaskeerd adres is een willekeurig adres voor één website. Mail ernaartoe komt hier binnen, maar de site komt je echte adres nooit te weten. Krijgt er een spam, dan weet je wie het heeft doorgegeven en zet je het uit. Wachtwoordmanagers kunnen ze ook voor je maken.",
+    "closedTitle": "Gemaskeerde adressen zijn niet voor je ingeschakeld",
+    "closedBody": "Je beheerder heeft nieuwe gemaskeerde adressen niet voor je account ingeschakeld. De adressen die je al hebt blijven werken en beheer je hier.",
+    "new": "Nieuw gemaskeerd adres",
+    "create": "Adres maken",
+    "created": "Je nieuwe adres is klaar:",
+    "done": "Klaar",
+    "copy": "{{email}} kopiëren",
+    "copied": "Adres gekopieerd",
+    "copyFailed": "Het adres kon niet worden gekopieerd. Selecteer het en kopieer het zelf.",
+    "field": {
+      "description": "Beschrijving",
+      "site": "Website",
+      "url": "Link (optioneel)",
+      "prefix": "Voorvoegsel (optioneel)",
+      "domain": "Domein"
+    },
+    "placeholder": {
+      "description": "bijv. Webwinkel"
+    },
+    "hint": {
+      "url": "Waar je het gebruikt, bijvoorbeeld je accountpagina of een item in je wachtwoordmanager.",
+      "prefix": "Komt voor het willekeurige deel, zoals shop.maple.otter482@…"
+    },
+    "domainAutomatic": "Automatisch",
+    "onDomain": "Nieuwe adressen eindigen op @{{domain}}.",
+    "problem": {
+      "tooLong": "Hooguit {{max}} tekens.",
+      "control": "Regeleinden en stuurtekens werken hier niet.",
+      "spaces": "Een link mag geen spaties bevatten.",
+      "prefix": "Alleen kleine letters a–z, cijfers en _, hooguit {{max}} tekens."
+    },
+    "loading": "Gemaskeerde adressen laden …",
+    "loadFailed": "De gemaskeerde adressen konden niet worden geladen. {{reason}}",
+    "empty": "Nog geen gemaskeerde adressen. Maak er een voor de volgende site waar je je aanmeldt.",
+    "emptyFilter": {
+      "active": "Geen actieve gemaskeerde adressen.",
+      "disabled": "Er staat er geen uit.",
+      "deleted": "Er is er geen verwijderd."
+    },
+    "noMatch": "Geen gemaskeerd adres past bij je zoekopdracht.",
+    "search": "Gemaskeerde adressen zoeken",
+    "filter": {
+      "label": "Tonen",
+      "active": "Actief",
+      "disabled": "Uit",
+      "deleted": "Verwijderd"
+    },
+    "onOff": "{{email}} aan of uit",
+    "edit": "{{email}} bewerken",
+    "delete": "{{email}} verwijderen",
+    "restore": "Herstellen",
+    "openUrl": "Link van {{email}} openen",
+    "createdAt": "Gemaakt op {{date}}",
+    "lastMessage": "laatste mail op {{date}}",
+    "noMessage": "nog geen mail",
+    "pending": "Wacht op de eerste mail. Komt er binnen 24 uur geen, dan wordt het verwijderd.",
+    "saved": "Wijzigingen opgeslagen",
+    "deleted": "{{email}} verwijderd. Mail ernaartoe wordt nu geweigerd.",
+    "restored": "{{email}} werkt weer",
+    "error": {
+      "forbidden": "Dit adres kan niet worden gemaakt: het domein is niet voor je toegestaan, of je hebt het maximale aantal gemaskeerde adressen bereikt.",
+      "invalid": "De server heeft deze gegevens niet geaccepteerd. Controleer de velden en probeer het opnieuw.",
+      "notFound": "Dit gemaskeerde adres bestaat niet meer. De lijst is vernieuwd.",
+      "connection": "De server is niet bereikbaar. Probeer het zo opnieuw.",
+      "signedOut": "Je sessie is verlopen. Meld je opnieuw aan om verder te gaan.",
+      "generic": "Er ging iets mis. Probeer het zo opnieuw."
     }
   }
 }
