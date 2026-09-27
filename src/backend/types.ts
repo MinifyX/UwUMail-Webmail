@@ -557,6 +557,58 @@ export interface ContactInput {
   note: string;
 }
 
+/**
+ * A masked address: a random address for one website that delivers to the account (Fastmail's
+ * MaskedEmail). `pending` ones wait for their first mail, `deleted` ones refuse mail for good.
+ */
+export type MaskedState = "pending" | "enabled" | "disabled" | "deleted";
+
+export interface MaskedAddress {
+  id: string;
+  email: string;
+  state: MaskedState;
+  /** The site it is for, as an origin like `https://shop.example`; empty when not given. */
+  forDomain: string;
+  description: string;
+  /** A link back to where it is used, e.g. a password manager's entry. */
+  url: string | null;
+  createdAt: string;
+  /** When the latest mail to it arrived; null before the first. */
+  lastMessageAt: string | null;
+  /** Who made it, as the server says (`JMAP`, `Portal`, …). */
+  createdBy: string;
+}
+
+/** What the server lets the account make masked addresses on. */
+export interface MaskedOptions {
+  /**
+   * The domains a new one may go on; null when the server doesn't say (older servers), which
+   * leaves the choice to it. Empty: nobody enabled masked addresses for the account.
+   */
+  domains: string[] | null;
+  /** The one taken when none is named; null leaves it to the server. */
+  defaultDomain: string | null;
+}
+
+/** A new masked address, made by hand and therefore `enabled` at once. */
+export interface MaskedAddressInput {
+  description: string;
+  forDomain: string;
+  url: string | null;
+  /** Put in front of the random part: `a-z`, `0-9` and `_`, up to 64. */
+  emailPrefix?: string;
+  /** One of `MaskedOptions.domains`; the server's default when left out. */
+  domain?: string;
+}
+
+export interface MaskedAddressPatch {
+  /** Never back to `pending`. */
+  state?: Exclude<MaskedState, "pending">;
+  description?: string;
+  forDomain?: string;
+  url?: string | null;
+}
+
 export type BackendEvent =
   | { type: "mail:changed"; accountId: string }
   | { type: "mail:received"; accountId: string; messageIds: string[] }
@@ -571,4 +623,6 @@ export type BackendEvent =
   /** Calendars or events changed, here or on another device. */
   | { type: "calendar:changed" }
   /** Address books or contacts changed, here or on another device. */
-  | { type: "contacts:changed" };
+  | { type: "contacts:changed" }
+  /** Masked addresses changed, here, on another device, or by arriving mail. */
+  | { type: "masked:changed" };

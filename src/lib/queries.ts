@@ -31,6 +31,8 @@ export const queryKeys = {
   scheduled: ["scheduled"] as const,
   sharedAccounts: ["sharedAccounts"] as const,
   people: ["people"] as const,
+  maskedOptions: ["maskedOptions"] as const,
+  maskedAddresses: ["maskedAddresses"] as const,
 };
 
 /** What went wrong, for a toast: a refusal of a shared folder's owner in the reader's words. */
@@ -353,6 +355,8 @@ export function useBackendEvents() {
         case "accounts:changed":
           void client.invalidateQueries({ queryKey: queryKeys.sharedAccounts });
           void client.invalidateQueries({ queryKey: queryKeys.folders });
+          // The session came anew: which domains masked addresses may use can have changed with it.
+          void client.invalidateQueries({ queryKey: queryKeys.maskedOptions });
           break;
         case "scheduled:changed":
           void client.invalidateQueries({ queryKey: queryKeys.scheduled });
@@ -374,6 +378,9 @@ export function useBackendEvents() {
         case "contacts:changed":
           void client.invalidateQueries({ queryKey: queryKeys.addressBooks });
           void client.invalidateQueries({ queryKey: queryKeys.contacts });
+          break;
+        case "masked:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.maskedAddresses });
           break;
       }
     });

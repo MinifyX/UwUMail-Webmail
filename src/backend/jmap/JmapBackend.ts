@@ -9,6 +9,7 @@
  */
 
 import { deviceTimeZone } from "@/lib/calendarDates";
+import { newestFirst } from "@/lib/maskedAddresses";
 import { textToHtml } from "@/lib/format";
 import { cleanSignatureHtml } from "@/lib/signatures";
 import type { ImageProxy } from "@/lib/remoteImages";
@@ -36,6 +37,10 @@ import type {
   Identity,
   MailInvitation,
   MailtoDraft,
+  MaskedAddress,
+  MaskedAddressInput,
+  MaskedAddressPatch,
+  MaskedOptions,
   MovedMessage,
   OutgoingMessage,
   ParticipationStatus,
@@ -121,6 +126,16 @@ import {
   signatureMigration,
   type JmapIdentityWithSignature,
 } from "./identitySignatures";
+import {
+  MASKED,
+  maskedCreate,
+  maskedOptionsFrom,
+  maskedSetError,
+  maskedUpdate,
+  toMaskedAddress,
+  type JmapMaskedEmail,
+  type JmapSetError,
+} from "./masked";
 import { SUGGEST, suggestionLimit, suggestionsToContacts, type JmapAddressSuggestion } from "./suggest";
 import {
   PRINCIPALS,
@@ -231,6 +246,13 @@ interface SetResponse {
   notCreated?: Record<string, { type: string; description?: string }>;
   notUpdated?: Record<string, { type: string; description?: string }>;
   notDestroyed?: Record<string, { type: string; description?: string }>;
+}
+
+/** MaskedEmail/set: what was made comes back in full, refusals may name their properties. */
+interface MaskedSetResponse {
+  created?: Record<string, Partial<JmapMaskedEmail>>;
+  notCreated?: Record<string, JmapSetError>;
+  notUpdated?: Record<string, JmapSetError>;
 }
 
 type JmapIdentity = JmapIdentityWithSignature;
@@ -410,6 +432,7 @@ export class JmapBackend implements Backend {
       if (changed.EmailSubmission) this.emit({ type: "scheduled:changed" });
       if (changed.Calendar || changed.CalendarEvent) this.emit({ type: "calendar:changed" });
       if (changed.AddressBook || changed.ContactCard) this.emit({ type: "contacts:changed" });
+      if (changed.MaskedEmail) this.emit({ type: "masked:changed" });
       if (changed.Identity) {
         this.forgetIdentities();
         this.emit({ type: "settings:changed", accountId: this.accountId });
@@ -1933,6 +1956,46 @@ export class JmapBackend implements Backend {
     await this.start();
     throwOnError(await this.contactCall<SetResponse>("ContactCard/set", { destroy: [id] }));
     this.emit({ type: "contacts:changed" });
+  }
+
+  async maskedOptions(): Promise<MaskedOptions | null> {
+    await this.start();
+    return maskedOptionsFrom(jmapSession().accounts[this.accountId]?.accountCapabilities);
+  }
+
+  private maskedCall<T>(name: string, args: Record<string, unknown>): Promise<T> {
+    if (!maskedOptionsFrom(jmapSession().accounts[this.accountId]?.accountCapabilities)) {
+      throw new BackendError("not_supported", "This server makes no masked addresses.");
+    }
+    return one<T>(name, args, [CORE, MASKED]);
+  }
+
+  async maskedAddresses(): Promise<MaskedAddress[]> {
+    await this.start();
+    const response = await this.maskedCall<GetResponse<JmapMaskedEmail>>("MaskedEmail/get", { ids: null });
+    return newestFirst(response.list.map(toMaskedAddress));
+  }
+
+  async createMaskedAddress(input: MaskedAddressInput): Promise<MaskedAddress> {
+    await this.start();
+    const create = maskedCreate(input);
+    const response = await this.maskedCall<MaskedSetResponse>("MaskedEmail/set", { create: { new: create } });
+    const problem = response.notCreated?.new;
+    if (problem) throw maskedSetError(problem);
+    const created = response.created?.new;
+    if (!created?.id || !created.email) throw new BackendError("internal", "The server didn't make the address.");
+    this.emit({ type: "masked:changed" });
+    return toMaskedAddress({ ...create, createdAt: new Date().toISOString(), ...created } as JmapMaskedEmail);
+  }
+
+  async updateMaskedAddress(id: string, patch: MaskedAddressPatch): Promise<void> {
+    await this.start();
+    const response = await this.maskedCall<MaskedSetResponse>("MaskedEmail/set", {
+      update: { [id]: maskedUpdate(patch) },
+    });
+    const problem = response.notUpdated?.[id];
+    if (problem) throw maskedSetError(problem);
+    this.emit({ type: "masked:changed" });
   }
 
   /**

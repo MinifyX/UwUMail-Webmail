@@ -4,6 +4,7 @@ import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
+import { DemoMasked } from "./demo-masked";
 import { rulesToSieve } from "@/lib/sieveRules";
 import { resolveLanguage } from "@/i18n";
 import { useSettings } from "@/state/settings";
@@ -36,6 +37,8 @@ import type {
   Identity,
   MailInvitation,
   MailtoDraft,
+  MaskedAddressInput,
+  MaskedAddressPatch,
   MovedMessage,
   Message,
   OutgoingMessage,
@@ -914,6 +917,27 @@ export class DemoBackend implements Backend {
     const problem = demoSieveProblem(script);
     if (problem) throw new BackendError("invalid_input", problem);
     this.sieveScripts.set(this.rulesAccount(accountId), { script, active: true });
+  }
+
+  private masked = new DemoMasked(lang(), () => this.emit({ type: "masked:changed" }));
+
+  async maskedOptions() {
+    return this.masked.options();
+  }
+
+  async maskedAddresses() {
+    await wait(150);
+    return this.masked.addresses();
+  }
+
+  async createMaskedAddress(input: MaskedAddressInput) {
+    await wait(200);
+    return this.masked.create(input);
+  }
+
+  async updateMaskedAddress(id: string, patch: MaskedAddressPatch) {
+    await wait(120);
+    this.masked.update(id, patch);
   }
 
   async searchContacts(query: string): Promise<Contact[]> {

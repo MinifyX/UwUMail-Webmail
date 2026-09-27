@@ -17,6 +17,10 @@ import type {
   Folder,
   Identity,
   MailInvitation,
+  MaskedAddress,
+  MaskedAddressInput,
+  MaskedAddressPatch,
+  MaskedOptions,
   MailtoDraft,
   MovedMessage,
   OutgoingMessage,
@@ -209,6 +213,18 @@ export interface Backend {
   deleteContact(id: string): Promise<void>;
   /** Address suggestions for the composer: the server ranks address books and mail history, older ones only the address books. */
   searchContacts(query: string): Promise<Contact[]>;
+
+  /**
+   * Whether the server makes masked addresses for the account (Fastmail's MaskedEmail extension)
+   * and on which domains; null without it, and the section stays hidden.
+   */
+  maskedOptions(): Promise<MaskedOptions | null>;
+  /** Every masked address of the account, deleted ones included, newest first. */
+  maskedAddresses(): Promise<MaskedAddress[]>;
+  /** Makes one, `enabled`. Throws `forbidden` when the domain isn't allowed or the limit is reached. */
+  createMaskedAddress(input: MaskedAddressInput): Promise<MaskedAddress>;
+  /** Changes the state (a deleted one may come back) or what it says about itself. */
+  updateMaskedAddress(id: string, patch: MaskedAddressPatch): Promise<void>;
 
   /** Downloads the attachment and hands out a blob URL for it. */
   getAttachment(attachmentId: string): Promise<AttachmentContent>;
