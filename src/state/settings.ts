@@ -50,6 +50,10 @@ export interface Settings {
   swipeLeft: SwipeAction;
   /** "Undo send": how long a sent mail waits in this page before it goes out. */
   undoSendSeconds: UndoSendSeconds;
+  /** Notifications about new mail while the webmail is closed (Web Push). This browser only. */
+  pushNotifications: boolean;
+  /** Notifications show sender and subject, or only that something came. */
+  pushShowContent: boolean;
 }
 
 interface SettingsActions {
@@ -84,6 +88,8 @@ export const DEFAULT_SETTINGS: Settings = {
   swipeRight: "read",
   swipeLeft: "archive",
   undoSendSeconds: 10,
+  pushNotifications: false,
+  pushShowContent: true,
 };
 
 /**

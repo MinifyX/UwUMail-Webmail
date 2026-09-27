@@ -317,6 +317,11 @@ function throwOnMailboxError(response: SetResponse): void {
 /** A conversation id the list uses when conversations are switched off. */
 const SINGLE = "msg:";
 
+/** The id the list and the reader know a message by, with conversations on or off. */
+export function listThreadId(emailId: string, threadId: string, conversations: boolean): string {
+  return conversations ? threadId : `${SINGLE}${emailId}`;
+}
+
 /**
  * A Message-ID without its angle brackets.
  *

@@ -12,6 +12,7 @@ import { BackendError, isDemo, loadBackend } from "@/backend/backend";
 import { PORTAL_URL, loadSession, webmailAccess } from "@/backend/server";
 import { useApplyBrand } from "@/lib/brand";
 import { useApplyTheme } from "@/lib/theme";
+import { forgetWebPush, startWebPush } from "@/push";
 import { startSettingsSync } from "@/state/accountSync";
 import { claimBrowser } from "@/state/browserOwner";
 import { applyServerPreferences } from "@/state/settings";
@@ -115,6 +116,8 @@ export function App() {
         const session = await loadSession();
         if (cancelled) return;
         if (!session) {
+          // The subscription belonged to the session that ended; the browser's goes too.
+          void forgetWebPush();
           setBoot({ state: "signedOut" });
           return;
         }
@@ -124,16 +127,20 @@ export function App() {
         const access = await webmailAccess();
         if (cancelled) return;
         if (!access.allowed) {
+          void forgetWebPush();
           setBoot({ state: "off", reason: access.reason ?? "server" });
           return;
         }
         await loadBackend();
         // The settings that follow the account come from the server's settings extension.
         void startSettingsSync();
+        // Notifications while the webmail is closed: renewed on every start, see push/.
+        void startWebPush();
         if (!cancelled) setBoot({ state: "ready" });
       } catch (error) {
         if (cancelled) return;
         if (error instanceof BackendError && error.code === "signed_out") {
+          void forgetWebPush();
           setBoot({ state: "signedOut" });
           return;
         }
