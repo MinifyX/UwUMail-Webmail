@@ -56,6 +56,11 @@ for the whole server or for single accounts.
   syncs over CalDAV and CardDAV.
 - **Fits a phone.** Below 700 px it turns into the app's phone layout, with
   swipes and a full-screen composer, and it can be put on the home screen.
+- **Notifications with the tab closed.** Switched on in the settings, the
+  browser announces new mail in the inbox even when no webmail tab is open
+  (Web Push through the server's JMAP push subscriptions). Only the news that
+  something changed goes through the browser's push service, encrypted;
+  sender and subject come from the server itself, and can be left out too.
 
 Mail HTML is never trusted: the server hands out a cleaned version, and the
 webmail shows it in a sandboxed frame that blocks scripts and remote content
@@ -74,6 +79,10 @@ pnpm build                   # typecheck, then dist/
 `pnpm build` writes `dist/`, which the server bakes into its binary. The
 server's container build clones this repository at a fixed commit, so a server
 release always carries one known webmail state.
+
+The service worker for notifications (`src/sw/`) is built on its own into
+`dist/sw.js` and served as `/mail/sw.js`. `pnpm dev` has none, so push can only
+be tried with a build served by the server.
 
 ## Licence
 

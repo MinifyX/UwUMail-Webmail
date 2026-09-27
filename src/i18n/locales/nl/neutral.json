@@ -948,5 +948,24 @@
     },
     "failed": "Het antwoord kon niet worden verzonden. {{reason}}",
     "cancelled": "De organisator heeft deze afspraak geannuleerd."
+  },
+  "push": {
+    "label": "Meld nieuwe mail, ook als de webmail gesloten is",
+    "description": "Je browser toont nieuwe mail in de inbox, ook als er geen {{brand}}-tabblad open is. Via de pushdienst van je browser gaat alleen het bericht dat er iets veranderd is; afzender en onderwerp komen rechtstreeks van je server.",
+    "showContent": "Afzender en onderwerp tonen",
+    "showContentDesc": "Staat dit uit, dan zegt een melding alleen dat er nieuwe mail is.",
+    "enabled": "Meldingen staan aan",
+    "problem": {
+      "unsupported": "Deze browser kan geen meldingen van websites tonen. Zet de webmail op een iPhone of iPad eerst op je beginscherm en open hem vanaf daar.",
+      "denied": "Je browser blokkeert meldingen voor deze site. Sta ze toe in de site-instellingen en zet dit daarna opnieuw aan.",
+      "unverified": "De pushdienst van je browser antwoordde niet op tijd. Probeer het zo nog eens.",
+      "failed": "Meldingen konden niet worden aangezet. Probeer het zo nog eens."
+    },
+    "notification": {
+      "newMail": "Nieuwe mail",
+      "newMails": "{{count}} nieuwe berichten",
+      "noSubject": "(geen onderwerp)",
+      "hidden": "Open {{brand}} om hem te lezen."
+    }
   }
 }

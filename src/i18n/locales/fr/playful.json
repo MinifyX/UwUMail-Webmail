@@ -209,5 +209,11 @@
       "created": "Noté dans l'agenda ✿",
       "deleted": "Pouf, disparu de l'agenda (・ω・)"
     }
+  },
+  "push": {
+    "enabled": "Notifications activées – Nyu toquera à ta fenêtre quand du courrier arrive (=^･ω･^=)",
+    "notification": {
+      "newMail": "Du courrier pour toi ! ✉"
+    }
   }
 }
