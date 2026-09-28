@@ -2,6 +2,7 @@
 // mail. No real people, addresses or numbers.
 
 import { BackendError } from "./backend";
+import { demoPortrait } from "./demo-pictures";
 import type { AddressBookInfo, Contact, ContactInput, ContactRecord } from "./types";
 
 type Lang = "de" | "en";
@@ -57,6 +58,7 @@ function sampleContacts(lang: Lang, accountId: string): ContactRecord[] {
       ],
       birthday: "1996-04-12",
       note: de ? "Mag Hafermilch und lange Spaziergänge." : "Likes oat milk and long walks.",
+      photo: demoPortrait("#cdeee0", "#7a4a2a", "#2f9e77"),
     }),
     person({
       id: "contact-noah",
@@ -193,7 +195,7 @@ export class DemoContacts {
         .map((postal, index) => ({ ...postal, id: postal.id || `a${index + 1}` })),
       birthday: input.birthdayChanged ? input.birthday : (before?.birthday ?? null),
       note: input.note.trim(),
-      photo: before?.photo ?? null,
+      photo: input.photo !== undefined ? input.photo : (before?.photo ?? null),
       isGroup: false,
     };
   }

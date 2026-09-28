@@ -178,6 +178,68 @@ describe("contacts flows", () => {
       expect.objectContaining({ addressBookId: "b2", organization: "Nyu & Co", given: "Mina", birthdayChanged: false }),
     );
   });
+
+  it("crops a pasted picture into the card", async () => {
+    const close = vi.fn();
+    vi.stubGlobal(
+      "createImageBitmap",
+      vi.fn(async () => ({ width: 640, height: 480, close })),
+    );
+    const context = {
+      setTransform: vi.fn(),
+      clearRect: vi.fn(),
+      fillRect: vi.fn(),
+      drawImage: vi.fn(),
+    };
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation((() => context) as never);
+    const toDataURL = vi
+      .spyOn(HTMLCanvasElement.prototype, "toDataURL")
+      .mockImplementation((type?: string) => `data:${type};base64,/9j/4AAQ`);
+    try {
+      renderContacts({ shell: false });
+      act(() => useContactsUi.getState().openEditor({ contact: CONTACTS[0]! }));
+      const dialog = await findDialog("Edit contact");
+
+      const paste = new Event("paste", { bubbles: true, cancelable: true });
+      Object.defineProperty(paste, "clipboardData", {
+        value: { files: [new File(["jpeg"], "shot.jpg", { type: "image/jpeg" })] },
+      });
+      act(() => {
+        document.dispatchEvent(paste);
+      });
+      expect(paste.defaultPrevented).toBe(true);
+      const crop = await findDialog("Crop picture");
+      fireEvent.click(await within(crop).findByRole("button", { name: "Use picture" }));
+      await waitFor(() => expect(screen.queryByRole("heading", { name: "Crop picture" })).toBeNull());
+      expect(toDataURL).toHaveBeenCalledWith("image/jpeg", 0.85);
+      expect(close).toHaveBeenCalled();
+
+      fireEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+      await waitFor(() => expect(fake.updateContact).toHaveBeenCalledTimes(1));
+      expect(fake.updateContact).toHaveBeenCalledWith(
+        "k1",
+        expect.objectContaining({ photo: "data:image/jpeg;base64,/9j/4AAQ" }),
+      );
+    } finally {
+      getContext.mockRestore();
+      toDataURL.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("removes a contact's picture", async () => {
+    renderContacts({ shell: false });
+    act(() =>
+      useContactsUi
+        .getState()
+        .openEditor({ contact: { ...CONTACTS[0]!, photo: "data:image/png;base64,iVBORw0KGgo=" } }),
+    );
+    const dialog = await findDialog("Edit contact");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Remove" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(fake.updateContact).toHaveBeenCalledTimes(1));
+    expect(fake.updateContact).toHaveBeenCalledWith("k1", expect.objectContaining({ photo: null }));
+  });
 });
 
 describe("drafts", () => {

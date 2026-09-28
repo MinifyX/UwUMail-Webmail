@@ -235,6 +235,8 @@ export interface Backend {
 
   /** Brand logo or website icon for a company address; null for people and mail providers. */
   getSenderPicture(email: string): Promise<SenderPicture | null>;
+  /** The logo of the company behind an address, e.g. for a contact's picture; null without one. */
+  companyLogo(email: string): Promise<Blob | null>;
   /** A remote image of a mail, for dark mode to recolor; null where the page has to do without. */
   fetchMailImage(url: string): Promise<Blob | null>;
   /**

@@ -214,5 +214,11 @@
   "masked": {
     "empty": "Nog geen gemaskeerde adressen. Zin in een kleine vermomming voor de volgende site waar je je aanmeldt? (｀・ω・´)",
     "created": "Tada, je nieuwe vermomming is klaar ✿"
+  },
+  "picture": {
+    "error": {
+      "notImage": "Hm, dat is helemaal geen afbeelding (・_・;)",
+      "unreadable": "Ik snap niks van die afbeelding (・_・;)"
+    }
   }
 }

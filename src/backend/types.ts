@@ -535,7 +535,7 @@ export interface ContactRecord {
   /** "YYYY-MM-DD", or "--MM-DD" when the year isn't known. */
   birthday: string | null;
   note: string;
-  /** A picture to show (a data: or https: URL); pictures can't be changed here yet. */
+  /** The card's picture: a `data:` URI inside the card. */
   photo: string | null;
   /** A group rather than a person; groups are shown but not edited. */
   isGroup: boolean;
@@ -555,6 +555,11 @@ export interface ContactInput {
   birthday: string | null;
   birthdayChanged: boolean;
   note: string;
+  /**
+   * A new picture as a `data:image/jpeg` URI (cropped in the browser), or null to remove the
+   * card's; left out, the card keeps its picture.
+   */
+  photo?: string | null;
 }
 
 /**

@@ -882,6 +882,15 @@
       "defaultSet": "Neue Kontakte landen jetzt in „{{name}}“",
       "bookCreated": "Adressbuch „{{name}}“ angelegt",
       "bookDeleted": "Adressbuch „{{name}}“ gelöscht"
+    },
+    "picture": {
+      "choose": "Bild auswählen",
+      "change": "Bild ändern",
+      "camera": "Foto aufnehmen",
+      "logo": "Firmenlogo",
+      "remove": "Entfernen",
+      "hint": "Oder zieh ein Bild auf den Kreis oder füge eins ein.",
+      "noLogo": "Für {{domain}} gibt es kein Logo."
     }
   },
   "scheduled": {
@@ -1038,6 +1047,23 @@
       "connection": "Der Server ist nicht erreichbar. Versuch es gleich noch einmal.",
       "signedOut": "Deine Sitzung ist abgelaufen. Melde dich neu an, um weiterzumachen.",
       "generic": "Etwas ist schiefgegangen. Versuch es gleich noch einmal."
+    }
+  },
+  "picture": {
+    "loading": "Bild wird geladen …",
+    "crop": {
+      "title": "Bild zuschneiden",
+      "area": "Bild im Kreis",
+      "hint": "Ziehen verschiebt, Scrollen oder zwei Finger zoomen. Tastatur: Pfeiltasten verschieben, + und − zoomen.",
+      "zoom": "Zoom",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "use": "Bild übernehmen"
+    },
+    "error": {
+      "notImage": "Das ist kein Bild.",
+      "tooLarge": "Das Bild ist zu groß. Bis {{size}} geht.",
+      "unreadable": "Das Bild ließ sich nicht lesen."
     }
   }
 }

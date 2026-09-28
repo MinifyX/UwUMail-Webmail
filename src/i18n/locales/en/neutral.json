@@ -882,6 +882,15 @@
       "defaultSet": "New contacts now go into “{{name}}”",
       "bookCreated": "Address book “{{name}}” created",
       "bookDeleted": "Address book “{{name}}” deleted"
+    },
+    "picture": {
+      "choose": "Choose picture",
+      "change": "Change picture",
+      "camera": "Take photo",
+      "logo": "Company logo",
+      "remove": "Remove",
+      "hint": "Or drop a picture on the circle, or paste one.",
+      "noLogo": "No logo found for {{domain}}."
     }
   },
   "scheduled": {
@@ -1038,6 +1047,23 @@
       "connection": "The server can't be reached. Try again in a moment.",
       "signedOut": "Your session has ended. Sign in again to continue.",
       "generic": "Something went wrong. Try again in a moment."
+    }
+  },
+  "picture": {
+    "loading": "Loading the picture…",
+    "crop": {
+      "title": "Crop picture",
+      "area": "Picture in the circle",
+      "hint": "Drag to move it, scroll or pinch to zoom. Keyboard: arrow keys move, + and − zoom.",
+      "zoom": "Zoom",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "use": "Use picture"
+    },
+    "error": {
+      "notImage": "That isn't a picture.",
+      "tooLarge": "That picture is too big. Up to {{size}} works.",
+      "unreadable": "That picture couldn't be read."
     }
   }
 }

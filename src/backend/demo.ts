@@ -750,6 +750,12 @@ export class DemoBackend implements Backend {
     return demoSenderPicture(email);
   }
 
+  async companyLogo(email: string): Promise<Blob | null> {
+    await wait(150);
+    const picture = demoSenderPicture(email);
+    return picture ? (await fetch(picture.url)).blob() : null;
+  }
+
   async fetchMailImage(): Promise<Blob | null> {
     // The demo's images are embedded; remote ones can only be read where their server allows it.
     return null;

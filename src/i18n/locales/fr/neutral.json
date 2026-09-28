@@ -909,6 +909,15 @@
       "defaultSet": "Les nouveaux contacts vont désormais dans « {{name}} »",
       "bookCreated": "Carnet d'adresses « {{name}} » créé",
       "bookDeleted": "Carnet d'adresses « {{name}} » supprimé"
+    },
+    "picture": {
+      "choose": "Choisir une image",
+      "change": "Changer l'image",
+      "camera": "Prendre une photo",
+      "logo": "Logo de l'entreprise",
+      "remove": "Retirer",
+      "hint": "Ou déposez une image sur le cercle, ou collez-en une.",
+      "noLogo": "Aucun logo trouvé pour {{domain}}."
     }
   },
   "scheduled": {
@@ -1065,6 +1074,23 @@
       "connection": "Le serveur est injoignable. Réessayez dans un instant.",
       "signedOut": "Votre session a expiré. Reconnectez-vous pour continuer.",
       "generic": "Un problème est survenu. Réessayez dans un instant."
+    }
+  },
+  "picture": {
+    "loading": "Chargement de l'image…",
+    "crop": {
+      "title": "Recadrer l'image",
+      "area": "Image dans le cercle",
+      "hint": "Faites glisser pour déplacer, faites défiler ou pincez pour zoomer. Clavier : les flèches déplacent, + et − zooment.",
+      "zoom": "Zoom",
+      "zoomIn": "Agrandir",
+      "zoomOut": "Réduire",
+      "use": "Utiliser l'image"
+    },
+    "error": {
+      "notImage": "Ce n'est pas une image.",
+      "tooLarge": "Cette image est trop grande. Jusqu'à {{size}}, ça passe.",
+      "unreadable": "Impossible de lire cette image."
     }
   }
 }

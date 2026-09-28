@@ -251,15 +251,33 @@ export function remoteImagePath(url: string): string | null {
   return onOwnOrigin(filled);
 }
 
-/** Where the server hands out the logo or website icon of a company sender; null when it can't. */
-export function senderPicturePath(email: string): string | null {
+/** What a sender picture lookup may do, see `pictureUrl` in the server's docs. */
+export interface PictureLookup {
+  /** Only the company or domain logo, never a person's picture (`source=logo`). */
+  logo?: boolean;
+  /** Nothing that needs a request to another server (`local=1`). */
+  local?: boolean;
+}
+
+/** The filled-in picture address with the lookup's options appended. */
+export function withPictureOptions(path: string, lookup: PictureLookup = {}): string {
+  const extra = [...(lookup.logo ? ["source=logo"] : []), ...(lookup.local ? ["local=1"] : [])];
+  if (extra.length === 0) return path;
+  return `${path}${path.includes("?") ? "&" : "?"}${extra.join("&")}`;
+}
+
+/**
+ * Where the server hands out the picture for an address: a contact's photo, a person's profile
+ * picture, or a company's logo or website icon. Null when the server can't.
+ */
+export function senderPicturePath(email: string, lookup: PictureLookup = {}): string | null {
   if (!session) return null;
   const remote = session.capabilities[REMOTE] as { pictureUrl?: unknown } | undefined;
   if (typeof remote?.pictureUrl !== "string") return null;
   const filled = remote.pictureUrl
     .replaceAll("{accountId}", encodeURIComponent(session.accountId))
     .replaceAll("{email}", encodeURIComponent(email));
-  return onOwnOrigin(filled);
+  return withPictureOptions(onOwnOrigin(filled), lookup);
 }
 
 /**

@@ -882,6 +882,15 @@
       "defaultSet": "Nieuwe contacten gaan nu naar “{{name}}”",
       "bookCreated": "Adresboek “{{name}}” aangemaakt",
       "bookDeleted": "Adresboek “{{name}}” verwijderd"
+    },
+    "picture": {
+      "choose": "Afbeelding kiezen",
+      "change": "Afbeelding wijzigen",
+      "camera": "Foto maken",
+      "logo": "Bedrijfslogo",
+      "remove": "Verwijderen",
+      "hint": "Of sleep een afbeelding op de cirkel, of plak er een.",
+      "noLogo": "Geen logo gevonden voor {{domain}}."
     }
   },
   "scheduled": {
@@ -1038,6 +1047,23 @@
       "connection": "De server is niet bereikbaar. Probeer het zo opnieuw.",
       "signedOut": "Je sessie is verlopen. Meld je opnieuw aan om verder te gaan.",
       "generic": "Er ging iets mis. Probeer het zo opnieuw."
+    }
+  },
+  "picture": {
+    "loading": "Afbeelding laden…",
+    "crop": {
+      "title": "Afbeelding bijsnijden",
+      "area": "Afbeelding in de cirkel",
+      "hint": "Sleep om te verschuiven, scroll of knijp om te zoomen. Toetsenbord: pijltjes verschuiven, + en − zoomen.",
+      "zoom": "Zoom",
+      "zoomIn": "Inzoomen",
+      "zoomOut": "Uitzoomen",
+      "use": "Afbeelding gebruiken"
+    },
+    "error": {
+      "notImage": "Dat is geen afbeelding.",
+      "tooLarge": "Die afbeelding is te groot. Tot {{size}} kan.",
+      "unreadable": "Die afbeelding kon niet worden gelezen."
     }
   }
 }

@@ -219,5 +219,11 @@
   "masked": {
     "empty": "Pas encore d'adresse masquée. Un petit déguisement pour le prochain site où vous vous inscrivez ? (｀・ω・´)",
     "created": "Tadaa, votre nouveau déguisement est prêt ✿"
+  },
+  "picture": {
+    "error": {
+      "notImage": "Hmm, ce n'est pas une image (・_・;)",
+      "unreadable": "Je n'arrive pas à lire cette image (・_・;)"
+    }
   }
 }

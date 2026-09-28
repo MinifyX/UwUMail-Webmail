@@ -214,5 +214,11 @@
   "masked": {
     "empty": "Noch keine maskierten Adressen. Magst du für die nächste Anmeldung eine kleine Verkleidung? (｀・ω・´)",
     "created": "Tada, deine neue Verkleidung ist fertig ✿"
+  },
+  "picture": {
+    "error": {
+      "notImage": "Hm, das ist gar kein Bild (・_・;)",
+      "unreadable": "Aus dem Bild werd ich nicht schlau (・_・;)"
+    }
   }
 }

@@ -2147,6 +2147,19 @@ export class JmapBackend implements Backend {
     }
   }
 
+  /** Only the logo steps of the server's lookup, so a person's own picture never comes back. */
+  async companyLogo(email: string): Promise<Blob | null> {
+    await this.start();
+    const path = senderPicturePath(email, { logo: true });
+    if (!path) return null;
+    try {
+      const response = await fetch(path, { credentials: "same-origin" });
+      return response.ok ? await response.blob() : null;
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Through the server's picture proxy, which is on our own origin, so the page may read what it
    * hands back. Without one, the page may only read images whose server allows it (CORS); dark

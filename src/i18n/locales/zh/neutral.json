@@ -855,6 +855,15 @@
       "defaultSet": "新联系人现在会添加到“{{name}}”",
       "bookCreated": "已创建通讯录“{{name}}”",
       "bookDeleted": "已删除通讯录“{{name}}”"
+    },
+    "picture": {
+      "choose": "选择图片",
+      "change": "更换图片",
+      "camera": "拍照",
+      "logo": "公司标志",
+      "remove": "移除",
+      "hint": "也可以把图片拖到圆圈上，或直接粘贴。",
+      "noLogo": "没有找到 {{domain}} 的标志。"
     }
   },
   "scheduled": {
@@ -1010,6 +1019,23 @@
       "connection": "无法连接服务器。请稍后重试。",
       "signedOut": "你的会话已结束。请重新登录后继续。",
       "generic": "出了点问题。请稍后重试。"
+    }
+  },
+  "picture": {
+    "loading": "正在加载图片…",
+    "crop": {
+      "title": "裁剪图片",
+      "area": "圆圈中的图片",
+      "hint": "拖动可移动，滚动或双指缩放。键盘：方向键移动，+ 和 − 缩放。",
+      "zoom": "缩放",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "use": "使用图片"
+    },
+    "error": {
+      "notImage": "这不是图片。",
+      "tooLarge": "图片太大了，最多 {{size}}。",
+      "unreadable": "无法读取这张图片。"
     }
   }
 }
