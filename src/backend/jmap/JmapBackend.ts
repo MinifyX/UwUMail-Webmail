@@ -15,7 +15,7 @@ import { cleanSignatureHtml } from "@/lib/signatures";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { createLimiter } from "@/lib/concurrency";
-import { unsubscribeMail } from "@/lib/unsubscribe";
+import { oneClickResultOf, runUnsubscribe, type OneClickResult } from "@/lib/unsubscribe";
 import { BackendError, type Backend, type SignatureStore } from "../backend";
 import type {
   Account,
@@ -97,6 +97,7 @@ import {
   SENDERS,
   SIEVE,
   SUBMISSION,
+  UNSUBSCRIBE,
   WEBMAIL,
   accountCapability,
   call,
@@ -971,8 +972,9 @@ export class JmapBackend implements Backend {
       const newest = [...emails].sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))[0]!;
       emails = [newest];
     }
+    const oneClick = this.oneClickFor(accountId);
     const messages = emails
-      .map((email) => toMessage(email, accountId, this.folderMap))
+      .map((email) => toMessage(email, accountId, this.folderMap, oneClick))
       .sort((a, b) => a.date.localeCompare(b.date));
     return {
       thread: toThreadSummary(threadId, emails, accountId),
@@ -1152,15 +1154,21 @@ export class JmapBackend implements Backend {
     throwOnError(await one<SetResponse>("SenderList/set", { destroy: [sender.serverId] }, [CORE, SENDERS]));
   }
 
+  /** Whether the server does the one-click unsubscribe (RFC 8058) for mail of this account. */
+  private oneClickFor(accountId: string): boolean {
+    const account = jmapSession().accounts[accountId];
+    return supports(UNSUBSCRIBE) && !!account && UNSUBSCRIBE in account.accountCapabilities;
+  }
+
   /**
    * Unsubscribing from a newsletter.
    *
-   * The app can also do the one-click POST (RFC 8058) itself, because its engine may talk to
-   * other servers. A page in a browser may not, and having the server do it would mean letting a
-   * mail header decide where the server sends requests — so the mail way is taken where there is
-   * one, and otherwise the browser opens the sender's page.
+   * Where the server offers it, it does the one-click POST (RFC 8058) itself: a page in a browser
+   * can't, and the server sends it through the same guards as remote pictures, without cookies,
+   * only for a link a valid DKIM signature vouches for. Mail it can't do that for goes the old way:
+   * a mail where the header names an address, otherwise the sender's page opens.
    */
-  async unsubscribe(messageId: string): Promise<UnsubscribeOutcome> {
+  async unsubscribe(messageId: string, options: { oneClick?: boolean } = {}): Promise<UnsubscribeOutcome> {
     await this.start();
     const target = unscopeId(messageId, this.accountId);
     const response = await one<GetResponse<JmapEmail>>("Email/get", {
@@ -1170,33 +1178,45 @@ export class JmapBackend implements Backend {
     });
     const email = response.list[0];
     if (!email) throw new BackendError("not_found", "That mail is gone.");
-    const options = toUnsubscribe(email);
-    if (!options) throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
+    const found = toUnsubscribe(email, this.oneClickFor(target.accountId));
+    if (!found) throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
 
-    if (options.mailto) {
-      const target = unsubscribeMail(options.mailto);
-      if (!target) throw new BackendError("invalid_input", "That unsubscribe address makes no sense.");
-      const identities = await this.listIdentities();
-      // From the address the newsletter went to, where that is one of ours.
-      const wentTo = (email.to ?? []).map((entry) => entry.email.toLowerCase());
-      const from =
-        identities.find((identity) => wentTo.includes(identity.email.toLowerCase())) ??
-        identities.find((identity) => identity.primary);
-      await this.send({
-        accountId: this.accountId,
-        to: [{ email: target.address }],
-        cc: [],
-        bcc: [],
-        subject: target.subject,
-        text: "unsubscribe",
-        html: "",
-        attachments: [],
-        ...(from ? { fromEmail: from.email } : {}),
-      });
+    return runUnsubscribe(
+      found,
+      {
+        oneClick: () => this.oneClickUnsubscribe(target.accountId, target.id),
+        sendMail: async (mail) => {
+          const identities = await this.listIdentities();
+          // From the address the newsletter went to, where that is one of ours.
+          const wentTo = (email.to ?? []).map((entry) => entry.email.toLowerCase());
+          const from =
+            identities.find((identity) => wentTo.includes(identity.email.toLowerCase())) ??
+            identities.find((identity) => identity.primary);
+          await this.send({
+            accountId: this.accountId,
+            to: [{ email: mail.address }],
+            cc: [],
+            bcc: [],
+            subject: mail.subject,
+            text: "unsubscribe",
+            html: "",
+            attachments: [],
+            ...(from ? { fromEmail: from.email } : {}),
+          });
+        },
+      },
+      options.oneClick !== false,
+    );
+  }
+
+  /** `Email/unsubscribe`: the server POSTs `List-Unsubscribe=One-Click` to the sender's link. */
+  private async oneClickUnsubscribe(accountId: string, emailId: string): Promise<OneClickResult> {
+    try {
+      await call([["Email/unsubscribe", { accountId, emailId }, "u"]], [CORE, MAIL, UNSUBSCRIBE]);
       return { kind: "done" };
+    } catch (error) {
+      return oneClickResultOf(error);
     }
-    if (options.url) return { kind: "openPage", url: options.url };
-    throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
   }
 
   async inboxMessagesFrom(email: string): Promise<string[]> {

@@ -493,7 +493,18 @@
     "mailTo": "这会以你的名义向 {{address}} 发送一封邮件。",
     "body": "{{brand}} 会直接向发件人为你办理退订。之后应该不会再收到来自那里的邮件。",
     "bodyPage": "发件人为此提供了专门的页面。{{brand}} 会为你打开它，请在那里确认。",
-    "archive": "归档之前来自该发件人的邮件"
+    "archive": "归档之前来自该发件人的邮件",
+    "bodyOneClick": "{{brand}} 会请求发件人的服务器一步将你移出列表。之后应该不会再收到来自那里的邮件。",
+    "orMail": "如果这样行不通，会以你的名义向 {{address}} 发送一封邮件。",
+    "orPage": "如果这样行不通，会打开发件人自己的页面。",
+    "failedTitle": "没有成功",
+    "failed": "发件人的服务器没有接受：{{reason}}",
+    "failedNoReason": "发件人的服务器没有接受。",
+    "tryMail": "你也可以改用邮件退订。这会以你的名义向 {{address}} 发送一封邮件。",
+    "tryPage": "你也可以改在发件人自己的页面上退订。",
+    "noOtherWay": "这封邮件没有提供其他方式。请稍后再试。",
+    "sendMail": "发送邮件",
+    "openPage": "打开页面"
   },
   "deleteForever": {
     "title_other": "要永久删除 {{count}} 封邮件吗？",

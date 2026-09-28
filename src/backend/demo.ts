@@ -6,6 +6,7 @@ import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
 import { DemoMasked } from "./demo-masked";
 import { rulesToSieve } from "@/lib/sieveRules";
+import { runUnsubscribe } from "@/lib/unsubscribe";
 import { resolveLanguage } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import {
@@ -118,11 +119,21 @@ export class DemoBackend implements Backend {
     ...DEMO_ACCOUNTS.flatMap((a) => buildFolders(a.id, lang())).map((folder) => ({ ...folder, rights: ALL_RIGHTS })),
     ...this.shared.folders,
   ];
-  // Newsletters and offers carry a List-Unsubscribe like the real ones.
+  // Newsletters and offers carry a List-Unsubscribe like the real ones; the "server" does the one
+  // click for both, and the bakery's side doesn't answer, so its mail address is the way back.
   private messages: Message[] = [
     ...buildMessages(lang()).map((message) =>
       /newsletter|aktion|offer|deal/i.test(message.subject)
-        ? { ...message, unsubscribe: { oneClick: true, url: "https://pixelparts.example/unsubscribe" } }
+        ? {
+            ...message,
+            unsubscribe: message.from.email.endsWith("@kaffeekuchen.example")
+              ? {
+                  oneClick: true,
+                  url: "https://kaffeekuchen.example/abmelden",
+                  mailto: "mailto:abmelden@kaffeekuchen.example",
+                }
+              : { oneClick: true, url: "https://pixelparts.example/unsubscribe" },
+          }
         : message,
     ),
     ...this.shared.messages,
@@ -480,14 +491,29 @@ export class DemoBackend implements Backend {
     return this.moveToRole(messageIds, spam ? "junk" : "inbox");
   }
 
-  async unsubscribe(messageId: string): Promise<UnsubscribeOutcome> {
+  async unsubscribe(messageId: string, options: { oneClick?: boolean } = {}): Promise<UnsubscribeOutcome> {
     await wait(700);
     const message = this.messages.find((m) => m.id === messageId);
     if (!message?.unsubscribe) throw new BackendError("invalid_input", "This mail has no way to unsubscribe.");
-    for (const other of this.messages) {
-      if (other.from.email === message.from.email) delete other.unsubscribe;
+    const outcome = await runUnsubscribe(
+      message.unsubscribe,
+      {
+        oneClick: async () =>
+          message.from.email.endsWith("@kaffeekuchen.example")
+            ? { kind: "failed", reason: "kaffeekuchen.example answered 503." }
+            : { kind: "done" },
+        sendMail: async () => {
+          await wait(300);
+        },
+      },
+      options.oneClick !== false,
+    );
+    if (outcome.kind === "done") {
+      for (const other of this.messages) {
+        if (other.from.email === message.from.email) delete other.unsubscribe;
+      }
     }
-    return { kind: "done" };
+    return outcome;
   }
 
   async inboxMessagesFrom(email: string) {

@@ -143,7 +143,8 @@
     }
   },
   "unsubscribe": {
-    "title": "Doei doei {{name}}?"
+    "title": "Doei doei {{name}}?",
+    "failedTitle": "Hm, dat is niet gelukt (・_・;)"
   },
   "deleteForever": {
     "title_one": "Voor altijd afscheid nemen van deze? (｡•́︿•̀｡)",

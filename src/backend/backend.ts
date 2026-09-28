@@ -140,8 +140,11 @@ export interface Backend {
   markSpam(messageIds: string[], spam: boolean): Promise<MovedMessage[]>;
   /** What this server keeps on the account's blocked list. */
   blockedSenders(): Promise<BlockedSender[]>;
-  /** One click or a mail where possible; otherwise the page to open. */
-  unsubscribe(messageId: string): Promise<UnsubscribeOutcome>;
+  /**
+   * Unsubscribes: with one click through the server where it can (RFC 8058), otherwise, or with
+   * `oneClick: false`, with a mail where the header names an address, else the page to open.
+   */
+  unsubscribe(messageId: string, options?: { oneClick?: boolean }): Promise<UnsubscribeOutcome>;
   /** Inbox mail from an address, e.g. a newsletter's earlier issues. */
   inboxMessagesFrom(email: string): Promise<string[]>;
   blockSender(entry: string, accountId?: string): Promise<BlockedSender>;

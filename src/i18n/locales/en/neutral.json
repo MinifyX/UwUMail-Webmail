@@ -502,7 +502,18 @@
     "mailTo": "That sends a mail from you to {{address}}.",
     "body": "{{brand}} unsubscribes you with the sender directly. After that, no more mail should come from there.",
     "bodyPage": "The sender has its own page for this. {{brand}} opens it for you, and you confirm there.",
-    "archive": "Archive earlier mail from there"
+    "archive": "Archive earlier mail from there",
+    "bodyOneClick": "{{brand}} asks the sender's server to take you off the list, in one step. After that, no more mail should come from there.",
+    "orMail": "If it can't be done that way, a mail goes from you to {{address}}.",
+    "orPage": "If it can't be done that way, the sender's own page opens.",
+    "failedTitle": "That didn't work",
+    "failed": "The sender's server didn't take it: {{reason}}",
+    "failedNoReason": "The sender's server didn't take it.",
+    "tryMail": "You can unsubscribe by mail instead. That sends a mail from you to {{address}}.",
+    "tryPage": "You can unsubscribe on the sender's own page instead.",
+    "noOtherWay": "This mail offers no other way. Try again later.",
+    "sendMail": "Send the mail",
+    "openPage": "Open the page"
   },
   "deleteForever": {
     "title_one": "Delete this message forever?",

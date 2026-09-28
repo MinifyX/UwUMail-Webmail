@@ -145,7 +145,8 @@
     }
   },
   "unsubscribe": {
-    "title": "Bye bye {{name}} ?"
+    "title": "Bye bye {{name}} ?",
+    "failedTitle": "Hmm, cela n'a pas fonctionné (・_・;)"
   },
   "deleteForever": {
     "title_one": "Dire adieu à celui-ci pour toujours ? (｡•́︿•̀｡)",

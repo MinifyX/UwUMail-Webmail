@@ -511,7 +511,18 @@
     "mailTo": "Cela envoie un e-mail de votre part à {{address}}.",
     "body": "{{brand}} vous désabonne directement auprès de l'expéditeur. Ensuite, vous ne devriez plus recevoir d'e-mails de sa part.",
     "bodyPage": "L'expéditeur a sa propre page pour cela. {{brand}} l'ouvre pour vous, et vous confirmez là-bas.",
-    "archive": "Archiver les e-mails précédents de cet expéditeur"
+    "archive": "Archiver les e-mails précédents de cet expéditeur",
+    "bodyOneClick": "{{brand}} demande au serveur de l'expéditeur de vous retirer de la liste, en une étape. Ensuite, vous ne devriez plus recevoir d'e-mails de sa part.",
+    "orMail": "Si ce n'est pas possible ainsi, un e-mail part de votre part à {{address}}.",
+    "orPage": "Si ce n'est pas possible ainsi, la page de l'expéditeur s'ouvre.",
+    "failedTitle": "Cela n'a pas fonctionné",
+    "failed": "Le serveur de l'expéditeur ne l'a pas accepté : {{reason}}",
+    "failedNoReason": "Le serveur de l'expéditeur ne l'a pas accepté.",
+    "tryMail": "Vous pouvez vous désabonner par e-mail à la place. Cela envoie un e-mail de votre part à {{address}}.",
+    "tryPage": "Vous pouvez vous désabonner sur la page de l'expéditeur à la place.",
+    "noOtherWay": "Cet e-mail ne propose pas d'autre moyen. Réessayez plus tard.",
+    "sendMail": "Envoyer l'e-mail",
+    "openPage": "Ouvrir la page"
   },
   "deleteForever": {
     "title_one": "Supprimer définitivement ce message ?",

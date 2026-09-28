@@ -181,13 +181,23 @@ export interface Attachment {
 
 /** How a newsletter says to unsubscribe. */
 export interface Unsubscribe {
-  /** The HTTPS link takes one POST, no page. */
+  /**
+   * The server can unsubscribe with the one POST of RFC 8058 itself: it offers that, and the mail
+   * has a List-Unsubscribe-Post header. The mail or the page is then only the way back.
+   */
   oneClick: boolean;
   url?: string;
   mailto?: string;
 }
 
-export type UnsubscribeOutcome = { kind: "done" } | { kind: "openPage"; url: string };
+/** What else there is when the one-click way didn't work: a mail, the sender's page, or nothing. */
+export type UnsubscribeFallback = "mail" | "page" | null;
+
+export type UnsubscribeOutcome =
+  | { kind: "done"; via: "oneClick" | "mail" }
+  | { kind: "openPage"; url: string }
+  /** The server tried the one click, and the sender's side didn't take it. */
+  | { kind: "oneClickFailed"; reason: string; fallback: UnsubscribeFallback };
 
 export interface Message {
   id: string;

@@ -141,7 +141,8 @@
     }
   },
   "unsubscribe": {
-    "title": "和 {{name}} 说拜拜？"
+    "title": "和 {{name}} 说拜拜？",
+    "failedTitle": "嗯，没有成功 (・_・;)"
   },
   "deleteForever": {
     "title_other": "要和这 {{count}} 封邮件永远说再见吗？(｡•́︿•̀｡)",

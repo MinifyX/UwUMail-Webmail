@@ -141,7 +141,8 @@
     }
   },
   "unsubscribe": {
-    "title": "{{name}} にバイバイしますか？"
+    "title": "{{name}} にバイバイしますか？",
+    "failedTitle": "うーん、うまくいかなかったよ (・_・;)"
   },
   "deleteForever": {
     "title_other": "{{count}} 件のメールと永遠にお別れしますか？ (｡•́︿•̀｡)",

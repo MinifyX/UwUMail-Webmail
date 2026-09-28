@@ -502,7 +502,18 @@
     "mailTo": "Daarmee wordt een mail van jou naar {{address}} gestuurd.",
     "body": "{{brand}} meldt je direct af bij de afzender. Daarna zou er geen mail meer van daar moeten komen.",
     "bodyPage": "De afzender heeft hier een eigen pagina voor. {{brand}} opent die voor je en je bevestigt het daar.",
-    "archive": "Eerdere mail van daar archiveren"
+    "archive": "Eerdere mail van daar archiveren",
+    "bodyOneClick": "{{brand}} vraagt de server van de afzender in één stap om je van de lijst te halen. Daarna zou er geen mail meer van daar moeten komen.",
+    "orMail": "Lukt dat zo niet, dan gaat er een mail van jou naar {{address}}.",
+    "orPage": "Lukt dat zo niet, dan opent de pagina van de afzender.",
+    "failedTitle": "Dat is niet gelukt",
+    "failed": "De server van de afzender nam het niet aan: {{reason}}",
+    "failedNoReason": "De server van de afzender nam het niet aan.",
+    "tryMail": "Je kunt je in plaats daarvan per mail afmelden. Daarmee gaat er een mail van jou naar {{address}}.",
+    "tryPage": "Je kunt je in plaats daarvan op de pagina van de afzender afmelden.",
+    "noOtherWay": "Deze mail biedt geen andere manier. Probeer het later opnieuw.",
+    "sendMail": "Mail versturen",
+    "openPage": "Pagina openen"
   },
   "deleteForever": {
     "title_one": "Dit bericht definitief verwijderen?",

@@ -143,7 +143,8 @@
     }
   },
   "unsubscribe": {
-    "title": "Bye bye {{name}}?"
+    "title": "Bye bye {{name}}?",
+    "failedTitle": "Hmm, that didn't work (・_・;)"
   },
   "deleteForever": {
     "title_one": "Say goodbye to this one forever? (｡•́︿•̀｡)",

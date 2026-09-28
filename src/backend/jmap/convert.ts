@@ -162,12 +162,17 @@ export function toAttachments(email: JmapEmail): Attachment[] {
     }));
 }
 
-export function toUnsubscribe(email: JmapEmail): Unsubscribe | undefined {
+/**
+ * How the mail says to unsubscribe. `serverOneClick` says the server does the one-click POST
+ * (UwUMail's unsubscribe extension); it is offered for every mail with a List-Unsubscribe-Post
+ * header, and the server checks the rest (the https link, the DKIM signature over both headers).
+ */
+export function toUnsubscribe(email: JmapEmail, serverOneClick = false): Unsubscribe | undefined {
   const values = email["header:List-Unsubscribe:asURLs"] ?? [];
   if (values.length === 0) return undefined;
   const url = values.find((value) => value.startsWith("https://"));
   const mailto = values.find((value) => value.startsWith("mailto:"));
-  const oneClick = !!url && (email["header:List-Unsubscribe-Post:asText"] ?? "").includes("List-Unsubscribe=One-Click");
+  const oneClick = serverOneClick && (email["header:List-Unsubscribe-Post:asText"] ?? "").trim() !== "";
   return {
     oneClick,
     ...(url ? { url } : {}),
@@ -175,9 +180,14 @@ export function toUnsubscribe(email: JmapEmail): Unsubscribe | undefined {
   };
 }
 
-export function toMessage(email: JmapEmail, accountId: string, folders: Map<string, Folder>): Message {
+export function toMessage(
+  email: JmapEmail,
+  accountId: string,
+  folders: Map<string, Folder>,
+  serverOneClick = false,
+): Message {
   const text = partText(email, email.textBody?.[0] ?? undefined);
-  const unsubscribe = toUnsubscribe(email);
+  const unsubscribe = toUnsubscribe(email, serverOneClick);
   return {
     id: email.id,
     threadId: email.threadId,

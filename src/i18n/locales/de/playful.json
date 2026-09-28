@@ -143,7 +143,8 @@
     }
   },
   "unsubscribe": {
-    "title": "Tschüss {{name}}?"
+    "title": "Tschüss {{name}}?",
+    "failedTitle": "Hm, das hat nicht geklappt (・_・;)"
   },
   "deleteForever": {
     "title_one": "Diese Mail für immer löschen? (｡•́︿•̀｡)",

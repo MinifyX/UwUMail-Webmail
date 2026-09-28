@@ -51,6 +51,11 @@ for the whole server or for single accounts.
 - **Shared folders and calendars.** Folders and calendars other people on
   the server share show up under their name, as far as they allow; your own
   can be shared from their menu.
+- **Unsubscribing in one click.** Where the sender offers it (RFC 8058), the
+  server does the one-click unsubscribe itself — through the same guards as
+  remote pictures, only for links the sender's DKIM signature covers. Mail
+  without it goes the old way: a mail to the list, whose address you see
+  first, or the sender's own page.
 - **Masked addresses.** Where the server makes them, the settings list the
   account's masked addresses — random ones for single websites, the same the
   portal and password managers make — to copy, describe, switch off, delete

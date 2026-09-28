@@ -23,6 +23,8 @@ export const CONTACTS = "urn:ietf:params:jmap:contacts";
 export const WEBMAIL = "urn:uwumail:jmap:webmail";
 /** Our own: a mail's remote pictures, fetched by the server so their senders never see the reader. */
 export const REMOTE = "urn:uwumail:jmap:remote";
+/** Our own: the one-click unsubscribe of RFC 8058, done by the server (`Email/unsubscribe`). */
+export const UNSUBSCRIBE = "urn:uwumail:jmap:unsubscribe";
 
 /** An account of the session: the person's own, or one somebody shares folders from. */
 export interface JmapAccount {
@@ -160,23 +162,27 @@ export interface MethodResponse {
 /** A method the server answered with an error, e.g. `stateMismatch`. */
 export class JmapMethodError extends BackendError {
   readonly type: string;
+  /** The server's own words, when it gave any. */
+  readonly description: string | null;
 
-  constructor(code: BackendErrorCode, message: string, type: string) {
+  constructor(code: BackendErrorCode, message: string, type: string, description: string | null = null) {
     super(code, message);
     this.type = type;
+    this.description = description;
   }
 }
 
 function methodError(name: string, args: Record<string, unknown>): JmapMethodError {
   const type = typeof args.type === "string" ? args.type : "unknown";
-  const description = typeof args.description === "string" ? args.description : name;
+  const given = typeof args.description === "string" ? args.description : null;
+  const description = given ?? name;
   if (type === "accountNotFound" || type === "forbidden")
     return new JmapMethodError("webmail_disabled", description, type);
   if (type === "invalidArguments" || type === "invalidPatch")
     return new JmapMethodError("invalid_input", description, type);
   if (type === "unknownMethod" || type === "unknownCapability")
     return new JmapMethodError("not_supported", description, type);
-  return new JmapMethodError("internal", `${type}: ${description}`, type);
+  return new JmapMethodError("internal", `${type}: ${description}`, type, given);
 }
 
 /** One JMAP request with as many method calls as fit; throws on a method-level error. */

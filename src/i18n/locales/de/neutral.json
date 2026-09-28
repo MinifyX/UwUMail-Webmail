@@ -502,7 +502,18 @@
     "mailTo": "Dafür geht eine Mail von dir an {{address}}.",
     "body": "{{brand}} meldet dich direkt beim Absender ab. Danach sollten keine Mails mehr von dort kommen.",
     "bodyPage": "Der Absender hat dafür eine eigene Seite. {{brand}} öffnet sie für dich, dort bestätigst du die Abmeldung.",
-    "archive": "Bisherige Mails von dort archivieren"
+    "archive": "Bisherige Mails von dort archivieren",
+    "bodyOneClick": "{{brand}} bittet den Server des Absenders in einem Schritt, dich aus der Liste zu nehmen. Danach sollten keine Mails mehr von dort kommen.",
+    "orMail": "Klappt das so nicht, geht eine Mail von dir an {{address}}.",
+    "orPage": "Klappt das so nicht, öffnet sich die Seite des Absenders.",
+    "failedTitle": "Das hat nicht geklappt",
+    "failed": "Der Server des Absenders hat es nicht angenommen: {{reason}}",
+    "failedNoReason": "Der Server des Absenders hat es nicht angenommen.",
+    "tryMail": "Du kannst dich stattdessen per Mail abmelden. Dafür geht eine Mail von dir an {{address}}.",
+    "tryPage": "Du kannst dich stattdessen auf der Seite des Absenders abmelden.",
+    "noOtherWay": "Diese Mail bietet keinen anderen Weg. Versuch es später noch mal.",
+    "sendMail": "Mail senden",
+    "openPage": "Seite öffnen"
   },
   "deleteForever": {
     "title_one": "Diese Mail endgültig löschen?",
