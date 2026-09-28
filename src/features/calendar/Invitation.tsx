@@ -6,6 +6,7 @@ import { backend } from "@/backend/backend";
 import type { Invitation, MailScheduling, Message, ParticipationStatus } from "@/backend/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { useT } from "@/i18n";
+import { visibleText } from "@/lib/links";
 import { errorText, queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";
 import { useCalendarsAvailable } from "./useCalendarData";
@@ -176,6 +177,8 @@ function Unverified({ found, sender }: { found: MailScheduling; sender: string }
         ? t("invitation.unverified.cancel")
         : t("invitation.unverified.invitation");
   const organizer = found.kind === "invitation" ? (found.organizerEmail ?? found.organizer) : null;
+  // This line tells who wrote the mail from who may; direction marks and invisible characters in
+  // either would let one read as the other, so they are shown, not obeyed (security-audit W-34).
   return (
     <div role="note" className="flex gap-2.5 rounded-xl bg-warning-tint px-3 py-2.5 text-[13px] text-warning">
       <ShieldAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -183,8 +186,11 @@ function Unverified({ found, sender }: { found: MailScheduling; sender: string }
         <p className="font-semibold">{text}</p>
         <p className="break-words">
           {organizer
-            ? t("invitation.unverified.senderAndOrganizer", { sender, organizer })
-            : t("invitation.unverified.sender", { sender })}
+            ? t("invitation.unverified.senderAndOrganizer", {
+                sender: visibleText(sender),
+                organizer: visibleText(organizer),
+              })
+            : t("invitation.unverified.sender", { sender: visibleText(sender) })}
         </p>
         {found.kind === "invitation" && found.cancelled && <p>{t("invitation.cancelled")}</p>}
       </div>

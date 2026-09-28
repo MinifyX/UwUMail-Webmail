@@ -103,6 +103,15 @@ describe("an invitation in a mail (WEBMAIL-2)", () => {
     expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
   });
 
+  it("shows who sent an unverified mail as it is written, invisible characters too (W-34)", async () => {
+    found = invitation({ verified: false });
+    // A right-to-left override would turn the rest of the line around.
+    renderCard("mallory\u202e@example.net");
+    expect(
+      await screen.findByText("Sent by mallory<U+202E>@example.net; the organizer is emma@brightlabs.example."),
+    ).toBeTruthy();
+  });
+
   it("shows the organizer's cancellation as such", async () => {
     found = invitation({ method: "cancel", cancelled: true });
     renderCard("emma@brightlabs.example");
