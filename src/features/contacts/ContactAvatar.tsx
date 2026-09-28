@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { UsersRound } from "lucide-react";
+import { backend } from "@/backend/backend";
 import type { ContactRecord } from "@/backend/types";
 import { Avatar } from "@/components/ui/Avatar";
 
@@ -8,16 +9,15 @@ const SIZES = {
   lg: "size-16",
 } as const;
 
-/** The contact's own picture when the card has one; otherwise the same avatar as in the mail. */
+/**
+ * The contact's own picture when the card has one (a web link only through the server);
+ * otherwise the same avatar as in the mail.
+ */
 export function ContactAvatar({ contact, size = "list" }: { contact: ContactRecord; size?: keyof typeof SIZES }) {
-  if (contact.photo) {
+  const src = contact.photo ? backend().contactPhotoUrl(contact.photo) : null;
+  if (src) {
     return (
-      <img
-        src={contact.photo}
-        alt=""
-        draggable={false}
-        className={clsx("shrink-0 rounded-full object-cover", SIZES[size])}
-      />
+      <img src={src} alt="" draggable={false} className={clsx("shrink-0 rounded-full object-cover", SIZES[size])} />
     );
   }
   if (contact.isGroup) {

@@ -18,7 +18,8 @@ import {
   demoRules,
   welcomeMessage,
 } from "./demo-data";
-import { demoSenderPicture } from "./demo-pictures";
+import { DEMO_LINKED_PHOTOS, demoSenderPicture } from "./demo-pictures";
+import { contactPhotoSource } from "./jmap/contacts";
 import type {
   BlockedSender,
   Account,
@@ -748,6 +749,13 @@ export class DemoBackend implements Backend {
   async getSenderPicture(email: string): Promise<SenderPicture | null> {
     await wait(150);
     return demoSenderPicture(email);
+  }
+
+  /** The demo's stand-in for the server's picture proxy knows the sample links and nothing else. */
+  contactPhotoUrl(photo: string): string | null {
+    const link = photo.trim();
+    if (/^https:/i.test(link)) return DEMO_LINKED_PHOTOS[link] ?? null;
+    return contactPhotoSource(link, null);
   }
 
   async companyLogo(email: string): Promise<Blob | null> {

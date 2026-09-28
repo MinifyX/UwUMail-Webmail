@@ -73,6 +73,8 @@ function sampleContacts(lang: Lang, accountId: string): ContactRecord[] {
       given: "Mia",
       surname: "Mood",
       emails: [{ id: "e1", address: "mia@mood.example", kind: "home" }],
+      // Only a link, like cards from some phones: shown through the "server", never loaded directly.
+      photo: "https://photos.mood.example/mia.jpg",
     }),
     person({
       id: "contact-finn",

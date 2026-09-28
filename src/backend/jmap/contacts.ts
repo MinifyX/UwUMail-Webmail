@@ -169,10 +169,26 @@ function nameParts(card: Json): { given: string; surname: string; full: string }
   return { given: of("given"), surname: of("surname"), full };
 }
 
-/** Whether a picture's URI is one the webmail shows. */
+/**
+ * Whether a picture's URI is one the webmail shows: a picture inside the card, or a web link the
+ * server fetches for it (see contactPhotoSource). Anything else is left alone.
+ */
 function showablePhoto(uri: string): boolean {
-  // Only pictures inside the card: a link elsewhere would tell that site who looks at the contact.
-  return /^data:image\//i.test(uri);
+  return /^data:image\//i.test(uri) || /^https:\/\/[^\s]+$/i.test(uri);
+}
+
+/**
+ * Where the browser loads a contact photo from: a `data:` picture as it is, an `https:` link only
+ * through the server's picture proxy — loaded directly, it would tell that site who looks at the
+ * contact, and when. Null when it can't be shown that way.
+ */
+export function contactPhotoSource(uri: string, proxy: ((url: string) => string | null) | null): string | null {
+  const trimmed = uri.trim();
+  if (/^data:image\//i.test(trimmed)) return trimmed;
+  if (!/^https:\/\/[^\s]+$/i.test(trimmed) || !proxy) return null;
+  const proxied = proxy(trimmed);
+  // The proxy is on the page's own origin; anything else would be the link itself again.
+  return proxied && proxied.startsWith("/") && !proxied.startsWith("//") ? proxied : null;
 }
 
 /** The card's picture and its key in `media`: the first photo the webmail can show. */

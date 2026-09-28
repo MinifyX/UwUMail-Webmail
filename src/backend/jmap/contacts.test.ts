@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ContactInput } from "../types";
 import {
   cardFromInput,
+  contactPhotoSource,
   contactSuggestions,
   patchFromInput,
   toAddressBookInfo,
@@ -122,12 +123,33 @@ describe("reading cards", () => {
     expect(record.birthday).toBe("--09-30");
   });
 
-  it("shows only photos inside the card, never links to other sites", () => {
+  it("reads photos inside the card and web links, nothing else", () => {
     const inside = "data:image/png;base64,iVBORw0KGgo=";
-    expect(toContactRecord(card({ media: { m1: { kind: "photo", uri: inside } } }), "a").photo).toBe(inside);
+    const photoOf = (uri: string) => toContactRecord(card({ media: { m1: { kind: "photo", uri } } }), "a").photo;
+    expect(photoOf(inside)).toBe(inside);
+    expect(photoOf("https://photos.example/me.png")).toBe("https://photos.example/me.png");
+    expect(photoOf("http://photos.example/me.png")).toBeNull();
+    expect(photoOf("cid:me@example.org")).toBeNull();
+    expect(photoOf("javascript:alert(1)")).toBeNull();
     expect(
-      toContactRecord(card({ media: { m1: { kind: "photo", uri: "https://tracker.example/me.png" } } }), "a").photo,
+      toContactRecord(card({ media: { l1: { kind: "logo", uri: inside }, m1: { kind: "photo", uri: "cid:x" } } }), "a")
+        .photo,
     ).toBeNull();
+  });
+
+  it("shows a linked photo only through the server's proxy, never directly", () => {
+    const proxy = (url: string) => `/jmap/image/a1?url=${encodeURIComponent(url)}`;
+    const inside = "data:image/jpeg;base64,/9j/4AAQ";
+    expect(contactPhotoSource(inside, null)).toBe(inside);
+    expect(contactPhotoSource(inside, proxy)).toBe(inside);
+    expect(contactPhotoSource("https://photos.example/me.png", proxy)).toBe(
+      "/jmap/image/a1?url=https%3A%2F%2Fphotos.example%2Fme.png",
+    );
+    // Without a proxy, or with one that hands the link back, nothing is shown.
+    expect(contactPhotoSource("https://photos.example/me.png", null)).toBeNull();
+    expect(contactPhotoSource("https://photos.example/me.png", (url) => url)).toBeNull();
+    expect(contactPhotoSource("https://photos.example/me.png", () => "//photos.example/me.png")).toBeNull();
+    expect(contactPhotoSource("http://photos.example/me.png", proxy)).toBeNull();
   });
 
   it("reads address books and their rights", () => {
@@ -265,6 +287,16 @@ describe("writing cards", () => {
     });
     expect(patchFromInput(card(), input({ photo }))).toEqual({
       media: { p1: { kind: "photo", uri: photo, mediaType: "image/jpeg" } },
+    });
+  });
+
+  it("replaces a linked photo with the cropped one", () => {
+    const linked = card({
+      media: { m1: { kind: "photo", uri: "https://photos.example/me.png", mediaType: "image/png" } },
+    });
+    const photo = "data:image/jpeg;base64,/9j/4AAQ";
+    expect(patchFromInput(linked, input({ photo }))).toEqual({
+      "media/m1": { kind: "photo", uri: photo, mediaType: "image/jpeg" },
     });
   });
 

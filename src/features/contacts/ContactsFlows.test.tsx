@@ -58,6 +58,7 @@ const fake = {
   createContact: vi.fn(async () => "k3"),
   updateContact: vi.fn(async () => {}),
   deleteContact: vi.fn(async () => {}),
+  contactPhotoUrl: vi.fn((photo: string) => (photo.startsWith("data:") ? photo : null)),
 };
 
 vi.mock("@/backend/backend", async (original) => ({

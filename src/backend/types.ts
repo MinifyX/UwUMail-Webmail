@@ -535,7 +535,10 @@ export interface ContactRecord {
   /** "YYYY-MM-DD", or "--MM-DD" when the year isn't known. */
   birthday: string | null;
   note: string;
-  /** The card's picture: a `data:` URI inside the card. */
+  /**
+   * The card's picture: a `data:` URI inside the card, or an `https:` link that is only ever
+   * shown through the server (Backend.contactPhotoUrl).
+   */
   photo: string | null;
   /** A group rather than a person; groups are shown but not edited. */
   isGroup: boolean;

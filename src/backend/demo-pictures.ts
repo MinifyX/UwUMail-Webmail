@@ -70,6 +70,11 @@ export function demoPortrait(wall: string, hair: string, shirt: string): string 
   );
 }
 
+/** Contact photos the demo's cards only link to, as the server's picture proxy would fetch them. */
+export const DEMO_LINKED_PHOTOS: Record<string, string> = {
+  "https://photos.mood.example/mia.jpg": demoPortrait("#e4dcff", "#2b2230", "#7c5cff"),
+};
+
 export function demoSenderPicture(email: string): SenderPicture | null {
   const domain = email.split("@").pop()?.toLowerCase() ?? "";
   return PICTURES[domain] ?? null;

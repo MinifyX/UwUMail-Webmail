@@ -75,6 +75,7 @@ import {
 import {
   CARD_PROPERTIES,
   cardFromInput,
+  contactPhotoSource,
   contactSuggestions,
   patchFromInput,
   toAddressBookInfo,
@@ -2145,6 +2146,10 @@ export class JmapBackend implements Backend {
     } catch {
       return null;
     }
+  }
+
+  contactPhotoUrl(photo: string): string | null {
+    return contactPhotoSource(photo, remoteImagePath);
   }
 
   /** Only the logo steps of the server's lookup, so a person's own picture never comes back. */

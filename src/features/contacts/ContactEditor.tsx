@@ -1,5 +1,6 @@
 import { Plus, Trash, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { backend } from "@/backend/backend";
 import type {
   ContactEmail,
   ContactInput,
@@ -92,7 +93,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
         >
           <ContactPictureField
             photo={photo}
-            src={photo}
+            src={photo ? backend().contactPhotoUrl(photo) : null}
             email={firstEmail}
             onChange={(next) => setForm({ photo: next })}
           />
