@@ -306,6 +306,7 @@
     "linkDomainsInactive": "目前所有链接都会直接打开，无需询问。",
     "forgetLinkDomain": "移除 {{domain}}",
     "rules": "规则",
+    "masked": "隐藏地址",
     "signaturesPerAddressDesc": "每个发件地址一个，可使用粗体、链接和图片，会添加到新邮件和回复中。它保存在你的邮件服务器上，因此门户和你的其他邮件应用都使用同一个。",
     "addSignature": "添加签名"
   },
@@ -938,6 +939,77 @@
       "newMails": "{{count}} 封新邮件",
       "noSubject": "（无主题）",
       "hidden": "打开 {{brand}} 阅读。"
+    }
+  },
+  "masked": {
+    "title": "隐藏地址",
+    "description": "隐藏地址是专供某一个网站使用的随机地址。发往它的邮件会送到这里，但该网站永远不会知道你的真实地址。如果某个地址开始收到垃圾邮件，你就知道是谁泄露了它，并可以将其关闭。密码管理器也可以帮你创建。",
+    "closedTitle": "你尚未启用隐藏地址",
+    "closedBody": "管理员尚未为你的账户启用新的隐藏地址。你已有的地址会继续使用，并且可以在这里管理。",
+    "new": "新建隐藏地址",
+    "create": "创建地址",
+    "created": "你的新地址已就绪：",
+    "done": "完成",
+    "copy": "复制 {{email}}",
+    "copied": "地址已复制",
+    "copyFailed": "无法复制地址。请选中后手动复制。",
+    "field": {
+      "description": "说明",
+      "site": "网站",
+      "url": "链接（可选）",
+      "prefix": "前缀（可选）",
+      "domain": "域名"
+    },
+    "placeholder": {
+      "description": "例如：网上商店"
+    },
+    "hint": {
+      "url": "你使用它的地方，例如账户页面或密码管理器中的条目。",
+      "prefix": "放在随机部分之前，例如 shop.maple.otter482@…"
+    },
+    "domainAutomatic": "自动",
+    "onDomain": "新地址以 @{{domain}} 结尾。",
+    "problem": {
+      "tooLong": "最多 {{max}} 个字符。",
+      "control": "此处不能使用换行符或控制字符。",
+      "spaces": "链接不能包含空格。",
+      "prefix": "只能使用小写字母 a–z、数字和 _，最多 {{max}} 个字符。"
+    },
+    "loading": "正在加载隐藏地址…",
+    "loadFailed": "无法加载隐藏地址。{{reason}}",
+    "empty": "还没有隐藏地址。下次注册网站时创建一个吧。",
+    "emptyFilter": {
+      "active": "没有启用中的隐藏地址。",
+      "disabled": "没有已关闭的地址。",
+      "deleted": "没有已删除的地址。"
+    },
+    "noMatch": "没有与搜索匹配的隐藏地址。",
+    "search": "搜索隐藏地址",
+    "filter": {
+      "label": "显示",
+      "active": "启用中",
+      "disabled": "已关闭",
+      "deleted": "已删除"
+    },
+    "onOff": "开启或关闭 {{email}}",
+    "edit": "编辑 {{email}}",
+    "delete": "删除 {{email}}",
+    "restore": "恢复",
+    "openUrl": "打开 {{email}} 的链接",
+    "createdAt": "创建于 {{date}}",
+    "lastMessage": "最近邮件 {{date}}",
+    "noMessage": "尚无邮件",
+    "pending": "正在等待第一封邮件。如果 24 小时内没有收到，它将被删除。",
+    "saved": "更改已保存",
+    "deleted": "已删除 {{email}}。发往它的邮件现在会被拒收。",
+    "restored": "{{email}} 已恢复使用",
+    "error": {
+      "forbidden": "无法创建此地址：你无权使用该域名，或已达到隐藏地址的数量上限。",
+      "invalid": "服务器未接受这些信息。请检查各字段后重试。",
+      "notFound": "此隐藏地址已不存在。列表已刷新。",
+      "connection": "无法连接服务器。请稍后重试。",
+      "signedOut": "你的会话已结束。请重新登录后继续。",
+      "generic": "出了点问题。请稍后重试。"
     }
   }
 }

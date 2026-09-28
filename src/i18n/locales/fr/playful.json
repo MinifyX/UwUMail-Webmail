@@ -215,5 +215,9 @@
     "notification": {
       "newMail": "Du courrier pour toi ! ✉"
     }
+  },
+  "masked": {
+    "empty": "Pas encore d'adresse masquée. Un petit déguisement pour le prochain site où vous vous inscrivez ? (｀・ω・´)",
+    "created": "Tadaa, votre nouveau déguisement est prêt ✿"
   }
 }

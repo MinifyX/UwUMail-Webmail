@@ -210,5 +210,9 @@
     "notification": {
       "newMail": "New mail for you! ✉"
     }
+  },
+  "masked": {
+    "empty": "No masked addresses yet. Want a little disguise for the next site you sign up to? (｀・ω・´)",
+    "created": "Tada, your new disguise is ready ✿"
   }
 }

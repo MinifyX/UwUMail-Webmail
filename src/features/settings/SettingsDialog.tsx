@@ -9,6 +9,7 @@ import {
   Palette,
   PenLine,
   SlidersHorizontal,
+  VenetianMask,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -28,6 +29,8 @@ import { isDomainEntry, sortEntries } from "@/lib/trustedSenders";
 import { useBrand } from "@/state/brand";
 import { useSettings, type LanguageSetting, type SwipeAction } from "@/state/settings";
 import { toast } from "@/state/toasts";
+import { MaskedAddresses } from "../masked/MaskedAddresses";
+import { useMaskedOptions } from "../masked/useMasked";
 import { MailRules } from "../rules/MailRules";
 import { useMailRulesAccounts } from "../rules/useMailRules";
 import { BlockedSenders } from "./BlockedSenders";
@@ -44,13 +47,15 @@ import { useUi, type SettingsSection } from "@/state/ui";
  * messages, aliases, the spam filter — already has a place in the portal, so it
  * is a link from here instead of a second interface that could drift apart. Mail
  * rules are the exception: they sort mail like folders do, so they live here, as
- * a Sieve script the server runs and the app edits the same way.
+ * a Sieve script the server runs and the app edits the same way. So are masked
+ * addresses, which are made while signing up somewhere, next to the mail.
  */
 const SECTIONS: { id: SettingsSection; icon: LucideIcon }[] = [
   { id: "appearance", icon: Palette },
   { id: "mail", icon: Mail },
   { id: "compose", icon: PenLine },
   { id: "rules", icon: ListFilter },
+  { id: "masked", icon: VenetianMask },
   { id: "about", icon: Info },
 ];
 
@@ -322,7 +327,11 @@ export function SettingsDialog() {
   const [pending, setPending] = useState<"close" | SettingsSection | null>(null);
   // Rules only where the server runs them.
   const { data: rulesAccounts = [] } = useMailRulesAccounts();
-  const sections = SECTIONS.filter(({ id }) => id !== "rules" || rulesAccounts.length > 0);
+  // Masked addresses only where the server makes them for the account.
+  const { data: maskedOptions } = useMaskedOptions();
+  const sections = SECTIONS.filter(
+    ({ id }) => (id !== "rules" || rulesAccounts.length > 0) && (id !== "masked" || Boolean(maskedOptions)),
+  );
 
   const requestClose = () => {
     if (formDirty) setPending("close");
@@ -372,6 +381,7 @@ export function SettingsDialog() {
             {section === "mail" && <Reading />}
             {section === "compose" && <Writing />}
             {section === "rules" && <MailRules />}
+            {section === "masked" && <MaskedAddresses />}
             {section === "about" && <About />}
           </div>
         </div>

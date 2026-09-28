@@ -210,5 +210,9 @@
     "notification": {
       "newMail": "Post für dich! ✉"
     }
+  },
+  "masked": {
+    "empty": "Noch keine maskierten Adressen. Magst du für die nächste Anmeldung eine kleine Verkleidung? (｀・ω・´)",
+    "created": "Tada, deine neue Verkleidung ist fertig ✿"
   }
 }

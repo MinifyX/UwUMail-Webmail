@@ -314,6 +314,7 @@
     "linkDomainsInactive": "Right now every link opens without asking.",
     "forgetLinkDomain": "Remove {{domain}}",
     "rules": "Rules",
+    "masked": "Masked addresses",
     "signaturesPerAddressDesc": "One per sender address, with bold, links and pictures, added to new mail and replies. It's kept on your mail server, so the portal and your other mail apps use the same one.",
     "addSignature": "Add signature"
   },
@@ -966,6 +967,77 @@
       "newMails": "{{count}} new messages",
       "noSubject": "(no subject)",
       "hidden": "Open {{brand}} to read it."
+    }
+  },
+  "masked": {
+    "title": "Masked addresses",
+    "description": "A masked address is a random address for one website. Mail to it arrives here, but the site never learns your real address. If one starts getting spam, you know who passed it on and switch it off. Password managers can make them for you too.",
+    "closedTitle": "Masked addresses aren't enabled for you",
+    "closedBody": "Your administrator hasn't enabled new masked addresses for your account. The ones you already have keep working and stay manageable here.",
+    "new": "New masked address",
+    "create": "Create address",
+    "created": "Your new address is ready:",
+    "done": "Done",
+    "copy": "Copy {{email}}",
+    "copied": "Address copied",
+    "copyFailed": "The address couldn't be copied. Select it and copy it by hand.",
+    "field": {
+      "description": "Description",
+      "site": "Website",
+      "url": "Link (optional)",
+      "prefix": "Prefix (optional)",
+      "domain": "Domain"
+    },
+    "placeholder": {
+      "description": "e.g. Online shop"
+    },
+    "hint": {
+      "url": "Where you use it, for example your account page or a password manager entry.",
+      "prefix": "Goes in front of the random part, like shop.maple.otter482@…"
+    },
+    "domainAutomatic": "Automatic",
+    "onDomain": "New addresses end in @{{domain}}.",
+    "problem": {
+      "tooLong": "At most {{max}} characters.",
+      "control": "Line breaks and control characters don't work here.",
+      "spaces": "A link can't contain spaces.",
+      "prefix": "Only lower-case letters a–z, digits and _, at most {{max}} characters."
+    },
+    "loading": "Loading masked addresses …",
+    "loadFailed": "The masked addresses couldn't be loaded. {{reason}}",
+    "empty": "No masked addresses yet. Make one for the next site you sign up to.",
+    "emptyFilter": {
+      "active": "No active masked addresses.",
+      "disabled": "None are switched off.",
+      "deleted": "None are deleted."
+    },
+    "noMatch": "No masked address matches your search.",
+    "search": "Search masked addresses",
+    "filter": {
+      "label": "Show",
+      "active": "Active",
+      "disabled": "Off",
+      "deleted": "Deleted"
+    },
+    "onOff": "{{email}} on or off",
+    "edit": "Edit {{email}}",
+    "delete": "Delete {{email}}",
+    "restore": "Restore",
+    "openUrl": "Open the link of {{email}}",
+    "createdAt": "Made {{date}}",
+    "lastMessage": "last mail {{date}}",
+    "noMessage": "no mail yet",
+    "pending": "Waiting for its first mail. Without one within 24 hours it is deleted.",
+    "saved": "Changes saved",
+    "deleted": "{{email}} deleted. Mail to it is refused now.",
+    "restored": "{{email}} works again",
+    "error": {
+      "forbidden": "This address can't be made: the domain isn't allowed for you, or you've reached the limit of masked addresses.",
+      "invalid": "The server didn't accept these details. Check the fields and try again.",
+      "notFound": "This masked address is gone. The list has been refreshed.",
+      "connection": "The server can't be reached. Try again in a moment.",
+      "signedOut": "Your session has ended. Sign in again to continue.",
+      "generic": "Something went wrong. Try again in a moment."
     }
   }
 }

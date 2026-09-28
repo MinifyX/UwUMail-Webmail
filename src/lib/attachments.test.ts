@@ -34,6 +34,24 @@ describe("attachmentKind", () => {
     expect(isAppPackage("spiel.xapk. ")).toBe(true);
     expect(isAppPackage("apk.pdf")).toBe(false);
   });
+
+  it("ignores any run of trailing dots and spaces, as Windows does", () => {
+    expect(isDangerous("tool.exe. ")).toBe(true);
+    expect(isDangerous("tool.exe . . ")).toBe(true);
+    expect(isDangerous("‮tool.exe..")).toBe(true);
+    expect(isDangerous("rechnung.pdf...")).toBe(false);
+    expect(isDangerous(". . .")).toBe(false);
+  });
+
+  // Regression (security-audit WEBMAIL-1): a long run of dots and spaces in an attachment name
+  // froze the tab for seconds on every render, as `/[. ]+$/` retried from every position of it.
+  it("stays fast on a long run of dots and spaces", () => {
+    const started = performance.now();
+    expect(isDangerous(`a${". ".repeat(100_000)}x`)).toBe(false);
+    expect(isDangerous(`tool.exe${". ".repeat(100_000)}`)).toBe(true);
+    expect(isAppPackage(`spiel.apk${".".repeat(200_000)}‮`)).toBe(true);
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
 });
 
 describe("parseCsv", () => {
