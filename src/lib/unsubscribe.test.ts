@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { JmapMethodError } from "@/backend/jmap/client";
 import type { Unsubscribe } from "@/backend/types";
-import { oneClickResultOf, runUnsubscribe, unsubscribeMail, type OneClickResult } from "./unsubscribe";
+import {
+  oneClickResultOf,
+  runUnsubscribe,
+  unsubscribeFallback,
+  unsubscribeMail,
+  type OneClickResult,
+} from "./unsubscribe";
 
 describe("unsubscribeMail", () => {
   it("takes the address and a subject list managers can match on", () => {
@@ -35,6 +41,23 @@ describe("unsubscribeMail", () => {
     expect(unsubscribeMail("mailto:Name%20%3Cleave@list.example%3E")).toBeNull();
     expect(unsubscribeMail("mailto:not-an-address")).toBeNull();
     expect(unsubscribeMail("mailto:")).toBeNull();
+  });
+
+  it("refuses an address that would read as another one (W-30)", () => {
+    // A right-to-left override turns what follows around; a zero-width space or joiner hides.
+    expect(unsubscribeMail("mailto:leave%E2%80%AEelpmaxe.knab@list.example")).toBeNull();
+    expect(unsubscribeMail("mailto:le%E2%80%8Bave@list.example")).toBeNull();
+    expect(unsubscribeMail("mailto:leave@list%E2%80%8D.example")).toBeNull();
+    expect(unsubscribeMail("mailto:leave%C2%AD@list.example")).toBeNull();
+    expect(unsubscribeMail("mailto:leave%00@list.example")).toBeNull();
+    // Nothing is sent then: the page opens where there is one.
+    expect(
+      unsubscribeFallback({
+        oneClick: true,
+        url: "https://list.example/leave",
+        mailto: "mailto:le%E2%80%8Bave@list.example",
+      }),
+    ).toBe("page");
   });
 
   it("refuses a scheme that is not mailto", () => {
