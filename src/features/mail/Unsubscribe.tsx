@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { backend } from "@/backend/backend";
 import type { Message, UnsubscribeFallback } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
@@ -13,6 +13,7 @@ import { requestOpenLink } from "@/state/links";
 import { toast } from "@/state/toasts";
 import { announceMove } from "@/state/undo";
 import { useUi } from "@/state/ui";
+import { armedActivation } from "./LinkWarning";
 
 /** "Unsubscribe" next to the sender of a newsletter, with a question first. */
 export function UnsubscribeButton({ message }: { message: Message }) {
@@ -28,6 +29,20 @@ export function UnsubscribeButton({ message }: { message: Message }) {
         {asking && <UnsubscribeQuestion message={message} onDone={() => setAsking(false)} />}
       </Dialog>
     </>
+  );
+}
+
+/**
+ * The button that unsubscribes. It is focused when it appears, so the gesture that brought it — a
+ * held Enter, the second click of a double click — must not also press it: the first question, and
+ * the one after a refusal that came back at once (security-audit W-29, like W-18).
+ */
+function AnswerButton({ busy, onAnswer, children }: { busy: boolean; onAnswer: () => void; children: ReactNode }) {
+  const [shownAt] = useState(() => performance.now());
+  return (
+    <Button variant="primary" busy={busy} autoFocus {...armedActivation(shownAt, onAnswer)}>
+      {children}
+    </Button>
   );
 }
 
@@ -86,7 +101,8 @@ function UnsubscribeQuestion({ message, onDone }: { message: Message; onDone: ()
 
   if (failed) {
     return (
-      <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
+      // Its own key: the answer button is new, and arms anew.
+      <div key="failed" className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
         <NyuScene name="loadError" className="w-40" />
         <h2 className="text-[18px] font-extrabold text-balance">{t("unsubscribe.failedTitle")}</h2>
         <p className="text-[13px] text-muted">
@@ -101,9 +117,9 @@ function UnsubscribeQuestion({ message, onDone }: { message: Message; onDone: ()
         </p>
         <div className="flex flex-wrap justify-center gap-2 pt-1">
           {failed.fallback && (
-            <Button variant="primary" busy={busy} autoFocus onClick={() => void unsubscribe(false)}>
+            <AnswerButton busy={busy} onAnswer={() => void unsubscribe(false)}>
               {failed.fallback === "mail" ? t("unsubscribe.sendMail") : t("unsubscribe.openPage")}
-            </Button>
+            </AnswerButton>
           )}
           <Button variant="ghost" autoFocus={!failed.fallback} onClick={onDone}>
             {failed.fallback ? t("common.cancel") : t("common.close")}
@@ -134,9 +150,9 @@ function UnsubscribeQuestion({ message, onDone }: { message: Message; onDone: ()
         <Toggle checked={archive} onChange={setArchive} label={t("unsubscribe.archive")} />
       </div>
       <div className="flex flex-wrap justify-center gap-2 pt-1">
-        <Button variant="primary" busy={busy} autoFocus onClick={() => void unsubscribe(true)}>
+        <AnswerButton busy={busy} onAnswer={() => void unsubscribe(true)}>
           {t("reader.unsubscribe")}
-        </Button>
+        </AnswerButton>
         <Button variant="ghost" onClick={onDone}>
           {t("common.cancel")}
         </Button>

@@ -6,6 +6,7 @@ import type { Message, UnsubscribeOutcome } from "@/backend/types";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import { useToasts } from "@/state/toasts";
+import { ARMING_MS } from "./LinkWarning";
 import { UnsubscribeButton } from "./Unsubscribe";
 
 const fake = {
@@ -54,13 +55,25 @@ function renderButton(message: Message) {
 
 const toasts = () => useToasts.getState().toasts.map((toast) => toast.message);
 
+/** The page's clock, which the answer buttons read; it only moves when a test moves it. */
+let clock = 0;
+/** Time passes, as it does between reading a question and answering it. */
+const later = () => {
+  clock += ARMING_MS;
+};
+
 describe("unsubscribing", () => {
   beforeAll(async () => {
     await i18n.changeLanguage("en");
     useSettings.getState().update({ tone: "neutral" });
   });
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clock = 0;
+    vi.spyOn(performance, "now").mockImplementation(() => clock);
+  });
   afterEach(() => {
+    vi.restoreAllMocks();
     cleanup();
     act(() => useToasts.setState({ toasts: [] }));
   });
@@ -73,6 +86,7 @@ describe("unsubscribing", () => {
     expect(
       screen.getByText("If it can't be done that way, a mail goes from you to leave@pixelparts.example."),
     ).toBeTruthy();
+    later();
     fireEvent.click(screen.getAllByRole("button", { name: "Unsubscribe" }).at(-1)!);
     await waitFor(() => expect(fake.unsubscribe).toHaveBeenCalledWith("m1", {}));
     await waitFor(() => expect(toasts()).toContain("Unsubscribed from Pixel Parts"));
@@ -87,7 +101,9 @@ describe("unsubscribing", () => {
     renderButton(
       newsletter({ oneClick: true, url: "https://pixelparts.example/u", mailto: "mailto:leave@pixelparts.example" }),
     );
-    fireEvent.click((await screen.findAllByRole("button", { name: "Unsubscribe" })).at(-1)!);
+    const ask = (await screen.findAllByRole("button", { name: "Unsubscribe" })).at(-1)!;
+    later();
+    fireEvent.click(ask);
     expect(
       await screen.findByText("The sender's server didn't take it: pixelparts.example answered 503."),
     ).toBeTruthy();
@@ -96,6 +112,7 @@ describe("unsubscribing", () => {
     ).toBeTruthy();
     expect(fake.unsubscribe).toHaveBeenCalledTimes(1);
 
+    later();
     fireEvent.click(screen.getByRole("button", { name: "Send the mail" }));
     await waitFor(() => expect(fake.unsubscribe).toHaveBeenLastCalledWith("m1", { oneClick: false }));
     await waitFor(() => expect(toasts()).toContain("Unsubscribed from Pixel Parts"));
@@ -104,8 +121,35 @@ describe("unsubscribing", () => {
   it("offers nothing more when the mail has no other way", async () => {
     fake.unsubscribe.mockResolvedValueOnce({ kind: "oneClickFailed", reason: "", fallback: null });
     renderButton(newsletter({ oneClick: true }));
-    fireEvent.click((await screen.findAllByRole("button", { name: "Unsubscribe" })).at(-1)!);
+    const ask = (await screen.findAllByRole("button", { name: "Unsubscribe" })).at(-1)!;
+    later();
+    fireEvent.click(ask);
     expect(await screen.findByText("This mail offers no other way. Try again later.")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Open the page" })).toBeNull();
+  });
+
+  it("doesn't take an answer from the gesture that asked, nor one that follows a quick refusal (W-29)", async () => {
+    fake.unsubscribe.mockResolvedValueOnce({ kind: "oneClickFailed", reason: "", fallback: "mail" });
+    renderButton(
+      newsletter({ oneClick: true, url: "https://pixelparts.example/u", mailto: "mailto:leave@pixelparts.example" }),
+    );
+    const ask = (await screen.findAllByRole("button", { name: "Unsubscribe" })).at(-1)!;
+    // The second click of a double click, and Enter held down on the button that opened the question.
+    fireEvent.click(ask);
+    const held = fireEvent.keyDown(ask, { key: "Enter", repeat: true });
+    expect(held).toBe(false);
+    expect(fake.unsubscribe).not.toHaveBeenCalled();
+
+    later();
+    fireEvent.click(ask);
+    const sendMail = await screen.findByRole("button", { name: "Send the mail" });
+    // The refusal came back at once; the same gesture must not send the mail either.
+    fireEvent.click(sendMail);
+    expect(fireEvent.keyDown(sendMail, { key: "Enter", repeat: true })).toBe(false);
+    expect(fake.unsubscribe).toHaveBeenCalledTimes(1);
+
+    later();
+    fireEvent.click(sendMail);
+    await waitFor(() => expect(fake.unsubscribe).toHaveBeenLastCalledWith("m1", { oneClick: false }));
   });
 });
