@@ -1,52 +1,16 @@
 import { AlignLeft, CalendarDays, Clock, Mail, MapPin, Pencil, Repeat, Trash, X } from "lucide-react";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button, IconButton } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { deviceTimeZone } from "@/lib/calendarDates";
-import { requestOpenLink } from "@/state/links";
 import { describeRecurrence, eventColor, formatWhen } from "./format";
 import { InvitationAnswer, invitationStatusKey } from "./Invitation";
+import { LinkedText } from "./LinkedText";
 import { Popover } from "./Popover";
 import { useCalendarUi } from "./state";
 import { useCalendars, useEventActions } from "./useCalendarData";
-
-const URL_PATTERN = /\bhttps?:\/\/[^\s<>"'()]+[^\s<>"'().,;:!?]/g;
-
-/** Plain text with its web addresses clickable, through the same link check as links in mail. */
-export function LinkedText({ text }: { text: string }) {
-  const parts: { text: string; url: boolean }[] = [];
-  let last = 0;
-  for (const match of text.matchAll(URL_PATTERN)) {
-    if (match.index > last) parts.push({ text: text.slice(last, match.index), url: false });
-    parts.push({ text: match[0], url: true });
-    last = match.index + match[0].length;
-  }
-  if (last < text.length) parts.push({ text: text.slice(last), url: false });
-  return (
-    <>
-      {parts.map((part, index) =>
-        part.url ? (
-          <a
-            key={index}
-            href={part.text}
-            rel="noopener noreferrer"
-            onClick={(event) => {
-              event.preventDefault();
-              requestOpenLink(part.text, part.text);
-            }}
-            className="break-all text-pink-ink underline decoration-pink/40 underline-offset-2 hover:decoration-pink"
-          >
-            {part.text}
-          </a>
-        ) : (
-          <Fragment key={index}>{part.text}</Fragment>
-        ),
-      )}
-    </>
-  );
-}
 
 function Detail({ icon: Icon, children }: { icon: typeof Clock; children: React.ReactNode }) {
   return (
