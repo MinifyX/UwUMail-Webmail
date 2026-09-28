@@ -415,7 +415,7 @@ reproduction notes stay in the private notes file.
 | ID   | Severity      | Finding                                                                        | Status           |
 | ---- | ------------- | ------------------------------------------------------------------------------ | ---------------- |
 | W-22 | Medium        | Quoted mail loads pictures whose address doesn't start with "http" or "//"     | fixed in e1fabfe |
-| W-23 | Low           | Links in calendar events open on a middle click or a drag without the question | listed           |
+| W-23 | Low           | Links in calendar events open on a middle click or a drag without the question | fixed in 911d6e2 |
 | W-24 | Low           | Emptying the trash and deleting a folder answer to the key that opened them    | listed           |
 | W-25 | Low           | Saving rules switches off another active Sieve script without saying so        | listed           |
 | W-26 | Informational | The server's Sieve engine reads `${…}` in rule text as a variable              | listed           |
@@ -740,6 +740,11 @@ cache listener, and it was not worth it without a browser to check playback and 
 
 W-1 to W-9 and W-11 to W-22 hold as listed in the check above. W-10 is now complete. W-23 to W-27
 are still open as listed; W-28 was fixed in 53df50e.
+
+Later: W-23 was fixed in 911d6e2, after the server's 0.16.0 audit found it reachable by any sender
+(its WEBMAIL-3): event links have no `href` any more, and every way to open one goes through the
+link check. The same audit's WEBMAIL-2 — the invitation card believed any mail naming an event's
+UID — was fixed in 6216a3e.
 
 ### What was run
 
