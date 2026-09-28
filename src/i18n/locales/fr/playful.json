@@ -225,5 +225,9 @@
       "notImage": "Hmm, ce n'est pas une image (・_・;)",
       "unreadable": "Je n'arrive pas à lire cette image (・_・;)"
     }
+  },
+  "profile": {
+    "saved": "Très joli ✿",
+    "removed": "Photo retirée, vos initiales sont de retour (・ω・)"
   }
 }

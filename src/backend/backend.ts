@@ -26,6 +26,9 @@ import type {
   OutgoingMessage,
   ParticipationStatus,
   Person,
+  ProfilePicture,
+  ProfilePictureOptions,
+  ProfilePicturePatch,
   ScheduledSend,
   SendOptions,
   SendReceipt,
@@ -226,6 +229,14 @@ export interface Backend {
   createMaskedAddress(input: MaskedAddressInput): Promise<MaskedAddress>;
   /** Changes the state (a deleted one may come back) or what it says about itself. */
   updateMaskedAddress(id: string, patch: MaskedAddressPatch): Promise<void>;
+
+  /** Whether the account may have a profile picture here, and what the server allows; null without. */
+  profilePictureOptions(): Promise<ProfilePictureOptions | null>;
+  profilePicture(): Promise<ProfilePicture>;
+  /** Stores a new picture (the server crops, scales and cleans it again), or removes it with null. */
+  setProfilePicture(picture: Blob | null): Promise<ProfilePicture>;
+  /** Changes who sees it and whether mails carry it. Throws `forbidden` for public where it isn't allowed. */
+  updateProfilePicture(patch: ProfilePicturePatch): Promise<void>;
 
   /** Downloads the attachment and hands out a blob URL for it. */
   getAttachment(attachmentId: string): Promise<AttachmentContent>;

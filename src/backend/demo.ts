@@ -45,6 +45,9 @@ import type {
   OutgoingMessage,
   ParticipationStatus,
   Person,
+  ProfilePicture,
+  ProfilePictureOptions,
+  ProfilePicturePatch,
   ScheduledSend,
   SendOptions,
   SendReceipt,
@@ -761,9 +764,37 @@ export class DemoBackend implements Backend {
     return demoSenderPicture(address, lookup.local);
   }
 
-  /** The picture people on the demo "server" show for themselves. */
+  /** The picture people on the demo "server" show for themselves, the demo's own included. */
   private profilePictureOf(address: string): string | null {
+    const own = this.accounts.some((account) => account.email.toLowerCase() === address);
+    if (own) return this.profile.visibility !== "off" ? this.profile.url : null;
     return DEMO_PROFILE_PICTURES[address] ?? null;
+  }
+
+  /** The demo's own profile picture, kept in memory; it starts without one. */
+  private profile: ProfilePicture = { url: null, visibility: "server", sendFace: false, updated: null };
+
+  async profilePictureOptions(): Promise<ProfilePictureOptions | null> {
+    return { maxSize: 10 * 1024 * 1024, mayBePublic: true };
+  }
+
+  async profilePicture(): Promise<ProfilePicture> {
+    await wait(100);
+    return { ...this.profile };
+  }
+
+  async setProfilePicture(picture: Blob | null): Promise<ProfilePicture> {
+    await wait(300);
+    const url = picture ? await blobToDataUrl(picture) : null;
+    this.profile = { ...this.profile, url, updated: new Date().toISOString() };
+    this.emit({ type: "profile:changed" });
+    return { ...this.profile };
+  }
+
+  async updateProfilePicture(patch: ProfilePicturePatch): Promise<void> {
+    await wait(120);
+    this.profile = { ...this.profile, ...patch };
+    this.emit({ type: "profile:changed" });
   }
 
   /** The demo's stand-in for the server's picture proxy knows the sample links and nothing else. */
@@ -1104,4 +1135,14 @@ export class DemoBackend implements Backend {
       hasDraft: sorted.some((m) => m.flags.draft),
     };
   }
+}
+
+/** A picture as a data: URI the demo can keep and show. */
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new BackendError("invalid_input", "That picture couldn't be read."));
+    reader.readAsDataURL(blob);
+  });
 }

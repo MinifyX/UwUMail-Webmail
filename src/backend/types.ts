@@ -579,6 +579,35 @@ export interface ContactInput {
 }
 
 /**
+ * Who sees the own profile picture: nobody, people of the same server, or everyone — other mail
+ * servers and apps too, through Libravatar.
+ */
+export type PictureVisibility = "off" | "server" | "public";
+
+/** The own profile picture and who may see it. */
+export interface ProfilePicture {
+  /** Where to show it from (an object URL); null without a picture. */
+  url: string | null;
+  visibility: PictureVisibility;
+  /** Sent along in mails as a `Face:` header; only while the picture is public. */
+  sendFace: boolean;
+  updated: string | null;
+}
+
+/** What the server allows for the own picture. */
+export interface ProfilePictureOptions {
+  /** Largest upload in bytes. */
+  maxSize: number;
+  /** False when the admin switched public pictures off for the server or the account's domain. */
+  mayBePublic: boolean;
+}
+
+export interface ProfilePicturePatch {
+  visibility?: PictureVisibility;
+  sendFace?: boolean;
+}
+
+/**
  * A masked address: a random address for one website that delivers to the account (Fastmail's
  * MaskedEmail). `pending` ones wait for their first mail, `deleted` ones refuse mail for good.
  */

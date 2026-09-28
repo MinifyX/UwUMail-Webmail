@@ -378,8 +378,10 @@ export function useBackendEvents() {
         case "accounts:changed":
           void client.invalidateQueries({ queryKey: queryKeys.sharedAccounts });
           void client.invalidateQueries({ queryKey: queryKeys.folders });
-          // The session came anew: which domains masked addresses may use can have changed with it.
+          // The session came anew: which domains masked addresses may use can have changed with it,
+          // and whether a public profile picture is allowed.
           void client.invalidateQueries({ queryKey: queryKeys.maskedOptions });
+          void client.invalidateQueries({ queryKey: ["profilePictureOptions"] });
           break;
         case "scheduled:changed":
           void client.invalidateQueries({ queryKey: queryKeys.scheduled });

@@ -46,6 +46,9 @@ import type {
   OutgoingMessage,
   ParticipationStatus,
   Person,
+  ProfilePicture,
+  ProfilePictureOptions,
+  ProfilePicturePatch,
   ScheduledSend,
   SendOptions,
   SendReceipt,
@@ -140,6 +143,14 @@ import {
   type JmapMaskedEmail,
   type JmapSetError,
 } from "./masked";
+import {
+  PROFILE,
+  PROFILE_ID,
+  profileOptionsFrom,
+  profileSetError,
+  visibilityOf,
+  type JmapProfilePicture,
+} from "./profile";
 import { SUGGEST, suggestionLimit, suggestionsToContacts, type JmapAddressSuggestion } from "./suggest";
 import {
   PRINCIPALS,
@@ -2001,6 +2012,66 @@ export class JmapBackend implements Backend {
     const problem = response.notUpdated?.[id];
     if (problem) throw maskedSetError(problem);
     this.emit({ type: "masked:changed" });
+  }
+
+  async profilePictureOptions(): Promise<ProfilePictureOptions | null> {
+    await this.start();
+    return supports(PROFILE) ? profileOptionsFrom(accountCapability(PROFILE)) : null;
+  }
+
+  private profileCall<T>(name: string, args: Record<string, unknown>): Promise<T> {
+    return one<T>(name, args, [CORE, PROFILE]);
+  }
+
+  /** The object URL of the picture last shown, freed when another replaces it. */
+  private profileUrl: { blobId: string; url: string } | null = null;
+
+  async profilePicture(): Promise<ProfilePicture> {
+    await this.start();
+    const response = await this.profileCall<GetResponse<JmapProfilePicture>>("ProfilePicture/get", {
+      ids: [PROFILE_ID],
+    });
+    const raw = response.list[0] ?? { id: PROFILE_ID };
+    return {
+      url: raw.blobId ? await this.profilePictureUrl(raw.blobId, raw.type ?? "image/jpeg") : null,
+      visibility: visibilityOf(raw),
+      sendFace: raw.sendFace === true,
+      updated: raw.updated ?? null,
+    };
+  }
+
+  private async profilePictureUrl(blobId: string, type: string): Promise<string> {
+    if (this.profileUrl?.blobId === blobId) return this.profileUrl.url;
+    const blob = await downloadBlob(blobId, "picture");
+    const url = URL.createObjectURL(new Blob([blob], { type }));
+    if (this.profileUrl) URL.revokeObjectURL(this.profileUrl.url);
+    this.profileUrl = { blobId, url };
+    return url;
+  }
+
+  private async setProfile(patch: Record<string, unknown>): Promise<void> {
+    const response = await this.profileCall<{
+      notUpdated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+    }>("ProfilePicture/set", { update: { [PROFILE_ID]: patch } });
+    const problem = response.notUpdated?.[PROFILE_ID];
+    if (problem) throw profileSetError(problem);
+    this.emit({ type: "profile:changed" });
+  }
+
+  async setProfilePicture(picture: Blob | null): Promise<ProfilePicture> {
+    const options = await this.profilePictureOptions();
+    if (!options) throw new BackendError("not_supported", "This server keeps no profile pictures.");
+    if (picture && picture.size > options.maxSize) {
+      throw new BackendError("invalid_input", "That picture is too big for the server.");
+    }
+    const blobId = picture ? (await uploadBlob(picture, picture.type || "image/jpeg")).blobId : null;
+    await this.setProfile({ blobId });
+    return this.profilePicture();
+  }
+
+  async updateProfilePicture(patch: ProfilePicturePatch): Promise<void> {
+    await this.start();
+    if (Object.keys(patch).length > 0) await this.setProfile({ ...patch });
   }
 
   /**

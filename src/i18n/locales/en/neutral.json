@@ -316,7 +316,8 @@
     "rules": "Rules",
     "masked": "Masked addresses",
     "signaturesPerAddressDesc": "One per sender address, with bold, links and pictures, added to new mail and replies. It's kept on your mail server, so the portal and your other mail apps use the same one.",
-    "addSignature": "Add signature"
+    "addSignature": "Add signature",
+    "profile": "Profile picture"
   },
   "theme": {
     "system": "System",
@@ -884,12 +885,7 @@
       "bookDeleted": "Address book “{{name}}” deleted"
     },
     "picture": {
-      "choose": "Choose picture",
-      "change": "Change picture",
-      "camera": "Take photo",
       "logo": "Company logo",
-      "remove": "Remove",
-      "hint": "Or drop a picture on the circle, or paste one.",
       "noLogo": "No logo found for {{domain}}."
     }
   },
@@ -1064,6 +1060,36 @@
       "notImage": "That isn't a picture.",
       "tooLarge": "That picture is too big. Up to {{size}} works.",
       "unreadable": "That picture couldn't be read."
-    }
+    },
+    "choose": "Choose picture",
+    "change": "Change picture",
+    "camera": "Take photo",
+    "remove": "Remove",
+    "hint": "Or drop a picture on the circle, or paste one."
+  },
+  "profile": {
+    "picture": "Your picture",
+    "pictureDesc": "It shows next to your name wherever people may see it. Choose a picture and place it in the circle.",
+    "visibility": "Who sees it",
+    "off": {
+      "title": "Nobody",
+      "body": "Your mails show your initials."
+    },
+    "server": {
+      "title": "People on this server",
+      "body": "Everyone with a mailbox here sees it next to your mails."
+    },
+    "public": {
+      "title": "Everyone",
+      "body": "Other mail servers and apps can show it too, through Libravatar. Anyone who knows your address can look it up."
+    },
+    "publicForbidden": "Your admin switched public pictures off.",
+    "face": "Send my picture in mails",
+    "faceDesc": "Puts a small copy into every mail you send (the Face header), which some mail programs show. Only while your picture is public.",
+    "saved": "Picture saved",
+    "removed": "Picture removed",
+    "failed": "That didn't work. {{reason}}",
+    "loading": "Loading your picture…",
+    "loadFailed": "Your picture couldn't be loaded."
   }
 }

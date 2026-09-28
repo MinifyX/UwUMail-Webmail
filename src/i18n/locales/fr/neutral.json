@@ -324,7 +324,8 @@
     "rules": "Règles",
     "masked": "Adresses masquées",
     "signaturesPerAddressDesc": "Une par adresse d'expéditeur, avec gras, liens et images, ajoutée aux nouveaux e-mails et aux réponses. Elle est conservée sur votre serveur de messagerie : le portail et vos autres applications de messagerie utilisent la même.",
-    "addSignature": "Ajouter une signature"
+    "addSignature": "Ajouter une signature",
+    "profile": "Photo de profil"
   },
   "theme": {
     "system": "Système",
@@ -911,12 +912,7 @@
       "bookDeleted": "Carnet d'adresses « {{name}} » supprimé"
     },
     "picture": {
-      "choose": "Choisir une image",
-      "change": "Changer l'image",
-      "camera": "Prendre une photo",
       "logo": "Logo de l'entreprise",
-      "remove": "Retirer",
-      "hint": "Ou déposez une image sur le cercle, ou collez-en une.",
       "noLogo": "Aucun logo trouvé pour {{domain}}."
     }
   },
@@ -1091,6 +1087,36 @@
       "notImage": "Ce n'est pas une image.",
       "tooLarge": "Cette image est trop grande. Jusqu'à {{size}}, ça passe.",
       "unreadable": "Impossible de lire cette image."
-    }
+    },
+    "choose": "Choisir une image",
+    "change": "Changer l'image",
+    "camera": "Prendre une photo",
+    "remove": "Retirer",
+    "hint": "Ou déposez une image sur le cercle, ou collez-en une."
+  },
+  "profile": {
+    "picture": "Votre photo",
+    "pictureDesc": "Elle s'affiche à côté de votre nom là où les gens peuvent la voir. Choisissez une image et placez-la dans le cercle.",
+    "visibility": "Qui la voit",
+    "off": {
+      "title": "Personne",
+      "body": "Vos e-mails affichent vos initiales."
+    },
+    "server": {
+      "title": "Les personnes de ce serveur",
+      "body": "Tous ceux qui ont une boîte ici la voient à côté de vos e-mails."
+    },
+    "public": {
+      "title": "Tout le monde",
+      "body": "D'autres serveurs de messagerie et applications peuvent aussi l'afficher, via Libravatar. Toute personne qui connaît votre adresse peut la consulter."
+    },
+    "publicForbidden": "Votre administrateur a désactivé les photos publiques.",
+    "face": "Envoyer ma photo dans mes e-mails",
+    "faceDesc": "Ajoute une petite copie à chaque e-mail que vous envoyez (l'en-tête Face), que certains logiciels de messagerie affichent. Seulement tant que votre photo est publique.",
+    "saved": "Photo enregistrée",
+    "removed": "Photo retirée",
+    "failed": "Cela n'a pas fonctionné. {{reason}}",
+    "loading": "Chargement de votre photo…",
+    "loadFailed": "Impossible de charger votre photo."
   }
 }

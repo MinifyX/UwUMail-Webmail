@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import {
+  CircleUserRound,
   ExternalLink,
   ImageIcon,
   Info,
@@ -35,6 +36,7 @@ import { MailRules } from "../rules/MailRules";
 import { useMailRulesAccounts } from "../rules/useMailRules";
 import { BlockedSenders } from "./BlockedSenders";
 import { LinkSettings } from "./LinkSettings";
+import { ProfilePictureSettings, useProfilePictureOptions } from "./ProfilePicture";
 import { PushSettings } from "./PushSettings";
 import { Row } from "./Row";
 import { Writing } from "./Writing";
@@ -54,6 +56,7 @@ const SECTIONS: { id: SettingsSection; icon: LucideIcon }[] = [
   { id: "appearance", icon: Palette },
   { id: "mail", icon: Mail },
   { id: "compose", icon: PenLine },
+  { id: "profile", icon: CircleUserRound },
   { id: "rules", icon: ListFilter },
   { id: "masked", icon: VenetianMask },
   { id: "about", icon: Info },
@@ -329,8 +332,13 @@ export function SettingsDialog() {
   const { data: rulesAccounts = [] } = useMailRulesAccounts();
   // Masked addresses only where the server makes them for the account.
   const { data: maskedOptions } = useMaskedOptions();
+  // The profile picture only where the server keeps one for the account.
+  const { data: profileOptions } = useProfilePictureOptions();
   const sections = SECTIONS.filter(
-    ({ id }) => (id !== "rules" || rulesAccounts.length > 0) && (id !== "masked" || Boolean(maskedOptions)),
+    ({ id }) =>
+      (id !== "rules" || rulesAccounts.length > 0) &&
+      (id !== "masked" || Boolean(maskedOptions)) &&
+      (id !== "profile" || Boolean(profileOptions)),
   );
 
   const requestClose = () => {
@@ -380,6 +388,7 @@ export function SettingsDialog() {
             {section === "appearance" && <Appearance />}
             {section === "mail" && <Reading />}
             {section === "compose" && <Writing />}
+            {section === "profile" && <ProfilePictureSettings />}
             {section === "rules" && <MailRules />}
             {section === "masked" && <MaskedAddresses />}
             {section === "about" && <About />}

@@ -220,5 +220,9 @@
       "notImage": "Hm, das ist gar kein Bild (・_・;)",
       "unreadable": "Aus dem Bild werd ich nicht schlau (・_・;)"
     }
+  },
+  "profile": {
+    "saved": "Siehst gut aus ✿",
+    "removed": "Bild ist weg, deine Initialen sind zurück (・ω・)"
   }
 }

@@ -316,7 +316,8 @@
     "rules": "Regeln",
     "masked": "Maskierte Adressen",
     "signaturesPerAddressDesc": "Eine pro Absenderadresse, mit Fett, Links und Bildern, für neue Mails und Antworten. Sie liegt auf deinem Mailserver, also nutzen das Portal und deine anderen Mail-Apps dieselbe.",
-    "addSignature": "Signatur hinzufügen"
+    "addSignature": "Signatur hinzufügen",
+    "profile": "Profilbild"
   },
   "theme": {
     "system": "System",
@@ -884,12 +885,7 @@
       "bookDeleted": "Adressbuch „{{name}}“ gelöscht"
     },
     "picture": {
-      "choose": "Bild auswählen",
-      "change": "Bild ändern",
-      "camera": "Foto aufnehmen",
       "logo": "Firmenlogo",
-      "remove": "Entfernen",
-      "hint": "Oder zieh ein Bild auf den Kreis oder füge eins ein.",
       "noLogo": "Für {{domain}} gibt es kein Logo."
     }
   },
@@ -1064,6 +1060,36 @@
       "notImage": "Das ist kein Bild.",
       "tooLarge": "Das Bild ist zu groß. Bis {{size}} geht.",
       "unreadable": "Das Bild ließ sich nicht lesen."
-    }
+    },
+    "choose": "Bild auswählen",
+    "change": "Bild ändern",
+    "camera": "Foto aufnehmen",
+    "remove": "Entfernen",
+    "hint": "Oder zieh ein Bild auf den Kreis oder füge eins ein."
+  },
+  "profile": {
+    "picture": "Dein Bild",
+    "pictureDesc": "Es steht neben deinem Namen, wo Leute es sehen dürfen. Wähl ein Bild und rück es im Kreis zurecht.",
+    "visibility": "Wer es sieht",
+    "off": {
+      "title": "Niemand",
+      "body": "Deine Mails zeigen deine Initialen."
+    },
+    "server": {
+      "title": "Leute auf diesem Server",
+      "body": "Alle mit einem Postfach hier sehen es neben deinen Mails."
+    },
+    "public": {
+      "title": "Alle",
+      "body": "Auch andere Mailserver und Apps können es zeigen, über Libravatar. Wer deine Adresse kennt, kann es abrufen."
+    },
+    "publicForbidden": "Öffentliche Bilder hat deine Admin-Person ausgeschaltet.",
+    "face": "Mein Bild in Mails mitschicken",
+    "faceDesc": "Legt jeder Mail, die du schickst, eine kleine Kopie bei (der Face-Header), die manche Mailprogramme zeigen. Nur solange dein Bild öffentlich ist.",
+    "saved": "Bild gespeichert",
+    "removed": "Bild entfernt",
+    "failed": "Das hat nicht geklappt. {{reason}}",
+    "loading": "Dein Bild wird geladen …",
+    "loadFailed": "Dein Bild ließ sich nicht laden."
   }
 }

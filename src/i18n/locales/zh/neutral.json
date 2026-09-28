@@ -308,7 +308,8 @@
     "rules": "规则",
     "masked": "隐藏地址",
     "signaturesPerAddressDesc": "每个发件地址一个，可使用粗体、链接和图片，会添加到新邮件和回复中。它保存在你的邮件服务器上，因此门户和你的其他邮件应用都使用同一个。",
-    "addSignature": "添加签名"
+    "addSignature": "添加签名",
+    "profile": "头像"
   },
   "theme": {
     "system": "系统",
@@ -857,12 +858,7 @@
       "bookDeleted": "已删除通讯录“{{name}}”"
     },
     "picture": {
-      "choose": "选择图片",
-      "change": "更换图片",
-      "camera": "拍照",
       "logo": "公司标志",
-      "remove": "移除",
-      "hint": "也可以把图片拖到圆圈上，或直接粘贴。",
       "noLogo": "没有找到 {{domain}} 的标志。"
     }
   },
@@ -1036,6 +1032,36 @@
       "notImage": "这不是图片。",
       "tooLarge": "图片太大了，最多 {{size}}。",
       "unreadable": "无法读取这张图片。"
-    }
+    },
+    "choose": "选择图片",
+    "change": "更换图片",
+    "camera": "拍照",
+    "remove": "移除",
+    "hint": "也可以把图片拖到圆圈上，或直接粘贴。"
+  },
+  "profile": {
+    "picture": "你的头像",
+    "pictureDesc": "在允许的范围内，它会显示在你的名字旁边。选择一张图片，并在圆圈中调整位置。",
+    "visibility": "谁能看到",
+    "off": {
+      "title": "任何人都看不到",
+      "body": "你的邮件显示姓名首字母。"
+    },
+    "server": {
+      "title": "本服务器上的人",
+      "body": "在这里有邮箱的每个人都会在你的邮件旁看到它。"
+    },
+    "public": {
+      "title": "所有人",
+      "body": "其他邮件服务器和应用也可以通过 Libravatar 显示它。任何知道你地址的人都能查到。"
+    },
+    "publicForbidden": "管理员已关闭公开头像。",
+    "face": "在邮件中附带我的头像",
+    "faceDesc": "在你发送的每封邮件中附上一个小副本（Face 标头），部分邮件程序会显示它。仅在头像公开时有效。",
+    "saved": "头像已保存",
+    "removed": "头像已移除",
+    "failed": "操作失败。{{reason}}",
+    "loading": "正在加载你的头像…",
+    "loadFailed": "无法加载你的头像。"
   }
 }
