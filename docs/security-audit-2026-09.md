@@ -760,3 +760,199 @@ UID — was fixed in 6216a3e.
 - **The freeze in a browser.** The patterns were timed in V8, the engine of the browsers most
   readers use; a browser with a crafted mail was not run.
 - **Embedded pictures and previews on a real server** — no server was run in this pass.
+
+## Addendum — 28 September 2026: pictures, one-click unsubscribe and the WEBMAIL fixes (0.12.0)
+
+A fifth pass, over the branch `feat/0.12-pictures` before it is merged (`git diff main...HEAD`,
+commits 76e8788 to d16f74a): contact photos and their crop step (`src/lib/pictures.ts`,
+`src/features/pictures`, `ContactPicture.tsx`, the photo patch in `src/backend/jmap/contacts.ts`),
+sender pictures per address (`useSenderPicture`, `getSenderPicture`, `src/lib/concurrency.ts`), the
+own profile picture (`src/features/settings/ProfilePicture.tsx`, `src/backend/jmap/profile.ts`),
+the one-click unsubscribe through the server (`src/lib/unsubscribe.ts`, `Unsubscribe.tsx`), the
+fixes of the server audit's WEBMAIL-2 and WEBMAIL-3 (`schedulingMailVerified`, `LinkedText.tsx`),
+the participants in the event popover and the Escape change in `Dialog.tsx`. It continues the
+`W-` numbers. Done with Claude, like the passes above; the server's side of the new extensions
+(`pictureUrl`, `urn:uwumail:jmap:profile`, `Email/unsubscribe`) was read, not run.
+
+The threat model gains two inputs. **Pictures** — a company's logo or website icon comes from
+the sender's domain, a contact's linked photo from whoever wrote the card — are files to decode
+and show, never pages. **Scheduling mail** names an event by its UID, and anyone who knows the UID
+(a fellow guest) can write one; the From alone proves nothing, the server's SPF and DKIM verdict
+does, and the webmail doesn't see it.
+
+### Summary
+
+| ID   | Severity      | Finding                                                                       | Status           |
+| ---- | ------------- | ----------------------------------------------------------------------------- | ---------------- |
+| W-29 | Low           | The unsubscribe question answers the gesture that opened it                   | fixed in e70e866 |
+| W-30 | Low           | The unsubscribe address can hide behind invisible characters                  | fixed in 1526a06 |
+| W-31 | Low           | With sender pictures off, linked contact photos still make the server ask out | fixed in 9e9b6ea |
+| W-32 | Low           | A picture's pixel limit is checked only after the picture is decoded          | fixed in 3451ec8 |
+| W-33 | Low           | A forged From of the organizer shows an event as cancelled                    | fixed in 9f44ef8 |
+| W-34 | Low           | The unverified invitation note shows addresses with their direction marks     | fixed in d90adb3 |
+| W-35 | Low           | SVG sender pictures become `blob:` URLs of the webmail's own origin           | fixed in 5824931 |
+| W-36 | Informational | Person pictures follow the unauthenticated From                               | listed           |
+| W-37 | Informational | Picture URLs and queued lookups outlive the avatars that wanted them          | listed           |
+| W-38 | Informational | Card keys go into patch paths unescaped                                       | listed           |
+
+Nothing Critical, High or Medium. No path to running code on the app's origin was found in the
+new code: contact and event text is React text, a contact photo reaches the page only as a
+`data:image/` address in an `<img>` or through the server's picture proxy, and nothing new uses
+`innerHTML` or `dangerouslySetInnerHTML`. W-35 is the one place a picture could have become a
+page; it needs the reader to open the picture on its own.
+
+### Low findings
+
+- **W-29 · The unsubscribe question answers the gesture that opened it** —
+  `src/features/mail/Unsubscribe.tsx`. CVSS `AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N` (3.1). The
+  question opened with its answer button focused, so a held Enter on "Unsubscribe" in the reader
+  (key repeat) answered it at once. Since 0.12 that answer makes the server POST to the sender, and
+  when the server refuses quickly (it tries each mail once every few minutes), the next question
+  has "Send the mail" focused under the same key — a mail to the header's address. The gesture W-18
+  closed for the link question. _Fix:_ both answer buttons use `armedActivation`: no click in the
+  first 600 ms, no repeating key; the question after a refusal arms anew. Test
+  `Unsubscribe.test.tsx`.
+- **W-30 · The unsubscribe address can hide behind invisible characters** —
+  `src/lib/unsubscribe.ts` (`unsubscribeMail`). CVSS `AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N` (3.1).
+  The question names the address before a mail goes (W-5), and 0.12 names it again as the way
+  back. The address is percent-decoded from the header, and direction marks, zero-width characters
+  and soft hyphens passed the one-address check, so the named address could read as another one.
+  Older than this branch; the new lines repeat it. _Fix:_ such an address is refused like a second
+  recipient; the page opens instead where there is one. Test `unsubscribe.test.ts`.
+- **W-31 · With sender pictures off, linked contact photos still make the server ask out** —
+  `src/features/contacts/ContactAvatar.tsx`, `ContactEditor.tsx`. CVSS
+  `AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:N/A:N` (2.6). A photo that is only an `https:` link is shown
+  through the image proxy, which fetches it from the link's host — correct, the browser never
+  loads it directly. But the contacts list and editor did so with "sender pictures" off, though the
+  setting promises only what the server has itself then, and the server's own lookup (`local=1`)
+  leaves such links out. The link's host is whoever wrote the card (a shared address book, a
+  synced phone). _Fix:_ switched off, a linked photo isn't shown; the avatar comes from the local
+  lookup. Pictures inside the card always show. Test `ContactAvatar.test.tsx`.
+- **W-32 · A picture's pixel limit is checked only after the picture is decoded** —
+  `src/lib/pictures.ts` (`readPicture`). CVSS `AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L` (3.1). The
+  20 MB limit held before decoding, the 60-megapixel limit only after. A PNG of one colour
+  compresses about a thousandfold, so a few hundred kilobytes decode to gigabytes and can take the
+  tab down. "Company logo" in the contact editor feeds the sender domain's own website icon into
+  this step (the server passes it on unchanged, up to 512 KB). _Fix:_ width and height are read
+  from the header of PNG, GIF (every frame), JPEG, WebP, BMP and icon files, in one linear pass,
+  and a picture over the limit is refused before anything is decoded. Other formats (SVG, AVIF,
+  HEIC) keep the check after decoding; an SVG's own size is checked before it is drawn. Test
+  `pictures.test.ts`, with a bomb header, a GIF frame larger than its screen and an icon hiding a
+  large PNG.
+- **W-33 · A forged From of the organizer shows an event as cancelled** —
+  `src/backend/jmap/JmapBackend.ts` (`mailInvitation`), `calendar.ts`. CVSS
+  `AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N` (3.1). The WEBMAIL-2 fix believes a scheduling mail when its
+  From is the event's organizer, and showed a `CANCEL` as a cancellation on that alone. The server
+  cancels the stored event only when SPF or DKIM vouch for the From. Someone who knows the UID
+  could forge the organizer, and the card said "The organizer cancelled this event" while the
+  calendar kept it. _Fix:_ only the calendar's word counts (`cancellationApplied`). A whole-event
+  cancellation the calendar doesn't bear out is shown as unverified ("nothing confirms it comes
+  from the event's organizer"); one naming single dates shows the answer as it stands, without
+  buttons. The card is read again when the calendar changes, since the server applies such a mail
+  only after it was delivered. Tests `calendar.test.ts`, `Invitation.test.tsx`.
+- **W-34 · The unverified invitation note shows addresses with their direction marks** —
+  `src/features/calendar/Invitation.tsx` (`Unverified`). CVSS
+  `AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N` (3.1). The note exists to tell the sender from the
+  organizer. A From address or organizer with direction marks or invisible characters could make
+  one read as the other. _Fix:_ both go through `visibleText`, like the link question's
+  addresses. Test `Invitation.test.tsx`.
+- **W-35 · SVG sender pictures become `blob:` URLs of the webmail's own origin** —
+  `src/backend/jmap/JmapBackend.ts` (`getSenderPicture`). CVSS
+  `AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N` (4.8 by the numbers, Low in practice). The server hands
+  out pictures with `Content-Disposition: attachment` and a sandbox policy, so a picture opened by
+  itself can't act on the server's origin. The webmail turned every picture into a `blob:` URL,
+  which belongs to the webmail's origin and carries neither. A company's SVG logo (BIMI logos
+  always are) opened with the browser's "open image in new tab" would be a document of the
+  webmail's origin. What stands in the way is the page policy (`script-src 'self'`), where the
+  browser carries it over to `blob:` documents, and that `'self'` can be met with downloaded bytes
+  (WEBMAIL-4). Older than this branch for logos; 0.12 puts avatars in more places (recipients,
+  participants, the invitation card). _Fix:_ only plain pictures (PNG, JPEG, GIF, WebP, AVIF,
+  BMP, icons) become `blob:` URLs; anything else is handed to the avatar as `data:`, which
+  browsers don't open as a page. Test `client.test.ts`.
+
+### Informational
+
+- **W-36 · Person pictures follow the unauthenticated From** — `useSenderPicture`, the server's
+  lookup steps a and b. A contact's photo and a colleague's profile picture are found by the From
+  address alone, so a forged mail from a colleague shows their real face — more convincing than
+  initials. Face pictures need DMARC; these don't. What stands in the way is the server's handling
+  of forged local senders on port 25. _Fix, when wanted:_ no person pictures in Junk (as W-4 does
+  for remote pictures), or the server gating steps a and b on its verdict for the mail.
+- **W-37 · Picture URLs and queued lookups outlive the avatars that wanted them** —
+  `JmapBackend.pictureUrls`, `profileUrl`, `createLimiter`. One object URL per address and kind
+  of lookup lives until the tab closes, and the profile picture's isn't freed when it is removed.
+  A lookup whose avatar scrolled away still runs when its turn comes. Memory and requests to our
+  own server only; four at a time holds. _Fix:_ free a URL when the query cache drops its query,
+  and pass the query's abort signal to the limiter.
+- **W-38 · Card keys go into patch paths unescaped** — `src/backend/jmap/contacts.ts`
+  (`photoPatch`, as `singleText` and the birthday before it). Keys of `media` come from the card
+  the server sent; a key with `/` or `~` would address another path of the same card, since
+  RFC 8620 patch paths want `~1` and `~0`. Only the reader's own save of that card is affected.
+  _Fix:_ escape keys in patch paths, or skip entries whose key isn't a plain id.
+
+### What held up
+
+- **Contact photos.** A `data:image/` photo is only ever an `<img>` source (an SVG there has no
+  scripts and loads nothing); an `https:` photo only goes through `imageUrl`, and the proxied
+  address must be a path on the page's own origin. A vCard from a mail carries no photo into the
+  editor. What the editor stores is the canvas output — a 256 × 256 JPEG at 0.85, turned by the
+  EXIF orientation, without the file's metadata; the profile picture is a 512 × 512 JPEG the
+  server decodes and re-encodes again. The crop step's object URLs are freed when its picture is
+  closed, also on errors.
+- **Sender pictures.** One query per address (trimmed, lower case) and kind of lookup; the path
+  carries the signed-in account, and a different login means a new page. With the setting off,
+  every avatar asks with `local=1`; "Company logo" is a click of its own and asks with
+  `source=logo`. At most four lookups at once.
+- **Profile page.** Upload with the CSRF token, `ProfilePicture/set` for the singleton only,
+  refusals as text; no secret in any URL (the picture is an object URL; download paths carry
+  account and blob ids).
+- **One-click unsubscribe.** Nothing is sent before the reader answers. `cannotUnsubscribe` takes
+  the way the question already named (the mail, else the page through the link question);
+  `unsubscribeFailed` says so and asks again before anything else goes. The server's reason is
+  React text.
+- **WEBMAIL-2.** The sender check compares lower-cased, trimmed plain addresses (a `mailto:`
+  prefix in any case, quoted parameters with colons, read in linear time); the From's address is
+  compared, never its display name; a `SENT-BY` delegate or an odd spelling fails closed. What the
+  card shows of the event is always what the calendar stored.
+- **WEBMAIL-3.** Event links have no `href`: click, Enter and the middle button ask through the
+  link question, the context menu and a long press open the link sheet, dragging does nothing,
+  and no other calendar text renders a link.
+- **Dialogs.** A nested dialog's Escape closes only that dialog; the outer one ignores the bubbled
+  `cancel` and its backdrop check is unchanged. The browser returns focus on close; the crop
+  dialog always has its close button and closes itself when the file can't be read.
+
+### Regression check of the earlier findings
+
+W-5 holds (the mail target is named, also as the way back after a one-click try) and is tightened
+by W-30. W-17 and W-23 hold for the calendar's new link component. W-18's arming now also covers
+the unsubscribe question (W-29), W-21's care for direction marks the invitation note (W-34). W-4
+is unchanged; W-36 is its counterpart for pictures. The other findings are untouched by this
+branch; their tests pass.
+
+### New or changed accepted risks
+
+- **Libravatar asks per address.** With sender pictures on, the server asks a foreign domain's
+  Libravatar host about each new address once a week — also for recipients typed into the
+  composer and for an event's participants. A sender running their own Libravatar host and
+  handing out one address per reader learns roughly when a mail was first listed, from the
+  server's (or the VPN's) address, never the reader's. That is the federation the pictures were
+  built on; switching sender pictures off stops it.
+
+### What was run
+
+- `pnpm format:check`, `typecheck`, `lint`, `test` (72 files, 598 tests, 30 skipped for the live
+  server), `pnpm build` and `pnpm audit --prod` (no known vulnerabilities) on the final tree.
+- The header reader of W-32 against crafted headers (a 50 000-frame GIF, a megabyte of JPEG fill
+  bytes) in well under a second.
+- Code reading of the server's picture endpoint (`remote.rs`, its sandbox headers), its logo
+  fetching (`pictures.rs`), `Email/unsubscribe` and the iTIP handling of `CANCEL`, `REQUEST` and
+  `REPLY` (`scheduling.rs`, `itip.rs`) for W-32, W-33 and W-35.
+
+### What could not be tested, and why
+
+- **A real decompression bomb in a browser** (W-32) and **"open image in new tab" on an avatar**
+  (W-35) — no browser was run in this pass; the behaviour of `blob:` documents under the page
+  policy differs between browsers and was not checked, which is why W-35 was fixed rather than
+  weighed.
+- **A held Enter in a real browser** (W-29) — driven with synthetic key and click events.
+- **A real server, login and forged mail** — as before.
