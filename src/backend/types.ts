@@ -433,15 +433,41 @@ export interface Invitation {
   organizerEmail?: string | null;
 }
 
-/** The invitation a mail carries (its text/calendar part), as the server put it into the calendar. */
-export interface MailInvitation extends Invitation {
+/** What a scheduling mail says it is (its iCalendar METHOD). */
+export type SchedulingMethod = "request" | "cancel" | "reply" | "other";
+
+/** The event a scheduling mail names, as it sits in the calendar. */
+interface MailSchedulingBase {
   title: string;
   /** UTC start, or the date of an all-day event. */
   start: string | null;
   allDay: boolean;
-  /** The organizer cancelled it. */
+  method: SchedulingMethod;
+  /**
+   * The mail comes from who may say this (security-audit-0.16.0 WEBMAIL-2): the event's organizer
+   * for invitations, updates and cancellations, a participant for answers. An unverified one is
+   * shown as such, and nothing is offered on its account.
+   */
+  verified: boolean;
+}
+
+/** The invitation a mail carries (its text/calendar part), as the server put it into the calendar. */
+export interface MailInvitation extends Invitation, MailSchedulingBase {
+  kind: "invitation";
+  /** The event is cancelled: the calendar says so, or the organizer's own mail does. */
   cancelled: boolean;
 }
+
+/** An answer to the account's own event a mail carries, with the answer as the calendar has it. */
+export interface MailReply extends MailSchedulingBase {
+  kind: "reply";
+  /** Who answered: their name where the event has one, else the mail's sender. */
+  attendee: string;
+  attendeeEmail: string;
+  status: ParticipationStatus;
+}
+
+export type MailScheduling = MailInvitation | MailReply;
 
 export type Weekday = "mo" | "tu" | "we" | "th" | "fr" | "sa" | "su";
 

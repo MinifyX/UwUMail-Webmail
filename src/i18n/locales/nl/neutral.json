@@ -964,7 +964,23 @@
       "declined": "Afgewezen. De organisator hoort het."
     },
     "failed": "Het antwoord kon niet worden verzonden. {{reason}}",
-    "cancelled": "De organisator heeft deze afspraak geannuleerd."
+    "cancelled": "De organisator heeft deze afspraak geannuleerd.",
+    "reply": {
+      "title": "Antwoord op je uitnodiging",
+      "status": {
+        "needs-action": "{{name}} heeft nog niet geantwoord.",
+        "accepted": "{{name}} heeft geaccepteerd.",
+        "tentative": "{{name}} heeft misschien geantwoord.",
+        "declined": "{{name}} heeft afgewezen."
+      }
+    },
+    "unverified": {
+      "invitation": "Deze uitnodiging komt niet van de organisator van de afspraak, dus je kunt hem hier niet beantwoorden. Ken je de afspraak, antwoord dan in je agenda.",
+      "cancel": "Deze mail zegt dat de afspraak niet doorgaat, maar komt niet van de organisator. Je agenda houdt de afspraak zoals hij is.",
+      "reply": "Dit antwoord komt van niemand die voor de afspraak is uitgenodigd, dus het telt niet.",
+      "sender": "Verstuurd door {{sender}}.",
+      "senderAndOrganizer": "Verstuurd door {{sender}}; de organisator is {{organizer}}."
+    }
   },
   "push": {
     "label": "Meld nieuwe mail, ook als de webmail gesloten is",

@@ -16,7 +16,7 @@ import type {
   FlagChange,
   Folder,
   Identity,
-  MailInvitation,
+  MailScheduling,
   MaskedAddress,
   MaskedAddressInput,
   MaskedAddressPatch,
@@ -189,8 +189,11 @@ export interface Backend {
   deleteEvent(occurrenceId: string, scope: EventDeleteScope): Promise<void>;
   /** Answers an invitation (the event's `invitation`); the organizer is told. */
   respondToInvitation(eventId: string, participantKey: string, status: ParticipationStatus): Promise<void>;
-  /** The invitation a mail carries, as it sits in the calendar; null when there is none. */
-  mailInvitation(messageId: string): Promise<MailInvitation | null>;
+  /**
+   * The invitation, cancellation or answer a mail carries, with the event as it sits in the
+   * calendar and whether the mail comes from who may say that; null when there is none.
+   */
+  mailInvitation(messageId: string): Promise<MailScheduling | null>;
   /** Shares a calendar with a person at a level; `null` stops sharing it with them. */
   shareCalendar(calendarId: string, personId: string, level: ShareLevel | null): Promise<void>;
 

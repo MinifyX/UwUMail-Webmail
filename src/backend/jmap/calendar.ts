@@ -24,6 +24,7 @@ import type {
   Invitation,
   ParticipationStatus,
   Recurrence,
+  SchedulingMethod,
   ShareLevel,
   Weekday,
 } from "../types";
@@ -207,9 +208,7 @@ export function invitationOf(
   const found = Object.entries(event.participants).find(([, participant]) => own.has(addressOf(participant)));
   if (!found) return null;
   const [participantKey, participant] = found;
-  const status = STATUSES.has(participant.participationStatus ?? "")
-    ? (participant.participationStatus as ParticipationStatus)
-    : "needs-action";
+  const status = statusOf(participant);
   const organizerAddress = event.organizerCalendarAddress?.replace(/^mailto:/i, "").trim() || null;
   const organizer = Object.values(event.participants).find(
     (entry) => organizerAddress && addressOf(entry) === organizerAddress.toLowerCase(),
@@ -223,14 +222,91 @@ export function invitationOf(
   };
 }
 
-/** The UID and METHOD of an iCalendar invitation (RFC 5545 with folded lines, RFC 5546). */
-export function icsInvitation(text: string): { uid: string; method: string | null } | null {
+/** What a scheduling message (iTIP) in a mail says about itself. */
+export interface IcsInvitation {
+  uid: string;
+  /** REQUEST, REPLY, CANCEL …; null when the part names none. */
+  method: string | null;
+  /** The address the part names as organizer, lower case; null when it names none. */
+  organizer: string | null;
+}
+
+/**
+ * The value of the first `name` property in a block of unfolded iCalendar lines. Parameters may
+ * quote a colon (`CN="Doe: Jo"`); each character is matched one way only, so a crafted line can't
+ * make this backtrack.
+ */
+function propertyValue(block: string, name: string): string | null {
+  const pattern = new RegExp(`^${name}(?=[;:])(?:"[^"\\r\\n]*"|[^":\\r\\n])*:(.*)$`, "im");
+  return pattern.exec(block)?.[1]?.trim() || null;
+}
+
+/** A calendar address (`mailto:…`) as a lower-case email address; null for anything else. */
+function mailtoAddress(value: string | null): string | null {
+  const address =
+    value
+      ?.replace(/^mailto:/i, "")
+      .trim()
+      .toLowerCase() ?? "";
+  return address.includes("@") && !/\s/.test(address) ? address : null;
+}
+
+/** The UID, METHOD and ORGANIZER of an iCalendar invitation (RFC 5545 with folded lines, RFC 5546). */
+export function icsInvitation(text: string): IcsInvitation | null {
   const unfolded = text.replace(/\r?\n[ \t]/g, "");
   const inEvent = unfolded.split(/BEGIN:VEVENT/i)[1] ?? "";
-  const uid = /^UID(?:;[^:\r\n]*)?:(.+)$/im.exec(inEvent)?.[1]?.trim();
+  const uid = propertyValue(inEvent, "UID");
   if (!uid) return null;
-  const method = /^METHOD(?:;[^:\r\n]*)?:(.+)$/im.exec(unfolded)?.[1]?.trim().toUpperCase() ?? null;
-  return { uid, method };
+  const method = propertyValue(unfolded, "METHOD")?.toUpperCase() ?? null;
+  return { uid, method, organizer: mailtoAddress(propertyValue(inEvent, "ORGANIZER")) };
+}
+
+/**
+ * Whether a scheduling mail may speak for the stored event it names, the way the server checks
+ * it before it changes anything (security-audit-0.16.0 WEBMAIL-2): an invitation, an update or a
+ * cancellation only from the event's organizer, naming the same organizer; an answer only from
+ * one of the event's participants. Anyone can write a mail naming someone else's event UID, so
+ * a mail that fails this is shown as unverified and nothing is offered on its account. (The
+ * server also wants SPF or DKIM to vouch for the sender, which the webmail can't see; what it
+ * shows of the event itself is always what the server stored.)
+ */
+export function schedulingMailVerified(
+  ics: Pick<IcsInvitation, "method" | "organizer">,
+  from: string | null | undefined,
+  event: Pick<JmapCalendarEvent, "organizerCalendarAddress" | "participants">,
+): boolean {
+  const sender = mailtoAddress(from ?? null);
+  if (!sender) return false;
+  if (ics.method === "REPLY") {
+    return Object.values(event.participants ?? {}).some((participant) => addressOf(participant) === sender);
+  }
+  const organizer = mailtoAddress(event.organizerCalendarAddress ?? null);
+  return organizer !== null && sender === organizer && ics.organizer === organizer;
+}
+
+/** An iCalendar METHOD as the webmail tells them apart. */
+export function schedulingMethod(method: string | null): SchedulingMethod {
+  if (method === null || method === "REQUEST") return "request";
+  if (method === "CANCEL") return "cancel";
+  if (method === "REPLY") return "reply";
+  return "other";
+}
+
+/** The participant of an event with this address, and their key. */
+export function participantWith(
+  event: Pick<JmapCalendarEvent, "participants">,
+  address: string,
+): { key: string; participant: JmapParticipant } | null {
+  const wanted = address.trim().toLowerCase();
+  const found = Object.entries(event.participants ?? {}).find(([, participant]) => addressOf(participant) === wanted);
+  return found ? { key: found[0], participant: found[1] } : null;
+}
+
+/** A participant's answer, "needs-action" where it says none the webmail knows. */
+export function statusOf(participant: JmapParticipant): ParticipationStatus {
+  return STATUSES.has(participant.participationStatus ?? "")
+    ? (participant.participationStatus as ParticipationStatus)
+    : "needs-action";
 }
 
 const FREQUENCIES = new Set(["daily", "weekly", "monthly", "yearly"]);

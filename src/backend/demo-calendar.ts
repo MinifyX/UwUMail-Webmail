@@ -20,6 +20,7 @@ import type {
   EventInput,
   Invitation,
   MailInvitation,
+  MailReply,
   ParticipationStatus,
   Recurrence,
   ShareLevel,
@@ -42,6 +43,8 @@ interface DemoEvent {
   excluded: string[];
   /** Somebody else's event the demo was invited to. */
   invitation?: Invitation;
+  /** People the demo invited to its own event, with their answers. */
+  guests?: { name: string; email: string; status: ParticipationStatus }[];
 }
 
 /** Occurrence ids of a series: the event's id and the occurrence's original start. */
@@ -159,6 +162,10 @@ function sampleEvents(lang: Lang): DemoEvent[] {
       description: de ? "Mia bringt Snacks mit." : "Mia brings snacks.",
       start: at(3, "19:00"),
       end: at(3, "23:30"),
+      guests: [
+        { name: "Noah Zockt", email: "noah@zockt.example", status: "accepted" },
+        { name: "Mia Mood", email: "mia@mood.example", status: "needs-action" },
+      ],
     }),
     event({
       id: "ev-conference",
@@ -232,16 +239,41 @@ export class DemoCalendar {
     this.changed();
   }
 
-  /** The invitation the demo's mail with an .ics part belongs to. */
-  invitation(): MailInvitation | null {
+  /**
+   * The invitation the demo's mails with an .ics part name, as a mail from `from` says it: only
+   * the organizer's own mail counts (like schedulingMailVerified).
+   */
+  invitation(method: "request" | "cancel", from: string): MailInvitation | null {
     const event = this.events.find((candidate) => candidate.invitation);
     if (!event?.invitation) return null;
+    const verified = from.toLowerCase() === event.invitation.organizerEmail;
     return {
+      kind: "invitation",
       ...event.invitation,
       title: event.title,
       start: new Date(event.start).toISOString(),
       allDay: event.allDay,
-      cancelled: false,
+      method,
+      verified,
+      cancelled: method === "cancel" && verified,
+    };
+  }
+
+  /** An answer to one of the demo's own events, as the event has it; only a guest's own counts. */
+  reply(from: string): MailReply | null {
+    const event = this.events.find((candidate) => candidate.guests?.length);
+    if (!event) return null;
+    const guest = event.guests?.find((entry) => entry.email === from.toLowerCase());
+    return {
+      kind: "reply",
+      title: event.title,
+      start: new Date(event.start).toISOString(),
+      allDay: event.allDay,
+      method: "reply",
+      verified: guest !== undefined,
+      attendee: guest?.name ?? from,
+      attendeeEmail: from.toLowerCase(),
+      status: guest?.status ?? "needs-action",
     };
   }
 

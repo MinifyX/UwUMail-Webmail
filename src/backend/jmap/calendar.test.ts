@@ -7,6 +7,9 @@ import {
   fromRecurrence,
   icsInvitation,
   invitationOf,
+  participantWith,
+  schedulingMailVerified,
+  statusOf,
   newEventObject,
   safeColor,
   toCalendarInfo,
@@ -364,8 +367,79 @@ describe("invitations and shared calendars", () => {
       "END:VEVENT",
       "END:VCALENDAR",
     ].join("\r\n");
-    expect(icsInvitation(ics)).toEqual({ uid: "c3566f06-58ec-4c0c-9d78270c6b9b2@example.org", method: "REQUEST" });
+    expect(icsInvitation(ics)).toEqual({
+      uid: "c3566f06-58ec-4c0c-9d78270c6b9b2@example.org",
+      method: "REQUEST",
+      organizer: null,
+    });
     expect(icsInvitation("BEGIN:VCALENDAR\r\nEND:VCALENDAR")).toBeNull();
+  });
+
+  it("reads the organizer, also behind a quoted name with a colon", () => {
+    const ics = [
+      "BEGIN:VCALENDAR",
+      "METHOD:CANCEL",
+      "BEGIN:VEVENT",
+      "UID:u1@example.org",
+      'ORGANIZER;CN="Mini: Studio";SENT-BY="mailto:help@example.org":mailto:Mini@Example.org',
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+    expect(icsInvitation(ics)).toEqual({ uid: "u1@example.org", method: "CANCEL", organizer: "mini@example.org" });
+  });
+
+  it("reads a crafted line in linear time", () => {
+    const started = performance.now();
+    for (const line of [`ORGANIZER;"${"a;".repeat(200_000)}`, `ORGANIZER${";a=b".repeat(200_000)}`]) {
+      expect(icsInvitation(`BEGIN:VEVENT\r\nUID:x\r\n${line}\r\nEND:VEVENT`)?.organizer).toBeNull();
+    }
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+
+  describe("whether a scheduling mail may speak for the event (WEBMAIL-2)", () => {
+    const event = {
+      organizerCalendarAddress: "mailto:Mini@example.org",
+      participants: {
+        mini: { calendarAddress: "mailto:mini@example.org" },
+        nyu: { calendarAddress: "mailto:nyu@example.com", participationStatus: "accepted" },
+      },
+    };
+    const organizer = "mini@example.org";
+
+    it("believes invitations, updates and cancellations only from the organizer, naming the same one", () => {
+      expect(schedulingMailVerified({ method: "CANCEL", organizer }, "MINI@example.org", event)).toBe(true);
+      expect(schedulingMailVerified({ method: "REQUEST", organizer }, "mini@example.org", event)).toBe(true);
+      expect(schedulingMailVerified({ method: null, organizer }, "mini@example.org", event)).toBe(true);
+      // Anyone can name the UID of someone else's event.
+      expect(schedulingMailVerified({ method: "CANCEL", organizer }, "mallory@example.net", event)).toBe(false);
+      expect(schedulingMailVerified({ method: "REQUEST", organizer }, "nyu@example.com", event)).toBe(false);
+      // The organizer's address, but a part that names someone else as organizer.
+      expect(
+        schedulingMailVerified({ method: "CANCEL", organizer: "mallory@example.net" }, "mini@example.org", event),
+      ).toBe(false);
+      expect(schedulingMailVerified({ method: "CANCEL", organizer: null }, "mini@example.org", event)).toBe(false);
+      expect(schedulingMailVerified({ method: "CANCEL", organizer }, null, event)).toBe(false);
+      expect(
+        schedulingMailVerified({ method: "CANCEL", organizer }, "mini@example.org", {
+          ...event,
+          organizerCalendarAddress: null,
+        }),
+      ).toBe(false);
+    });
+
+    it("believes answers only from someone invited", () => {
+      expect(schedulingMailVerified({ method: "REPLY", organizer }, "Nyu@example.com", event)).toBe(true);
+      expect(schedulingMailVerified({ method: "REPLY", organizer }, "mallory@example.net", event)).toBe(false);
+      expect(schedulingMailVerified({ method: "REPLY", organizer }, "", event)).toBe(false);
+    });
+
+    it("finds a participant and their answer", () => {
+      const found = participantWith(event, "NYU@example.com");
+      expect(found?.key).toBe("nyu");
+      expect(statusOf(found!.participant)).toBe("accepted");
+      expect(statusOf({ participationStatus: "delegated" })).toBe("needs-action");
+      expect(participantWith(event, "mallory@example.net")).toBeNull();
+    });
   });
 
   it("turns levels into calendar rights and back", () => {

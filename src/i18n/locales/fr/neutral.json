@@ -991,7 +991,23 @@
       "declined": "Refusé. L'organisateur en est informé."
     },
     "failed": "La réponse n'a pas pu être envoyée. {{reason}}",
-    "cancelled": "L'organisateur a annulé cet événement."
+    "cancelled": "L'organisateur a annulé cet événement.",
+    "reply": {
+      "title": "Réponse à votre invitation",
+      "status": {
+        "needs-action": "{{name}} n'a pas encore répondu.",
+        "accepted": "{{name}} a accepté.",
+        "tentative": "{{name}} a répondu peut-être.",
+        "declined": "{{name}} a refusé."
+      }
+    },
+    "unverified": {
+      "invitation": "Cette invitation ne vient pas de l'organisateur de l'événement, vous ne pouvez donc pas y répondre ici. Si vous connaissez l'événement, répondez depuis votre agenda.",
+      "cancel": "Cet e-mail dit que l'événement est annulé, mais il ne vient pas de son organisateur. Votre agenda garde l'événement tel quel.",
+      "reply": "Cette réponse ne vient d'aucune personne invitée à l'événement, elle ne compte donc pas.",
+      "sender": "Envoyé par {{sender}}.",
+      "senderAndOrganizer": "Envoyé par {{sender}} ; l'organisateur est {{organizer}}."
+    }
   },
   "push": {
     "label": "Me prévenir des nouveaux messages quand la messagerie web est fermée",

@@ -37,7 +37,7 @@ import type {
   Folder,
   FolderRights,
   Identity,
-  MailInvitation,
+  MailScheduling,
   MailtoDraft,
   MaskedAddressInput,
   MaskedAddressPatch,
@@ -890,11 +890,14 @@ export class DemoBackend implements Backend {
     this.calendar.respond(eventId, status);
   }
 
-  async mailInvitation(messageId: string): Promise<MailInvitation | null> {
+  /** The demo's .ics parts say what they are in their names: an answer, a cancellation or an invitation. */
+  async mailInvitation(messageId: string): Promise<MailScheduling | null> {
     await wait(120);
     const message = this.messages.find((m) => m.id === messageId);
-    const carries = message?.attachments.some((a) => a.mimeType.startsWith("text/calendar"));
-    return carries ? this.calendar.invitation() : null;
+    const part = message?.attachments.find((a) => a.mimeType.startsWith("text/calendar"));
+    if (!message || !part) return null;
+    if (/reply/i.test(part.filename)) return this.calendar.reply(message.from.email);
+    return this.calendar.invitation(/cancel/i.test(part.filename) ? "cancel" : "request", message.from.email);
   }
 
   async shareCalendar(calendarId: string, personId: string, level: ShareLevel | null) {

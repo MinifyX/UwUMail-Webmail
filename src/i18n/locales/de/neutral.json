@@ -964,7 +964,23 @@
       "declined": "Abgesagt. Die einladende Person erfährt es."
     },
     "failed": "Die Antwort konnte nicht gesendet werden. {{reason}}",
-    "cancelled": "Dieser Termin wurde abgesagt."
+    "cancelled": "Dieser Termin wurde abgesagt.",
+    "reply": {
+      "title": "Antwort auf deine Einladung",
+      "status": {
+        "needs-action": "{{name}} hat noch nicht geantwortet.",
+        "accepted": "{{name}} hat zugesagt.",
+        "tentative": "{{name}} hat mit Vielleicht geantwortet.",
+        "declined": "{{name}} hat abgesagt."
+      }
+    },
+    "unverified": {
+      "invitation": "Diese Einladung kommt nicht von der Person, die den Termin angelegt hat, deshalb kannst du sie hier nicht beantworten. Wenn du den Termin kennst, antworte im Kalender.",
+      "cancel": "Diese Mail sagt, der Termin fällt aus, kommt aber nicht von der Person, die ihn angelegt hat. Dein Kalender behält den Termin, wie er ist.",
+      "reply": "Diese Antwort kommt von niemandem, der zum Termin eingeladen ist, deshalb zählt sie nicht.",
+      "sender": "Gesendet von {{sender}}.",
+      "senderAndOrganizer": "Gesendet von {{sender}}; angelegt hat den Termin {{organizer}}."
+    }
   },
   "push": {
     "label": "Bei neuen Mails benachrichtigen, auch wenn die Webmail geschlossen ist",

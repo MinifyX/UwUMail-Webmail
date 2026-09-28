@@ -36,7 +36,7 @@ import type {
   Folder,
   FolderRights,
   Identity,
-  MailInvitation,
+  MailScheduling,
   MailtoDraft,
   MaskedAddress,
   MaskedAddressInput,
@@ -71,6 +71,10 @@ import {
   icsInvitation,
   invitationOf,
   eventPatch,
+  participantWith,
+  schedulingMailVerified,
+  schedulingMethod,
+  statusOf,
   newEventObject,
   toCalendarInfo,
   toOccurrence,
@@ -1762,11 +1766,13 @@ export class JmapBackend implements Backend {
   }
 
   /**
-   * The invitation a mail carries: its iCalendar part names the event by UID, and the server put
-   * that event into the default calendar when the mail arrived. Null when there is none, or the
-   * account is the organizer.
+   * The scheduling message a mail carries: its iCalendar part names the event by UID, and the
+   * server put that event into the calendar (or updated it) when the mail arrived — if the mail
+   * came from who may send it. What is shown is always the stored event; the mail itself only
+   * says which one, and whether its sender matches (see schedulingMailVerified). Null when there
+   * is none, or the account has no part in it.
    */
-  async mailInvitation(messageId: string): Promise<MailInvitation | null> {
+  async mailInvitation(messageId: string): Promise<MailScheduling | null> {
     await this.start();
     if (!supports(CALENDARS)) return null;
     const target = unscopeId(messageId, this.accountId);
@@ -1774,14 +1780,15 @@ export class JmapBackend implements Backend {
     if (target.accountId !== this.accountId) return null;
     const found = await one<GetResponse<JmapEmail>>("Email/get", {
       ids: [target.id],
-      properties: ["id", "attachments"],
+      properties: ["id", "from", "attachments"],
     });
-    const part = (found.list[0]?.attachments ?? []).find(
+    const email = found.list[0];
+    const part = (email?.attachments ?? []).find(
       (entry) =>
         !!entry.blobId &&
         ((entry.type ?? "").toLowerCase().startsWith("text/calendar") || /\.ics$/i.test(entry.name ?? "")),
     );
-    if (!part?.blobId) return null;
+    if (!email || !part?.blobId) return null;
     const text = await (await downloadBlob(part.blobId, part.name ?? "invite.ics")).text();
     const ics = icsInvitation(text);
     if (!ics) return null;
@@ -1813,15 +1820,44 @@ export class JmapBackend implements Backend {
     );
     const event = responseOf<GetResponse<JmapCalendarEvent>>(body, "g").list[0];
     if (!event) return null;
-    const invitation = invitationOf(event, await this.ownAddresses());
-    if (!invitation) return null;
+    const from = email.from?.[0]?.email ?? null;
+    const verified = schedulingMailVerified(ics, from, event);
     const allDay = event.showWithoutTime === true;
-    return {
-      ...invitation,
+    const shared = {
       title: event.title ?? "",
       start: allDay ? event.start.slice(0, 10) : (event.utcStart ?? null),
       allDay,
-      cancelled: event.status === "cancelled" || ics.method === "CANCEL",
+      method: schedulingMethod(ics.method),
+      verified,
+    };
+    const own = await this.ownAddresses();
+
+    if (ics.method === "REPLY") {
+      // An answer only matters for the account's own event.
+      const organizer = (event.organizerCalendarAddress ?? "")
+        .replace(/^mailto:/i, "")
+        .trim()
+        .toLowerCase();
+      const organizing = event.isOrigin === true || own.some((address) => address.toLowerCase() === organizer);
+      if (!organizing || !from) return null;
+      const answered = participantWith(event, from);
+      return {
+        kind: "reply",
+        ...shared,
+        attendee: answered?.participant.name?.trim() || from,
+        attendeeEmail: from.toLowerCase(),
+        status: answered ? statusOf(answered.participant) : "needs-action",
+      };
+    }
+
+    const invitation = invitationOf(event, own);
+    if (!invitation) return null;
+    return {
+      kind: "invitation",
+      ...invitation,
+      ...shared,
+      // The calendar's word counts; a mail's only when it comes from the organizer.
+      cancelled: event.status === "cancelled" || (ics.method === "CANCEL" && verified),
     };
   }
 

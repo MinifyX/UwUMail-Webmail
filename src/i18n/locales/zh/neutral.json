@@ -936,7 +936,23 @@
       "declined": "已拒绝，组织者会收到通知。"
     },
     "failed": "无法发送答复。{{reason}}",
-    "cancelled": "组织者已取消此日程。"
+    "cancelled": "组织者已取消此日程。",
+    "reply": {
+      "title": "对你邀请的答复",
+      "status": {
+        "needs-action": "{{name}} 还没有答复。",
+        "accepted": "{{name}} 已接受。",
+        "tentative": "{{name}} 答复暂定。",
+        "declined": "{{name}} 已拒绝。"
+      }
+    },
+    "unverified": {
+      "invitation": "这封邀请不是日程组织者发来的，因此不能在这里答复。如果你知道这个日程，请在日历中答复。",
+      "cancel": "这封邮件说日程已取消，但它不是日程组织者发来的。你的日历会保留该日程不变。",
+      "reply": "这个答复不是来自受邀参加该日程的人，因此不算数。",
+      "sender": "发件人：{{sender}}。",
+      "senderAndOrganizer": "发件人：{{sender}}；组织者：{{organizer}}。"
+    }
   },
   "push": {
     "label": "网页邮箱关闭时也通知我新邮件",

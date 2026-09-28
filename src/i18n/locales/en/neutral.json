@@ -964,7 +964,23 @@
       "declined": "Declined. The organizer is told."
     },
     "failed": "The answer couldn't be sent. {{reason}}",
-    "cancelled": "The organizer cancelled this event."
+    "cancelled": "The organizer cancelled this event.",
+    "reply": {
+      "title": "Answer to your invitation",
+      "status": {
+        "needs-action": "{{name}} hasn't answered yet.",
+        "accepted": "{{name}} accepted.",
+        "tentative": "{{name}} answered maybe.",
+        "declined": "{{name}} declined."
+      }
+    },
+    "unverified": {
+      "invitation": "This invitation doesn't come from the event's organizer, so it can't be answered from here. If you know the event, answer it in your calendar.",
+      "cancel": "This mail says the event is cancelled, but it doesn't come from the event's organizer. Your calendar keeps the event as it is.",
+      "reply": "This answer doesn't come from anyone invited to the event, so it doesn't count.",
+      "sender": "Sent by {{sender}}.",
+      "senderAndOrganizer": "Sent by {{sender}}; the organizer is {{organizer}}."
+    }
   },
   "push": {
     "label": "Notify me about new mail when the webmail is closed",
