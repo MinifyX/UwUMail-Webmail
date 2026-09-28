@@ -1,6 +1,5 @@
 import { Plus, Trash, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { backend } from "@/backend/backend";
 import type {
   ContactEmail,
   ContactInput,
@@ -14,6 +13,8 @@ import { ConfirmDiscardDialog } from "@/components/ui/ConfirmDiscardDialog";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, Select, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
+import { useSettings } from "@/state/settings";
+import { contactPhotoSrc } from "./ContactAvatar";
 import { ContactPictureField } from "./ContactPicture";
 import { formatBirthday, hasName, inputFrom } from "./format";
 import { useContactsUi, type ContactEditorRequest } from "./state";
@@ -43,6 +44,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
   const [busy, setBusy] = useState(false);
   const [asking, setAsking] = useState(false);
   const actions = useContactActions();
+  const senderPictures = useSettings((s) => s.senderPictures);
   if (!request || !form)
     return (
       <Dialog open={false} onClose={onClose}>
@@ -73,6 +75,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
   const yearless = form.birthday?.startsWith("--") ?? false;
   // The picture as it will be saved: a new or removed one, or the card's own.
   const photo = form.photo !== undefined ? form.photo : (contact?.photo ?? null);
+  const photoSrc = contactPhotoSrc(photo, senderPictures);
   const firstEmail = form.emails.find((email) => email.address.trim())?.address.trim() ?? null;
 
   return (
@@ -93,7 +96,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
         >
           <ContactPictureField
             photo={photo}
-            src={photo ? backend().contactPhotoUrl(photo) : null}
+            src={photoSrc}
             email={firstEmail}
             onChange={(next) => setForm({ photo: next })}
           />

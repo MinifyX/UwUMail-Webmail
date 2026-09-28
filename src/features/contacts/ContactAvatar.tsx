@@ -3,6 +3,7 @@ import { UsersRound } from "lucide-react";
 import { backend } from "@/backend/backend";
 import type { ContactRecord } from "@/backend/types";
 import { Avatar } from "@/components/ui/Avatar";
+import { useSettings } from "@/state/settings";
 
 const SIZES = {
   list: "size-9",
@@ -10,11 +11,24 @@ const SIZES = {
 } as const;
 
 /**
- * The contact's own picture when the card has one (a web link only through the server);
+ * Where a contact's picture shows from. A picture inside the card always; a web link only through
+ * the server, and only while sender pictures are on (`everywhere`): switched off, the reader was
+ * promised only what the server has itself, and a link makes the server ask another one
+ * (security-audit W-31).
+ */
+export function contactPhotoSrc(photo: string | null, everywhere: boolean): string | null {
+  if (!photo) return null;
+  if (!everywhere && !/^data:image\//i.test(photo.trim())) return null;
+  return backend().contactPhotoUrl(photo);
+}
+
+/**
+ * The contact's own picture when the card has one and it may show (see contactPhotoSrc);
  * otherwise the same avatar as in the mail.
  */
 export function ContactAvatar({ contact, size = "list" }: { contact: ContactRecord; size?: keyof typeof SIZES }) {
-  const src = contact.photo ? backend().contactPhotoUrl(contact.photo) : null;
+  const everywhere = useSettings((s) => s.senderPictures);
+  const src = contactPhotoSrc(contact.photo, everywhere);
   if (src) {
     return (
       <img src={src} alt="" draggable={false} className={clsx("shrink-0 rounded-full object-cover", SIZES[size])} />
