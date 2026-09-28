@@ -278,6 +278,28 @@ export function pictureKind(header: string | null): "photo" | "logo" | "icon" {
   return kind === "photo" || kind === "logo" ? kind : "icon";
 }
 
+/** Picture types a browser only ever shows as a picture, even when opened as a page of its own. */
+const PLAIN_PICTURE = /^image\/(png|jpeg|gif|webp|avif|bmp|x-icon|vnd\.microsoft\.icon)$/i;
+
+/**
+ * An address the page can show a fetched picture from. The server hands pictures out with a
+ * sandbox policy and as a download, but a `blob:` URL made from them belongs to the webmail's own
+ * origin and carries neither: an SVG logo (BIMI logos always are) opened on its own — "open image
+ * in new tab" — would be a document of the webmail's origin (security-audit W-35). So only plain
+ * pictures become `blob:` URLs; anything else a `data:` URL, which browsers don't open as a page
+ * and which would have no origin of its own there.
+ */
+export async function pictureSource(blob: Blob): Promise<string> {
+  const type = blob.type.split(";")[0]!.trim();
+  if (PLAIN_PICTURE.test(type)) return URL.createObjectURL(blob);
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 8192));
+  }
+  return `data:${/^image\/[\w.+-]+$/i.test(type) ? type : "application/octet-stream"};base64,${btoa(binary)}`;
+}
+
 /**
  * Where the server hands out the picture for an address: a contact's photo, a person's profile
  * picture, or a company's logo or website icon. Null when the server can't.

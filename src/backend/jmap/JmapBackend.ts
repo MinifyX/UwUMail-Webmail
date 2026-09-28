@@ -115,6 +115,7 @@ import {
   remoteImagePath,
   responseOf,
   pictureKind,
+  pictureSource,
   senderPicturePath,
   supports,
   uploadBlob,
@@ -2302,8 +2303,8 @@ export class JmapBackend implements Backend {
     const print = `${blob.type}:${blob.size}:${fingerprint(new Uint8Array(await blob.arrayBuffer()))}`;
     const known = this.pictureUrls.get(path);
     if (known?.print === print) return known.url;
-    if (known) URL.revokeObjectURL(known.url);
-    const url = URL.createObjectURL(blob);
+    if (known) releasePictureUrl(known.url);
+    const url = await pictureSource(blob);
     this.pictureUrls.set(path, { url, print });
     return url;
   }
@@ -2311,7 +2312,7 @@ export class JmapBackend implements Backend {
   private dropPictureUrl(path: string): void {
     const known = this.pictureUrls.get(path);
     if (!known) return;
-    URL.revokeObjectURL(known.url);
+    releasePictureUrl(known.url);
     this.pictureUrls.delete(path);
   }
 
@@ -2390,6 +2391,11 @@ function offerDownload(url: string, filename: string): void {
   document.body.append(link);
   link.click();
   link.remove();
+}
+
+/** Frees a picture's object URL; a `data:` one holds nothing to free (see pictureSource). */
+function releasePictureUrl(url: string): void {
+  if (url.startsWith("blob:")) URL.revokeObjectURL(url);
 }
 
 /** FNV-1a over the bytes: enough to tell whether a picture changed. */

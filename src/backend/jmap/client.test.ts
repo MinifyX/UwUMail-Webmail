@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   loadJmapSession,
   pictureKind,
+  pictureSource,
   reconnectDelay,
   remoteImagePath,
   senderPicturePath,
@@ -52,6 +53,22 @@ describe("remote pictures through the server", () => {
     expect(withPictureOptions("/p/a7/x%40y.example")).toBe("/p/a7/x%40y.example");
     expect(withPictureOptions("/p/a7/x%40y.example", { local: true })).toBe("/p/a7/x%40y.example?local=1");
     expect(withPictureOptions("/p?email=x", { logo: true, local: true })).toBe("/p?email=x&source=logo&local=1");
+  });
+
+  it("hands out an SVG logo as data, never as a page of our own origin (W-35)", async () => {
+    const create = vi.spyOn(URL, "createObjectURL").mockImplementation(() => "blob:own/1");
+    expect(await pictureSource(new Blob(["png"], { type: "image/png" }))).toBe("blob:own/1");
+    expect(await pictureSource(new Blob(["jpeg"], { type: "image/JPEG" }))).toBe("blob:own/1");
+    expect(create).toHaveBeenCalledTimes(2);
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><script>x</script></svg>';
+    expect(await pictureSource(new Blob([svg], { type: "image/svg+xml; charset=utf-8" }))).toBe(
+      `data:image/svg+xml;base64,${btoa(svg)}`,
+    );
+    expect(await pictureSource(new Blob(["<html>"], { type: "text/html" }))).toBe(
+      `data:application/octet-stream;base64,${btoa("<html>")}`,
+    );
+    expect(create).toHaveBeenCalledTimes(2);
+    create.mockRestore();
   });
 
   it("reads what kind of picture the server found", () => {
