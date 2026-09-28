@@ -79,8 +79,9 @@ export function RecipientInput({ label, value, onChange, autoFocus }: RecipientI
           <span
             key={address.email}
             title={address.email}
-            className="inline-flex h-7 items-center gap-1.5 rounded-full bg-pink-tint pr-1 pl-2.5 text-[13px] font-medium text-pink-ink"
+            className="inline-flex h-7 items-center gap-1.5 rounded-full bg-pink-tint pr-1 pl-1 text-[13px] font-medium text-pink-ink"
           >
+            <Avatar address={address} size="xs" />
             {displayName(address)}
             <button
               type="button"

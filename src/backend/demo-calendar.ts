@@ -203,6 +203,7 @@ function sampleEvents(lang: Lang): DemoEvent[] {
         participantKey: "mini",
         status: "needs-action",
         organizer: "Emma",
+        organizerEmail: "emma.vogt@brightlabs.example",
       },
     }),
   ];

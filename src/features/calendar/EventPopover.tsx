@@ -1,5 +1,6 @@
 import { AlignLeft, CalendarDays, Clock, Mail, MapPin, Pencil, Repeat, Trash, X } from "lucide-react";
 import { Fragment, useState } from "react";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button, IconButton } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
@@ -104,12 +105,23 @@ export function EventPopover() {
         </div>
         {occurrence.invitation && (
           <Detail icon={Mail}>
-            <p className="mb-2 text-muted">
-              {occurrence.invitation.organizer
-                ? t("invitation.from", { name: occurrence.invitation.organizer })
-                : t("invitation.title")}
-              {" · "}
-              {t(invitationStatusKey(occurrence.invitation.status))}
+            <p className="mb-2 flex items-center gap-2 text-muted">
+              {occurrence.invitation.organizerEmail && (
+                <Avatar
+                  address={{
+                    name: occurrence.invitation.organizer ?? undefined,
+                    email: occurrence.invitation.organizerEmail,
+                  }}
+                  size="xs"
+                />
+              )}
+              <span className="min-w-0">
+                {occurrence.invitation.organizer
+                  ? t("invitation.from", { name: occurrence.invitation.organizer })
+                  : t("invitation.title")}
+                {" · "}
+                {t(invitationStatusKey(occurrence.invitation.status))}
+              </span>
             </p>
             <InvitationAnswer invitation={occurrence.invitation} compact onAnswered={close} />
           </Detail>

@@ -210,7 +210,7 @@ export function invitationOf(
   const status = STATUSES.has(participant.participationStatus ?? "")
     ? (participant.participationStatus as ParticipationStatus)
     : "needs-action";
-  const organizerAddress = event.organizerCalendarAddress?.replace(/^mailto:/i, "") ?? null;
+  const organizerAddress = event.organizerCalendarAddress?.replace(/^mailto:/i, "").trim() || null;
   const organizer = Object.values(event.participants).find(
     (entry) => organizerAddress && addressOf(entry) === organizerAddress.toLowerCase(),
   );
@@ -219,6 +219,7 @@ export function invitationOf(
     participantKey,
     status,
     organizer: organizer?.name?.trim() || organizerAddress || null,
+    organizerEmail: organizerAddress?.includes("@") ? organizerAddress.toLowerCase() : null,
   };
 }
 

@@ -18,7 +18,7 @@ import {
   demoRules,
   welcomeMessage,
 } from "./demo-data";
-import { DEMO_LINKED_PHOTOS, demoSenderPicture } from "./demo-pictures";
+import { DEMO_LINKED_PHOTOS, DEMO_PROFILE_PICTURES, demoSenderPicture } from "./demo-pictures";
 import { contactPhotoSource } from "./jmap/contacts";
 import type {
   BlockedSender,
@@ -49,6 +49,7 @@ import type {
   SendOptions,
   SendReceipt,
   SenderPicture,
+  SenderPictureLookup,
   ShareLevel,
   SharedAccount,
   Signature,
@@ -746,9 +747,23 @@ export class DemoBackend implements Backend {
     return true;
   }
 
-  async getSenderPicture(email: string): Promise<SenderPicture | null> {
+  /** Like the server's lookup: a contact's photo, a person's own picture here, then logos. */
+  async getSenderPicture(email: string, lookup: SenderPictureLookup = {}): Promise<SenderPicture | null> {
     await wait(150);
-    return demoSenderPicture(email);
+    const address = email.trim().toLowerCase();
+    for (const contact of this.addressBook.contacts()) {
+      if (!contact.photo || !contact.emails.some((entry) => entry.address.toLowerCase() === address)) continue;
+      const url = this.contactPhotoUrl(contact.photo);
+      if (url) return { url, kind: "photo" };
+    }
+    const profile = this.profilePictureOf(address);
+    if (profile) return { url: profile, kind: "photo" };
+    return demoSenderPicture(address, lookup.local);
+  }
+
+  /** The picture people on the demo "server" show for themselves. */
+  private profilePictureOf(address: string): string | null {
+    return DEMO_PROFILE_PICTURES[address] ?? null;
   }
 
   /** The demo's stand-in for the server's picture proxy knows the sample links and nothing else. */

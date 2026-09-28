@@ -266,6 +266,12 @@ export function withPictureOptions(path: string, lookup: PictureLookup = {}): st
   return `${path}${path.includes("?") ? "&" : "?"}${extra.join("&")}`;
 }
 
+/** What `X-Picture-Kind` says about a picture: a person's photo, a logo, or else a website icon. */
+export function pictureKind(header: string | null): "photo" | "logo" | "icon" {
+  const kind = header?.trim().toLowerCase();
+  return kind === "photo" || kind === "logo" ? kind : "icon";
+}
+
 /**
  * Where the server hands out the picture for an address: a contact's photo, a person's profile
  * picture, or a company's logo or website icon. Null when the server can't.

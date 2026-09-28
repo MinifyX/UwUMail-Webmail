@@ -75,8 +75,17 @@ export const DEMO_LINKED_PHOTOS: Record<string, string> = {
   "https://photos.mood.example/mia.jpg": demoPortrait("#e4dcff", "#2b2230", "#7c5cff"),
 };
 
-export function demoSenderPicture(email: string): SenderPicture | null {
+/** The profile pictures people on the demo's "server" chose to show there. */
+export const DEMO_PROFILE_PICTURES: Record<string, string> = {
+  "kai@uwumail.example": demoPortrait("#ffe1c2", "#1f1a24", "#ff7a59"),
+};
+
+/** The demo's own domains, whose logo the "server" has without asking anyone. */
+const LOCAL_DOMAINS = new Set(["uwumail.example"]);
+
+export function demoSenderPicture(email: string, local = false): SenderPicture | null {
   const domain = email.split("@").pop()?.toLowerCase() ?? "";
+  if (local && !LOCAL_DOMAINS.has(domain)) return null;
   return PICTURES[domain] ?? null;
 }
 

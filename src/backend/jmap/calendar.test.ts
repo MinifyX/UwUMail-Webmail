@@ -343,6 +343,7 @@ describe("invitations and shared calendars", () => {
       participantKey: "nyu",
       status: "needs-action",
       organizer: "Mini",
+      organizerEmail: "mini@example.org",
     });
   });
 

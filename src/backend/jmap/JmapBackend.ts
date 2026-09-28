@@ -14,6 +14,7 @@ import { textToHtml } from "@/lib/format";
 import { cleanSignatureHtml } from "@/lib/signatures";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
+import { createLimiter } from "@/lib/concurrency";
 import { unsubscribeMail } from "@/lib/unsubscribe";
 import { BackendError, type Backend, type SignatureStore } from "../backend";
 import type {
@@ -49,6 +50,7 @@ import type {
   SendOptions,
   SendReceipt,
   SenderPicture,
+  SenderPictureLookup,
   ShareLevel,
   SharedAccount,
   Signature,
@@ -103,6 +105,7 @@ import {
   one,
   remoteImagePath,
   responseOf,
+  pictureKind,
   senderPicturePath,
   supports,
   uploadBlob,
@@ -433,6 +436,7 @@ export class JmapBackend implements Backend {
       if (changed.EmailSubmission) this.emit({ type: "scheduled:changed" });
       if (changed.Calendar || changed.CalendarEvent) this.emit({ type: "calendar:changed" });
       if (changed.AddressBook || changed.ContactCard) this.emit({ type: "contacts:changed" });
+      if (changed.ProfilePicture) this.emit({ type: "profile:changed" });
       if (changed.MaskedEmail) this.emit({ type: "masked:changed" });
       if (changed.Identity) {
         this.forgetIdentities();
@@ -2131,21 +2135,54 @@ export class JmapBackend implements Backend {
     return true;
   }
 
+  /** A few picture lookups at a time, so a long list never holds up the mail itself. */
+  private pictureSlots = createLimiter(4);
+  /** The object URL handed out per picture address, with a fingerprint of its bytes. */
+  private pictureUrls = new Map<string, { url: string; print: string }>();
+
   /**
-   * The server fetches and keeps sender pictures, so the sender's website never sees who reads
-   * their mail. A server without them leaves the initials.
+   * The server looks the address up and keeps what it found, so a sender's website or mail
+   * server never sees who reads their mail. A server without pictures leaves the initials.
    */
-  async getSenderPicture(email: string): Promise<SenderPicture | null> {
-    const path = senderPicturePath(email);
+  async getSenderPicture(email: string, lookup: SenderPictureLookup = {}): Promise<SenderPicture | null> {
+    await this.start();
+    const path = senderPicturePath(email, { local: lookup.local });
     if (!path) return null;
-    try {
-      const response = await fetch(path, { credentials: "same-origin" });
-      if (!response.ok) return null;
-      const kind = response.headers.get("x-picture-kind") === "logo" ? "logo" : "icon";
-      return { url: URL.createObjectURL(await response.blob()), kind };
-    } catch {
-      return null;
-    }
+    return this.pictureSlots(async () => {
+      try {
+        // After a change, the server is asked again: a logo's long cache must not hide a new photo.
+        const response = await fetch(path, {
+          credentials: "same-origin",
+          ...(lookup.fresh ? { cache: "no-cache" } : {}),
+        });
+        if (!response.ok) {
+          this.dropPictureUrl(path);
+          return null;
+        }
+        const kind = pictureKind(response.headers.get("x-picture-kind"));
+        return { url: await this.pictureUrl(path, await response.blob()), kind };
+      } catch {
+        return null;
+      }
+    });
+  }
+
+  /** The same URL again for the same picture, so avatars don't reload; a new one replaces the old. */
+  private async pictureUrl(path: string, blob: Blob): Promise<string> {
+    const print = `${blob.type}:${blob.size}:${fingerprint(new Uint8Array(await blob.arrayBuffer()))}`;
+    const known = this.pictureUrls.get(path);
+    if (known?.print === print) return known.url;
+    if (known) URL.revokeObjectURL(known.url);
+    const url = URL.createObjectURL(blob);
+    this.pictureUrls.set(path, { url, print });
+    return url;
+  }
+
+  private dropPictureUrl(path: string): void {
+    const known = this.pictureUrls.get(path);
+    if (!known) return;
+    URL.revokeObjectURL(known.url);
+    this.pictureUrls.delete(path);
   }
 
   contactPhotoUrl(photo: string): string | null {
@@ -2223,6 +2260,13 @@ function offerDownload(url: string, filename: string): void {
   document.body.append(link);
   link.click();
   link.remove();
+}
+
+/** FNV-1a over the bytes: enough to tell whether a picture changed. */
+function fingerprint(bytes: Uint8Array): string {
+  let hash = 0x811c9dc5;
+  for (const byte of bytes) hash = Math.imul(hash ^ byte, 0x01000193);
+  return (hash >>> 0).toString(16);
 }
 
 async function blobToBase64(blob: Blob): Promise<string> {

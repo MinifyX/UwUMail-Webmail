@@ -4,6 +4,7 @@ import { CalendarCheck, Check, CircleHelp, X } from "lucide-react";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Invitation, Message, ParticipationStatus } from "@/backend/types";
+import { Avatar } from "@/components/ui/Avatar";
 import { useT } from "@/i18n";
 import { errorText, queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";
@@ -118,7 +119,11 @@ export function MailInvitationCard({ message }: { message: Message }) {
       className="mx-1 mb-3 flex flex-col gap-2.5 rounded-2xl border border-hairline bg-canvas p-3.5"
     >
       <div className="flex gap-3">
-        <CalendarCheck className="mt-0.5 size-5 shrink-0 text-pink" aria-hidden />
+        {invitation.organizerEmail ? (
+          <Avatar address={{ name: invitation.organizer ?? undefined, email: invitation.organizerEmail }} size="sm" />
+        ) : (
+          <CalendarCheck className="mt-0.5 size-5 shrink-0 text-pink" aria-hidden />
+        )}
         <div className="min-w-0">
           <p className="text-[12px] font-bold tracking-wide text-muted uppercase">
             {invitation.organizer ? t("invitation.from", { name: invitation.organizer }) : t("invitation.title")}

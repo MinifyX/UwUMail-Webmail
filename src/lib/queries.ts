@@ -33,6 +33,7 @@ export const queryKeys = {
   people: ["people"] as const,
   maskedOptions: ["maskedOptions"] as const,
   maskedAddresses: ["maskedAddresses"] as const,
+  profilePicture: ["profilePicture"] as const,
 };
 
 /** What went wrong, for a toast: a refusal of a shared folder's owner in the reader's words. */
@@ -140,19 +141,41 @@ export function useAttachment(attachmentId: string | null) {
   });
 }
 
-/** One lookup per domain per session; the engine caches the files for 30 days. */
+/**
+ * The query key of an address's picture: one per address, whatever its case, and one per kind of
+ * lookup (everything, or only what the server has itself).
+ */
+export function senderPictureKey(email: string, local: boolean) {
+  return ["senderPicture", email.trim().toLowerCase(), local ? "local" : "all"] as const;
+}
+
+/** How often pictures changed this session; after a change the server is asked past the browser's cache. */
+let pictureRound = 0;
+
+/** Every avatar asks again, e.g. after a contact's photo or a profile picture changed. */
+export function refreshSenderPictures(client: QueryClient) {
+  pictureRound += 1;
+  return client.invalidateQueries({ queryKey: ["senderPicture"] });
+}
+
+/**
+ * The picture for an address: a contact's photo, the person's own picture, or a company logo.
+ * Asked once per address per session, however many avatars show it. With "sender pictures"
+ * off, only what the server has itself: contacts' photos and people of the same server.
+ */
 export function useSenderPicture(email: string) {
-  const enabled = useSettings((s) => s.senderPictures);
-  const domain = email.includes("@") ? email.slice(email.lastIndexOf("@") + 1).toLowerCase() : "";
+  const everywhere = useSettings((s) => s.senderPictures);
+  const address = email.trim().toLowerCase();
+  const at = address.lastIndexOf("@");
   const { data } = useQuery({
-    queryKey: ["senderPicture", domain],
-    queryFn: () => backend().getSenderPicture(email),
-    enabled: enabled && domain !== "",
+    queryKey: senderPictureKey(address, !everywhere),
+    queryFn: () => backend().getSenderPicture(address, { local: !everywhere, fresh: pictureRound > 0 }),
+    enabled: at > 0 && at < address.length - 1,
     staleTime: Infinity,
     gcTime: 60 * 60 * 1000,
     retry: false,
   });
-  return enabled ? (data ?? null) : null;
+  return data ?? null;
 }
 
 /** Main domain of a company address; null for people at mail providers. */
@@ -378,6 +401,12 @@ export function useBackendEvents() {
         case "contacts:changed":
           void client.invalidateQueries({ queryKey: queryKeys.addressBooks });
           void client.invalidateQueries({ queryKey: queryKeys.contacts });
+          // A contact's photo comes first among the pictures for their addresses.
+          void refreshSenderPictures(client);
+          break;
+        case "profile:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.profilePicture });
+          void refreshSenderPictures(client);
           break;
         case "masked:changed":
           void client.invalidateQueries({ queryKey: queryKeys.maskedAddresses });

@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { loadJmapSession, reconnectDelay, remoteImagePath, senderPicturePath, socketUrlFor } from "./client";
+import {
+  loadJmapSession,
+  pictureKind,
+  reconnectDelay,
+  remoteImagePath,
+  senderPicturePath,
+  socketUrlFor,
+  withPictureOptions,
+} from "./client";
 
 describe("remote pictures through the server", () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -31,6 +39,27 @@ describe("remote pictures through the server", () => {
       "/jmap/image/a7?url=https%3A%2F%2Fcdn.example%2Fa.png%3Fw%3D1%26h%3D2",
     );
     expect(senderPicturePath("news@shop.example")).toBe("/jmap/picture/a7?email=news%40shop.example");
+    // Per address, and with the lookup's options: only what needs no other server, or only the logo.
+    expect(senderPicturePath("mina@example.org", { local: true })).toBe(
+      "/jmap/picture/a7?email=mina%40example.org&local=1",
+    );
+    expect(senderPicturePath("news@shop.example", { logo: true })).toBe(
+      "/jmap/picture/a7?email=news%40shop.example&source=logo",
+    );
+  });
+
+  it("appends lookup options to any template", () => {
+    expect(withPictureOptions("/p/a7/x%40y.example")).toBe("/p/a7/x%40y.example");
+    expect(withPictureOptions("/p/a7/x%40y.example", { local: true })).toBe("/p/a7/x%40y.example?local=1");
+    expect(withPictureOptions("/p?email=x", { logo: true, local: true })).toBe("/p?email=x&source=logo&local=1");
+  });
+
+  it("reads what kind of picture the server found", () => {
+    expect(pictureKind("photo")).toBe("photo");
+    expect(pictureKind(" Logo ")).toBe("logo");
+    expect(pictureKind("icon")).toBe("icon");
+    expect(pictureKind(null)).toBe("icon");
+    expect(pictureKind("anything")).toBe("icon");
   });
 });
 

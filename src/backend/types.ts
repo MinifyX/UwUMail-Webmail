@@ -306,11 +306,22 @@ export interface DraftContent {
   attachments: OutgoingAttachment[];
 }
 
-/** A locally available attachment file. `url` works in <img>, <video> and fetch. */
-/** A company's brand logo (fills the avatar) or website icon (sits on a plain background). */
+/**
+ * The picture for an address: a person's photo (a contact's, or their own profile picture), which
+ * fills the avatar; a company's brand logo (fills it too, unless it is see-through); or a website
+ * icon, which sits on a plain background.
+ */
 export interface SenderPicture {
   url: string;
-  kind: "logo" | "icon";
+  kind: "photo" | "logo" | "icon";
+}
+
+/** How a sender picture is looked up. */
+export interface SenderPictureLookup {
+  /** Only what the server has itself: no request to another server (the reader switched them off). */
+  local?: boolean;
+  /** Ask the server again instead of taking the browser's copy, after pictures changed. */
+  fresh?: boolean;
 }
 
 export interface AttachmentContent {
@@ -408,6 +419,8 @@ export interface Invitation {
   status: ParticipationStatus;
   /** Who invited, as an address (or a name) where the event says. */
   organizer: string | null;
+  /** The organizer's address, for their picture; null where the event names none. */
+  organizerEmail?: string | null;
 }
 
 /** The invitation a mail carries (its text/calendar part), as the server put it into the calendar. */
@@ -633,4 +646,6 @@ export type BackendEvent =
   /** Address books or contacts changed, here or on another device. */
   | { type: "contacts:changed" }
   /** Masked addresses changed, here, on another device, or by arriving mail. */
-  | { type: "masked:changed" };
+  | { type: "masked:changed" }
+  /** The own profile picture or its settings changed, here or elsewhere. */
+  | { type: "profile:changed" };

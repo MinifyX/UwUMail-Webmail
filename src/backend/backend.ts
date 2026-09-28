@@ -30,6 +30,7 @@ import type {
   SendOptions,
   SendReceipt,
   SenderPicture,
+  SenderPictureLookup,
   ShareLevel,
   SharedAccount,
   Signature,
@@ -233,8 +234,11 @@ export interface Backend {
   /** The whole mail as an .eml file. */
   saveMessage(messageId: string): Promise<boolean>;
 
-  /** Brand logo or website icon for a company address; null for people and mail providers. */
-  getSenderPicture(email: string): Promise<SenderPicture | null>;
+  /**
+   * The picture for one address, as the server finds it: a contact's photo, the person's own
+   * picture, or the company's logo or website icon. Null when there is none.
+   */
+  getSenderPicture(email: string, lookup?: SenderPictureLookup): Promise<SenderPicture | null>;
   /**
    * Where to show a contact's photo from: a `data:` one as it is, an `https:` one through the
    * server's picture proxy, never directly. Null when it can't be shown.
