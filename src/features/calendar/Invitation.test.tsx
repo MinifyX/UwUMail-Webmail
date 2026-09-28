@@ -85,7 +85,7 @@ describe("an invitation in a mail (WEBMAIL-2)", () => {
     renderCard("emma@brightlabs-events.example");
     expect(
       await screen.findByText(
-        "This mail says the event is cancelled, but it doesn't come from the event's organizer. Your calendar keeps the event as it is.",
+        "This mail says the event is cancelled, but nothing confirms it comes from the event's organizer. Your calendar keeps the event as it is.",
       ),
     ).toBeTruthy();
     expect(
@@ -107,6 +107,14 @@ describe("an invitation in a mail (WEBMAIL-2)", () => {
     found = invitation({ method: "cancel", cancelled: true });
     renderCard("emma@brightlabs.example");
     expect(await screen.findByText("The organizer cancelled this event.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
+  });
+
+  it("says nothing of a cancellation of single dates, and offers no answer on its account", async () => {
+    found = invitation({ method: "cancel", cancelled: false, status: "accepted" });
+    renderCard("emma@brightlabs.example");
+    expect(await screen.findByText("You accepted.")).toBeTruthy();
+    expect(screen.queryByText("The organizer cancelled this event.")).toBeNull();
     expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
   });
 

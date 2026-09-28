@@ -445,8 +445,9 @@ interface MailSchedulingBase {
   method: SchedulingMethod;
   /**
    * The mail comes from who may say this (security-audit-0.16.0 WEBMAIL-2): the event's organizer
-   * for invitations, updates and cancellations, a participant for answers. An unverified one is
-   * shown as such, and nothing is offered on its account.
+   * for invitations, updates and cancellations, a participant for answers; a cancellation of the
+   * whole event also only once the calendar has it (W-33). An unverified one is shown as such, and
+   * nothing is offered on its account.
    */
   verified: boolean;
 }
@@ -454,7 +455,7 @@ interface MailSchedulingBase {
 /** The invitation a mail carries (its text/calendar part), as the server put it into the calendar. */
 export interface MailInvitation extends Invitation, MailSchedulingBase {
   kind: "invitation";
-  /** The event is cancelled: the calendar says so, or the organizer's own mail does. */
+  /** The event is cancelled, as the calendar says: a mail's word alone doesn't count (W-33). */
   cancelled: boolean;
 }
 

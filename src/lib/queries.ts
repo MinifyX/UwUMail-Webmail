@@ -399,6 +399,9 @@ export function useBackendEvents() {
         case "calendar:changed":
           void client.invalidateQueries({ queryKey: queryKeys.calendars });
           void client.invalidateQueries({ queryKey: queryKeys.calendarEvents });
+          // The card of a scheduling mail shows the event as the calendar has it, and the server
+          // applies such a mail only after it was delivered.
+          void client.invalidateQueries({ queryKey: ["invitation"] });
           break;
         case "contacts:changed":
           void client.invalidateQueries({ queryKey: queryKeys.addressBooks });

@@ -10,6 +10,7 @@ import {
   participantWith,
   participantsOf,
   schedulingMailVerified,
+  cancellationApplied,
   statusOf,
   newEventObject,
   safeColor,
@@ -372,6 +373,7 @@ describe("invitations and shared calendars", () => {
       uid: "c3566f06-58ec-4c0c-9d78270c6b9b2@example.org",
       method: "REQUEST",
       organizer: null,
+      occurrence: null,
     });
     expect(icsInvitation("BEGIN:VCALENDAR\r\nEND:VCALENDAR")).toBeNull();
   });
@@ -386,7 +388,12 @@ describe("invitations and shared calendars", () => {
       "END:VEVENT",
       "END:VCALENDAR",
     ].join("\r\n");
-    expect(icsInvitation(ics)).toEqual({ uid: "u1@example.org", method: "CANCEL", organizer: "mini@example.org" });
+    expect(icsInvitation(ics)).toEqual({
+      uid: "u1@example.org",
+      method: "CANCEL",
+      organizer: "mini@example.org",
+      occurrence: null,
+    });
   });
 
   it("reads a crafted line in linear time", () => {
@@ -426,6 +433,23 @@ describe("invitations and shared calendars", () => {
           organizerCalendarAddress: null,
         }),
       ).toBe(false);
+    });
+
+    it("believes a cancellation of the whole event only once the calendar has it (W-33)", () => {
+      const whole = icsInvitation(
+        "BEGIN:VCALENDAR\r\nMETHOD:CANCEL\r\nBEGIN:VEVENT\r\nUID:u1\r\nORGANIZER:mailto:mini@example.org\r\nEND:VEVENT\r\nEND:VCALENDAR",
+      )!;
+      // The From names the organizer, but the server didn't cancel it: SPF and DKIM didn't vouch.
+      expect(cancellationApplied(whole, { status: "confirmed" })).toBe(false);
+      expect(cancellationApplied(whole, {})).toBe(false);
+      expect(cancellationApplied(whole, { status: "cancelled" })).toBe(true);
+      // Single dates: never the whole event's cancellation, so nothing to bear out.
+      const oneDate = icsInvitation(
+        "BEGIN:VCALENDAR\r\nMETHOD:CANCEL\r\nBEGIN:VEVENT\r\nUID:u1\r\nRECURRENCE-ID;TZID=Europe/Berlin:20261001T090000\r\nEND:VEVENT\r\nEND:VCALENDAR",
+      )!;
+      expect(oneDate.occurrence).toBe("20261001T090000");
+      expect(cancellationApplied(oneDate, { status: "confirmed" })).toBe(true);
+      expect(cancellationApplied({ method: "REQUEST", occurrence: null }, { status: "confirmed" })).toBe(true);
     });
 
     it("believes answers only from someone invited", () => {

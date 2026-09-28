@@ -230,6 +230,8 @@ export interface IcsInvitation {
   method: string | null;
   /** The address the part names as organizer, lower case; null when it names none. */
   organizer: string | null;
+  /** The RECURRENCE-ID of the first date the part names alone; null when it is about the whole event. */
+  occurrence: string | null;
 }
 
 /**
@@ -259,7 +261,12 @@ export function icsInvitation(text: string): IcsInvitation | null {
   const uid = propertyValue(inEvent, "UID");
   if (!uid) return null;
   const method = propertyValue(unfolded, "METHOD")?.toUpperCase() ?? null;
-  return { uid, method, organizer: mailtoAddress(propertyValue(inEvent, "ORGANIZER")) };
+  return {
+    uid,
+    method,
+    organizer: mailtoAddress(propertyValue(inEvent, "ORGANIZER")),
+    occurrence: propertyValue(inEvent, "RECURRENCE-ID"),
+  };
 }
 
 /**
@@ -283,6 +290,20 @@ export function schedulingMailVerified(
   }
   const organizer = mailtoAddress(event.organizerCalendarAddress ?? null);
   return organizer !== null && sender === organizer && ics.organizer === organizer;
+}
+
+/**
+ * Whether the calendar bears out what a scheduling mail says about cancelling. The server cancels
+ * the stored event only when SPF or DKIM vouch for the organizer's address; the webmail sees only
+ * the From, which anyone can write. So a cancellation of the whole event counts once the stored
+ * event is cancelled, and is not believed otherwise (security-audit W-33). One that names single
+ * dates (RECURRENCE-ID) is never taken for the whole event's; mail of any other kind isn't concerned.
+ */
+export function cancellationApplied(
+  ics: Pick<IcsInvitation, "method" | "occurrence">,
+  event: Pick<JmapCalendarEvent, "status">,
+): boolean {
+  return ics.method !== "CANCEL" || ics.occurrence !== null || event.status === "cancelled";
 }
 
 /** The most participants an occurrence carries; a huge event only shows its first ones. */

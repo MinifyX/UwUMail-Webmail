@@ -153,6 +153,9 @@ export function MailInvitationCard({ message }: { message: Message }) {
         <p className="text-[13px]">{t(`invitation.reply.status.${found.status}`, { name: found.attendee })}</p>
       ) : found.cancelled ? (
         <p className="text-[13px] font-semibold text-danger">{t("invitation.cancelled")}</p>
+      ) : found.method === "cancel" ? (
+        // Single dates cancelled: the event itself goes on, and the mail is no reason to answer it.
+        <p className="text-[12px] text-muted">{t(invitationStatusKey(found.status))}</p>
       ) : (
         <>
           <InvitationAnswer invitation={found} />

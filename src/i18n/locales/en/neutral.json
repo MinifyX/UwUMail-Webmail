@@ -986,7 +986,7 @@
     },
     "unverified": {
       "invitation": "This invitation doesn't come from the event's organizer, so it can't be answered from here. If you know the event, answer it in your calendar.",
-      "cancel": "This mail says the event is cancelled, but it doesn't come from the event's organizer. Your calendar keeps the event as it is.",
+      "cancel": "This mail says the event is cancelled, but nothing confirms it comes from the event's organizer. Your calendar keeps the event as it is.",
       "reply": "This answer doesn't come from anyone invited to the event, so it doesn't count.",
       "sender": "Sent by {{sender}}.",
       "senderAndOrganizer": "Sent by {{sender}}; the organizer is {{organizer}}."

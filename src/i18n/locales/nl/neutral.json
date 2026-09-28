@@ -986,7 +986,7 @@
     },
     "unverified": {
       "invitation": "Deze uitnodiging komt niet van de organisator van de afspraak, dus je kunt hem hier niet beantwoorden. Ken je de afspraak, antwoord dan in je agenda.",
-      "cancel": "Deze mail zegt dat de afspraak niet doorgaat, maar komt niet van de organisator. Je agenda houdt de afspraak zoals hij is.",
+      "cancel": "Deze mail zegt dat de afspraak niet doorgaat, maar niets bevestigt dat hij van de organisator komt. Je agenda houdt de afspraak zoals hij is.",
       "reply": "Dit antwoord komt van niemand die voor de afspraak is uitgenodigd, dus het telt niet.",
       "sender": "Verstuurd door {{sender}}.",
       "senderAndOrganizer": "Verstuurd door {{sender}}; de organisator is {{organizer}}."

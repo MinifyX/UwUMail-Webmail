@@ -1013,7 +1013,7 @@
     },
     "unverified": {
       "invitation": "Cette invitation ne vient pas de l'organisateur de l'événement, vous ne pouvez donc pas y répondre ici. Si vous connaissez l'événement, répondez depuis votre agenda.",
-      "cancel": "Cet e-mail dit que l'événement est annulé, mais il ne vient pas de son organisateur. Votre agenda garde l'événement tel quel.",
+      "cancel": "Cet e-mail dit que l'événement est annulé, mais rien ne confirme qu'il vient de son organisateur. Votre agenda garde l'événement tel quel.",
       "reply": "Cette réponse ne vient d'aucune personne invitée à l'événement, elle ne compte donc pas.",
       "sender": "Envoyé par {{sender}}.",
       "senderAndOrganizer": "Envoyé par {{sender}} ; l'organisateur est {{organizer}}."

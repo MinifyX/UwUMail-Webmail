@@ -71,6 +71,7 @@ import {
   icsInvitation,
   invitationOf,
   eventPatch,
+  cancellationApplied,
   participantWith,
   schedulingMailVerified,
   schedulingMethod,
@@ -1821,7 +1822,8 @@ export class JmapBackend implements Backend {
     const event = responseOf<GetResponse<JmapCalendarEvent>>(body, "g").list[0];
     if (!event) return null;
     const from = email.from?.[0]?.email ?? null;
-    const verified = schedulingMailVerified(ics, from, event);
+    // From the organizer by its From, and — for a cancellation — borne out by the calendar (W-33).
+    const verified = schedulingMailVerified(ics, from, event) && cancellationApplied(ics, event);
     const allDay = event.showWithoutTime === true;
     const shared = {
       title: event.title ?? "",
@@ -1856,8 +1858,9 @@ export class JmapBackend implements Backend {
       kind: "invitation",
       ...invitation,
       ...shared,
-      // The calendar's word counts; a mail's only when it comes from the organizer.
-      cancelled: event.status === "cancelled" || (ics.method === "CANCEL" && verified),
+      // Only the calendar's word counts: the server cancels the stored event when the organizer's
+      // cancellation really comes from them, and the webmail can't tell a forged From (W-33).
+      cancelled: event.status === "cancelled",
     };
   }
 

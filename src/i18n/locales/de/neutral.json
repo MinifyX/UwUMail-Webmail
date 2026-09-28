@@ -986,7 +986,7 @@
     },
     "unverified": {
       "invitation": "Diese Einladung kommt nicht von der Person, die den Termin angelegt hat, deshalb kannst du sie hier nicht beantworten. Wenn du den Termin kennst, antworte im Kalender.",
-      "cancel": "Diese Mail sagt, der Termin fällt aus, kommt aber nicht von der Person, die ihn angelegt hat. Dein Kalender behält den Termin, wie er ist.",
+      "cancel": "Diese Mail sagt, der Termin fällt aus, aber nichts bestätigt, dass sie von der Person kommt, die ihn angelegt hat. Dein Kalender behält den Termin, wie er ist.",
       "reply": "Diese Antwort kommt von niemandem, der zum Termin eingeladen ist, deshalb zählt sie nicht.",
       "sender": "Gesendet von {{sender}}.",
       "senderAndOrganizer": "Gesendet von {{sender}}; angelegt hat den Termin {{organizer}}."
