@@ -9,6 +9,7 @@ import {
   firstPictureFile,
   initialCrop,
   moveCrop,
+  pictureDimensions,
   pictureFileProblem,
   readPicture,
   renderPicture,
@@ -144,11 +145,172 @@ describe("picture files", () => {
     }
   });
 
+  it("refuses a small file that claims a huge picture before decoding it (W-32)", async () => {
+    const decode = vi.fn(async () => ({ width: 100, height: 100, close: vi.fn() }));
+    vi.stubGlobal("createImageBitmap", decode);
+    try {
+      const bomb = new Blob([png(20_000, 20_000)], { type: "image/png" });
+      await expect(readPicture(bomb)).rejects.toMatchObject({ problem: "tooLarge" });
+      // The claim is in the bytes, whatever the file calls itself.
+      const renamed = new Blob([gif(10, 10, [[0, 0, 30_000, 30_000]])], { type: "image/jpeg" });
+      await expect(readPicture(renamed)).rejects.toMatchObject({ problem: "tooLarge" });
+      expect(decode).not.toHaveBeenCalled();
+      await expect(readPicture(new Blob([png(640, 480)], { type: "image/png" }))).resolves.toMatchObject({
+        width: 100,
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("finds the picture among dropped files", () => {
     const text = new File(["a"], "a.txt", { type: "text/plain" });
     const photo = new File(["b"], "b.jpg", { type: "image/jpeg" });
     expect(firstPictureFile([text, photo])).toBe(photo);
     expect(firstPictureFile([text])).toBeNull();
     expect(firstPictureFile(null)).toBeNull();
+  });
+});
+
+// ------------------------------------------------------------------------------------------------
+// Headers of the formats a browser decodes, as small as they come
+
+const bytes = (...parts: (ArrayLike<number> | string)[]) =>
+  new Uint8Array(
+    parts.flatMap((part) => (typeof part === "string" ? [...part].map((c) => c.charCodeAt(0)) : Array.from(part))),
+  );
+const le16 = (n: number) => [n & 0xff, (n >> 8) & 0xff];
+const le24 = (n: number) => [n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff];
+const le32 = (n: number) => [...le16(n & 0xffff), ...le16(n >>> 16)];
+const be16 = (n: number) => [(n >> 8) & 0xff, n & 0xff];
+const be32 = (n: number) => [...be16(n >>> 16), ...be16(n & 0xffff)];
+
+function png(width: number, height: number) {
+  return bytes(
+    [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+    be32(13),
+    "IHDR",
+    be32(width),
+    be32(height),
+    [8, 6, 0, 0, 0],
+  );
+}
+
+/** A GIF with a logical screen and frames at [left, top, width, height], behind an extension. */
+function gif(width: number, height: number, frames: number[][]) {
+  return bytes(
+    "GIF89a",
+    le16(width),
+    le16(height),
+    [0x80, 0, 0], // a global colour table of two entries
+    [0, 0, 0, 255, 255, 255],
+    [0x21, 0xf9, 4, 0, 0, 0, 0, 0], // graphic control extension
+    ...frames.flatMap(([left, top, w, h]) => [
+      [0x2c],
+      le16(left!),
+      le16(top!),
+      le16(w!),
+      le16(h!),
+      [0],
+      [2, 2, 0x4c, 0x01, 0],
+    ]),
+    [0x3b],
+  );
+}
+
+describe("the size a picture file claims", () => {
+  it("is read from PNG, GIF, JPEG, WebP, BMP and icon headers", () => {
+    expect(pictureDimensions(png(640, 480))).toEqual({ width: 640, height: 480 });
+    expect(pictureDimensions(gif(16, 16, [[0, 0, 16, 16]]))).toEqual({ width: 16, height: 16 });
+    // A frame that reaches past the logical screen makes it larger.
+    expect(
+      pictureDimensions(
+        gif(16, 16, [
+          [0, 0, 16, 16],
+          [100, 5, 50_000, 20],
+        ]),
+      ),
+    ).toEqual({
+      width: 50_100,
+      height: 25,
+    });
+    // EXIF and friends before the frame are skipped, fill bytes too.
+    const jpeg = bytes(
+      [0xff, 0xd8],
+      [0xff, 0xe1],
+      be16(8),
+      "Exif\0\0",
+      [0xff, 0xff, 0xc2],
+      be16(11),
+      [8],
+      be16(3000),
+      be16(4000),
+      [3],
+    );
+    expect(pictureDimensions(jpeg)).toEqual({ width: 4000, height: 3000 });
+    expect(
+      pictureDimensions(bytes("RIFF", le32(30), "WEBPVP8X", le32(10), [0, 0, 0, 0], le24(16_383), le24(9_999))),
+    ).toEqual({
+      width: 16_384,
+      height: 10_000,
+    });
+    // VP8L packs 14 bits each: 1 + 0x3fff wide, 1 + 0x3fff high.
+    expect(
+      pictureDimensions(bytes("RIFF", le32(30), "WEBPVP8L", le32(10), [0x2f, 0xff, 0xff, 0xff, 0x0f], [0, 0, 0, 0])),
+    ).toEqual({
+      width: 16_384,
+      height: 16_384,
+    });
+    expect(
+      pictureDimensions(
+        bytes("RIFF", le32(30), "WEBPVP8 ", le32(10), [0, 0, 0, 0x9d, 0x01, 0x2a], le16(320), le16(240)),
+      ),
+    ).toEqual({
+      width: 320,
+      height: 240,
+    });
+    expect(pictureDimensions(bytes("BM", new Array<number>(12).fill(0), le32(40), le32(800), le32(-600)))).toEqual({
+      width: 800,
+      height: 600,
+    });
+    // An icon of a small bitmap and a huge PNG: the PNG counts.
+    const inner = png(40_000, 40_000);
+    const dib = bytes(le32(40), le32(16), le32(32));
+    const ico = bytes(
+      [0, 0, 1, 0],
+      le16(2),
+      [16, 16, 0, 0],
+      le16(1),
+      le16(32),
+      le32(dib.length),
+      le32(38),
+      [0, 0, 0, 0],
+      le16(1),
+      le16(32),
+      le32(inner.length),
+      le32(38 + dib.length),
+      dib,
+      inner,
+    );
+    expect(pictureDimensions(ico)).toEqual({ width: 40_000, height: 40_000 });
+  });
+
+  it("is unknown for anything else, and for broken headers", () => {
+    expect(pictureDimensions(bytes('<svg xmlns="http://www.w3.org/2000/svg"/>'))).toBeNull();
+    expect(pictureDimensions(bytes([0xff, 0xd8], [0x12, 0x34]))).toBeNull();
+    expect(pictureDimensions(bytes("GIF8"))).toBeNull();
+    expect(pictureDimensions(new Uint8Array())).toBeNull();
+  });
+
+  it("is read in one pass, however the blocks are laid out", () => {
+    // Fifty thousand empty extensions in a GIF, and a JPEG of nothing but fill bytes.
+    const extensions = new Array<number>(50_000 * 3).fill(0).map((_, i) => [0x21, 0xfe, 0][i % 3]!);
+    const start = performance.now();
+    expect(pictureDimensions(bytes("GIF89a", le16(1), le16(1), [0, 0, 0], extensions, [0x3b]))).toEqual({
+      width: 1,
+      height: 1,
+    });
+    expect(pictureDimensions(bytes([0xff, 0xd8], new Array<number>(1_000_000).fill(0xff)))).toBeNull();
+    expect(performance.now() - start).toBeLessThan(1000);
   });
 });
