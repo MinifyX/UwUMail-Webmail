@@ -1,4 +1,4 @@
-import { AlignLeft, CalendarDays, Clock, Mail, MapPin, Pencil, Repeat, Trash, X } from "lucide-react";
+import { AlignLeft, CalendarDays, Clock, Mail, MapPin, Pencil, Repeat, Trash, Users, X } from "lucide-react";
 import { useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button, IconButton } from "@/components/ui/Button";
@@ -11,6 +11,9 @@ import { LinkedText } from "./LinkedText";
 import { Popover } from "./Popover";
 import { useCalendarUi } from "./state";
 import { useCalendars, useEventActions } from "./useCalendarData";
+
+/** Participants listed before "and N more". */
+const SHOWN_PARTICIPANTS = 8;
 
 function Detail({ icon: Icon, children }: { icon: typeof Clock; children: React.ReactNode }) {
   return (
@@ -88,6 +91,26 @@ export function EventPopover() {
               </span>
             </p>
             <InvitationAnswer invitation={occurrence.invitation} compact onAnswered={close} />
+          </Detail>
+        )}
+        {(occurrence.participants?.length ?? 0) > 0 && (
+          <Detail icon={Users}>
+            <ul aria-label={t("calendar.participants")} className="flex flex-col gap-1.5">
+              {occurrence.participants!.slice(0, SHOWN_PARTICIPANTS).map((person, index) => (
+                <li key={`${person.email}-${index}`} className="flex min-w-0 items-center gap-2">
+                  <Avatar address={{ name: person.name, email: person.email || person.name }} size="xs" />
+                  <span className="min-w-0 truncate">{person.name}</span>
+                  <span className="shrink-0 text-[12px] text-muted">
+                    {person.organizer ? t("calendar.organizer") : t(`calendar.answer.${person.status}`)}
+                  </span>
+                </li>
+              ))}
+              {occurrence.participants!.length > SHOWN_PARTICIPANTS && (
+                <li className="text-[12px] text-muted">
+                  {t("calendar.moreParticipants", { count: occurrence.participants!.length - SHOWN_PARTICIPANTS })}
+                </li>
+              )}
+            </ul>
           </Detail>
         )}
         {occurrence.recurrence && (

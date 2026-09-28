@@ -809,7 +809,17 @@
       "defaultSet": "Nieuwe afspraken gaan nu naar “{{name}}”",
       "calendarCreated": "Agenda “{{name}}” aangemaakt",
       "calendarDeleted": "Agenda “{{name}}” verwijderd"
-    }
+    },
+    "participants": "Deelnemers",
+    "organizer": "Organisator",
+    "answer": {
+      "needs-action": "Nog geen antwoord",
+      "accepted": "Geaccepteerd",
+      "tentative": "Misschien",
+      "declined": "Afgewezen"
+    },
+    "moreParticipants_one": "en nog {{count}}",
+    "moreParticipants_other": "en nog {{count}}"
   },
   "contacts": {
     "title": "Contacten",

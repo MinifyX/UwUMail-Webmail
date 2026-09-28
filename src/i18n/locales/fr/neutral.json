@@ -834,7 +834,17 @@
       "defaultSet": "Les nouveaux événements vont désormais dans « {{name}} »",
       "calendarCreated": "Agenda « {{name}} » créé",
       "calendarDeleted": "Agenda « {{name}} » supprimé"
-    }
+    },
+    "participants": "Participants",
+    "organizer": "Organisateur",
+    "answer": {
+      "needs-action": "Pas encore de réponse",
+      "accepted": "Accepté",
+      "tentative": "Peut-être",
+      "declined": "Refusé"
+    },
+    "moreParticipants_one": "et {{count}} autre",
+    "moreParticipants_other": "et {{count}} autres"
   },
   "contacts": {
     "title": "Contacts",

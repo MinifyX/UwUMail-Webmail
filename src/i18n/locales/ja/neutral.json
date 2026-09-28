@@ -784,7 +784,16 @@
       "defaultSet": "新しい予定は「{{name}}」に追加されるようになりました",
       "calendarCreated": "カレンダー「{{name}}」を作成しました",
       "calendarDeleted": "カレンダー「{{name}}」を削除しました"
-    }
+    },
+    "participants": "参加者",
+    "organizer": "主催者",
+    "answer": {
+      "needs-action": "未回答",
+      "accepted": "参加",
+      "tentative": "未定",
+      "declined": "辞退"
+    },
+    "moreParticipants_other": "ほか {{count}} 人"
   },
   "contacts": {
     "title": "連絡先",

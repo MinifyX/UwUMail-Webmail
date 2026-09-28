@@ -21,6 +21,7 @@ import type {
   CalendarInfo,
   CalendarOccurrence,
   EventInput,
+  EventParticipant,
   Invitation,
   ParticipationStatus,
   Recurrence,
@@ -284,6 +285,29 @@ export function schedulingMailVerified(
   return organizer !== null && sender === organizer && ics.organizer === organizer;
 }
 
+/** The most participants an occurrence carries; a huge event only shows its first ones. */
+export const MAX_PARTICIPANTS = 50;
+
+/** Who takes part in an event, the organizer first, each with an address or a name. */
+export function participantsOf(
+  event: Pick<JmapCalendarEvent, "participants" | "organizerCalendarAddress">,
+): EventParticipant[] {
+  const organizer = mailtoAddress(event.organizerCalendarAddress ?? null);
+  return Object.values(event.participants ?? {})
+    .map((participant) => {
+      const email = mailtoAddress(addressOf(participant)) ?? "";
+      return {
+        name: participant.name?.trim() || email,
+        email,
+        status: statusOf(participant),
+        organizer: email !== "" && email === organizer,
+      };
+    })
+    .filter((participant) => participant.name !== "")
+    .sort((a, b) => Number(b.organizer) - Number(a.organizer))
+    .slice(0, MAX_PARTICIPANTS);
+}
+
 /** An iCalendar METHOD as the webmail tells them apart. */
 export function schedulingMethod(method: string | null): SchedulingMethod {
   if (method === null || method === "REQUEST") return "request";
@@ -453,6 +477,7 @@ export function toOccurrence(event: JmapCalendarEvent, context: OccurrenceContex
     readOnly: !(context.calendar?.mayWrite ?? true) || event.isOrigin === false,
     color: safeColor(event.color),
     invitation: invitationOf(event, context.ownAddresses ?? []),
+    participants: participantsOf(event),
   };
 }
 

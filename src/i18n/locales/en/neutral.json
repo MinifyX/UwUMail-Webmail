@@ -809,7 +809,17 @@
       "defaultSet": "New events now go into “{{name}}”",
       "calendarCreated": "Calendar “{{name}}” created",
       "calendarDeleted": "Calendar “{{name}}” deleted"
-    }
+    },
+    "participants": "Participants",
+    "organizer": "Organizer",
+    "answer": {
+      "needs-action": "No answer yet",
+      "accepted": "Accepted",
+      "tentative": "Maybe",
+      "declined": "Declined"
+    },
+    "moreParticipants_one": "and {{count}} more",
+    "moreParticipants_other": "and {{count}} more"
   },
   "contacts": {
     "title": "Contacts",

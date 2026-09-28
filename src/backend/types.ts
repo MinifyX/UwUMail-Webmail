@@ -511,6 +511,17 @@ export interface CalendarOccurrence {
   color: string | null;
   /** Somebody else's event the account was invited to, with its answer; null for its own. */
   invitation?: Invitation | null;
+  /** Who takes part, the organizer first; empty for an event without participants. */
+  participants?: EventParticipant[];
+}
+
+/** Someone taking part in an event, with their answer. */
+export interface EventParticipant {
+  name: string;
+  /** Lower case; empty where the event names no address. */
+  email: string;
+  status: ParticipationStatus;
+  organizer: boolean;
 }
 
 /** What the event editor saves. */

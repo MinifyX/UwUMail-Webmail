@@ -809,7 +809,17 @@
       "defaultSet": "Neue Termine landen jetzt in „{{name}}“",
       "calendarCreated": "Kalender „{{name}}“ angelegt",
       "calendarDeleted": "Kalender „{{name}}“ gelöscht"
-    }
+    },
+    "participants": "Teilnehmende",
+    "organizer": "Organisiert",
+    "answer": {
+      "needs-action": "Noch keine Antwort",
+      "accepted": "Zugesagt",
+      "tentative": "Vielleicht",
+      "declined": "Abgesagt"
+    },
+    "moreParticipants_one": "und {{count}} weitere Person",
+    "moreParticipants_other": "und {{count}} weitere"
   },
   "contacts": {
     "title": "Kontakte",

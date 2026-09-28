@@ -8,6 +8,7 @@ import {
   icsInvitation,
   invitationOf,
   participantWith,
+  participantsOf,
   schedulingMailVerified,
   statusOf,
   newEventObject,
@@ -431,6 +432,14 @@ describe("invitations and shared calendars", () => {
       expect(schedulingMailVerified({ method: "REPLY", organizer }, "Nyu@example.com", event)).toBe(true);
       expect(schedulingMailVerified({ method: "REPLY", organizer }, "mallory@example.net", event)).toBe(false);
       expect(schedulingMailVerified({ method: "REPLY", organizer }, "", event)).toBe(false);
+    });
+
+    it("lists who takes part, the organizer first", () => {
+      expect(participantsOf({ ...event, participants: { ...event.participants, x: { name: "  " } } })).toEqual([
+        { name: "mini@example.org", email: "mini@example.org", status: "needs-action", organizer: true },
+        { name: "nyu@example.com", email: "nyu@example.com", status: "accepted", organizer: false },
+      ]);
+      expect(participantsOf({ participants: null })).toEqual([]);
     });
 
     it("finds a participant and their answer", () => {

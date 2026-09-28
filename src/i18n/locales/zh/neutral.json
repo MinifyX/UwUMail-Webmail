@@ -784,7 +784,16 @@
       "defaultSet": "新日程现在会添加到“{{name}}”",
       "calendarCreated": "已创建日历“{{name}}”",
       "calendarDeleted": "已删除日历“{{name}}”"
-    }
+    },
+    "participants": "参与者",
+    "organizer": "组织者",
+    "answer": {
+      "needs-action": "尚未答复",
+      "accepted": "已接受",
+      "tentative": "暂定",
+      "declined": "已拒绝"
+    },
+    "moreParticipants_other": "还有 {{count}} 人"
   },
   "contacts": {
     "title": "联系人",
