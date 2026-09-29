@@ -58,8 +58,34 @@ const PICTURES: Record<string, SenderPicture> = {
   },
 };
 
-export function demoSenderPicture(email: string): SenderPicture | null {
+/** A drawn stand-in for a person's photo: a face in front of a colored wall. No real people. */
+export function demoPortrait(wall: string, hair: string, shirt: string): string {
+  return svg(
+    `<rect width="64" height="64" fill="${wall}"/>` +
+      `<path d="M10 64c2-13 11-19 22-19s20 6 22 19z" fill="${shirt}"/>` +
+      `<circle cx="32" cy="29" r="12" fill="#f3c9a8"/>` +
+      `<path d="M19 28c0-10 6-15 13-15s13 5 13 15c-3-5-8-7-13-7s-10 2-13 7z" fill="${hair}"/>` +
+      `<circle cx="27.5" cy="30" r="1.4" fill="#3a2a30"/><circle cx="36.5" cy="30" r="1.4" fill="#3a2a30"/>` +
+      `<path d="M28.5 35c2 1.8 5 1.8 7 0" fill="none" stroke="#b5566b" stroke-width="1.4" stroke-linecap="round"/>`,
+  );
+}
+
+/** Contact photos the demo's cards only link to, as the server's picture proxy would fetch them. */
+export const DEMO_LINKED_PHOTOS: Record<string, string> = {
+  "https://photos.mood.example/mia.jpg": demoPortrait("#e4dcff", "#2b2230", "#7c5cff"),
+};
+
+/** The profile pictures people on the demo's "server" chose to show there. */
+export const DEMO_PROFILE_PICTURES: Record<string, string> = {
+  "kai@uwumail.example": demoPortrait("#ffe1c2", "#1f1a24", "#ff7a59"),
+};
+
+/** The demo's own domains, whose logo the "server" has without asking anyone. */
+const LOCAL_DOMAINS = new Set(["uwumail.example"]);
+
+export function demoSenderPicture(email: string, local = false): SenderPicture | null {
   const domain = email.split("@").pop()?.toLowerCase() ?? "";
+  if (local && !LOCAL_DOMAINS.has(domain)) return null;
   return PICTURES[domain] ?? null;
 }
 

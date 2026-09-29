@@ -304,8 +304,8 @@
     "signatureDefaultReplies": "Antwoorden",
     "signatureSaved": "Handtekening opgeslagen",
     "signatureUntitled": "Handtekening",
-    "senderPictures": "Afbeeldingen voor bedrijfsafzenders",
-    "senderPicturesDesc": "Toont het merklogo of website-icoon van een bedrijf in plaats van initialen. Mensen bij mailproviders zoals Gmail houden hun initialen.",
+    "senderPictures": "Afzenderafbeeldingen",
+    "senderPicturesDesc": "Toont foto's van mensen en logo's van bedrijven in plaats van initialen, ook van andere servers. Uitgeschakeld zie je nog steeds wat deze server zelf heeft: de foto's van je contacten en de afbeeldingen van mensen hier.",
     "linkConfirm": "Vragen voor het openen van links",
     "linkConfirmDesc": "Toont eerst waar een link uit een mail naartoe gaat. Bij vermomde links wordt altijd gevraagd.",
     "linkDomains": "Openen zonder te vragen",
@@ -316,7 +316,8 @@
     "rules": "Regels",
     "masked": "Gemaskeerde adressen",
     "signaturesPerAddressDesc": "Eén per afzenderadres, met vet, links en afbeeldingen, voor nieuwe mail en antwoorden. Hij staat op je mailserver, dus het portaal en je andere mailapps gebruiken dezelfde.",
-    "addSignature": "Handtekening toevoegen"
+    "addSignature": "Handtekening toevoegen",
+    "profile": "Profielfoto"
   },
   "theme": {
     "system": "Systeem",
@@ -501,7 +502,18 @@
     "mailTo": "Daarmee wordt een mail van jou naar {{address}} gestuurd.",
     "body": "{{brand}} meldt je direct af bij de afzender. Daarna zou er geen mail meer van daar moeten komen.",
     "bodyPage": "De afzender heeft hier een eigen pagina voor. {{brand}} opent die voor je en je bevestigt het daar.",
-    "archive": "Eerdere mail van daar archiveren"
+    "archive": "Eerdere mail van daar archiveren",
+    "bodyOneClick": "{{brand}} vraagt de server van de afzender in één stap om je van de lijst te halen. Daarna zou er geen mail meer van daar moeten komen.",
+    "orMail": "Lukt dat zo niet, dan gaat er een mail van jou naar {{address}}.",
+    "orPage": "Lukt dat zo niet, dan opent de pagina van de afzender.",
+    "failedTitle": "Dat is niet gelukt",
+    "failed": "De server van de afzender nam het niet aan: {{reason}}",
+    "failedNoReason": "De server van de afzender nam het niet aan.",
+    "tryMail": "Je kunt je in plaats daarvan per mail afmelden. Daarmee gaat er een mail van jou naar {{address}}.",
+    "tryPage": "Je kunt je in plaats daarvan op de pagina van de afzender afmelden.",
+    "noOtherWay": "Deze mail biedt geen andere manier. Probeer het later opnieuw.",
+    "sendMail": "Mail versturen",
+    "openPage": "Pagina openen"
   },
   "deleteForever": {
     "title_one": "Dit bericht definitief verwijderen?",
@@ -797,7 +809,17 @@
       "defaultSet": "Nieuwe afspraken gaan nu naar “{{name}}”",
       "calendarCreated": "Agenda “{{name}}” aangemaakt",
       "calendarDeleted": "Agenda “{{name}}” verwijderd"
-    }
+    },
+    "participants": "Deelnemers",
+    "organizer": "Organisator",
+    "answer": {
+      "needs-action": "Nog geen antwoord",
+      "accepted": "Geaccepteerd",
+      "tentative": "Misschien",
+      "declined": "Afgewezen"
+    },
+    "moreParticipants_one": "en nog {{count}}",
+    "moreParticipants_other": "en nog {{count}}"
   },
   "contacts": {
     "title": "Contacten",
@@ -882,6 +904,10 @@
       "defaultSet": "Nieuwe contacten gaan nu naar “{{name}}”",
       "bookCreated": "Adresboek “{{name}}” aangemaakt",
       "bookDeleted": "Adresboek “{{name}}” verwijderd"
+    },
+    "picture": {
+      "logo": "Bedrijfslogo",
+      "noLogo": "Geen logo gevonden voor {{domain}}."
     }
   },
   "scheduled": {
@@ -948,7 +974,23 @@
       "declined": "Afgewezen. De organisator hoort het."
     },
     "failed": "Het antwoord kon niet worden verzonden. {{reason}}",
-    "cancelled": "De organisator heeft deze afspraak geannuleerd."
+    "cancelled": "De organisator heeft deze afspraak geannuleerd.",
+    "reply": {
+      "title": "Antwoord op je uitnodiging",
+      "status": {
+        "needs-action": "{{name}} heeft nog niet geantwoord.",
+        "accepted": "{{name}} heeft geaccepteerd.",
+        "tentative": "{{name}} heeft misschien geantwoord.",
+        "declined": "{{name}} heeft afgewezen."
+      }
+    },
+    "unverified": {
+      "invitation": "Deze uitnodiging komt niet van de organisator van de afspraak, dus je kunt hem hier niet beantwoorden. Ken je de afspraak, antwoord dan in je agenda.",
+      "cancel": "Deze mail zegt dat de afspraak niet doorgaat, maar niets bevestigt dat hij van de organisator komt. Je agenda houdt de afspraak zoals hij is.",
+      "reply": "Dit antwoord komt van niemand die voor de afspraak is uitgenodigd, dus het telt niet.",
+      "sender": "Verstuurd door {{sender}}.",
+      "senderAndOrganizer": "Verstuurd door {{sender}}; de organisator is {{organizer}}."
+    }
   },
   "push": {
     "label": "Meld nieuwe mail, ook als de webmail gesloten is",
@@ -1039,5 +1081,52 @@
       "signedOut": "Je sessie is verlopen. Meld je opnieuw aan om verder te gaan.",
       "generic": "Er ging iets mis. Probeer het zo opnieuw."
     }
+  },
+  "picture": {
+    "loading": "Afbeelding laden…",
+    "crop": {
+      "title": "Afbeelding bijsnijden",
+      "area": "Afbeelding in de cirkel",
+      "hint": "Sleep om te verschuiven, scroll of knijp om te zoomen. Toetsenbord: pijltjes verschuiven, + en − zoomen.",
+      "zoom": "Zoom",
+      "zoomIn": "Inzoomen",
+      "zoomOut": "Uitzoomen",
+      "use": "Afbeelding gebruiken"
+    },
+    "error": {
+      "notImage": "Dat is geen afbeelding.",
+      "tooLarge": "Die afbeelding is te groot. Tot {{size}} kan.",
+      "unreadable": "Die afbeelding kon niet worden gelezen."
+    },
+    "choose": "Afbeelding kiezen",
+    "change": "Afbeelding wijzigen",
+    "camera": "Foto maken",
+    "remove": "Verwijderen",
+    "hint": "Of sleep een afbeelding op de cirkel, of plak er een."
+  },
+  "profile": {
+    "picture": "Je foto",
+    "pictureDesc": "Die staat naast je naam waar mensen hem mogen zien. Kies een afbeelding en zet hem goed in de cirkel.",
+    "visibility": "Wie hem ziet",
+    "off": {
+      "title": "Niemand",
+      "body": "Je mails tonen je initialen."
+    },
+    "server": {
+      "title": "Mensen op deze server",
+      "body": "Iedereen met een mailbox hier ziet hem naast je mails."
+    },
+    "public": {
+      "title": "Iedereen",
+      "body": "Ook andere mailservers en apps kunnen hem tonen, via Libravatar. Wie je adres kent, kan hem opvragen."
+    },
+    "publicForbidden": "Je beheerder heeft openbare foto's uitgeschakeld.",
+    "face": "Mijn foto meesturen in mails",
+    "faceDesc": "Voegt een klein kopietje toe aan elke mail die je stuurt (de Face-header), dat sommige mailprogramma's tonen. Alleen zolang je foto openbaar is.",
+    "saved": "Foto opgeslagen",
+    "removed": "Foto verwijderd",
+    "failed": "Dat is niet gelukt. {{reason}}",
+    "loading": "Je foto laden…",
+    "loadFailed": "Je foto kon niet worden geladen."
   }
 }

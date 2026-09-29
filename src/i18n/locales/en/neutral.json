@@ -304,8 +304,8 @@
     "signatureDefaultReplies": "Replies",
     "signatureSaved": "Signature saved",
     "signatureUntitled": "Signature",
-    "senderPictures": "Pictures for company senders",
-    "senderPicturesDesc": "Shows a company’s brand logo or website icon instead of initials. People at mail providers like Gmail keep their initials.",
+    "senderPictures": "Sender pictures",
+    "senderPicturesDesc": "Shows people's pictures and companies' logos instead of initials, also from other servers. Switched off, you still see what this server has itself: your contacts' photos and the pictures of people here.",
     "linkConfirm": "Ask before opening links",
     "linkConfirmDesc": "Shows where a link from a mail goes first. Disguised links always ask.",
     "linkDomains": "Open without asking",
@@ -316,7 +316,8 @@
     "rules": "Rules",
     "masked": "Masked addresses",
     "signaturesPerAddressDesc": "One per sender address, with bold, links and pictures, added to new mail and replies. It's kept on your mail server, so the portal and your other mail apps use the same one.",
-    "addSignature": "Add signature"
+    "addSignature": "Add signature",
+    "profile": "Profile picture"
   },
   "theme": {
     "system": "System",
@@ -501,7 +502,18 @@
     "mailTo": "That sends a mail from you to {{address}}.",
     "body": "{{brand}} unsubscribes you with the sender directly. After that, no more mail should come from there.",
     "bodyPage": "The sender has its own page for this. {{brand}} opens it for you, and you confirm there.",
-    "archive": "Archive earlier mail from there"
+    "archive": "Archive earlier mail from there",
+    "bodyOneClick": "{{brand}} asks the sender's server to take you off the list, in one step. After that, no more mail should come from there.",
+    "orMail": "If it can't be done that way, a mail goes from you to {{address}}.",
+    "orPage": "If it can't be done that way, the sender's own page opens.",
+    "failedTitle": "That didn't work",
+    "failed": "The sender's server didn't take it: {{reason}}",
+    "failedNoReason": "The sender's server didn't take it.",
+    "tryMail": "You can unsubscribe by mail instead. That sends a mail from you to {{address}}.",
+    "tryPage": "You can unsubscribe on the sender's own page instead.",
+    "noOtherWay": "This mail offers no other way. Try again later.",
+    "sendMail": "Send the mail",
+    "openPage": "Open the page"
   },
   "deleteForever": {
     "title_one": "Delete this message forever?",
@@ -797,7 +809,17 @@
       "defaultSet": "New events now go into “{{name}}”",
       "calendarCreated": "Calendar “{{name}}” created",
       "calendarDeleted": "Calendar “{{name}}” deleted"
-    }
+    },
+    "participants": "Participants",
+    "organizer": "Organizer",
+    "answer": {
+      "needs-action": "No answer yet",
+      "accepted": "Accepted",
+      "tentative": "Maybe",
+      "declined": "Declined"
+    },
+    "moreParticipants_one": "and {{count}} more",
+    "moreParticipants_other": "and {{count}} more"
   },
   "contacts": {
     "title": "Contacts",
@@ -882,6 +904,10 @@
       "defaultSet": "New contacts now go into “{{name}}”",
       "bookCreated": "Address book “{{name}}” created",
       "bookDeleted": "Address book “{{name}}” deleted"
+    },
+    "picture": {
+      "logo": "Company logo",
+      "noLogo": "No logo found for {{domain}}."
     }
   },
   "scheduled": {
@@ -948,7 +974,23 @@
       "declined": "Declined. The organizer is told."
     },
     "failed": "The answer couldn't be sent. {{reason}}",
-    "cancelled": "The organizer cancelled this event."
+    "cancelled": "The organizer cancelled this event.",
+    "reply": {
+      "title": "Answer to your invitation",
+      "status": {
+        "needs-action": "{{name}} hasn't answered yet.",
+        "accepted": "{{name}} accepted.",
+        "tentative": "{{name}} answered maybe.",
+        "declined": "{{name}} declined."
+      }
+    },
+    "unverified": {
+      "invitation": "This invitation doesn't come from the event's organizer, so it can't be answered from here. If you know the event, answer it in your calendar.",
+      "cancel": "This mail says the event is cancelled, but nothing confirms it comes from the event's organizer. Your calendar keeps the event as it is.",
+      "reply": "This answer doesn't come from anyone invited to the event, so it doesn't count.",
+      "sender": "Sent by {{sender}}.",
+      "senderAndOrganizer": "Sent by {{sender}}; the organizer is {{organizer}}."
+    }
   },
   "push": {
     "label": "Notify me about new mail when the webmail is closed",
@@ -1039,5 +1081,52 @@
       "signedOut": "Your session has ended. Sign in again to continue.",
       "generic": "Something went wrong. Try again in a moment."
     }
+  },
+  "picture": {
+    "loading": "Loading the picture…",
+    "crop": {
+      "title": "Crop picture",
+      "area": "Picture in the circle",
+      "hint": "Drag to move it, scroll or pinch to zoom. Keyboard: arrow keys move, + and − zoom.",
+      "zoom": "Zoom",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "use": "Use picture"
+    },
+    "error": {
+      "notImage": "That isn't a picture.",
+      "tooLarge": "That picture is too big. Up to {{size}} works.",
+      "unreadable": "That picture couldn't be read."
+    },
+    "choose": "Choose picture",
+    "change": "Change picture",
+    "camera": "Take photo",
+    "remove": "Remove",
+    "hint": "Or drop a picture on the circle, or paste one."
+  },
+  "profile": {
+    "picture": "Your picture",
+    "pictureDesc": "It shows next to your name wherever people may see it. Choose a picture and place it in the circle.",
+    "visibility": "Who sees it",
+    "off": {
+      "title": "Nobody",
+      "body": "Your mails show your initials."
+    },
+    "server": {
+      "title": "People on this server",
+      "body": "Everyone with a mailbox here sees it next to your mails."
+    },
+    "public": {
+      "title": "Everyone",
+      "body": "Other mail servers and apps can show it too, through Libravatar. Anyone who knows your address can look it up."
+    },
+    "publicForbidden": "Your admin switched public pictures off.",
+    "face": "Send my picture in mails",
+    "faceDesc": "Puts a small copy into every mail you send (the Face header), which some mail programs show. Only while your picture is public.",
+    "saved": "Picture saved",
+    "removed": "Picture removed",
+    "failed": "That didn't work. {{reason}}",
+    "loading": "Loading your picture…",
+    "loadFailed": "Your picture couldn't be loaded."
   }
 }

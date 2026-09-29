@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Folder } from "../types";
-import { toMessage, type JmapEmail } from "./convert";
+import { toMessage, toUnsubscribe, type JmapEmail } from "./convert";
 
 const sent: Folder = {
   id: "mb-sent",
@@ -33,5 +33,28 @@ describe("toMessage", () => {
     expect(message.bcc).toEqual([{ email: "noah@example.net" }]);
     expect(message.replyTo).toEqual([{ email: "antwort@uwumail.test" }]);
     expect(message.cc).toEqual([]);
+  });
+});
+
+describe("toUnsubscribe", () => {
+  const email = (post: string | null): JmapEmail => ({
+    id: "e1",
+    threadId: "t1",
+    mailboxIds: {},
+    keywords: {},
+    receivedAt: "2026-09-21T10:00:00Z",
+    "header:List-Unsubscribe:asURLs": ["mailto:leave@list.example", "https://list.example/leave?u=1"],
+    "header:List-Unsubscribe-Post:asText": post,
+  });
+
+  it("offers the one click where the server does it and the mail asks for the POST", () => {
+    expect(toUnsubscribe(email("List-Unsubscribe=One-Click"), true)).toEqual({
+      oneClick: true,
+      url: "https://list.example/leave?u=1",
+      mailto: "mailto:leave@list.example",
+    });
+    expect(toUnsubscribe(email("List-Unsubscribe=One-Click"), false)?.oneClick).toBe(false);
+    expect(toUnsubscribe(email(null), true)?.oneClick).toBe(false);
+    expect(toUnsubscribe(email("  "), true)?.oneClick).toBe(false);
   });
 });

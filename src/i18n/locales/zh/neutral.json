@@ -296,8 +296,8 @@
     "signatureDefaultReplies": "回复",
     "signatureSaved": "签名已保存",
     "signatureUntitled": "签名",
-    "senderPictures": "公司发件人的图片",
-    "senderPicturesDesc": "显示公司的品牌标志或网站图标，而不是姓名首字母。Gmail 等邮件服务商的个人用户仍显示首字母。",
+    "senderPictures": "发件人图片",
+    "senderPicturesDesc": "显示个人照片和公司标志，而不是姓名首字母，也包括来自其他服务器的。关闭后，仍会显示本服务器自己拥有的图片：你的联系人照片和本服务器用户的图片。",
     "linkConfirm": "打开链接前询问",
     "linkConfirmDesc": "先显示邮件中的链接指向哪里。伪装的链接始终会询问。",
     "linkDomains": "无需询问直接打开",
@@ -308,7 +308,8 @@
     "rules": "规则",
     "masked": "隐藏地址",
     "signaturesPerAddressDesc": "每个发件地址一个，可使用粗体、链接和图片，会添加到新邮件和回复中。它保存在你的邮件服务器上，因此门户和你的其他邮件应用都使用同一个。",
-    "addSignature": "添加签名"
+    "addSignature": "添加签名",
+    "profile": "头像"
   },
   "theme": {
     "system": "系统",
@@ -492,7 +493,18 @@
     "mailTo": "这会以你的名义向 {{address}} 发送一封邮件。",
     "body": "{{brand}} 会直接向发件人为你办理退订。之后应该不会再收到来自那里的邮件。",
     "bodyPage": "发件人为此提供了专门的页面。{{brand}} 会为你打开它，请在那里确认。",
-    "archive": "归档之前来自该发件人的邮件"
+    "archive": "归档之前来自该发件人的邮件",
+    "bodyOneClick": "{{brand}} 会请求发件人的服务器一步将你移出列表。之后应该不会再收到来自那里的邮件。",
+    "orMail": "如果这样行不通，会以你的名义向 {{address}} 发送一封邮件。",
+    "orPage": "如果这样行不通，会打开发件人自己的页面。",
+    "failedTitle": "没有成功",
+    "failed": "发件人的服务器没有接受：{{reason}}",
+    "failedNoReason": "发件人的服务器没有接受。",
+    "tryMail": "你也可以改用邮件退订。这会以你的名义向 {{address}} 发送一封邮件。",
+    "tryPage": "你也可以改在发件人自己的页面上退订。",
+    "noOtherWay": "这封邮件没有提供其他方式。请稍后再试。",
+    "sendMail": "发送邮件",
+    "openPage": "打开页面"
   },
   "deleteForever": {
     "title_other": "要永久删除 {{count}} 封邮件吗？",
@@ -772,7 +784,16 @@
       "defaultSet": "新日程现在会添加到“{{name}}”",
       "calendarCreated": "已创建日历“{{name}}”",
       "calendarDeleted": "已删除日历“{{name}}”"
-    }
+    },
+    "participants": "参与者",
+    "organizer": "组织者",
+    "answer": {
+      "needs-action": "尚未答复",
+      "accepted": "已接受",
+      "tentative": "暂定",
+      "declined": "已拒绝"
+    },
+    "moreParticipants_other": "还有 {{count}} 人"
   },
   "contacts": {
     "title": "联系人",
@@ -855,6 +876,10 @@
       "defaultSet": "新联系人现在会添加到“{{name}}”",
       "bookCreated": "已创建通讯录“{{name}}”",
       "bookDeleted": "已删除通讯录“{{name}}”"
+    },
+    "picture": {
+      "logo": "公司标志",
+      "noLogo": "没有找到 {{domain}} 的标志。"
     }
   },
   "scheduled": {
@@ -920,7 +945,23 @@
       "declined": "已拒绝，组织者会收到通知。"
     },
     "failed": "无法发送答复。{{reason}}",
-    "cancelled": "组织者已取消此日程。"
+    "cancelled": "组织者已取消此日程。",
+    "reply": {
+      "title": "对你邀请的答复",
+      "status": {
+        "needs-action": "{{name}} 还没有答复。",
+        "accepted": "{{name}} 已接受。",
+        "tentative": "{{name}} 答复暂定。",
+        "declined": "{{name}} 已拒绝。"
+      }
+    },
+    "unverified": {
+      "invitation": "这封邀请不是日程组织者发来的，因此不能在这里答复。如果你知道这个日程，请在日历中答复。",
+      "cancel": "这封邮件说日程已取消，但无法确认它来自日程组织者。你的日历会保留该日程不变。",
+      "reply": "这个答复不是来自受邀参加该日程的人，因此不算数。",
+      "sender": "发件人：{{sender}}。",
+      "senderAndOrganizer": "发件人：{{sender}}；组织者：{{organizer}}。"
+    }
   },
   "push": {
     "label": "网页邮箱关闭时也通知我新邮件",
@@ -1011,5 +1052,52 @@
       "signedOut": "你的会话已结束。请重新登录后继续。",
       "generic": "出了点问题。请稍后重试。"
     }
+  },
+  "picture": {
+    "loading": "正在加载图片…",
+    "crop": {
+      "title": "裁剪图片",
+      "area": "圆圈中的图片",
+      "hint": "拖动可移动，滚动或双指缩放。键盘：方向键移动，+ 和 − 缩放。",
+      "zoom": "缩放",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "use": "使用图片"
+    },
+    "error": {
+      "notImage": "这不是图片。",
+      "tooLarge": "图片太大了，最多 {{size}}。",
+      "unreadable": "无法读取这张图片。"
+    },
+    "choose": "选择图片",
+    "change": "更换图片",
+    "camera": "拍照",
+    "remove": "移除",
+    "hint": "也可以把图片拖到圆圈上，或直接粘贴。"
+  },
+  "profile": {
+    "picture": "你的头像",
+    "pictureDesc": "在允许的范围内，它会显示在你的名字旁边。选择一张图片，并在圆圈中调整位置。",
+    "visibility": "谁能看到",
+    "off": {
+      "title": "任何人都看不到",
+      "body": "你的邮件显示姓名首字母。"
+    },
+    "server": {
+      "title": "本服务器上的人",
+      "body": "在这里有邮箱的每个人都会在你的邮件旁看到它。"
+    },
+    "public": {
+      "title": "所有人",
+      "body": "其他邮件服务器和应用也可以通过 Libravatar 显示它。任何知道你地址的人都能查到。"
+    },
+    "publicForbidden": "管理员已关闭公开头像。",
+    "face": "在邮件中附带我的头像",
+    "faceDesc": "在你发送的每封邮件中附上一个小副本（Face 标头），部分邮件程序会显示它。仅在头像公开时有效。",
+    "saved": "头像已保存",
+    "removed": "头像已移除",
+    "failed": "操作失败。{{reason}}",
+    "loading": "正在加载你的头像…",
+    "loadFailed": "无法加载你的头像。"
   }
 }

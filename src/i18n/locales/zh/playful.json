@@ -141,7 +141,8 @@
     }
   },
   "unsubscribe": {
-    "title": "和 {{name}} 说拜拜？"
+    "title": "和 {{name}} 说拜拜？",
+    "failedTitle": "嗯，没有成功 (・_・;)"
   },
   "deleteForever": {
     "title_other": "要和这 {{count}} 封邮件永远说再见吗？(｡•́︿•̀｡)",
@@ -209,5 +210,15 @@
   "masked": {
     "empty": "还没有隐藏地址。下次注册网站时，要不要给自己戴个小面具？(｀・ω・´)",
     "created": "当当，你的新面具准备好了 ✿"
+  },
+  "picture": {
+    "error": {
+      "notImage": "嗯，这好像不是图片 (・_・;)",
+      "unreadable": "这张图片我看不懂 (・_・;)"
+    }
+  },
+  "profile": {
+    "saved": "看起来不错 ✿",
+    "removed": "头像没了，首字母回来啦 (・ω・)"
   }
 }

@@ -13,6 +13,9 @@ import { ConfirmDiscardDialog } from "@/components/ui/ConfirmDiscardDialog";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, Select, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
+import { useSettings } from "@/state/settings";
+import { contactPhotoSrc } from "./ContactAvatar";
+import { ContactPictureField } from "./ContactPicture";
 import { formatBirthday, hasName, inputFrom } from "./format";
 import { useContactsUi, type ContactEditorRequest } from "./state";
 import { useAddressBooks, useContactActions } from "./useContactsData";
@@ -41,6 +44,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
   const [busy, setBusy] = useState(false);
   const [asking, setAsking] = useState(false);
   const actions = useContactActions();
+  const senderPictures = useSettings((s) => s.senderPictures);
   if (!request || !form)
     return (
       <Dialog open={false} onClose={onClose}>
@@ -69,6 +73,10 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
 
   // Year-less birthdays can't be shown in a date field; they stay unless a date is picked.
   const yearless = form.birthday?.startsWith("--") ?? false;
+  // The picture as it will be saved: a new or removed one, or the card's own.
+  const photo = form.photo !== undefined ? form.photo : (contact?.photo ?? null);
+  const photoSrc = contactPhotoSrc(photo, senderPictures);
+  const firstEmail = form.emails.find((email) => email.address.trim())?.address.trim() ?? null;
 
   return (
     <>
@@ -86,6 +94,13 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
             void save();
           }}
         >
+          <ContactPictureField
+            photo={photo}
+            src={photoSrc}
+            email={firstEmail}
+            onChange={(next) => setForm({ photo: next })}
+          />
+
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("contacts.given")}>
               {(id) => (

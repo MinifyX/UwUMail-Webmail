@@ -181,13 +181,23 @@ export interface Attachment {
 
 /** How a newsletter says to unsubscribe. */
 export interface Unsubscribe {
-  /** The HTTPS link takes one POST, no page. */
+  /**
+   * The server can unsubscribe with the one POST of RFC 8058 itself: it offers that, and the mail
+   * has a List-Unsubscribe-Post header. The mail or the page is then only the way back.
+   */
   oneClick: boolean;
   url?: string;
   mailto?: string;
 }
 
-export type UnsubscribeOutcome = { kind: "done" } | { kind: "openPage"; url: string };
+/** What else there is when the one-click way didn't work: a mail, the sender's page, or nothing. */
+export type UnsubscribeFallback = "mail" | "page" | null;
+
+export type UnsubscribeOutcome =
+  | { kind: "done"; via: "oneClick" | "mail" }
+  | { kind: "openPage"; url: string }
+  /** The server tried the one click, and the sender's side didn't take it. */
+  | { kind: "oneClickFailed"; reason: string; fallback: UnsubscribeFallback };
 
 export interface Message {
   id: string;
@@ -306,11 +316,22 @@ export interface DraftContent {
   attachments: OutgoingAttachment[];
 }
 
-/** A locally available attachment file. `url` works in <img>, <video> and fetch. */
-/** A company's brand logo (fills the avatar) or website icon (sits on a plain background). */
+/**
+ * The picture for an address: a person's photo (a contact's, or their own profile picture), which
+ * fills the avatar; a company's brand logo (fills it too, unless it is see-through); or a website
+ * icon, which sits on a plain background.
+ */
 export interface SenderPicture {
   url: string;
-  kind: "logo" | "icon";
+  kind: "photo" | "logo" | "icon";
+}
+
+/** How a sender picture is looked up. */
+export interface SenderPictureLookup {
+  /** Only what the server has itself: no request to another server (the reader switched them off). */
+  local?: boolean;
+  /** Ask the server again instead of taking the browser's copy, after pictures changed. */
+  fresh?: boolean;
 }
 
 export interface AttachmentContent {
@@ -408,17 +429,46 @@ export interface Invitation {
   status: ParticipationStatus;
   /** Who invited, as an address (or a name) where the event says. */
   organizer: string | null;
+  /** The organizer's address, for their picture; null where the event names none. */
+  organizerEmail?: string | null;
 }
 
-/** The invitation a mail carries (its text/calendar part), as the server put it into the calendar. */
-export interface MailInvitation extends Invitation {
+/** What a scheduling mail says it is (its iCalendar METHOD). */
+export type SchedulingMethod = "request" | "cancel" | "reply" | "other";
+
+/** The event a scheduling mail names, as it sits in the calendar. */
+interface MailSchedulingBase {
   title: string;
   /** UTC start, or the date of an all-day event. */
   start: string | null;
   allDay: boolean;
-  /** The organizer cancelled it. */
+  method: SchedulingMethod;
+  /**
+   * The mail comes from who may say this (security-audit-0.16.0 WEBMAIL-2): the event's organizer
+   * for invitations, updates and cancellations, a participant for answers; a cancellation of the
+   * whole event also only once the calendar has it (W-33). An unverified one is shown as such, and
+   * nothing is offered on its account.
+   */
+  verified: boolean;
+}
+
+/** The invitation a mail carries (its text/calendar part), as the server put it into the calendar. */
+export interface MailInvitation extends Invitation, MailSchedulingBase {
+  kind: "invitation";
+  /** The event is cancelled, as the calendar says: a mail's word alone doesn't count (W-33). */
   cancelled: boolean;
 }
+
+/** An answer to the account's own event a mail carries, with the answer as the calendar has it. */
+export interface MailReply extends MailSchedulingBase {
+  kind: "reply";
+  /** Who answered: their name where the event has one, else the mail's sender. */
+  attendee: string;
+  attendeeEmail: string;
+  status: ParticipationStatus;
+}
+
+export type MailScheduling = MailInvitation | MailReply;
 
 export type Weekday = "mo" | "tu" | "we" | "th" | "fr" | "sa" | "su";
 
@@ -462,6 +512,17 @@ export interface CalendarOccurrence {
   color: string | null;
   /** Somebody else's event the account was invited to, with its answer; null for its own. */
   invitation?: Invitation | null;
+  /** Who takes part, the organizer first; empty for an event without participants. */
+  participants?: EventParticipant[];
+}
+
+/** Someone taking part in an event, with their answer. */
+export interface EventParticipant {
+  name: string;
+  /** Lower case; empty where the event names no address. */
+  email: string;
+  status: ParticipationStatus;
+  organizer: boolean;
 }
 
 /** What the event editor saves. */
@@ -535,7 +596,10 @@ export interface ContactRecord {
   /** "YYYY-MM-DD", or "--MM-DD" when the year isn't known. */
   birthday: string | null;
   note: string;
-  /** A picture to show (a data: or https: URL); pictures can't be changed here yet. */
+  /**
+   * The card's picture: a `data:` URI inside the card, or an `https:` link that is only ever
+   * shown through the server (Backend.contactPhotoUrl).
+   */
   photo: string | null;
   /** A group rather than a person; groups are shown but not edited. */
   isGroup: boolean;
@@ -555,6 +619,40 @@ export interface ContactInput {
   birthday: string | null;
   birthdayChanged: boolean;
   note: string;
+  /**
+   * A new picture as a `data:image/jpeg` URI (cropped in the browser), or null to remove the
+   * card's; left out, the card keeps its picture.
+   */
+  photo?: string | null;
+}
+
+/**
+ * Who sees the own profile picture: nobody, people of the same server, or everyone — other mail
+ * servers and apps too, through Libravatar.
+ */
+export type PictureVisibility = "off" | "server" | "public";
+
+/** The own profile picture and who may see it. */
+export interface ProfilePicture {
+  /** Where to show it from (an object URL); null without a picture. */
+  url: string | null;
+  visibility: PictureVisibility;
+  /** Sent along in mails as a `Face:` header; only while the picture is public. */
+  sendFace: boolean;
+  updated: string | null;
+}
+
+/** What the server allows for the own picture. */
+export interface ProfilePictureOptions {
+  /** Largest upload in bytes. */
+  maxSize: number;
+  /** False when the admin switched public pictures off for the server or the account's domain. */
+  mayBePublic: boolean;
+}
+
+export interface ProfilePicturePatch {
+  visibility?: PictureVisibility;
+  sendFace?: boolean;
 }
 
 /**
@@ -625,4 +723,6 @@ export type BackendEvent =
   /** Address books or contacts changed, here or on another device. */
   | { type: "contacts:changed" }
   /** Masked addresses changed, here, on another device, or by arriving mail. */
-  | { type: "masked:changed" };
+  | { type: "masked:changed" }
+  /** The own profile picture or its settings changed, here or elsewhere. */
+  | { type: "profile:changed" };

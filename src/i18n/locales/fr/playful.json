@@ -145,7 +145,8 @@
     }
   },
   "unsubscribe": {
-    "title": "Bye bye {{name}} ?"
+    "title": "Bye bye {{name}} ?",
+    "failedTitle": "Hmm, cela n'a pas fonctionné (・_・;)"
   },
   "deleteForever": {
     "title_one": "Dire adieu à celui-ci pour toujours ? (｡•́︿•̀｡)",
@@ -219,5 +220,15 @@
   "masked": {
     "empty": "Pas encore d'adresse masquée. Un petit déguisement pour le prochain site où vous vous inscrivez ? (｀・ω・´)",
     "created": "Tadaa, votre nouveau déguisement est prêt ✿"
+  },
+  "picture": {
+    "error": {
+      "notImage": "Hmm, ce n'est pas une image (・_・;)",
+      "unreadable": "Je n'arrive pas à lire cette image (・_・;)"
+    }
+  },
+  "profile": {
+    "saved": "Très joli ✿",
+    "removed": "Photo retirée, vos initiales sont de retour (・ω・)"
   }
 }

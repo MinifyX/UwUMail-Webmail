@@ -312,8 +312,8 @@
     "signatureDefaultReplies": "Réponses",
     "signatureSaved": "Signature enregistrée",
     "signatureUntitled": "Signature",
-    "senderPictures": "Images pour les expéditeurs professionnels",
-    "senderPicturesDesc": "Affiche le logo ou l'icône du site web d'une entreprise au lieu des initiales. Les personnes chez des fournisseurs de messagerie comme Gmail gardent leurs initiales.",
+    "senderPictures": "Images des expéditeurs",
+    "senderPicturesDesc": "Affiche les photos des personnes et les logos des entreprises au lieu des initiales, y compris depuis d'autres serveurs. Désactivé, vous voyez quand même ce que ce serveur a lui-même : les photos de vos contacts et les images des personnes d'ici.",
     "linkConfirm": "Demander avant d'ouvrir les liens",
     "linkConfirmDesc": "Montre d'abord où mène un lien d'un e-mail. Les liens déguisés demandent toujours.",
     "linkDomains": "Ouvrir sans demander",
@@ -324,7 +324,8 @@
     "rules": "Règles",
     "masked": "Adresses masquées",
     "signaturesPerAddressDesc": "Une par adresse d'expéditeur, avec gras, liens et images, ajoutée aux nouveaux e-mails et aux réponses. Elle est conservée sur votre serveur de messagerie : le portail et vos autres applications de messagerie utilisent la même.",
-    "addSignature": "Ajouter une signature"
+    "addSignature": "Ajouter une signature",
+    "profile": "Photo de profil"
   },
   "theme": {
     "system": "Système",
@@ -510,7 +511,18 @@
     "mailTo": "Cela envoie un e-mail de votre part à {{address}}.",
     "body": "{{brand}} vous désabonne directement auprès de l'expéditeur. Ensuite, vous ne devriez plus recevoir d'e-mails de sa part.",
     "bodyPage": "L'expéditeur a sa propre page pour cela. {{brand}} l'ouvre pour vous, et vous confirmez là-bas.",
-    "archive": "Archiver les e-mails précédents de cet expéditeur"
+    "archive": "Archiver les e-mails précédents de cet expéditeur",
+    "bodyOneClick": "{{brand}} demande au serveur de l'expéditeur de vous retirer de la liste, en une étape. Ensuite, vous ne devriez plus recevoir d'e-mails de sa part.",
+    "orMail": "Si ce n'est pas possible ainsi, un e-mail part de votre part à {{address}}.",
+    "orPage": "Si ce n'est pas possible ainsi, la page de l'expéditeur s'ouvre.",
+    "failedTitle": "Cela n'a pas fonctionné",
+    "failed": "Le serveur de l'expéditeur ne l'a pas accepté : {{reason}}",
+    "failedNoReason": "Le serveur de l'expéditeur ne l'a pas accepté.",
+    "tryMail": "Vous pouvez vous désabonner par e-mail à la place. Cela envoie un e-mail de votre part à {{address}}.",
+    "tryPage": "Vous pouvez vous désabonner sur la page de l'expéditeur à la place.",
+    "noOtherWay": "Cet e-mail ne propose pas d'autre moyen. Réessayez plus tard.",
+    "sendMail": "Envoyer l'e-mail",
+    "openPage": "Ouvrir la page"
   },
   "deleteForever": {
     "title_one": "Supprimer définitivement ce message ?",
@@ -822,7 +834,17 @@
       "defaultSet": "Les nouveaux événements vont désormais dans « {{name}} »",
       "calendarCreated": "Agenda « {{name}} » créé",
       "calendarDeleted": "Agenda « {{name}} » supprimé"
-    }
+    },
+    "participants": "Participants",
+    "organizer": "Organisateur",
+    "answer": {
+      "needs-action": "Pas encore de réponse",
+      "accepted": "Accepté",
+      "tentative": "Peut-être",
+      "declined": "Refusé"
+    },
+    "moreParticipants_one": "et {{count}} autre",
+    "moreParticipants_other": "et {{count}} autres"
   },
   "contacts": {
     "title": "Contacts",
@@ -909,6 +931,10 @@
       "defaultSet": "Les nouveaux contacts vont désormais dans « {{name}} »",
       "bookCreated": "Carnet d'adresses « {{name}} » créé",
       "bookDeleted": "Carnet d'adresses « {{name}} » supprimé"
+    },
+    "picture": {
+      "logo": "Logo de l'entreprise",
+      "noLogo": "Aucun logo trouvé pour {{domain}}."
     }
   },
   "scheduled": {
@@ -975,7 +1001,23 @@
       "declined": "Refusé. L'organisateur en est informé."
     },
     "failed": "La réponse n'a pas pu être envoyée. {{reason}}",
-    "cancelled": "L'organisateur a annulé cet événement."
+    "cancelled": "L'organisateur a annulé cet événement.",
+    "reply": {
+      "title": "Réponse à votre invitation",
+      "status": {
+        "needs-action": "{{name}} n'a pas encore répondu.",
+        "accepted": "{{name}} a accepté.",
+        "tentative": "{{name}} a répondu peut-être.",
+        "declined": "{{name}} a refusé."
+      }
+    },
+    "unverified": {
+      "invitation": "Cette invitation ne vient pas de l'organisateur de l'événement, vous ne pouvez donc pas y répondre ici. Si vous connaissez l'événement, répondez depuis votre agenda.",
+      "cancel": "Cet e-mail dit que l'événement est annulé, mais rien ne confirme qu'il vient de son organisateur. Votre agenda garde l'événement tel quel.",
+      "reply": "Cette réponse ne vient d'aucune personne invitée à l'événement, elle ne compte donc pas.",
+      "sender": "Envoyé par {{sender}}.",
+      "senderAndOrganizer": "Envoyé par {{sender}} ; l'organisateur est {{organizer}}."
+    }
   },
   "push": {
     "label": "Me prévenir des nouveaux messages quand la messagerie web est fermée",
@@ -1066,5 +1108,52 @@
       "signedOut": "Votre session a expiré. Reconnectez-vous pour continuer.",
       "generic": "Un problème est survenu. Réessayez dans un instant."
     }
+  },
+  "picture": {
+    "loading": "Chargement de l'image…",
+    "crop": {
+      "title": "Recadrer l'image",
+      "area": "Image dans le cercle",
+      "hint": "Faites glisser pour déplacer, faites défiler ou pincez pour zoomer. Clavier : les flèches déplacent, + et − zooment.",
+      "zoom": "Zoom",
+      "zoomIn": "Agrandir",
+      "zoomOut": "Réduire",
+      "use": "Utiliser l'image"
+    },
+    "error": {
+      "notImage": "Ce n'est pas une image.",
+      "tooLarge": "Cette image est trop grande. Jusqu'à {{size}}, ça passe.",
+      "unreadable": "Impossible de lire cette image."
+    },
+    "choose": "Choisir une image",
+    "change": "Changer l'image",
+    "camera": "Prendre une photo",
+    "remove": "Retirer",
+    "hint": "Ou déposez une image sur le cercle, ou collez-en une."
+  },
+  "profile": {
+    "picture": "Votre photo",
+    "pictureDesc": "Elle s'affiche à côté de votre nom là où les gens peuvent la voir. Choisissez une image et placez-la dans le cercle.",
+    "visibility": "Qui la voit",
+    "off": {
+      "title": "Personne",
+      "body": "Vos e-mails affichent vos initiales."
+    },
+    "server": {
+      "title": "Les personnes de ce serveur",
+      "body": "Tous ceux qui ont une boîte ici la voient à côté de vos e-mails."
+    },
+    "public": {
+      "title": "Tout le monde",
+      "body": "D'autres serveurs de messagerie et applications peuvent aussi l'afficher, via Libravatar. Toute personne qui connaît votre adresse peut la consulter."
+    },
+    "publicForbidden": "Votre administrateur a désactivé les photos publiques.",
+    "face": "Envoyer ma photo dans mes e-mails",
+    "faceDesc": "Ajoute une petite copie à chaque e-mail que vous envoyez (l'en-tête Face), que certains logiciels de messagerie affichent. Seulement tant que votre photo est publique.",
+    "saved": "Photo enregistrée",
+    "removed": "Photo retirée",
+    "failed": "Cela n'a pas fonctionné. {{reason}}",
+    "loading": "Chargement de votre photo…",
+    "loadFailed": "Impossible de charger votre photo."
   }
 }

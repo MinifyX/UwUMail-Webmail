@@ -6,6 +6,7 @@ import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
 import { DemoMasked } from "./demo-masked";
 import { rulesToSieve } from "@/lib/sieveRules";
+import { runUnsubscribe } from "@/lib/unsubscribe";
 import { resolveLanguage } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import {
@@ -18,7 +19,8 @@ import {
   demoRules,
   welcomeMessage,
 } from "./demo-data";
-import { demoSenderPicture } from "./demo-pictures";
+import { DEMO_LINKED_PHOTOS, DEMO_PROFILE_PICTURES, demoSenderPicture } from "./demo-pictures";
+import { contactPhotoSource } from "./jmap/contacts";
 import type {
   BlockedSender,
   Account,
@@ -35,7 +37,7 @@ import type {
   Folder,
   FolderRights,
   Identity,
-  MailInvitation,
+  MailScheduling,
   MailtoDraft,
   MaskedAddressInput,
   MaskedAddressPatch,
@@ -44,10 +46,14 @@ import type {
   OutgoingMessage,
   ParticipationStatus,
   Person,
+  ProfilePicture,
+  ProfilePictureOptions,
+  ProfilePicturePatch,
   ScheduledSend,
   SendOptions,
   SendReceipt,
   SenderPicture,
+  SenderPictureLookup,
   ShareLevel,
   SharedAccount,
   Signature,
@@ -113,11 +119,21 @@ export class DemoBackend implements Backend {
     ...DEMO_ACCOUNTS.flatMap((a) => buildFolders(a.id, lang())).map((folder) => ({ ...folder, rights: ALL_RIGHTS })),
     ...this.shared.folders,
   ];
-  // Newsletters and offers carry a List-Unsubscribe like the real ones.
+  // Newsletters and offers carry a List-Unsubscribe like the real ones; the "server" does the one
+  // click for both, and the bakery's side doesn't answer, so its mail address is the way back.
   private messages: Message[] = [
     ...buildMessages(lang()).map((message) =>
       /newsletter|aktion|offer|deal/i.test(message.subject)
-        ? { ...message, unsubscribe: { oneClick: true, url: "https://pixelparts.example/unsubscribe" } }
+        ? {
+            ...message,
+            unsubscribe: message.from.email.endsWith("@kaffeekuchen.example")
+              ? {
+                  oneClick: true,
+                  url: "https://kaffeekuchen.example/abmelden",
+                  mailto: "mailto:abmelden@kaffeekuchen.example",
+                }
+              : { oneClick: true, url: "https://pixelparts.example/unsubscribe" },
+          }
         : message,
     ),
     ...this.shared.messages,
@@ -475,14 +491,29 @@ export class DemoBackend implements Backend {
     return this.moveToRole(messageIds, spam ? "junk" : "inbox");
   }
 
-  async unsubscribe(messageId: string): Promise<UnsubscribeOutcome> {
+  async unsubscribe(messageId: string, options: { oneClick?: boolean } = {}): Promise<UnsubscribeOutcome> {
     await wait(700);
     const message = this.messages.find((m) => m.id === messageId);
     if (!message?.unsubscribe) throw new BackendError("invalid_input", "This mail has no way to unsubscribe.");
-    for (const other of this.messages) {
-      if (other.from.email === message.from.email) delete other.unsubscribe;
+    const outcome = await runUnsubscribe(
+      message.unsubscribe,
+      {
+        oneClick: async () =>
+          message.from.email.endsWith("@kaffeekuchen.example")
+            ? { kind: "failed", reason: "kaffeekuchen.example answered 503." }
+            : { kind: "done" },
+        sendMail: async () => {
+          await wait(300);
+        },
+      },
+      options.oneClick !== false,
+    );
+    if (outcome.kind === "done") {
+      for (const other of this.messages) {
+        if (other.from.email === message.from.email) delete other.unsubscribe;
+      }
     }
-    return { kind: "done" };
+    return outcome;
   }
 
   async inboxMessagesFrom(email: string) {
@@ -745,9 +776,64 @@ export class DemoBackend implements Backend {
     return true;
   }
 
-  async getSenderPicture(email: string): Promise<SenderPicture | null> {
+  /** Like the server's lookup: a contact's photo, a person's own picture here, then logos. */
+  async getSenderPicture(email: string, lookup: SenderPictureLookup = {}): Promise<SenderPicture | null> {
     await wait(150);
-    return demoSenderPicture(email);
+    const address = email.trim().toLowerCase();
+    for (const contact of this.addressBook.contacts()) {
+      if (!contact.photo || !contact.emails.some((entry) => entry.address.toLowerCase() === address)) continue;
+      const url = this.contactPhotoUrl(contact.photo);
+      if (url) return { url, kind: "photo" };
+    }
+    const profile = this.profilePictureOf(address);
+    if (profile) return { url: profile, kind: "photo" };
+    return demoSenderPicture(address, lookup.local);
+  }
+
+  /** The picture people on the demo "server" show for themselves, the demo's own included. */
+  private profilePictureOf(address: string): string | null {
+    const own = this.accounts.some((account) => account.email.toLowerCase() === address);
+    if (own) return this.profile.visibility !== "off" ? this.profile.url : null;
+    return DEMO_PROFILE_PICTURES[address] ?? null;
+  }
+
+  /** The demo's own profile picture, kept in memory; it starts without one. */
+  private profile: ProfilePicture = { url: null, visibility: "server", sendFace: false, updated: null };
+
+  async profilePictureOptions(): Promise<ProfilePictureOptions | null> {
+    return { maxSize: 10 * 1024 * 1024, mayBePublic: true };
+  }
+
+  async profilePicture(): Promise<ProfilePicture> {
+    await wait(100);
+    return { ...this.profile };
+  }
+
+  async setProfilePicture(picture: Blob | null): Promise<ProfilePicture> {
+    await wait(300);
+    const url = picture ? await blobToDataUrl(picture) : null;
+    this.profile = { ...this.profile, url, updated: new Date().toISOString() };
+    this.emit({ type: "profile:changed" });
+    return { ...this.profile };
+  }
+
+  async updateProfilePicture(patch: ProfilePicturePatch): Promise<void> {
+    await wait(120);
+    this.profile = { ...this.profile, ...patch };
+    this.emit({ type: "profile:changed" });
+  }
+
+  /** The demo's stand-in for the server's picture proxy knows the sample links and nothing else. */
+  contactPhotoUrl(photo: string): string | null {
+    const link = photo.trim();
+    if (/^https:/i.test(link)) return DEMO_LINKED_PHOTOS[link] ?? null;
+    return contactPhotoSource(link, null);
+  }
+
+  async companyLogo(email: string): Promise<Blob | null> {
+    await wait(150);
+    const picture = demoSenderPicture(email);
+    return picture ? (await fetch(picture.url)).blob() : null;
   }
 
   async fetchMailImage(): Promise<Blob | null> {
@@ -804,11 +890,14 @@ export class DemoBackend implements Backend {
     this.calendar.respond(eventId, status);
   }
 
-  async mailInvitation(messageId: string): Promise<MailInvitation | null> {
+  /** The demo's .ics parts say what they are in their names: an answer, a cancellation or an invitation. */
+  async mailInvitation(messageId: string): Promise<MailScheduling | null> {
     await wait(120);
     const message = this.messages.find((m) => m.id === messageId);
-    const carries = message?.attachments.some((a) => a.mimeType.startsWith("text/calendar"));
-    return carries ? this.calendar.invitation() : null;
+    const part = message?.attachments.find((a) => a.mimeType.startsWith("text/calendar"));
+    if (!message || !part) return null;
+    if (/reply/i.test(part.filename)) return this.calendar.reply(message.from.email);
+    return this.calendar.invitation(/cancel/i.test(part.filename) ? "cancel" : "request", message.from.email);
   }
 
   async shareCalendar(calendarId: string, personId: string, level: ShareLevel | null) {
@@ -1075,4 +1164,14 @@ export class DemoBackend implements Backend {
       hasDraft: sorted.some((m) => m.flags.draft),
     };
   }
+}
+
+/** A picture as a data: URI the demo can keep and show. */
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new BackendError("invalid_input", "That picture couldn't be read."));
+    reader.readAsDataURL(blob);
+  });
 }

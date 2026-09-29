@@ -5,6 +5,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import type { CalendarInfo, CalendarOccurrence } from "@/backend/types";
 import { i18n } from "@/i18n";
 import { deviceTimeZone } from "@/lib/calendarDates";
+import { useLinks } from "@/state/links";
 import { useSettings } from "@/state/settings";
 import { DeleteScopeQuestion } from "./DeleteScopeQuestion";
 import { EventEditor } from "./EventEditor";
@@ -160,6 +161,52 @@ describe("calendar flows", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(useCalendarUi.getState().deleteScope).toBeNull());
     expect(fake.deleteEvent).not.toHaveBeenCalled();
+  });
+
+  it("opens links in an event only through the link check, however they are clicked (W-23)", async () => {
+    useLinks.setState({ pending: null, hover: null, sheet: null });
+    useSettings.setState({ linkConfirm: true, linkDomains: [] });
+    renderCalendarParts();
+    const withLink = {
+      ...YOGA,
+      id: "call",
+      eventId: "call",
+      recurrence: null,
+      recurrenceId: null,
+      description: "Join: https://meet.example.com/uwu-42.",
+    };
+    act(() => useCalendarUi.getState().showPopover(withLink, { left: 100, top: 100, width: 80, height: 40 }));
+    const link = await screen.findByRole("link", { name: "https://meet.example.com/uwu-42" });
+    // Nothing the browser could open by itself.
+    expect(link.getAttribute("href")).toBeNull();
+    expect(link.closest("a")).toBeNull();
+
+    const middle = new MouseEvent("auxclick", { button: 1, bubbles: true, cancelable: true });
+    act(() => {
+      link.dispatchEvent(middle);
+    });
+    expect(middle.defaultPrevented).toBe(true);
+    expect(useLinks.getState().pending?.href).toBe("https://meet.example.com/uwu-42");
+
+    act(() => useLinks.setState({ pending: null }));
+    fireEvent.keyDown(link, { key: "Enter" });
+    expect(useLinks.getState().pending?.href).toBe("https://meet.example.com/uwu-42");
+
+    act(() => useLinks.setState({ pending: null }));
+    fireEvent.click(link);
+    expect(useLinks.getState().pending?.href).toBe("https://meet.example.com/uwu-42");
+
+    const menu = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+    act(() => {
+      link.dispatchEvent(menu);
+    });
+    expect(menu.defaultPrevented).toBe(true);
+    expect(useLinks.getState().sheet?.href).toBe("https://meet.example.com/uwu-42");
+
+    const drag = new Event("dragstart", { bubbles: true, cancelable: true });
+    link.dispatchEvent(drag);
+    expect(drag.defaultPrevented).toBe(true);
+    act(() => useLinks.setState({ pending: null, hover: null, sheet: null }));
   });
 
   it("deletes a single event without asking", async () => {

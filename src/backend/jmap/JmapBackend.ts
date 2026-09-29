@@ -14,7 +14,8 @@ import { textToHtml } from "@/lib/format";
 import { cleanSignatureHtml } from "@/lib/signatures";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
-import { unsubscribeMail } from "@/lib/unsubscribe";
+import { createLimiter } from "@/lib/concurrency";
+import { oneClickResultOf, runUnsubscribe, type OneClickResult } from "@/lib/unsubscribe";
 import { BackendError, type Backend, type SignatureStore } from "../backend";
 import type {
   Account,
@@ -35,7 +36,7 @@ import type {
   Folder,
   FolderRights,
   Identity,
-  MailInvitation,
+  MailScheduling,
   MailtoDraft,
   MaskedAddress,
   MaskedAddressInput,
@@ -45,10 +46,14 @@ import type {
   OutgoingMessage,
   ParticipationStatus,
   Person,
+  ProfilePicture,
+  ProfilePictureOptions,
+  ProfilePicturePatch,
   ScheduledSend,
   SendOptions,
   SendReceipt,
   SenderPicture,
+  SenderPictureLookup,
   ShareLevel,
   SharedAccount,
   Signature,
@@ -66,6 +71,11 @@ import {
   icsInvitation,
   invitationOf,
   eventPatch,
+  cancellationApplied,
+  participantWith,
+  schedulingMailVerified,
+  schedulingMethod,
+  statusOf,
   newEventObject,
   toCalendarInfo,
   toOccurrence,
@@ -75,6 +85,7 @@ import {
 import {
   CARD_PROPERTIES,
   cardFromInput,
+  contactPhotoSource,
   contactSuggestions,
   patchFromInput,
   toAddressBookInfo,
@@ -91,6 +102,7 @@ import {
   SENDERS,
   SIEVE,
   SUBMISSION,
+  UNSUBSCRIBE,
   WEBMAIL,
   accountCapability,
   call,
@@ -102,6 +114,8 @@ import {
   one,
   remoteImagePath,
   responseOf,
+  pictureKind,
+  pictureSource,
   senderPicturePath,
   supports,
   uploadBlob,
@@ -136,6 +150,14 @@ import {
   type JmapMaskedEmail,
   type JmapSetError,
 } from "./masked";
+import {
+  PROFILE,
+  PROFILE_ID,
+  profileOptionsFrom,
+  profileSetError,
+  visibilityOf,
+  type JmapProfilePicture,
+} from "./profile";
 import { SUGGEST, suggestionLimit, suggestionsToContacts, type JmapAddressSuggestion } from "./suggest";
 import {
   PRINCIPALS,
@@ -432,6 +454,7 @@ export class JmapBackend implements Backend {
       if (changed.EmailSubmission) this.emit({ type: "scheduled:changed" });
       if (changed.Calendar || changed.CalendarEvent) this.emit({ type: "calendar:changed" });
       if (changed.AddressBook || changed.ContactCard) this.emit({ type: "contacts:changed" });
+      if (changed.ProfilePicture) this.emit({ type: "profile:changed" });
       if (changed.MaskedEmail) this.emit({ type: "masked:changed" });
       if (changed.Identity) {
         this.forgetIdentities();
@@ -955,8 +978,9 @@ export class JmapBackend implements Backend {
       const newest = [...emails].sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))[0]!;
       emails = [newest];
     }
+    const oneClick = this.oneClickFor(accountId);
     const messages = emails
-      .map((email) => toMessage(email, accountId, this.folderMap))
+      .map((email) => toMessage(email, accountId, this.folderMap, oneClick))
       .sort((a, b) => a.date.localeCompare(b.date));
     return {
       thread: toThreadSummary(threadId, emails, accountId),
@@ -1136,15 +1160,21 @@ export class JmapBackend implements Backend {
     throwOnError(await one<SetResponse>("SenderList/set", { destroy: [sender.serverId] }, [CORE, SENDERS]));
   }
 
+  /** Whether the server does the one-click unsubscribe (RFC 8058) for mail of this account. */
+  private oneClickFor(accountId: string): boolean {
+    const account = jmapSession().accounts[accountId];
+    return supports(UNSUBSCRIBE) && !!account && UNSUBSCRIBE in account.accountCapabilities;
+  }
+
   /**
    * Unsubscribing from a newsletter.
    *
-   * The app can also do the one-click POST (RFC 8058) itself, because its engine may talk to
-   * other servers. A page in a browser may not, and having the server do it would mean letting a
-   * mail header decide where the server sends requests — so the mail way is taken where there is
-   * one, and otherwise the browser opens the sender's page.
+   * Where the server offers it, it does the one-click POST (RFC 8058) itself: a page in a browser
+   * can't, and the server sends it through the same guards as remote pictures, without cookies,
+   * only for a link a valid DKIM signature vouches for. Mail it can't do that for goes the old way:
+   * a mail where the header names an address, otherwise the sender's page opens.
    */
-  async unsubscribe(messageId: string): Promise<UnsubscribeOutcome> {
+  async unsubscribe(messageId: string, options: { oneClick?: boolean } = {}): Promise<UnsubscribeOutcome> {
     await this.start();
     const target = unscopeId(messageId, this.accountId);
     const response = await one<GetResponse<JmapEmail>>("Email/get", {
@@ -1154,33 +1184,45 @@ export class JmapBackend implements Backend {
     });
     const email = response.list[0];
     if (!email) throw new BackendError("not_found", "That mail is gone.");
-    const options = toUnsubscribe(email);
-    if (!options) throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
+    const found = toUnsubscribe(email, this.oneClickFor(target.accountId));
+    if (!found) throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
 
-    if (options.mailto) {
-      const target = unsubscribeMail(options.mailto);
-      if (!target) throw new BackendError("invalid_input", "That unsubscribe address makes no sense.");
-      const identities = await this.listIdentities();
-      // From the address the newsletter went to, where that is one of ours.
-      const wentTo = (email.to ?? []).map((entry) => entry.email.toLowerCase());
-      const from =
-        identities.find((identity) => wentTo.includes(identity.email.toLowerCase())) ??
-        identities.find((identity) => identity.primary);
-      await this.send({
-        accountId: this.accountId,
-        to: [{ email: target.address }],
-        cc: [],
-        bcc: [],
-        subject: target.subject,
-        text: "unsubscribe",
-        html: "",
-        attachments: [],
-        ...(from ? { fromEmail: from.email } : {}),
-      });
+    return runUnsubscribe(
+      found,
+      {
+        oneClick: () => this.oneClickUnsubscribe(target.accountId, target.id),
+        sendMail: async (mail) => {
+          const identities = await this.listIdentities();
+          // From the address the newsletter went to, where that is one of ours.
+          const wentTo = (email.to ?? []).map((entry) => entry.email.toLowerCase());
+          const from =
+            identities.find((identity) => wentTo.includes(identity.email.toLowerCase())) ??
+            identities.find((identity) => identity.primary);
+          await this.send({
+            accountId: this.accountId,
+            to: [{ email: mail.address }],
+            cc: [],
+            bcc: [],
+            subject: mail.subject,
+            text: "unsubscribe",
+            html: "",
+            attachments: [],
+            ...(from ? { fromEmail: from.email } : {}),
+          });
+        },
+      },
+      options.oneClick !== false,
+    );
+  }
+
+  /** `Email/unsubscribe`: the server POSTs `List-Unsubscribe=One-Click` to the sender's link. */
+  private async oneClickUnsubscribe(accountId: string, emailId: string): Promise<OneClickResult> {
+    try {
+      await call([["Email/unsubscribe", { accountId, emailId }, "u"]], [CORE, MAIL, UNSUBSCRIBE]);
       return { kind: "done" };
+    } catch (error) {
+      return oneClickResultOf(error);
     }
-    if (options.url) return { kind: "openPage", url: options.url };
-    throw new BackendError("not_supported", "This mail says nothing about unsubscribing.");
   }
 
   async inboxMessagesFrom(email: string): Promise<string[]> {
@@ -1726,11 +1768,13 @@ export class JmapBackend implements Backend {
   }
 
   /**
-   * The invitation a mail carries: its iCalendar part names the event by UID, and the server put
-   * that event into the default calendar when the mail arrived. Null when there is none, or the
-   * account is the organizer.
+   * The scheduling message a mail carries: its iCalendar part names the event by UID, and the
+   * server put that event into the calendar (or updated it) when the mail arrived — if the mail
+   * came from who may send it. What is shown is always the stored event; the mail itself only
+   * says which one, and whether its sender matches (see schedulingMailVerified). Null when there
+   * is none, or the account has no part in it.
    */
-  async mailInvitation(messageId: string): Promise<MailInvitation | null> {
+  async mailInvitation(messageId: string): Promise<MailScheduling | null> {
     await this.start();
     if (!supports(CALENDARS)) return null;
     const target = unscopeId(messageId, this.accountId);
@@ -1738,14 +1782,15 @@ export class JmapBackend implements Backend {
     if (target.accountId !== this.accountId) return null;
     const found = await one<GetResponse<JmapEmail>>("Email/get", {
       ids: [target.id],
-      properties: ["id", "attachments"],
+      properties: ["id", "from", "attachments"],
     });
-    const part = (found.list[0]?.attachments ?? []).find(
+    const email = found.list[0];
+    const part = (email?.attachments ?? []).find(
       (entry) =>
         !!entry.blobId &&
         ((entry.type ?? "").toLowerCase().startsWith("text/calendar") || /\.ics$/i.test(entry.name ?? "")),
     );
-    if (!part?.blobId) return null;
+    if (!email || !part?.blobId) return null;
     const text = await (await downloadBlob(part.blobId, part.name ?? "invite.ics")).text();
     const ics = icsInvitation(text);
     if (!ics) return null;
@@ -1777,15 +1822,46 @@ export class JmapBackend implements Backend {
     );
     const event = responseOf<GetResponse<JmapCalendarEvent>>(body, "g").list[0];
     if (!event) return null;
-    const invitation = invitationOf(event, await this.ownAddresses());
-    if (!invitation) return null;
+    const from = email.from?.[0]?.email ?? null;
+    // From the organizer by its From, and — for a cancellation — borne out by the calendar (W-33).
+    const verified = schedulingMailVerified(ics, from, event) && cancellationApplied(ics, event);
     const allDay = event.showWithoutTime === true;
-    return {
-      ...invitation,
+    const shared = {
       title: event.title ?? "",
       start: allDay ? event.start.slice(0, 10) : (event.utcStart ?? null),
       allDay,
-      cancelled: event.status === "cancelled" || ics.method === "CANCEL",
+      method: schedulingMethod(ics.method),
+      verified,
+    };
+    const own = await this.ownAddresses();
+
+    if (ics.method === "REPLY") {
+      // An answer only matters for the account's own event.
+      const organizer = (event.organizerCalendarAddress ?? "")
+        .replace(/^mailto:/i, "")
+        .trim()
+        .toLowerCase();
+      const organizing = event.isOrigin === true || own.some((address) => address.toLowerCase() === organizer);
+      if (!organizing || !from) return null;
+      const answered = participantWith(event, from);
+      return {
+        kind: "reply",
+        ...shared,
+        attendee: answered?.participant.name?.trim() || from,
+        attendeeEmail: from.toLowerCase(),
+        status: answered ? statusOf(answered.participant) : "needs-action",
+      };
+    }
+
+    const invitation = invitationOf(event, own);
+    if (!invitation) return null;
+    return {
+      kind: "invitation",
+      ...invitation,
+      ...shared,
+      // Only the calendar's word counts: the server cancels the stored event when the organizer's
+      // cancellation really comes from them, and the webmail can't tell a forged From (W-33).
+      cancelled: event.status === "cancelled",
     };
   }
 
@@ -1998,6 +2074,66 @@ export class JmapBackend implements Backend {
     this.emit({ type: "masked:changed" });
   }
 
+  async profilePictureOptions(): Promise<ProfilePictureOptions | null> {
+    await this.start();
+    return supports(PROFILE) ? profileOptionsFrom(accountCapability(PROFILE)) : null;
+  }
+
+  private profileCall<T>(name: string, args: Record<string, unknown>): Promise<T> {
+    return one<T>(name, args, [CORE, PROFILE]);
+  }
+
+  /** The object URL of the picture last shown, freed when another replaces it. */
+  private profileUrl: { blobId: string; url: string } | null = null;
+
+  async profilePicture(): Promise<ProfilePicture> {
+    await this.start();
+    const response = await this.profileCall<GetResponse<JmapProfilePicture>>("ProfilePicture/get", {
+      ids: [PROFILE_ID],
+    });
+    const raw = response.list[0] ?? { id: PROFILE_ID };
+    return {
+      url: raw.blobId ? await this.profilePictureUrl(raw.blobId, raw.type ?? "image/jpeg") : null,
+      visibility: visibilityOf(raw),
+      sendFace: raw.sendFace === true,
+      updated: raw.updated ?? null,
+    };
+  }
+
+  private async profilePictureUrl(blobId: string, type: string): Promise<string> {
+    if (this.profileUrl?.blobId === blobId) return this.profileUrl.url;
+    const blob = await downloadBlob(blobId, "picture");
+    const url = URL.createObjectURL(new Blob([blob], { type }));
+    if (this.profileUrl) URL.revokeObjectURL(this.profileUrl.url);
+    this.profileUrl = { blobId, url };
+    return url;
+  }
+
+  private async setProfile(patch: Record<string, unknown>): Promise<void> {
+    const response = await this.profileCall<{
+      notUpdated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+    }>("ProfilePicture/set", { update: { [PROFILE_ID]: patch } });
+    const problem = response.notUpdated?.[PROFILE_ID];
+    if (problem) throw profileSetError(problem);
+    this.emit({ type: "profile:changed" });
+  }
+
+  async setProfilePicture(picture: Blob | null): Promise<ProfilePicture> {
+    const options = await this.profilePictureOptions();
+    if (!options) throw new BackendError("not_supported", "This server keeps no profile pictures.");
+    if (picture && picture.size > options.maxSize) {
+      throw new BackendError("invalid_input", "That picture is too big for the server.");
+    }
+    const blobId = picture ? (await uploadBlob(picture, picture.type || "image/jpeg")).blobId : null;
+    await this.setProfile({ blobId });
+    return this.profilePicture();
+  }
+
+  async updateProfilePicture(patch: ProfilePicturePatch): Promise<void> {
+    await this.start();
+    if (Object.keys(patch).length > 0) await this.setProfile({ ...patch });
+  }
+
   /**
    * Recipient suggestions: ranked by the server from the address books and the mail history where
    * it offers that (`AddressSuggestion/query`), otherwise the address books' matches.
@@ -2130,18 +2266,68 @@ export class JmapBackend implements Backend {
     return true;
   }
 
+  /** A few picture lookups at a time, so a long list never holds up the mail itself. */
+  private pictureSlots = createLimiter(4);
+  /** The object URL handed out per picture address, with a fingerprint of its bytes. */
+  private pictureUrls = new Map<string, { url: string; print: string }>();
+
   /**
-   * The server fetches and keeps sender pictures, so the sender's website never sees who reads
-   * their mail. A server without them leaves the initials.
+   * The server looks the address up and keeps what it found, so a sender's website or mail
+   * server never sees who reads their mail. A server without pictures leaves the initials.
    */
-  async getSenderPicture(email: string): Promise<SenderPicture | null> {
-    const path = senderPicturePath(email);
+  async getSenderPicture(email: string, lookup: SenderPictureLookup = {}): Promise<SenderPicture | null> {
+    await this.start();
+    const path = senderPicturePath(email, { local: lookup.local });
+    if (!path) return null;
+    return this.pictureSlots(async () => {
+      try {
+        // After a change, the server is asked again: a logo's long cache must not hide a new photo.
+        const response = await fetch(path, {
+          credentials: "same-origin",
+          ...(lookup.fresh ? { cache: "no-cache" } : {}),
+        });
+        if (!response.ok) {
+          this.dropPictureUrl(path);
+          return null;
+        }
+        const kind = pictureKind(response.headers.get("x-picture-kind"));
+        return { url: await this.pictureUrl(path, await response.blob()), kind };
+      } catch {
+        return null;
+      }
+    });
+  }
+
+  /** The same URL again for the same picture, so avatars don't reload; a new one replaces the old. */
+  private async pictureUrl(path: string, blob: Blob): Promise<string> {
+    const print = `${blob.type}:${blob.size}:${fingerprint(new Uint8Array(await blob.arrayBuffer()))}`;
+    const known = this.pictureUrls.get(path);
+    if (known?.print === print) return known.url;
+    if (known) releasePictureUrl(known.url);
+    const url = await pictureSource(blob);
+    this.pictureUrls.set(path, { url, print });
+    return url;
+  }
+
+  private dropPictureUrl(path: string): void {
+    const known = this.pictureUrls.get(path);
+    if (!known) return;
+    releasePictureUrl(known.url);
+    this.pictureUrls.delete(path);
+  }
+
+  contactPhotoUrl(photo: string): string | null {
+    return contactPhotoSource(photo, remoteImagePath);
+  }
+
+  /** Only the logo steps of the server's lookup, so a person's own picture never comes back. */
+  async companyLogo(email: string): Promise<Blob | null> {
+    await this.start();
+    const path = senderPicturePath(email, { logo: true });
     if (!path) return null;
     try {
       const response = await fetch(path, { credentials: "same-origin" });
-      if (!response.ok) return null;
-      const kind = response.headers.get("x-picture-kind") === "logo" ? "logo" : "icon";
-      return { url: URL.createObjectURL(await response.blob()), kind };
+      return response.ok ? await response.blob() : null;
     } catch {
       return null;
     }
@@ -2205,6 +2391,18 @@ function offerDownload(url: string, filename: string): void {
   document.body.append(link);
   link.click();
   link.remove();
+}
+
+/** Frees a picture's object URL; a `data:` one holds nothing to free (see pictureSource). */
+function releasePictureUrl(url: string): void {
+  if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+}
+
+/** FNV-1a over the bytes: enough to tell whether a picture changed. */
+function fingerprint(bytes: Uint8Array): string {
+  let hash = 0x811c9dc5;
+  for (const byte of bytes) hash = Math.imul(hash ^ byte, 0x01000193);
+  return (hash >>> 0).toString(16);
 }
 
 async function blobToBase64(blob: Blob): Promise<string> {

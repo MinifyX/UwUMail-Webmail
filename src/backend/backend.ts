@@ -16,7 +16,7 @@ import type {
   FlagChange,
   Folder,
   Identity,
-  MailInvitation,
+  MailScheduling,
   MaskedAddress,
   MaskedAddressInput,
   MaskedAddressPatch,
@@ -26,10 +26,14 @@ import type {
   OutgoingMessage,
   ParticipationStatus,
   Person,
+  ProfilePicture,
+  ProfilePictureOptions,
+  ProfilePicturePatch,
   ScheduledSend,
   SendOptions,
   SendReceipt,
   SenderPicture,
+  SenderPictureLookup,
   ShareLevel,
   SharedAccount,
   Signature,
@@ -136,8 +140,11 @@ export interface Backend {
   markSpam(messageIds: string[], spam: boolean): Promise<MovedMessage[]>;
   /** What this server keeps on the account's blocked list. */
   blockedSenders(): Promise<BlockedSender[]>;
-  /** One click or a mail where possible; otherwise the page to open. */
-  unsubscribe(messageId: string): Promise<UnsubscribeOutcome>;
+  /**
+   * Unsubscribes: with one click through the server where it can (RFC 8058), otherwise, or with
+   * `oneClick: false`, with a mail where the header names an address, else the page to open.
+   */
+  unsubscribe(messageId: string, options?: { oneClick?: boolean }): Promise<UnsubscribeOutcome>;
   /** Inbox mail from an address, e.g. a newsletter's earlier issues. */
   inboxMessagesFrom(email: string): Promise<string[]>;
   blockSender(entry: string, accountId?: string): Promise<BlockedSender>;
@@ -182,8 +189,11 @@ export interface Backend {
   deleteEvent(occurrenceId: string, scope: EventDeleteScope): Promise<void>;
   /** Answers an invitation (the event's `invitation`); the organizer is told. */
   respondToInvitation(eventId: string, participantKey: string, status: ParticipationStatus): Promise<void>;
-  /** The invitation a mail carries, as it sits in the calendar; null when there is none. */
-  mailInvitation(messageId: string): Promise<MailInvitation | null>;
+  /**
+   * The invitation, cancellation or answer a mail carries, with the event as it sits in the
+   * calendar and whether the mail comes from who may say that; null when there is none.
+   */
+  mailInvitation(messageId: string): Promise<MailScheduling | null>;
   /** Shares a calendar with a person at a level; `null` stops sharing it with them. */
   shareCalendar(calendarId: string, personId: string, level: ShareLevel | null): Promise<void>;
 
@@ -226,6 +236,14 @@ export interface Backend {
   /** Changes the state (a deleted one may come back) or what it says about itself. */
   updateMaskedAddress(id: string, patch: MaskedAddressPatch): Promise<void>;
 
+  /** Whether the account may have a profile picture here, and what the server allows; null without. */
+  profilePictureOptions(): Promise<ProfilePictureOptions | null>;
+  profilePicture(): Promise<ProfilePicture>;
+  /** Stores a new picture (the server crops, scales and cleans it again), or removes it with null. */
+  setProfilePicture(picture: Blob | null): Promise<ProfilePicture>;
+  /** Changes who sees it and whether mails carry it. Throws `forbidden` for public where it isn't allowed. */
+  updateProfilePicture(patch: ProfilePicturePatch): Promise<void>;
+
   /** Downloads the attachment and hands out a blob URL for it. */
   getAttachment(attachmentId: string): Promise<AttachmentContent>;
   /** Hands the file to the browser's downloads. */
@@ -233,8 +251,18 @@ export interface Backend {
   /** The whole mail as an .eml file. */
   saveMessage(messageId: string): Promise<boolean>;
 
-  /** Brand logo or website icon for a company address; null for people and mail providers. */
-  getSenderPicture(email: string): Promise<SenderPicture | null>;
+  /**
+   * The picture for one address, as the server finds it: a contact's photo, the person's own
+   * picture, or the company's logo or website icon. Null when there is none.
+   */
+  getSenderPicture(email: string, lookup?: SenderPictureLookup): Promise<SenderPicture | null>;
+  /**
+   * Where to show a contact's photo from: a `data:` one as it is, an `https:` one through the
+   * server's picture proxy, never directly. Null when it can't be shown.
+   */
+  contactPhotoUrl(photo: string): string | null;
+  /** The logo of the company behind an address, e.g. for a contact's picture; null without one. */
+  companyLogo(email: string): Promise<Blob | null>;
   /** A remote image of a mail, for dark mode to recolor; null where the page has to do without. */
   fetchMailImage(url: string): Promise<Blob | null>;
   /**

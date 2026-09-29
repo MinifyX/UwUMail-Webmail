@@ -143,7 +143,8 @@
     }
   },
   "unsubscribe": {
-    "title": "Doei doei {{name}}?"
+    "title": "Doei doei {{name}}?",
+    "failedTitle": "Hm, dat is niet gelukt (・_・;)"
   },
   "deleteForever": {
     "title_one": "Voor altijd afscheid nemen van deze? (｡•́︿•̀｡)",
@@ -214,5 +215,15 @@
   "masked": {
     "empty": "Nog geen gemaskeerde adressen. Zin in een kleine vermomming voor de volgende site waar je je aanmeldt? (｀・ω・´)",
     "created": "Tada, je nieuwe vermomming is klaar ✿"
+  },
+  "picture": {
+    "error": {
+      "notImage": "Hm, dat is helemaal geen afbeelding (・_・;)",
+      "unreadable": "Ik snap niks van die afbeelding (・_・;)"
+    }
+  },
+  "profile": {
+    "saved": "Ziet er goed uit ✿",
+    "removed": "Foto weg, je initialen zijn terug (・ω・)"
   }
 }

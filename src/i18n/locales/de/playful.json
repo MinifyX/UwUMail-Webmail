@@ -143,7 +143,8 @@
     }
   },
   "unsubscribe": {
-    "title": "Tschüss {{name}}?"
+    "title": "Tschüss {{name}}?",
+    "failedTitle": "Hm, das hat nicht geklappt (・_・;)"
   },
   "deleteForever": {
     "title_one": "Diese Mail für immer löschen? (｡•́︿•̀｡)",
@@ -214,5 +215,15 @@
   "masked": {
     "empty": "Noch keine maskierten Adressen. Magst du für die nächste Anmeldung eine kleine Verkleidung? (｀・ω・´)",
     "created": "Tada, deine neue Verkleidung ist fertig ✿"
+  },
+  "picture": {
+    "error": {
+      "notImage": "Hm, das ist gar kein Bild (・_・;)",
+      "unreadable": "Aus dem Bild werd ich nicht schlau (・_・;)"
+    }
+  },
+  "profile": {
+    "saved": "Siehst gut aus ✿",
+    "removed": "Bild ist weg, deine Initialen sind zurück (・ω・)"
   }
 }

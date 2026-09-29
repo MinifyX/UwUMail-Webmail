@@ -51,6 +51,17 @@ for the whole server or for single accounts.
 - **Shared folders and calendars.** Folders and calendars other people on
   the server share show up under their name, as far as they allow; your own
   can be shared from their menu.
+- **Pictures.** Contacts get a picture — chosen, dropped, pasted, taken with
+  the phone's camera or the company's logo — cropped right in the browser into
+  a small square that lives in the card. The own profile picture is set in the
+  settings, for nobody, the people on the server, or everyone (Libravatar).
+  Next to mail, a contact's photo or a person's own picture comes first, then
+  a company's logo; the server fetches them, never the browser.
+- **Unsubscribing in one click.** Where the sender offers it (RFC 8058), the
+  server does the one-click unsubscribe itself — through the same guards as
+  remote pictures, only for links the sender's DKIM signature covers. Mail
+  without it goes the old way: a mail to the list, whose address you see
+  first, or the sender's own page.
 - **Masked addresses.** Where the server makes them, the settings list the
   account's masked addresses — random ones for single websites, the same the
   portal and password managers make — to copy, describe, switch off, delete

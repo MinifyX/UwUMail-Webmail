@@ -169,13 +169,39 @@ function nameParts(card: Json): { given: string; surname: string; full: string }
   return { given: of("given"), surname: of("surname"), full };
 }
 
-function photoOf(card: Json): string | null {
-  for (const [, entry] of entries(card.media)) {
-    const uri = text(entry.uri);
-    // Only pictures inside the card: a link elsewhere would tell that site who looks at the contact.
-    if (entry.kind === "photo" && /^data:image\//i.test(uri)) return uri;
+/**
+ * Whether a picture's URI is one the webmail shows: a picture inside the card, or a web link the
+ * server fetches for it (see contactPhotoSource). Anything else is left alone.
+ */
+function showablePhoto(uri: string): boolean {
+  return /^data:image\//i.test(uri) || /^https:\/\/[^\s]+$/i.test(uri);
+}
+
+/**
+ * Where the browser loads a contact photo from: a `data:` picture as it is, an `https:` link only
+ * through the server's picture proxy — loaded directly, it would tell that site who looks at the
+ * contact, and when. Null when it can't be shown that way.
+ */
+export function contactPhotoSource(uri: string, proxy: ((url: string) => string | null) | null): string | null {
+  const trimmed = uri.trim();
+  if (/^data:image\//i.test(trimmed)) return trimmed;
+  if (!/^https:\/\/[^\s]+$/i.test(trimmed) || !proxy) return null;
+  const proxied = proxy(trimmed);
+  // The proxy is on the page's own origin; anything else would be the link itself again.
+  return proxied && proxied.startsWith("/") && !proxied.startsWith("//") ? proxied : null;
+}
+
+/** The card's picture and its key in `media`: the first photo the webmail can show. */
+function photoEntry(card: Json): { key: string; uri: string } | null {
+  for (const [key, entry] of entries(card.media)) {
+    const uri = text(entry.uri).trim();
+    if (entry.kind === "photo" && showablePhoto(uri)) return { key, uri };
   }
   return null;
+}
+
+function photoOf(card: Json): string | null {
+  return photoEntry(card)?.uri ?? null;
 }
 
 export function toContactRecord(card: JmapCard, accountId: string): ContactRecord {
@@ -398,6 +424,35 @@ function singleText(patch: Json, card: Json, property: string, field: string, va
   else patch[property] = { [`${prefix}1`]: { [field]: wanted } };
 }
 
+/** A media entry for a picture the editor made; what the card's old entry said besides stays. */
+function photoMedia(uri: string, before: Json = {}): Json {
+  const next: Json = { ...before, kind: "photo", uri };
+  const mediaType = /^data:([\w.+-]+\/[\w.+-]+)[;,]/i.exec(uri)?.[1]?.toLowerCase();
+  if (mediaType) next.mediaType = mediaType;
+  else delete next.mediaType;
+  return next;
+}
+
+/**
+ * Puts the editor's picture into the card: it replaces the photo the webmail showed, and every
+ * other photo goes, so no older one wins elsewhere (the server's sender pictures take the first).
+ * Media that aren't photos (logos, sounds) stay. `null` removes the photos.
+ */
+function photoPatch(patch: Json, card: Json, photo: string | null) {
+  const photos = entries(card.media).filter(([, entry]) => entry.kind === "photo");
+  const shown = photoEntry(card);
+  if (photo === null) {
+    for (const [key] of photos) patch[`media/${key}`] = null;
+    return;
+  }
+  if (shown?.uri === photo && photos.length === 1) return;
+  const replaced = shown ? photos.find(([key]) => key === shown.key) : photos[0];
+  for (const [key] of photos) if (key !== replaced?.[0]) patch[`media/${key}`] = null;
+  if (replaced) patch[`media/${replaced[0]}`] = photoMedia(photo, replaced[1]);
+  else if (isObject(card.media)) patch[`media/${freeKey(new Set(Object.keys(card.media)), "p")}`] = photoMedia(photo);
+  else patch.media = { p1: photoMedia(photo) };
+}
+
 /** What names a contact when it has no name: its organization or its first address. */
 function fallbackName(input: ContactInput): string {
   return input.organization.trim() || input.emails.find((e) => e.address.trim())?.address.trim() || "";
@@ -427,6 +482,7 @@ export function cardFromInput(input: ContactInput): Json {
   if (addresses) card.addresses = addresses;
   const birthday = input.birthday ? birthdayDate(input.birthday) : null;
   if (birthday) card.anniversaries = { b1: { kind: "birth", date: birthday } };
+  if (input.photo) card.media = { p1: photoMedia(input.photo) };
   return card;
 }
 
@@ -463,6 +519,7 @@ export function patchFromInput(card: JmapCard, input: ContactInput): Json {
       patch[`anniversaries/${key}`] = { kind: "birth", date };
     } else if (date) patch.anniversaries = { b1: { kind: "birth", date } };
   }
+  if (input.photo !== undefined) photoPatch(patch, card, input.photo);
   if (input.addressBookId && input.addressBookId !== before.addressBookId) {
     patch.addressBookIds = { [input.addressBookId]: true };
   }

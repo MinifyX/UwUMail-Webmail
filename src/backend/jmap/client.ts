@@ -23,6 +23,8 @@ export const CONTACTS = "urn:ietf:params:jmap:contacts";
 export const WEBMAIL = "urn:uwumail:jmap:webmail";
 /** Our own: a mail's remote pictures, fetched by the server so their senders never see the reader. */
 export const REMOTE = "urn:uwumail:jmap:remote";
+/** Our own: the one-click unsubscribe of RFC 8058, done by the server (`Email/unsubscribe`). */
+export const UNSUBSCRIBE = "urn:uwumail:jmap:unsubscribe";
 
 /** An account of the session: the person's own, or one somebody shares folders from. */
 export interface JmapAccount {
@@ -160,23 +162,27 @@ export interface MethodResponse {
 /** A method the server answered with an error, e.g. `stateMismatch`. */
 export class JmapMethodError extends BackendError {
   readonly type: string;
+  /** The server's own words, when it gave any. */
+  readonly description: string | null;
 
-  constructor(code: BackendErrorCode, message: string, type: string) {
+  constructor(code: BackendErrorCode, message: string, type: string, description: string | null = null) {
     super(code, message);
     this.type = type;
+    this.description = description;
   }
 }
 
 function methodError(name: string, args: Record<string, unknown>): JmapMethodError {
   const type = typeof args.type === "string" ? args.type : "unknown";
-  const description = typeof args.description === "string" ? args.description : name;
+  const given = typeof args.description === "string" ? args.description : null;
+  const description = given ?? name;
   if (type === "accountNotFound" || type === "forbidden")
     return new JmapMethodError("webmail_disabled", description, type);
   if (type === "invalidArguments" || type === "invalidPatch")
     return new JmapMethodError("invalid_input", description, type);
   if (type === "unknownMethod" || type === "unknownCapability")
     return new JmapMethodError("not_supported", description, type);
-  return new JmapMethodError("internal", `${type}: ${description}`, type);
+  return new JmapMethodError("internal", `${type}: ${description}`, type, given);
 }
 
 /** One JMAP request with as many method calls as fit; throws on a method-level error. */
@@ -251,15 +257,61 @@ export function remoteImagePath(url: string): string | null {
   return onOwnOrigin(filled);
 }
 
-/** Where the server hands out the logo or website icon of a company sender; null when it can't. */
-export function senderPicturePath(email: string): string | null {
+/** What a sender picture lookup may do, see `pictureUrl` in the server's docs. */
+export interface PictureLookup {
+  /** Only the company or domain logo, never a person's picture (`source=logo`). */
+  logo?: boolean;
+  /** Nothing that needs a request to another server (`local=1`). */
+  local?: boolean;
+}
+
+/** The filled-in picture address with the lookup's options appended. */
+export function withPictureOptions(path: string, lookup: PictureLookup = {}): string {
+  const extra = [...(lookup.logo ? ["source=logo"] : []), ...(lookup.local ? ["local=1"] : [])];
+  if (extra.length === 0) return path;
+  return `${path}${path.includes("?") ? "&" : "?"}${extra.join("&")}`;
+}
+
+/** What `X-Picture-Kind` says about a picture: a person's photo, a logo, or else a website icon. */
+export function pictureKind(header: string | null): "photo" | "logo" | "icon" {
+  const kind = header?.trim().toLowerCase();
+  return kind === "photo" || kind === "logo" ? kind : "icon";
+}
+
+/** Picture types a browser only ever shows as a picture, even when opened as a page of its own. */
+const PLAIN_PICTURE = /^image\/(png|jpeg|gif|webp|avif|bmp|x-icon|vnd\.microsoft\.icon)$/i;
+
+/**
+ * An address the page can show a fetched picture from. The server hands pictures out with a
+ * sandbox policy and as a download, but a `blob:` URL made from them belongs to the webmail's own
+ * origin and carries neither: an SVG logo (BIMI logos always are) opened on its own — "open image
+ * in new tab" — would be a document of the webmail's origin (security-audit W-35). So only plain
+ * pictures become `blob:` URLs; anything else a `data:` URL, which browsers don't open as a page
+ * and which would have no origin of its own there.
+ */
+export async function pictureSource(blob: Blob): Promise<string> {
+  const type = blob.type.split(";")[0]!.trim();
+  if (PLAIN_PICTURE.test(type)) return URL.createObjectURL(blob);
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 8192));
+  }
+  return `data:${/^image\/[\w.+-]+$/i.test(type) ? type : "application/octet-stream"};base64,${btoa(binary)}`;
+}
+
+/**
+ * Where the server hands out the picture for an address: a contact's photo, a person's profile
+ * picture, or a company's logo or website icon. Null when the server can't.
+ */
+export function senderPicturePath(email: string, lookup: PictureLookup = {}): string | null {
   if (!session) return null;
   const remote = session.capabilities[REMOTE] as { pictureUrl?: unknown } | undefined;
   if (typeof remote?.pictureUrl !== "string") return null;
   const filled = remote.pictureUrl
     .replaceAll("{accountId}", encodeURIComponent(session.accountId))
     .replaceAll("{email}", encodeURIComponent(email));
-  return onOwnOrigin(filled);
+  return withPictureOptions(onOwnOrigin(filled), lookup);
 }
 
 /**

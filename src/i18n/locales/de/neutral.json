@@ -304,8 +304,8 @@
     "signatureDefaultReplies": "Antworten",
     "signatureSaved": "Signatur gespeichert",
     "signatureUntitled": "Signatur",
-    "senderPictures": "Bilder für Firmenabsender",
-    "senderPicturesDesc": "Zeigt bei Firmen das Markenlogo oder Website-Icon statt der Initialen. Leute bei Mailanbietern wie Gmail behalten ihre Initialen.",
+    "senderPictures": "Absenderbilder",
+    "senderPicturesDesc": "Zeigt Bilder von Leuten und Logos von Firmen statt Initialen, auch von anderen Servern. Ausgeschaltet siehst du trotzdem, was dieser Server selbst hat: die Fotos deiner Kontakte und die Bilder der Leute hier.",
     "linkConfirm": "Vor dem Öffnen von Links fragen",
     "linkConfirmDesc": "Zeigt vorher, wohin ein Link aus einer Mail führt. Getarnte Links fragen immer.",
     "linkDomains": "Ohne Nachfrage öffnen",
@@ -316,7 +316,8 @@
     "rules": "Regeln",
     "masked": "Maskierte Adressen",
     "signaturesPerAddressDesc": "Eine pro Absenderadresse, mit Fett, Links und Bildern, für neue Mails und Antworten. Sie liegt auf deinem Mailserver, also nutzen das Portal und deine anderen Mail-Apps dieselbe.",
-    "addSignature": "Signatur hinzufügen"
+    "addSignature": "Signatur hinzufügen",
+    "profile": "Profilbild"
   },
   "theme": {
     "system": "System",
@@ -501,7 +502,18 @@
     "mailTo": "Dafür geht eine Mail von dir an {{address}}.",
     "body": "{{brand}} meldet dich direkt beim Absender ab. Danach sollten keine Mails mehr von dort kommen.",
     "bodyPage": "Der Absender hat dafür eine eigene Seite. {{brand}} öffnet sie für dich, dort bestätigst du die Abmeldung.",
-    "archive": "Bisherige Mails von dort archivieren"
+    "archive": "Bisherige Mails von dort archivieren",
+    "bodyOneClick": "{{brand}} bittet den Server des Absenders in einem Schritt, dich aus der Liste zu nehmen. Danach sollten keine Mails mehr von dort kommen.",
+    "orMail": "Klappt das so nicht, geht eine Mail von dir an {{address}}.",
+    "orPage": "Klappt das so nicht, öffnet sich die Seite des Absenders.",
+    "failedTitle": "Das hat nicht geklappt",
+    "failed": "Der Server des Absenders hat es nicht angenommen: {{reason}}",
+    "failedNoReason": "Der Server des Absenders hat es nicht angenommen.",
+    "tryMail": "Du kannst dich stattdessen per Mail abmelden. Dafür geht eine Mail von dir an {{address}}.",
+    "tryPage": "Du kannst dich stattdessen auf der Seite des Absenders abmelden.",
+    "noOtherWay": "Diese Mail bietet keinen anderen Weg. Versuch es später noch mal.",
+    "sendMail": "Mail senden",
+    "openPage": "Seite öffnen"
   },
   "deleteForever": {
     "title_one": "Diese Mail endgültig löschen?",
@@ -797,7 +809,17 @@
       "defaultSet": "Neue Termine landen jetzt in „{{name}}“",
       "calendarCreated": "Kalender „{{name}}“ angelegt",
       "calendarDeleted": "Kalender „{{name}}“ gelöscht"
-    }
+    },
+    "participants": "Teilnehmende",
+    "organizer": "Organisiert",
+    "answer": {
+      "needs-action": "Noch keine Antwort",
+      "accepted": "Zugesagt",
+      "tentative": "Vielleicht",
+      "declined": "Abgesagt"
+    },
+    "moreParticipants_one": "und {{count}} weitere Person",
+    "moreParticipants_other": "und {{count}} weitere"
   },
   "contacts": {
     "title": "Kontakte",
@@ -882,6 +904,10 @@
       "defaultSet": "Neue Kontakte landen jetzt in „{{name}}“",
       "bookCreated": "Adressbuch „{{name}}“ angelegt",
       "bookDeleted": "Adressbuch „{{name}}“ gelöscht"
+    },
+    "picture": {
+      "logo": "Firmenlogo",
+      "noLogo": "Für {{domain}} gibt es kein Logo."
     }
   },
   "scheduled": {
@@ -948,7 +974,23 @@
       "declined": "Abgesagt. Die einladende Person erfährt es."
     },
     "failed": "Die Antwort konnte nicht gesendet werden. {{reason}}",
-    "cancelled": "Dieser Termin wurde abgesagt."
+    "cancelled": "Dieser Termin wurde abgesagt.",
+    "reply": {
+      "title": "Antwort auf deine Einladung",
+      "status": {
+        "needs-action": "{{name}} hat noch nicht geantwortet.",
+        "accepted": "{{name}} hat zugesagt.",
+        "tentative": "{{name}} hat mit Vielleicht geantwortet.",
+        "declined": "{{name}} hat abgesagt."
+      }
+    },
+    "unverified": {
+      "invitation": "Diese Einladung kommt nicht von der Person, die den Termin angelegt hat, deshalb kannst du sie hier nicht beantworten. Wenn du den Termin kennst, antworte im Kalender.",
+      "cancel": "Diese Mail sagt, der Termin fällt aus, aber nichts bestätigt, dass sie von der Person kommt, die ihn angelegt hat. Dein Kalender behält den Termin, wie er ist.",
+      "reply": "Diese Antwort kommt von niemandem, der zum Termin eingeladen ist, deshalb zählt sie nicht.",
+      "sender": "Gesendet von {{sender}}.",
+      "senderAndOrganizer": "Gesendet von {{sender}}; angelegt hat den Termin {{organizer}}."
+    }
   },
   "push": {
     "label": "Bei neuen Mails benachrichtigen, auch wenn die Webmail geschlossen ist",
@@ -1039,5 +1081,52 @@
       "signedOut": "Deine Sitzung ist abgelaufen. Melde dich neu an, um weiterzumachen.",
       "generic": "Etwas ist schiefgegangen. Versuch es gleich noch einmal."
     }
+  },
+  "picture": {
+    "loading": "Bild wird geladen …",
+    "crop": {
+      "title": "Bild zuschneiden",
+      "area": "Bild im Kreis",
+      "hint": "Ziehen verschiebt, Scrollen oder zwei Finger zoomen. Tastatur: Pfeiltasten verschieben, + und − zoomen.",
+      "zoom": "Zoom",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "use": "Bild übernehmen"
+    },
+    "error": {
+      "notImage": "Das ist kein Bild.",
+      "tooLarge": "Das Bild ist zu groß. Bis {{size}} geht.",
+      "unreadable": "Das Bild ließ sich nicht lesen."
+    },
+    "choose": "Bild auswählen",
+    "change": "Bild ändern",
+    "camera": "Foto aufnehmen",
+    "remove": "Entfernen",
+    "hint": "Oder zieh ein Bild auf den Kreis oder füge eins ein."
+  },
+  "profile": {
+    "picture": "Dein Bild",
+    "pictureDesc": "Es steht neben deinem Namen, wo Leute es sehen dürfen. Wähl ein Bild und rück es im Kreis zurecht.",
+    "visibility": "Wer es sieht",
+    "off": {
+      "title": "Niemand",
+      "body": "Deine Mails zeigen deine Initialen."
+    },
+    "server": {
+      "title": "Leute auf diesem Server",
+      "body": "Alle mit einem Postfach hier sehen es neben deinen Mails."
+    },
+    "public": {
+      "title": "Alle",
+      "body": "Auch andere Mailserver und Apps können es zeigen, über Libravatar. Wer deine Adresse kennt, kann es abrufen."
+    },
+    "publicForbidden": "Öffentliche Bilder hat deine Admin-Person ausgeschaltet.",
+    "face": "Mein Bild in Mails mitschicken",
+    "faceDesc": "Legt jeder Mail, die du schickst, eine kleine Kopie bei (der Face-Header), die manche Mailprogramme zeigen. Nur solange dein Bild öffentlich ist.",
+    "saved": "Bild gespeichert",
+    "removed": "Bild entfernt",
+    "failed": "Das hat nicht geklappt. {{reason}}",
+    "loading": "Dein Bild wird geladen …",
+    "loadFailed": "Dein Bild ließ sich nicht laden."
   }
 }

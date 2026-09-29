@@ -1,5 +1,13 @@
-import { describe, expect, it } from "vitest";
-import { unsubscribeMail } from "./unsubscribe";
+import { describe, expect, it, vi } from "vitest";
+import { JmapMethodError } from "@/backend/jmap/client";
+import type { Unsubscribe } from "@/backend/types";
+import {
+  oneClickResultOf,
+  runUnsubscribe,
+  unsubscribeFallback,
+  unsubscribeMail,
+  type OneClickResult,
+} from "./unsubscribe";
 
 describe("unsubscribeMail", () => {
   it("takes the address and a subject list managers can match on", () => {
@@ -35,9 +43,103 @@ describe("unsubscribeMail", () => {
     expect(unsubscribeMail("mailto:")).toBeNull();
   });
 
+  it("refuses an address that would read as another one (W-30)", () => {
+    // A right-to-left override turns what follows around; a zero-width space or joiner hides.
+    expect(unsubscribeMail("mailto:leave%E2%80%AEelpmaxe.knab@list.example")).toBeNull();
+    expect(unsubscribeMail("mailto:le%E2%80%8Bave@list.example")).toBeNull();
+    expect(unsubscribeMail("mailto:leave@list%E2%80%8D.example")).toBeNull();
+    expect(unsubscribeMail("mailto:leave%C2%AD@list.example")).toBeNull();
+    expect(unsubscribeMail("mailto:leave%00@list.example")).toBeNull();
+    // Nothing is sent then: the page opens where there is one.
+    expect(
+      unsubscribeFallback({
+        oneClick: true,
+        url: "https://list.example/leave",
+        mailto: "mailto:le%E2%80%8Bave@list.example",
+      }),
+    ).toBe("page");
+  });
+
   it("refuses a scheme that is not mailto", () => {
     expect(unsubscribeMail("https://list.example/leave")).toBeNull();
     expect(unsubscribeMail("javascript:alert(1)")).toBeNull();
     expect(unsubscribeMail("not a url at all")).toBeNull();
+  });
+});
+
+describe("runUnsubscribe", () => {
+  const both: Unsubscribe = {
+    oneClick: true,
+    url: "https://list.example/leave",
+    mailto: "mailto:leave@list.example?subject=bye",
+  };
+  const steps = (result: OneClickResult) => ({
+    oneClick: vi.fn(async () => result),
+    sendMail: vi.fn(async () => {}),
+  });
+
+  it("lets the server do the one click and nothing else when it works", async () => {
+    const done = steps({ kind: "done" });
+    expect(await runUnsubscribe(both, done)).toEqual({ kind: "done", via: "oneClick" });
+    expect(done.sendMail).not.toHaveBeenCalled();
+  });
+
+  it("goes the old way when the mail can't be unsubscribed with one click", async () => {
+    const cannot = steps({ kind: "cannot" });
+    expect(await runUnsubscribe(both, cannot)).toEqual({ kind: "done", via: "mail" });
+    expect(cannot.sendMail).toHaveBeenCalledWith({ address: "leave@list.example", subject: "bye" });
+
+    const pageOnly = steps({ kind: "cannot" });
+    expect(await runUnsubscribe({ oneClick: true, url: "https://list.example/leave" }, pageOnly)).toEqual({
+      kind: "openPage",
+      url: "https://list.example/leave",
+    });
+  });
+
+  it("says when the one click failed, names the other way, and takes it only when asked again", async () => {
+    const failed = steps({ kind: "failed", reason: "list.example answered 503" });
+    expect(await runUnsubscribe(both, failed)).toEqual({
+      kind: "oneClickFailed",
+      reason: "list.example answered 503",
+      fallback: "mail",
+    });
+    expect(failed.sendMail).not.toHaveBeenCalled();
+    expect(
+      await runUnsubscribe(
+        { oneClick: true, url: "https://list.example/leave" },
+        steps({ kind: "failed", reason: "" }),
+      ),
+    ).toMatchObject({ fallback: "page" });
+
+    const again = steps({ kind: "failed", reason: "" });
+    expect(await runUnsubscribe(both, again, false)).toEqual({ kind: "done", via: "mail" });
+    expect(again.oneClick).not.toHaveBeenCalled();
+  });
+
+  it("never asks the server where it doesn't do the one click", async () => {
+    const plain = steps({ kind: "done" });
+    expect(await runUnsubscribe({ ...both, oneClick: false }, plain)).toEqual({ kind: "done", via: "mail" });
+    expect(plain.oneClick).not.toHaveBeenCalled();
+  });
+
+  it("opens the page when the mail address makes no sense, and refuses when nothing is left", async () => {
+    const odd = { oneClick: false, url: "https://list.example/leave", mailto: "mailto:a@b.example,c@d.example" };
+    expect(await runUnsubscribe(odd, steps({ kind: "done" }))).toEqual({ kind: "openPage", url: odd.url });
+    await expect(
+      runUnsubscribe({ oneClick: false, mailto: "mailto:not-an-address" }, steps({ kind: "done" })),
+    ).rejects.toMatchObject({ code: "invalid_input" });
+    await expect(runUnsubscribe({ oneClick: false }, steps({ kind: "done" }))).rejects.toMatchObject({
+      code: "not_supported",
+    });
+  });
+
+  it("reads the server's refusals", () => {
+    expect(oneClickResultOf(new JmapMethodError("internal", "x", "cannotUnsubscribe"))).toEqual({ kind: "cannot" });
+    expect(
+      oneClickResultOf(new JmapMethodError("internal", "x", "unsubscribeFailed", " The answer was 500. ")),
+    ).toEqual({ kind: "failed", reason: "The answer was 500." });
+    expect(() => oneClickResultOf(new JmapMethodError("internal", "x", "notFound"))).toThrow("That mail is gone.");
+    const other = new JmapMethodError("internal", "x", "serverFail");
+    expect(() => oneClickResultOf(other)).toThrow(other);
   });
 });

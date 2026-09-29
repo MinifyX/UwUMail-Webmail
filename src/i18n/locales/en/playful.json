@@ -143,7 +143,8 @@
     }
   },
   "unsubscribe": {
-    "title": "Bye bye {{name}}?"
+    "title": "Bye bye {{name}}?",
+    "failedTitle": "Hmm, that didn't work (・_・;)"
   },
   "deleteForever": {
     "title_one": "Say goodbye to this one forever? (｡•́︿•̀｡)",
@@ -214,5 +215,15 @@
   "masked": {
     "empty": "No masked addresses yet. Want a little disguise for the next site you sign up to? (｀・ω・´)",
     "created": "Tada, your new disguise is ready ✿"
+  },
+  "picture": {
+    "error": {
+      "notImage": "Hmm, that's not a picture (・_・;)",
+      "unreadable": "I couldn't make out that picture (・_・;)"
+    }
+  },
+  "profile": {
+    "saved": "Looking good ✿",
+    "removed": "Picture's gone, your initials are back (・ω・)"
   }
 }

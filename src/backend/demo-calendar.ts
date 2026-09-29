@@ -18,8 +18,10 @@ import type {
   CalendarOccurrence,
   EventDeleteScope,
   EventInput,
+  EventParticipant,
   Invitation,
   MailInvitation,
+  MailReply,
   ParticipationStatus,
   Recurrence,
   ShareLevel,
@@ -42,6 +44,8 @@ interface DemoEvent {
   excluded: string[];
   /** Somebody else's event the demo was invited to. */
   invitation?: Invitation;
+  /** People the demo invited to its own event, with their answers. */
+  guests?: { name: string; email: string; status: ParticipationStatus }[];
 }
 
 /** Occurrence ids of a series: the event's id and the occurrence's original start. */
@@ -159,6 +163,10 @@ function sampleEvents(lang: Lang): DemoEvent[] {
       description: de ? "Mia bringt Snacks mit." : "Mia brings snacks.",
       start: at(3, "19:00"),
       end: at(3, "23:30"),
+      guests: [
+        { name: "Noah Zockt", email: "noah@zockt.example", status: "accepted" },
+        { name: "Mia Mood", email: "mia@mood.example", status: "needs-action" },
+      ],
     }),
     event({
       id: "ev-conference",
@@ -203,6 +211,7 @@ function sampleEvents(lang: Lang): DemoEvent[] {
         participantKey: "mini",
         status: "needs-action",
         organizer: "Emma",
+        organizerEmail: "emma.vogt@brightlabs.example",
       },
     }),
   ];
@@ -218,6 +227,8 @@ export class DemoCalendar {
     lang: Lang,
     private accountId: string,
     private changed: () => void,
+    /** The demo's own address, as it stands among an event's participants. */
+    private ownEmail = "mini@uwumail.example",
   ) {
     this.calendarList = sampleCalendars(lang, accountId);
     this.events = sampleEvents(lang);
@@ -231,16 +242,41 @@ export class DemoCalendar {
     this.changed();
   }
 
-  /** The invitation the demo's mail with an .ics part belongs to. */
-  invitation(): MailInvitation | null {
+  /**
+   * The invitation the demo's mails with an .ics part name, as a mail from `from` says it: only
+   * the organizer's own mail counts (like schedulingMailVerified).
+   */
+  invitation(method: "request" | "cancel", from: string): MailInvitation | null {
     const event = this.events.find((candidate) => candidate.invitation);
     if (!event?.invitation) return null;
+    const verified = from.toLowerCase() === event.invitation.organizerEmail;
     return {
+      kind: "invitation",
       ...event.invitation,
       title: event.title,
       start: new Date(event.start).toISOString(),
       allDay: event.allDay,
-      cancelled: false,
+      method,
+      verified,
+      cancelled: method === "cancel" && verified,
+    };
+  }
+
+  /** An answer to one of the demo's own events, as the event has it; only a guest's own counts. */
+  reply(from: string): MailReply | null {
+    const event = this.events.find((candidate) => candidate.guests?.length);
+    if (!event) return null;
+    const guest = event.guests?.find((entry) => entry.email === from.toLowerCase());
+    return {
+      kind: "reply",
+      title: event.title,
+      start: new Date(event.start).toISOString(),
+      allDay: event.allDay,
+      method: "reply",
+      verified: guest !== undefined,
+      attendee: guest?.name ?? from,
+      attendeeEmail: from.toLowerCase(),
+      status: guest?.status ?? "needs-action",
     };
   }
 
@@ -299,6 +335,23 @@ export class DemoCalendar {
     this.changed();
   }
 
+  /** Who takes part: the demo and its guests in its own events, the organizer and the demo in invitations. */
+  private participantsOf(event: DemoEvent): EventParticipant[] {
+    const me = { name: "Mini", email: this.ownEmail };
+    if (event.invitation) {
+      const organizer = event.invitation.organizerEmail ?? "";
+      return [
+        { name: event.invitation.organizer ?? organizer, email: organizer, status: "accepted", organizer: true },
+        { ...me, status: event.invitation.status, organizer: false },
+      ];
+    }
+    if (!event.guests?.length) return [];
+    return [
+      { ...me, status: "accepted", organizer: true },
+      ...event.guests.map((guest) => ({ ...guest, organizer: false })),
+    ];
+  }
+
   occurrences(from: WallTime, to: WallTime): CalendarOccurrence[] {
     const colors = new Map(this.calendarList.map((calendar) => [calendar.id, calendar]));
     const found: CalendarOccurrence[] = [];
@@ -319,6 +372,7 @@ export class DemoCalendar {
         readOnly: !colors.get(event.calendarId)!.mayWrite || event.invitation !== undefined,
         color: null,
         invitation: event.invitation ? { ...event.invitation } : null,
+        participants: this.participantsOf(event),
       };
       if (!event.recurrence) {
         if (event.start < to && event.end > from) {
