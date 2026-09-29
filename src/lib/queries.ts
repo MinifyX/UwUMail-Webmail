@@ -34,6 +34,12 @@ export const queryKeys = {
   maskedOptions: ["maskedOptions"] as const,
   maskedAddresses: ["maskedAddresses"] as const,
   profilePicture: ["profilePicture"] as const,
+  assistOptions: ["assistOptions"] as const,
+  assistProviders: ["assistProviders"] as const,
+  assistSettings: ["assistSettings"] as const,
+  assistLabels: ["assistLabels"] as const,
+  assistLabelLog: ["assistLabelLog"] as const,
+  assistUsage: ["assistUsage"] as const,
 };
 
 /** What went wrong, for a toast: a refusal of a shared folder's owner in the reader's words. */
@@ -382,6 +388,8 @@ export function useBackendEvents() {
           // and whether a public profile picture is allowed.
           void client.invalidateQueries({ queryKey: queryKeys.maskedOptions });
           void client.invalidateQueries({ queryKey: ["profilePictureOptions"] });
+          // And what the AI assistant may do: the session names its features.
+          void client.invalidateQueries({ queryKey: queryKeys.assistOptions });
           break;
         case "scheduled:changed":
           void client.invalidateQueries({ queryKey: queryKeys.scheduled });
@@ -415,6 +423,17 @@ export function useBackendEvents() {
           break;
         case "masked:changed":
           void client.invalidateQueries({ queryKey: queryKeys.maskedAddresses });
+          break;
+        case "assist:changed":
+          for (const key of [
+            queryKeys.assistProviders,
+            queryKeys.assistSettings,
+            queryKeys.assistLabels,
+            queryKeys.assistLabelLog,
+            queryKeys.assistUsage,
+          ]) {
+            void client.invalidateQueries({ queryKey: key });
+          }
           break;
       }
     });

@@ -10,6 +10,7 @@ import {
   Palette,
   PenLine,
   SlidersHorizontal,
+  Sparkles,
   VenetianMask,
   X,
 } from "lucide-react";
@@ -30,6 +31,8 @@ import { isDomainEntry, sortEntries } from "@/lib/trustedSenders";
 import { useBrand } from "@/state/brand";
 import { useSettings, type LanguageSetting, type SwipeAction } from "@/state/settings";
 import { toast } from "@/state/toasts";
+import { AssistantSettings } from "../assist/settings/AssistantSettings";
+import { useAssistOptions } from "../assist/useAssist";
 import { MaskedAddresses } from "../masked/MaskedAddresses";
 import { useMaskedOptions } from "../masked/useMasked";
 import { MailRules } from "../rules/MailRules";
@@ -59,6 +62,7 @@ const SECTIONS: { id: SettingsSection; icon: LucideIcon }[] = [
   { id: "profile", icon: CircleUserRound },
   { id: "rules", icon: ListFilter },
   { id: "masked", icon: VenetianMask },
+  { id: "assistant", icon: Sparkles },
   { id: "about", icon: Info },
 ];
 
@@ -334,11 +338,14 @@ export function SettingsDialog() {
   const { data: maskedOptions } = useMaskedOptions();
   // The profile picture only where the server keeps one for the account.
   const { data: profileOptions } = useProfilePictureOptions();
+  // The AI assistant only where the server has one for the account.
+  const { data: assistOptions } = useAssistOptions();
   const sections = SECTIONS.filter(
     ({ id }) =>
       (id !== "rules" || rulesAccounts.length > 0) &&
       (id !== "masked" || Boolean(maskedOptions)) &&
-      (id !== "profile" || Boolean(profileOptions)),
+      (id !== "profile" || Boolean(profileOptions)) &&
+      (id !== "assistant" || Boolean(assistOptions)),
   );
 
   const requestClose = () => {
@@ -391,6 +398,7 @@ export function SettingsDialog() {
             {section === "profile" && <ProfilePictureSettings />}
             {section === "rules" && <MailRules />}
             {section === "masked" && <MaskedAddresses />}
+            {section === "assistant" && <AssistantSettings />}
             {section === "about" && <About />}
           </div>
         </div>

@@ -66,6 +66,14 @@ for the whole server or for single accounts.
   account's masked addresses — random ones for single websites, the same the
   portal and password managers make — to copy, describe, switch off, delete
   and bring back, and make new ones on the domains the admin allows.
+- **An AI assistant, where the server has one.** When the admin set up a
+  model (or lets people bring their own key, Ollama in the LAN included), the
+  composer writes from a short instruction or rewrites the draft — more
+  formal, shorter, proofread, translated — the reader summarizes a mail or the
+  whole conversation and gives a second opinion on spam next to the server's
+  own findings, and, once switched on, incoming mail gets your own labels,
+  each with the model's reason and one click to undo. The server asks the model, never the browser;
+  nothing lands in a draft or changes a mail without a click.
 - **Calendar and contacts.** When the server keeps them for the account, the
   calendar and the address books sit next to the mail, the same ones a phone
   syncs over CalDAV and CardDAV.

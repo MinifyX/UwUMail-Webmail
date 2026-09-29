@@ -4,6 +4,7 @@ import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
+import { DemoAssist } from "./demo-assist";
 import { DemoMasked } from "./demo-masked";
 import { rulesToSieve } from "@/lib/sieveRules";
 import { runUnsubscribe } from "@/lib/unsubscribe";
@@ -25,6 +26,12 @@ import type {
   BirthdayImportEntry,
   BirthdayImportResult,
   BirthdayScan,
+  AssistComposeRequest,
+  AssistLabelInput,
+  AssistProviderInput,
+  AssistSettingsPatch,
+  AssistStreamHandlers,
+  AssistSummarizeRequest,
   BlockedSender,
   Account,
   AttachmentContent,
@@ -440,12 +447,21 @@ export class DemoBackend implements Backend {
   async setFlags(messageIds: string[], change: FlagChange) {
     const touched = this.messages.filter((m) => messageIds.includes(m.id));
     if (change.seen !== undefined) this.allowed(touched, "maySetSeen");
-    if (change.flagged !== undefined) this.allowed(touched, "maySetKeywords");
+    if (change.flagged !== undefined || change.keywords) this.allowed(touched, "maySetKeywords");
     for (const message of this.messages) {
       if (!messageIds.includes(message.id)) continue;
       if (change.seen !== undefined) message.flags.seen = change.seen;
       if (change.flagged !== undefined) message.flags.flagged = change.flagged;
+      if (change.keywords) {
+        const keywords = new Set(message.keywords ?? []);
+        for (const [keyword, on] of Object.entries(change.keywords)) {
+          if (on) keywords.add(keyword.toLowerCase());
+          else keywords.delete(keyword.toLowerCase());
+        }
+        message.keywords = [...keywords].sort();
+      }
     }
+    if (change.keywords) this.assist.keywordsChanged(messageIds, change.keywords);
     this.emitChanged(messageIds);
   }
 
@@ -1128,6 +1144,134 @@ export class DemoBackend implements Backend {
     this.masked.update(id, patch);
   }
 
+  /** The AI assistant, played with made-up answers. */
+  private assist = new DemoAssist(
+    lang(),
+    () => this.messages,
+    (mail) => {
+      this.emit({ type: "assist:changed" });
+      if (mail) for (const account of this.accounts) this.emit({ type: "mail:changed", accountId: account.id });
+    },
+  );
+
+  async assistOptions() {
+    return this.assist.options();
+  }
+
+  async assistFeatures() {
+    return this.assist.options().features;
+  }
+
+  async assistProviders() {
+    await wait(80);
+    return this.assist.listProviders();
+  }
+
+  async createAssistProvider(input: AssistProviderInput) {
+    await wait(150);
+    return this.assist.createProvider(input);
+  }
+
+  async updateAssistProvider(id: string, patch: AssistProviderInput) {
+    await wait(120);
+    this.assist.updateProvider(id, patch);
+  }
+
+  async deleteAssistProvider(id: string) {
+    await wait(100);
+    this.assist.deleteProvider(id);
+  }
+
+  async assistModels(providerId: string) {
+    await wait(400);
+    return this.assist.models(providerId);
+  }
+
+  async chatgptLogin(providerId: string) {
+    await wait(300);
+    return this.assist.chatgptLogin(providerId);
+  }
+
+  async chatgptPoll(providerId: string) {
+    await wait(120);
+    return this.assist.chatgptPoll(providerId);
+  }
+
+  async assistSettings() {
+    await wait(60);
+    return this.assist.getSettings();
+  }
+
+  async updateAssistSettings(patch: AssistSettingsPatch) {
+    await wait(100);
+    this.assist.updateSettings(patch);
+  }
+
+  async assistCompose(request: AssistComposeRequest, handlers?: AssistStreamHandlers) {
+    return this.assist.compose(request, handlers);
+  }
+
+  async assistSummarize(request: AssistSummarizeRequest, handlers?: AssistStreamHandlers) {
+    return this.assist.summarize(request, handlers);
+  }
+
+  async assistSpamCheck(emailId: string) {
+    return this.assist.spamCheck(emailId);
+  }
+
+  async extractEvents(emailId: string, _includeImages: boolean) {
+    return this.assist.extractEvents(emailId);
+  }
+
+  async assistUsage(days = 30) {
+    await wait(80);
+    return this.assist.usageReport(Math.min(90, Math.max(1, days)));
+  }
+
+  async assistLabels() {
+    await wait(60);
+    return this.assist.listLabels();
+  }
+
+  async createAssistLabel(input: AssistLabelInput) {
+    await wait(120);
+    return this.assist.createLabel(input);
+  }
+
+  async updateAssistLabel(id: string, patch: Partial<AssistLabelInput>) {
+    await wait(100);
+    this.assist.updateLabel(id, patch);
+  }
+
+  async deleteAssistLabel(id: string) {
+    await wait(100);
+    this.assist.deleteLabel(id);
+  }
+
+  async assistLabelLog(emailIds: string[] | null, limit = 100) {
+    await wait(60);
+    return this.assist.labelLog(emailIds, limit);
+  }
+
+  async undoAssistLabels(logIds: string[]) {
+    await wait(100);
+    this.assist.undo(logIds);
+  }
+
+  async recentInboxIds(limit: number) {
+    await wait(40);
+    const own = this.accounts[0]?.id;
+    return this.messages
+      .filter((message) => message.folderId === `${own}:inbox`)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, limit)
+      .map((message) => message.id);
+  }
+
+  async applyAssistLabels(emailIds: string[]) {
+    return this.assist.apply(emailIds);
+  }
+
   async searchContacts(query: string): Promise<Contact[]> {
     const q = query.trim().toLowerCase();
     const counts = new Map<string, Contact>();
@@ -1249,6 +1393,7 @@ export class DemoBackend implements Backend {
     const sorted = [...list].sort((a, b) => a.date.localeCompare(b.date));
     const last = sorted[sorted.length - 1]!;
     const firstSubject = sorted[0]!.subject;
+    const keywords = [...new Set(sorted.flatMap((m) => m.keywords ?? []))].sort();
     return {
       id,
       accountIds: [...new Set(sorted.map((m) => m.accountId))],
@@ -1261,6 +1406,7 @@ export class DemoBackend implements Backend {
       flagged: sorted.some((m) => m.flags.flagged),
       hasAttachments: sorted.some((m) => m.attachments.length > 0),
       hasDraft: sorted.some((m) => m.flags.draft),
+      ...(keywords.length > 0 ? { keywords } : {}),
     };
   }
 }

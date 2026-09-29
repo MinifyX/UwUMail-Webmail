@@ -132,6 +132,17 @@ export function toFlags(keywords: Record<string, boolean>): MessageFlags {
   };
 }
 
+/** The own keywords of a mail: set, lower case, without the `$` system ones (`$seen`, `$junk`, …). */
+export function ownKeywords(keywords: Record<string, boolean> | undefined): string[] {
+  return [
+    ...new Set(
+      Object.entries(keywords ?? {})
+        .filter(([keyword, set]) => set === true && !keyword.startsWith("$"))
+        .map(([keyword]) => keyword.toLowerCase()),
+    ),
+  ].sort();
+}
+
 /** The mailbox a message is filed under for the interface: the most telling one. */
 export function mainMailbox(email: JmapEmail, folders: Map<string, Folder>): string {
   const ids = Object.keys(email.mailboxIds).filter((id) => email.mailboxIds[id]);
@@ -188,6 +199,7 @@ export function toMessage(
 ): Message {
   const text = partText(email, email.textBody?.[0] ?? undefined);
   const unsubscribe = toUnsubscribe(email, serverOneClick);
+  const keywords = ownKeywords(email.keywords);
   return {
     id: email.id,
     threadId: email.threadId,
@@ -207,6 +219,7 @@ export function toMessage(
     hasRemoteContent: email.uwuHasRemoteContent === true,
     attachments: toAttachments(email),
     ...(unsubscribe ? { unsubscribe } : {}),
+    ...(keywords.length > 0 ? { keywords } : {}),
   };
 }
 
@@ -216,6 +229,7 @@ export function toThreadSummary(id: string, emails: JmapEmail[], accountId: stri
   const newest = sorted[sorted.length - 1];
   const participants: Address[] = [];
   const seen = new Set<string>();
+  const keywords = [...new Set(sorted.flatMap((email) => ownKeywords(email.keywords)))].sort();
   for (const email of sorted) {
     const address = toAddress(email.from?.[0] ?? undefined);
     const key = address.email.toLowerCase();
@@ -236,5 +250,6 @@ export function toThreadSummary(id: string, emails: JmapEmail[], accountId: stri
     flagged: sorted.some((email) => email.keywords.$flagged === true),
     hasAttachments: sorted.some((email) => email.hasAttachment === true),
     hasDraft: sorted.some((email) => email.keywords.$draft === true),
+    ...(keywords.length > 0 ? { keywords } : {}),
   };
 }

@@ -230,5 +230,14 @@
   "profile": {
     "saved": "Très joli ✿",
     "removed": "Photo retirée, vos initiales sont de retour (・ω・)"
+  },
+  "assist": {
+    "thinking": "Je réfléchis très fort… (・ω・)",
+    "compose": {
+      "applied": "Hop, c'est dans votre brouillon ✿"
+    },
+    "labels": {
+      "startersTitle": "On commence avec quelques étiquettes ? (｀・ω・´)"
+    }
   }
 }

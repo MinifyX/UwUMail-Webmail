@@ -16,11 +16,31 @@ import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { createLimiter } from "@/lib/concurrency";
 import { oneClickResultOf, runUnsubscribe, type OneClickResult } from "@/lib/unsubscribe";
-import { BackendError, type Backend, type SignatureStore } from "../backend";
+import { AssistError, BackendError, type Backend, type SignatureStore } from "../backend";
 import type {
   Account,
   AddressBookInfo,
+  AssistComposeRequest,
+  AssistComposeResult,
+  AssistEventsResult,
+  AssistFeatures,
+  AssistLabel,
+  AssistLabelInput,
+  AssistLabelLogEntry,
+  AssistModels,
+  AssistOptions,
+  AssistProvider,
+  AssistProviderInput,
+  AssistSettings,
+  AssistSettingsPatch,
+  AssistSpamCheck,
+  AssistStreamHandlers,
+  AssistSummarizeRequest,
+  AssistSummary,
+  AssistUsage,
   AttachmentContent,
+  ChatgptLogin,
+  ChatgptPoll,
   BackendEvent,
   BirthdayImportEntry,
   BirthdayImportResult,
@@ -114,7 +134,9 @@ import {
   WEBMAIL,
   accountCapability,
   call,
+  csrfToken,
   downloadBlob,
+  onOwnOrigin,
   jmapSession,
   loadJmapSession,
   reloadJmapSession,
@@ -149,6 +171,31 @@ import {
   signatureMigration,
   type JmapIdentityWithSignature,
 } from "./identitySignatures";
+import {
+  ASSIST_USING,
+  SETTINGS_ID as ASSIST_SETTINGS_ID,
+  answerOf,
+  assistError,
+  assistOptionsFrom,
+  assistSetError,
+  assistSettingsUpdate,
+  labelCreate,
+  labelUpdate,
+  providerCreate,
+  providerUpdate,
+  streamAssist,
+  streamUrlFrom,
+  toAssistLabel,
+  toAssistModels,
+  toAssistProvider,
+  toAssistSettings,
+  toChatgptLogin,
+  toChatgptPoll,
+  toEvents,
+  toLabelLogEntry,
+  toSpamCheck,
+  toUsage,
+} from "./assist";
 import {
   MASKED,
   maskedCreate,
@@ -470,6 +517,8 @@ export class JmapBackend implements Backend {
       if (changed.AddressBook || changed.ContactCard) this.emit({ type: "contacts:changed" });
       if (changed.ProfilePicture) this.emit({ type: "profile:changed" });
       if (changed.MaskedEmail) this.emit({ type: "masked:changed" });
+      if (changed.AssistProvider || changed.AssistSettings || changed.AssistLabel)
+        this.emit({ type: "assist:changed" });
       if (changed.Identity) {
         this.forgetIdentities();
         this.emit({ type: "settings:changed", accountId: this.accountId });
@@ -1007,6 +1056,10 @@ export class JmapBackend implements Backend {
     const patch: Record<string, unknown> = {};
     if (change.seen !== undefined) patch["keywords/$seen"] = change.seen ? true : null;
     if (change.flagged !== undefined) patch["keywords/$flagged"] = change.flagged ? true : null;
+    for (const [keyword, on] of Object.entries(change.keywords ?? {})) {
+      // Only own keywords: the `$` system ones have their own switches.
+      if (/^[a-z0-9._-]{1,64}$/i.test(keyword)) patch[`keywords/${keyword.toLowerCase()}`] = on ? true : null;
+    }
     if (Object.keys(patch).length === 0) return;
     const groups = groupByAccount(messageIds, this.accountId);
     for (const [accountId, ids] of groups) {
@@ -2181,10 +2234,274 @@ export class JmapBackend implements Backend {
     if (Object.keys(patch).length > 0) await this.setProfile({ ...patch });
   }
 
+  async assistOptions(): Promise<AssistOptions | null> {
+    await this.start();
+    return assistOptionsFrom(jmapSession().accounts[this.accountId]?.accountCapabilities);
+  }
+
+  async assistFeatures(): Promise<AssistFeatures | null> {
+    return (await this.assistOptions())?.features ?? null;
+  }
+
+  /** One method of the extension; its errors become `AssistError`s. */
+  private async assistCall<T = Record<string, unknown>>(name: string, args: Record<string, unknown>): Promise<T> {
+    await this.start();
+    if (!assistOptionsFrom(jmapSession().accounts[this.accountId]?.accountCapabilities)) {
+      throw new AssistError("assistUnavailable", "This server has no AI assistant.");
+    }
+    try {
+      return await one<T>(name, args, ASSIST_USING);
+    } catch (error) {
+      throw assistError(error);
+    }
+  }
+
+  /** The id the server knows an own mail by; mail of a shared account has no assistant. */
+  private ownEmailId(emailId: string): string {
+    const { accountId, id } = unscopeId(emailId, this.accountId);
+    if (accountId !== this.accountId) throw new AssistError("forbidden", "Only the own mail has the assistant.");
+    return id;
+  }
+
+  /**
+   * `Assist/compose` or `Assist/summarize`: streamed where the server offers it and somebody
+   * listens, otherwise in one answer, which then goes to the handlers in one piece.
+   */
+  private async assistText(
+    method: string,
+    args: Record<string, unknown>,
+    handlers: AssistStreamHandlers | undefined,
+  ): Promise<Record<string, unknown>> {
+    await this.start();
+    const url = streamUrlFrom(jmapSession().capabilities);
+    if (url && handlers) {
+      return streamAssist(onOwnOrigin(url), csrfToken(), method, { accountId: this.accountId, ...args }, handlers);
+    }
+    const answer = await this.assistCall<Record<string, unknown>>(method, args);
+    if (handlers?.signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    if (typeof answer.subject === "string") handlers?.onSubject?.(answer.subject);
+    const text = typeof answer.text === "string" ? answer.text : answer.summary;
+    if (typeof text === "string") handlers?.onDelta?.(text);
+    return answer;
+  }
+
+  async assistProviders(): Promise<AssistProvider[]> {
+    const response = await this.assistCall<{ list: Record<string, unknown>[] }>("AssistProvider/get", { ids: null });
+    return (response.list ?? []).map(toAssistProvider);
+  }
+
+  private async providerSet(args: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const response = await this.assistCall<{
+      created?: Record<string, Record<string, unknown>>;
+      notCreated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+      notUpdated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+      notDestroyed?: Record<string, { type: string; description?: string; properties?: string[] }>;
+    }>("AssistProvider/set", args);
+    const problem =
+      Object.values(response.notCreated ?? {})[0] ??
+      Object.values(response.notUpdated ?? {})[0] ??
+      Object.values(response.notDestroyed ?? {})[0];
+    if (problem) throw assistSetError(problem);
+    this.emit({ type: "assist:changed" });
+    return response.created?.new ?? {};
+  }
+
+  async createAssistProvider(input: AssistProviderInput): Promise<AssistProvider> {
+    const create = providerCreate(input);
+    const created = await this.providerSet({ create: { new: create } });
+    if (typeof created.id !== "string") throw new BackendError("internal", "The server didn't add the provider.");
+    const { apiKey, ...shown } = create;
+    return toAssistProvider({
+      scope: "personal",
+      hasKey: typeof apiKey === "string" && apiKey !== "",
+      connected: input.kind !== "chatgpt" && (input.kind === "ollama" || Boolean(apiKey)),
+      ...shown,
+      ...created,
+    });
+  }
+
+  async updateAssistProvider(id: string, patch: AssistProviderInput): Promise<void> {
+    await this.providerSet({ update: { [id]: providerUpdate(patch) } });
+  }
+
+  async deleteAssistProvider(id: string): Promise<void> {
+    await this.providerSet({ destroy: [id] });
+  }
+
+  async assistModels(providerId: string): Promise<AssistModels> {
+    return toAssistModels(await this.assistCall("AssistProvider/models", { providerId }));
+  }
+
+  async chatgptLogin(providerId: string): Promise<ChatgptLogin> {
+    return toChatgptLogin(await this.assistCall("AssistProvider/chatgptLogin", { providerId }));
+  }
+
+  async chatgptPoll(providerId: string): Promise<ChatgptPoll> {
+    const poll = toChatgptPoll(await this.assistCall("AssistProvider/chatgptPoll", { providerId }));
+    if (poll.status === "connected") this.emit({ type: "assist:changed" });
+    return poll;
+  }
+
+  async assistSettings(): Promise<AssistSettings> {
+    const response = await this.assistCall<{ list: Record<string, unknown>[] }>("AssistSettings/get", {
+      ids: [ASSIST_SETTINGS_ID],
+    });
+    return toAssistSettings(response.list?.[0]);
+  }
+
+  async updateAssistSettings(patch: AssistSettingsPatch): Promise<void> {
+    const response = await this.assistCall<{
+      notUpdated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+    }>("AssistSettings/set", { update: { [ASSIST_SETTINGS_ID]: assistSettingsUpdate(patch) } });
+    const problem = response.notUpdated?.[ASSIST_SETTINGS_ID];
+    if (problem) throw assistSetError(problem);
+    this.emit({ type: "assist:changed" });
+  }
+
+  async assistCompose(request: AssistComposeRequest, handlers?: AssistStreamHandlers): Promise<AssistComposeResult> {
+    const args: Record<string, unknown> = {
+      mode: request.mode,
+      instruction: request.instruction ?? null,
+      preset: request.preset ?? null,
+      targetLanguage: request.targetLanguage ?? null,
+      text: request.text ?? null,
+      subject: request.subject ?? null,
+      replyToEmailId: request.replyToEmailId ? this.ownReplyId(request.replyToEmailId) : null,
+      wantSubject: request.wantSubject === true,
+      language: request.language ?? null,
+    };
+    const answer = await this.assistText("Assist/compose", args, handlers);
+    return {
+      ...answerOf(answer),
+      text: typeof answer.text === "string" ? answer.text : "",
+      subject: typeof answer.subject === "string" && answer.subject.trim() !== "" ? answer.subject : null,
+    };
+  }
+
+  /** A mail of a shared account is no context the assistant can read: it is left out. */
+  private ownReplyId(emailId: string): string | null {
+    const { accountId, id } = unscopeId(emailId, this.accountId);
+    return accountId === this.accountId ? id : null;
+  }
+
+  async assistSummarize(request: AssistSummarizeRequest, handlers?: AssistStreamHandlers): Promise<AssistSummary> {
+    const args = {
+      emailId: request.emailId ? this.ownEmailId(request.emailId) : null,
+      threadId: request.threadId ? this.ownEmailId(request.threadId) : null,
+      language: request.language ?? null,
+    };
+    const answer = await this.assistText("Assist/summarize", args, handlers);
+    return {
+      ...answerOf(answer),
+      emailId: request.emailId ?? null,
+      threadId: request.threadId ?? null,
+      summary: typeof answer.summary === "string" ? answer.summary : "",
+    };
+  }
+
+  async assistSpamCheck(emailId: string, language?: string): Promise<AssistSpamCheck> {
+    const answer = await this.assistCall("Assist/spamCheck", {
+      emailId: this.ownEmailId(emailId),
+      language: language ?? null,
+    });
+    return { ...toSpamCheck(answer, emailId), emailId };
+  }
+
+  async extractEvents(emailId: string, includeImages: boolean): Promise<AssistEventsResult> {
+    const answer = await this.assistCall("Assist/extractEvents", {
+      emailId: this.ownEmailId(emailId),
+      includeImages,
+    });
+    return { events: toEvents(answer), answer: answerOf(answer) };
+  }
+
+  async assistUsage(days = 30): Promise<AssistUsage> {
+    return toUsage(await this.assistCall("Assist/usage", { days: Math.min(90, Math.max(1, Math.round(days))) }));
+  }
+
+  async assistLabels(): Promise<AssistLabel[]> {
+    const response = await this.assistCall<{ list: Record<string, unknown>[] }>("AssistLabel/get", { ids: null });
+    return (response.list ?? []).map(toAssistLabel);
+  }
+
+  private async labelSet(args: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const response = await this.assistCall<{
+      created?: Record<string, Record<string, unknown>>;
+      notCreated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+      notUpdated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+      notDestroyed?: Record<string, { type: string; description?: string; properties?: string[] }>;
+    }>("AssistLabel/set", args);
+    const problem =
+      Object.values(response.notCreated ?? {})[0] ??
+      Object.values(response.notUpdated ?? {})[0] ??
+      Object.values(response.notDestroyed ?? {})[0];
+    if (problem) throw assistSetError(problem);
+    this.emit({ type: "assist:changed" });
+    return response.created?.new ?? {};
+  }
+
+  async createAssistLabel(input: AssistLabelInput): Promise<AssistLabel> {
+    const create = labelCreate(input);
+    const created = await this.labelSet({ create: { new: create } });
+    if (typeof created.id !== "string") throw new BackendError("internal", "The server didn't make the label.");
+    return toAssistLabel({ ...create, ...created });
+  }
+
+  async updateAssistLabel(id: string, patch: Partial<AssistLabelInput>): Promise<void> {
+    await this.labelSet({ update: { [id]: labelUpdate(patch) } });
+  }
+
+  async deleteAssistLabel(id: string): Promise<void> {
+    await this.labelSet({ destroy: [id] });
+    // Its keyword went off every mail.
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+  }
+
+  async assistLabelLog(emailIds: string[] | null, limit = 100): Promise<AssistLabelLogEntry[]> {
+    const ids = emailIds?.flatMap((id) => this.ownReplyId(id) ?? []) ?? null;
+    if (ids && ids.length === 0) return [];
+    const response = await this.assistCall<{ list?: Record<string, unknown>[] }>("AssistLabel/log", {
+      emailIds: ids?.slice(0, 500) ?? null,
+      limit: Math.min(500, Math.max(1, limit)),
+    });
+    return (response.list ?? []).map(toLabelLogEntry);
+  }
+
+  async undoAssistLabels(logIds: string[]): Promise<void> {
+    if (logIds.length === 0) return;
+    await this.assistCall("AssistLabel/undo", { ids: logIds });
+    this.emit({ type: "assist:changed" });
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+  }
+
+  async applyAssistLabels(emailIds: string[]): Promise<Record<string, string[]>> {
+    const ids = emailIds.flatMap((id) => this.ownReplyId(id) ?? []).slice(0, 20);
+    if (ids.length === 0) return {};
+    const response = await this.assistCall<{ labeled?: Record<string, string[]> }>("AssistLabel/apply", {
+      emailIds: ids,
+    });
+    this.emit({ type: "assist:changed" });
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+    return response.labeled ?? {};
+  }
+
   /**
    * Recipient suggestions: ranked by the server from the address books and the mail history where
    * it offers that (`AddressSuggestion/query`), otherwise the address books' matches.
    */
+  async recentInboxIds(limit: number): Promise<string[]> {
+    await this.start();
+    const inbox = this.folderWithRole("inbox");
+    if (!inbox) return [];
+    const found = await one<QueryResponse>("Email/query", {
+      filter: { inMailbox: unscopeId(inbox.id, this.accountId).id },
+      sort: [{ property: "receivedAt", isAscending: false }],
+      limit: Math.min(100, Math.max(1, limit)),
+      calculateTotal: false,
+    });
+    return found.ids;
+  }
+
   async searchContacts(query: string): Promise<Contact[]> {
     const wanted = query.trim();
     if (!wanted) return [];
