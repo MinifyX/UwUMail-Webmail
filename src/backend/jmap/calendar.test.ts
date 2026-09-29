@@ -316,6 +316,38 @@ describe("eventPatch", () => {
   });
 });
 
+describe("birthdays", () => {
+  const birthday = (uwuBirthday: JmapCalendarEvent["uwuBirthday"], start = "2026-04-12T00:00:00") =>
+    toOccurrence(
+      event({ start, duration: "P1D", showWithoutTime: true, timeZone: null, title: "Max Müller (30)", uwuBirthday }),
+      { ...context, calendar: { ...calendar, mayWrite: false, isBirthdays: true } },
+    );
+
+  it("knows whose birthday an event is and the age of the occurrence", () => {
+    const occurrence = birthday({ contactId: "k12", kind: "birth", name: "Max Müller", year: 1996 });
+    expect(occurrence.readOnly).toBe(true);
+    expect(occurrence.birthday).toEqual({
+      contactId: "k12",
+      kind: "birth",
+      label: null,
+      name: "Max Müller",
+      year: 1996,
+      age: 30,
+    });
+    expect(birthday({ contactId: "k12", kind: "birth", name: "Max", year: null }).birthday?.age).toBeNull();
+    expect(birthday({ contactId: "k12", kind: "birth", name: "Max", year: 2026 }).birthday?.age).toBeNull();
+    expect(birthday({ contactId: "k12", kind: "strange", name: "Max" }).birthday?.kind).toBe("other");
+    expect(birthday({ kind: "birth", name: "Max" }).birthday).toBeNull();
+    expect(birthday(null).birthday).toBeNull();
+    expect(toOccurrence(event({}), context).birthday).toBeNull();
+  });
+
+  it("marks the birthdays calendar", () => {
+    expect(toCalendarInfo({ id: "c", name: "Geburtstage", uwuBirthdays: true }, "a").isBirthdays).toBe(true);
+    expect(toCalendarInfo({ id: "c", name: "Privat" }, "a").isBirthdays).toBeUndefined();
+  });
+});
+
 describe("calendars", () => {
   it("reads rights and colours defensively", () => {
     expect(

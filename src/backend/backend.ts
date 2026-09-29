@@ -3,6 +3,9 @@ import type {
   AddressBookInfo,
   AttachmentContent,
   BackendEvent,
+  BirthdayImportEntry,
+  BirthdayImportResult,
+  BirthdayScan,
   BlockedSender,
   CalendarInfo,
   CalendarOccurrence,
@@ -198,6 +201,15 @@ export interface Backend {
   mailInvitation(messageId: string): Promise<MailScheduling | null>;
   /** Shares a calendar with a person at a level; `null` stops sharing it with them. */
   shareCalendar(calendarId: string, personId: string, level: ShareLevel | null): Promise<void>;
+  /** Whether birthday events of other calendars can be moved into the contacts (the birthdays extension). */
+  birthdayImportAvailable(): Promise<boolean>;
+  /** The birthday events of the calendars, each with the contacts it may belong to. */
+  scanBirthdays(): Promise<BirthdayScan>;
+  /**
+   * Moves found birthdays into contacts; each event is deleted once its birthday is in the
+   * contact, never when that failed. Events left out stay as they are.
+   */
+  importBirthdays(entries: BirthdayImportEntry[]): Promise<BirthdayImportResult>;
 
   /** Whether the server filters incoming mail with rules (JMAP Sieve); without an id, whether any mailbox does. */
   mailRulesAvailable(accountId?: string): Promise<boolean>;

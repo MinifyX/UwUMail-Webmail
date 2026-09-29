@@ -415,6 +415,11 @@ export interface CalendarInfo {
   sharedBy?: { email: string; name: string } | null;
   /** Who else sees it, by principal id; only where the account may share it. */
   sharedWith?: Record<string, ShareLevel>;
+  /**
+   * The birthdays calendar the server makes from the contacts: read-only, never deleted, its
+   * events open their contact.
+   */
+  isBirthdays?: boolean;
 }
 
 /** An answer to an invitation (iTIP): the participant's `participationStatus`. */
@@ -514,6 +519,61 @@ export interface CalendarOccurrence {
   invitation?: Invitation | null;
   /** Who takes part, the organizer first; empty for an event without participants. */
   participants?: EventParticipant[];
+  /** An event of the birthdays calendar: whose date it is, and how old or how many years. */
+  birthday?: OccurrenceBirthday | null;
+}
+
+/** What a birthdays calendar event is for (the server's `uwuBirthday`). */
+export interface OccurrenceBirthday {
+  contactId: string;
+  kind: "birth" | "wedding" | "other";
+  /** The label of an "other" date ("Kennenlerntag"). */
+  label: string | null;
+  name: string;
+  /** The year it happened; null when the card doesn't say. */
+  year: number | null;
+  /** The age (or years) on this occurrence; null without a year or in the year itself. */
+  age: number | null;
+}
+
+/** A contact's reminder of their birthday and anniversary: days before, at a time of day ("09:00"). */
+export interface BirthdayReminder {
+  daysBefore: number;
+  time: string;
+}
+
+/** How a birthday event of another calendar fits the contacts (see Backend.scanBirthdays). */
+export type BirthdayMatch = "matched" | "known" | "conflict" | "ambiguous" | "unmatched";
+
+/** A birthday found as an event in one of the calendars, with the contacts it may belong to. */
+export interface BirthdayCandidate {
+  eventId: string;
+  calendarId: string;
+  title: string;
+  /** The name read from the title. */
+  name: string;
+  /** "YYYY-MM-DD", or "--MM-DD" without a year. */
+  birthday: string;
+  /** The event can be deleted afterwards (not in a subscribed or read-only calendar). */
+  mayDeleteEvent: boolean;
+  match: BirthdayMatch;
+  /** The contacts it may belong to, the match first. */
+  contacts: { contactId: string; name: string; birthday: string | null }[];
+}
+
+export interface BirthdayScan {
+  candidates: BirthdayCandidate[];
+  /** There were more than the server looked at. */
+  truncated: boolean;
+}
+
+/** What to do with one found birthday: into a contact, or into a new one with this name. */
+export type BirthdayImportEntry =
+  { eventId: string; contactId: string; overwrite?: boolean } | { eventId: string; newContactName: string };
+
+export interface BirthdayImportResult {
+  imported: { eventId: string; contactId: string; created: boolean; eventDeleted: boolean }[];
+  failed: { eventId: string; reason: string }[];
 }
 
 /** Someone taking part in an event, with their answer. */
@@ -595,6 +655,10 @@ export interface ContactRecord {
   addresses: ContactPostal[];
   /** "YYYY-MM-DD", or "--MM-DD" when the year isn't known. */
   birthday: string | null;
+  /** The wedding anniversary, the same way. */
+  anniversary?: string | null;
+  /** Reminders of the birthday and anniversary; none by default. */
+  reminders?: BirthdayReminder[];
   note: string;
   /**
    * The card's picture: a `data:` URI inside the card, or an `https:` link that is only ever
@@ -618,6 +682,11 @@ export interface ContactInput {
   /** Left as it was when `birthdayChanged` is false. */
   birthday: string | null;
   birthdayChanged: boolean;
+  /** Left as it was when `anniversaryChanged` isn't true. */
+  anniversary?: string | null;
+  anniversaryChanged?: boolean;
+  /** Left as they were when undefined. */
+  reminders?: BirthdayReminder[];
   note: string;
   /**
    * A new picture as a `data:image/jpeg` URI (cropped in the browser), or null to remove the

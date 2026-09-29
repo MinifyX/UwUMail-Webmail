@@ -69,6 +69,12 @@ for the whole server or for single accounts.
 - **Calendar and contacts.** When the server keeps them for the account, the
   calendar and the address books sit next to the mail, the same ones a phone
   syncs over CalDAV and CardDAV.
+- **Birthdays.** Birthdays and wedding anniversaries of the contacts, with or
+  without the year, fill a calendar of their own with the age ("turns 30");
+  a click opens the contact, and each contact can ring on the day, a day or
+  a week before. Birthdays kept as events in other calendars can be moved
+  into the contacts in one go, with a choice for every unclear one, and the
+  old events are deleted afterwards.
 - **Fits a phone.** Below 700 px it turns into the app's phone layout, with
   swipes and a full-screen composer, and it can be put on the home screen.
 - **Notifications with the tab closed.** Switched on in the settings, the

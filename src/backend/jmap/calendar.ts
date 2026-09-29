@@ -23,6 +23,7 @@ import type {
   EventInput,
   EventParticipant,
   Invitation,
+  OccurrenceBirthday,
   ParticipationStatus,
   Recurrence,
   SchedulingMethod,
@@ -40,6 +41,8 @@ export interface JmapCalendar {
   myRights?: { mayWriteAll?: boolean; mayWriteOwn?: boolean; mayDelete?: boolean; mayShare?: boolean } | null;
   shareWith?: Record<string, Record<string, boolean> | null> | null;
   uwuSharedBy?: { email?: string; name?: string | null } | null;
+  /** The server's birthdays calendar, made from the contacts. */
+  uwuBirthdays?: boolean;
 }
 
 export interface JmapParticipant {
@@ -84,6 +87,14 @@ export interface JmapCalendarEvent {
   participants?: Record<string, JmapParticipant> | null;
   organizerCalendarAddress?: string | null;
   status?: string | null;
+  /** An event of the birthdays calendar: whose date it is. */
+  uwuBirthday?: {
+    contactId?: string;
+    kind?: string;
+    label?: string | null;
+    name?: string;
+    year?: number | null;
+  } | null;
 }
 
 /** What calendarEvents asks for of every occurrence. */
@@ -106,6 +117,7 @@ export const EVENT_PROPERTIES = [
   "utcEnd",
   "participants",
   "organizerCalendarAddress",
+  "uwuBirthday",
 ];
 
 /** What a series needs besides its occurrences: its rule. */
@@ -159,6 +171,29 @@ export function toCalendarInfo(calendar: JmapCalendar, accountId: string): Calen
     ...(calendar.shareWith && typeof calendar.shareWith === "object"
       ? { sharedWith: calendarSharedWith(calendar.shareWith) }
       : {}),
+    ...(calendar.uwuBirthdays === true ? { isBirthdays: true } : {}),
+  };
+}
+
+const BIRTHDAY_KINDS = new Set(["birth", "wedding", "other"]);
+
+/**
+ * What a birthdays calendar event is for, with the years of the occurrence starting on `start`
+ * ("YYYY-MM-DD…"); null for every other event.
+ */
+export function birthdayOf(event: Pick<JmapCalendarEvent, "uwuBirthday">, start: string): OccurrenceBirthday | null {
+  const found = event.uwuBirthday;
+  if (!found || typeof found.contactId !== "string" || !found.contactId) return null;
+  const year = Number.isInteger(found.year) ? (found.year as number) : null;
+  const shownYear = Number(start.slice(0, 4));
+  const age = year !== null && shownYear > year ? shownYear - year : null;
+  return {
+    contactId: found.contactId,
+    kind: BIRTHDAY_KINDS.has(found.kind ?? "") ? (found.kind as OccurrenceBirthday["kind"]) : "other",
+    label: typeof found.label === "string" && found.label ? found.label : null,
+    name: typeof found.name === "string" ? found.name : "",
+    year,
+    age,
   };
 }
 
@@ -499,6 +534,7 @@ export function toOccurrence(event: JmapCalendarEvent, context: OccurrenceContex
     color: safeColor(event.color),
     invitation: invitationOf(event, context.ownAddresses ?? []),
     participants: participantsOf(event),
+    birthday: birthdayOf(event, start),
   };
 }
 

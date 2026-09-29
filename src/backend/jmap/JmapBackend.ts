@@ -22,6 +22,9 @@ import type {
   AddressBookInfo,
   AttachmentContent,
   BackendEvent,
+  BirthdayImportEntry,
+  BirthdayImportResult,
+  BirthdayScan,
   BlockedSender,
   CalendarInfo,
   CalendarOccurrence,
@@ -84,6 +87,7 @@ import {
   type JmapCalendar,
   type JmapCalendarEvent,
 } from "./calendar";
+import { importEntries, importResultFrom, scanFrom } from "./birthdays";
 import {
   CARD_PROPERTIES,
   cardFromInput,
@@ -96,6 +100,7 @@ import {
   type JmapCard,
 } from "./contacts";
 import {
+  BIRTHDAYS,
   CALENDARS,
   CONTACTS,
   CORE,
@@ -298,6 +303,9 @@ interface JmapSieveScript {
   isActive: boolean;
 }
 
+/** Birthdays one Birthdays/import moves at most (the server's maxImport). */
+const BIRTHDAYS_PER_IMPORT = 200;
+
 const CALENDAR_PROPERTIES = [
   "id",
   "name",
@@ -308,6 +316,7 @@ const CALENDAR_PROPERTIES = [
   "myRights",
   "shareWith",
   "uwuSharedBy",
+  "uwuBirthdays",
 ];
 
 /** The one script the rules editor owns, see lib/sieveRules. */
@@ -1574,6 +1583,39 @@ export class JmapBackend implements Backend {
       // The draft itself is there; it only goes on as a new mail, as it did before.
       return null;
     }
+  }
+
+  async birthdayImportAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(BIRTHDAYS) && supports(CALENDARS) && supports(CONTACTS);
+  }
+
+  async scanBirthdays(): Promise<BirthdayScan> {
+    await this.start();
+    if (!supports(BIRTHDAYS)) throw new BackendError("not_supported", "This server doesn't move birthdays.");
+    return scanFrom(await one<Record<string, unknown>>("Birthdays/scan", {}, [CORE, BIRTHDAYS]));
+  }
+
+  async importBirthdays(entries: BirthdayImportEntry[]): Promise<BirthdayImportResult> {
+    await this.start();
+    if (!supports(BIRTHDAYS)) throw new BackendError("not_supported", "This server doesn't move birthdays.");
+    const result: BirthdayImportResult = { imported: [], failed: [] };
+    // The server takes a few hundred at once; more go in turns.
+    for (let start = 0; start < entries.length; start += BIRTHDAYS_PER_IMPORT) {
+      const part = entries.slice(start, start + BIRTHDAYS_PER_IMPORT);
+      const response = await one<Record<string, unknown>>("Birthdays/import", { entries: importEntries(part) }, [
+        CORE,
+        BIRTHDAYS,
+      ]);
+      const done = importResultFrom(response);
+      result.imported.push(...done.imported);
+      result.failed.push(...done.failed);
+    }
+    if (result.imported.length > 0) {
+      this.emit({ type: "calendar:changed" });
+      this.emit({ type: "contacts:changed" });
+    }
+    return result;
   }
 
   async calendarsAvailable(): Promise<boolean> {

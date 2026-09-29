@@ -27,6 +27,8 @@ export const REMOTE = "urn:uwumail:jmap:remote";
 export const UNSUBSCRIBE = "urn:uwumail:jmap:unsubscribe";
 /** Our own: the text in a mail's pictures, read by the server (`Email/imageText`). */
 export const IMAGETEXT = "urn:uwumail:jmap:imagetext";
+/** Our own: birthday events of other calendars moved into the contacts (`Birthdays/scan`, `/import`). */
+export const BIRTHDAYS = "urn:uwumail:jmap:birthdays";
 
 /** An account of the session: the person's own, or one somebody shares folders from. */
 export interface JmapAccount {

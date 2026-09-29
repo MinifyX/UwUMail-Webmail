@@ -16,7 +16,8 @@ import { useT } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import { contactPhotoSrc } from "./ContactAvatar";
 import { ContactPictureField } from "./ContactPicture";
-import { formatBirthday, hasName, inputFrom } from "./format";
+import { DayField, RemindersField } from "./DateFields";
+import { hasName, inputFrom } from "./format";
 import { useContactsUi, type ContactEditorRequest } from "./state";
 import { useAddressBooks, useContactActions } from "./useContactsData";
 
@@ -32,7 +33,7 @@ export function ContactEditor() {
 }
 
 function EditorDialog({ request, onClose }: { request: ContactEditorRequest | null; onClose: () => void }) {
-  const { t, i18n } = useT();
+  const { t } = useT();
   const { data: books = [] } = useAddressBooks();
   const chosenBook = useContactsUi((s) => s.bookId);
   const fallback = books.find((book) => book.id === chosenBook) ?? books.find((book) => book.isDefault) ?? books[0];
@@ -43,6 +44,8 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
   const [asking, setAsking] = useState(false);
+  // Fields that give a day that doesn't exist (31 April): saving waits until they're fixed.
+  const [badDays, setBadDays] = useState<{ birthday?: boolean; anniversary?: boolean }>({});
   const actions = useContactActions();
   const senderPictures = useSettings((s) => s.senderPictures);
   if (!request || !form)
@@ -63,7 +66,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
 
   const save = async () => {
     setTried(true);
-    if (nameless || !bookId) return;
+    if (nameless || !bookId || badDays.birthday || badDays.anniversary) return;
     setBusy(true);
     const input = { ...form, addressBookId: bookId };
     const saved = contact ? await actions.update(contact, input) : await actions.create(input);
@@ -71,8 +74,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
     if (saved) onClose();
   };
 
-  // Year-less birthdays can't be shown in a date field; they stay unless a date is picked.
-  const yearless = form.birthday?.startsWith("--") ?? false;
+  const reminders = form.reminders ?? contact?.reminders ?? [];
   // The picture as it will be saved: a new or removed one, or the card's own.
   const photo = form.photo !== undefined ? form.photo : (contact?.photo ?? null);
   const photoSrc = contactPhotoSrc(photo, senderPictures);
@@ -262,34 +264,29 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
             )}
           />
 
-          <Field
+          <DayField
             label={t("contacts.birthday")}
-            hint={
-              yearless && form.birthday
-                ? t("contacts.birthdayWithoutYear", { date: formatBirthday(form.birthday, i18n.language) })
-                : undefined
-            }
-          >
-            {(id) => (
-              <span className="flex max-w-60 gap-2">
-                <TextInput
-                  id={id}
-                  type="date"
-                  value={yearless ? "" : (form.birthday ?? "")}
-                  onChange={(event) => setForm({ birthday: event.target.value || null, birthdayChanged: true })}
-                />
-                {form.birthday && (
-                  <IconButton
-                    icon={X}
-                    size="sm"
-                    label={t("contacts.clearBirthday")}
-                    onClick={() => setForm({ birthday: null, birthdayChanged: true })}
-                    className="self-center"
-                  />
-                )}
-              </span>
-            )}
-          </Field>
+            clearLabel={t("contacts.clearBirthday")}
+            kind="birth"
+            value={form.birthday}
+            onChange={(birthday, valid) => {
+              setBadDays((bad) => ({ ...bad, birthday: !valid }));
+              setForm({ birthday, birthdayChanged: true });
+            }}
+          />
+          <DayField
+            label={t("contacts.anniversary")}
+            clearLabel={t("contacts.clearAnniversary")}
+            kind="wedding"
+            value={form.anniversary ?? null}
+            onChange={(anniversary, valid) => {
+              setBadDays((bad) => ({ ...bad, anniversary: !valid }));
+              setForm({ anniversary, anniversaryChanged: true });
+            }}
+          />
+          {(form.birthday || form.anniversary || reminders.length > 0) && (
+            <RemindersField value={reminders} onChange={(next) => setForm({ reminders: next })} />
+          )}
 
           {books.length > 1 && (
             <Field label={t("contacts.addressBook")}>
