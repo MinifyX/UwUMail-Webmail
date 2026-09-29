@@ -12,7 +12,7 @@ import { EventEditor } from "../calendar/EventEditor";
 import { useCalendarUi } from "../calendar/state";
 import { eventDraft, openInCalendar } from "./addToCalendar";
 import { useDismissedDates } from "./dismissed";
-import { EventsBar } from "./EventsBar";
+import { DatePopover, EventsBar } from "./EventsBar";
 import { swappedDay, whenLabel } from "./format";
 import { linkedThread, mailLink } from "./mailLink";
 import { useMailEvents, type MailEvents } from "./useMailEvents";
@@ -259,6 +259,27 @@ describe("EventsBar", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Check with AI" }));
     expect(refine).toHaveBeenCalledOnce();
+  });
+});
+
+describe("DatePopover", () => {
+  // security-audit W-40: a held Enter on a date opened the popover, added the date and saved it.
+  it("doesn't take the gesture that opened it as the answer", () => {
+    let clock = 1000;
+    vi.spyOn(performance, "now").mockImplementation(() => clock);
+    const onAdd = vi.fn();
+    const hit = { ...event("Lesung am 16.10. um 19 Uhr"), past: false, end: "2099-01-01T00:00:00" };
+    render(
+      <DatePopover event={hit} anchor={{ left: 10, top: 10, width: 40, height: 16 }} onAdd={onAdd} onClose={vi.fn()} />,
+    );
+    const add = screen.getByRole("button", { name: "Add to calendar" });
+    expect(fireEvent.keyDown(add, { key: "Enter", repeat: true })).toBe(false);
+    fireEvent.click(add);
+    expect(onAdd).not.toHaveBeenCalled();
+    clock += 1000;
+    fireEvent.click(add);
+    expect(onAdd).toHaveBeenCalledOnce();
+    vi.restoreAllMocks();
   });
 });
 
