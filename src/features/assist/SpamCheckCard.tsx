@@ -80,14 +80,14 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
       });
   };
 
-  // Once per card; a check kept from before is shown instead of asking again.
-  const asked = useRef(false);
+  // When the card appears; a check kept from before is shown instead of asking again. Started a
+  // tick later, so a mount that is undone at once (React's strict mode) asks only once.
   useEffect(() => {
-    if (!asked.current && !saved) {
-      asked.current = true;
-      check();
-    }
-    return () => controller.current?.abort();
+    const timer = saved ? undefined : setTimeout(check, 0);
+    return () => {
+      clearTimeout(timer);
+      controller.current?.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

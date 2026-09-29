@@ -13,7 +13,7 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { backend } from "@/backend/backend";
 import { ASSIST_PRESETS, type AssistComposeRequest, type AssistPreset } from "@/backend/types";
 import { Button, IconButton } from "@/components/ui/Button";
@@ -183,13 +183,13 @@ export function ComposeAssistPanel({
     language: context.language,
   });
 
-  // A preset needs nothing more: it starts at once.
-  const started = useRef(false);
+  // A preset needs nothing more: it starts at once (a tick later, so a mount that is undone at
+  // once, as in React's strict mode, asks only once).
   useEffect(() => {
-    if (started.current || needsInput || nothingToRewrite || tooLong) return;
-    started.current = true;
-    send(request());
-    // Once, for the preset the panel opened with.
+    if (needsInput || nothingToRewrite || tooLong) return;
+    const timer = setTimeout(() => send(request()), 0);
+    return () => clearTimeout(timer);
+    // Only for the preset the panel opened with.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

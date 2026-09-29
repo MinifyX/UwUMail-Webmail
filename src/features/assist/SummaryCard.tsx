@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { ChevronDown, RotateCcw, Sparkles, Square, X } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { backend } from "@/backend/backend";
 import { Button, IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
@@ -44,12 +44,12 @@ export function SummaryCard({ kind, id, count }: SummaryCardProps) {
       },
     );
 
-  // Once per card: a summary kept from before is shown instead of asking again.
-  const asked = useRef(false);
+  // When the card appears: a summary kept from before is shown instead of asking again. Started
+  // a tick later, so a mount that is undone at once (React's strict mode) asks only once.
   useEffect(() => {
-    if (asked.current || saved) return;
-    asked.current = true;
-    summarize();
+    if (saved) return;
+    const timer = setTimeout(summarize, 0);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
