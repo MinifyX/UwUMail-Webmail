@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ContactRecord } from "@/backend/types";
 import { useSettings } from "@/state/settings";
@@ -71,5 +71,13 @@ describe("a contact's picture", () => {
     useSettings.setState({ senderPictures: false });
     const { container } = renderAvatar("data:image/jpeg;base64,/9j/4AAQ");
     expect(container.querySelector("img")?.getAttribute("src")).toBe("data:image/jpeg;base64,/9j/4AAQ");
+  });
+
+  it("falls back to the avatar when the server can't fetch a linked photo", () => {
+    useSettings.setState({ senderPictures: true });
+    const { container } = renderAvatar("https://photos.example.org/gone.jpg");
+    fireEvent.error(container.querySelector("img")!);
+    expect(container.querySelector("img[src^='/jmap/image']")).toBeNull();
+    expect(container.textContent).toContain("MS");
   });
 });
