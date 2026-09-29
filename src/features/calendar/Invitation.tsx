@@ -85,7 +85,7 @@ export function invitationStatusKey(status: ParticipationStatus): string {
   return `invitation.status.${status}`;
 }
 
-function carriesInvitation(message: Pick<Message, "attachments">): boolean {
+export function carriesInvitation(message: Pick<Message, "attachments">): boolean {
   return message.attachments.some(
     (attachment) =>
       attachment.mimeType.toLowerCase().startsWith("text/calendar") || /\.ics$/i.test(attachment.filename),

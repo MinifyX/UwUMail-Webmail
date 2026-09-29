@@ -4,6 +4,7 @@ import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
+import { DemoAssist } from "./demo-assist";
 import { DemoMasked } from "./demo-masked";
 import { rulesToSieve } from "@/lib/sieveRules";
 import { runUnsubscribe } from "@/lib/unsubscribe";
@@ -15,13 +16,23 @@ import {
   buildMessages,
   buildSharedMailbox,
   DEMO_ACCOUNTS,
+  DEMO_IMAGE_TEXT,
   DEMO_PEOPLE,
   demoRules,
   welcomeMessage,
 } from "./demo-data";
-import { DEMO_LINKED_PHOTOS, DEMO_PROFILE_PICTURES, demoSenderPicture } from "./demo-pictures";
+import { DEMO_LINKED_PHOTOS, DEMO_PROFILE_PICTURES, DEMO_REMOTE_PICTURES, demoSenderPicture } from "./demo-pictures";
 import { contactPhotoSource } from "./jmap/contacts";
 import type {
+  BirthdayImportEntry,
+  BirthdayImportResult,
+  BirthdayScan,
+  AssistComposeRequest,
+  AssistLabelInput,
+  AssistProviderInput,
+  AssistSettingsPatch,
+  AssistStreamHandlers,
+  AssistSummarizeRequest,
   BlockedSender,
   Account,
   AttachmentContent,
@@ -58,6 +69,9 @@ import type {
   SharedAccount,
   Signature,
   ThreadDetail,
+  ImageSizeProbe,
+  ImageText,
+  ImageTextResult,
   ThreadPage,
   ThreadQuery,
   ThreadSummary,
@@ -434,12 +448,21 @@ export class DemoBackend implements Backend {
   async setFlags(messageIds: string[], change: FlagChange) {
     const touched = this.messages.filter((m) => messageIds.includes(m.id));
     if (change.seen !== undefined) this.allowed(touched, "maySetSeen");
-    if (change.flagged !== undefined) this.allowed(touched, "maySetKeywords");
+    if (change.flagged !== undefined || change.keywords) this.allowed(touched, "maySetKeywords");
     for (const message of this.messages) {
       if (!messageIds.includes(message.id)) continue;
       if (change.seen !== undefined) message.flags.seen = change.seen;
       if (change.flagged !== undefined) message.flags.flagged = change.flagged;
+      if (change.keywords) {
+        const keywords = new Set(message.keywords ?? []);
+        for (const [keyword, on] of Object.entries(change.keywords)) {
+          if (on) keywords.add(keyword.toLowerCase());
+          else keywords.delete(keyword.toLowerCase());
+        }
+        message.keywords = [...keywords].sort();
+      }
     }
+    if (change.keywords) this.assist.keywordsChanged(messageIds, change.keywords);
     this.emitChanged(messageIds);
   }
 
@@ -842,8 +865,59 @@ export class DemoBackend implements Backend {
   }
 
   imageProxy() {
-    // No server to fetch through; the demo's remote pictures point at hosts that never answer.
-    return null;
+    // The demo's stand-in for the server "fetches" the sample mail's pictures; every other address
+    // stays as it is and blocked, like one the server can't take.
+    return (url: string) => DEMO_REMOTE_PICTURES[url.trim()]?.url ?? url;
+  }
+
+  /** Sizes the way the server tells them: each after its own moment, a dead host after a short wait. */
+  imageSizes(): ImageSizeProbe {
+    return async (urls, onSize, signal) => {
+      await Promise.all(
+        urls.map(async (url) => {
+          const known = DEMO_REMOTE_PICTURES[url];
+          await wait(known?.delay ?? 600);
+          if (signal.aborted) return;
+          onSize(
+            known?.url
+              ? { url, width: known.width, height: known.height, failed: false }
+              : { url, width: null, height: null, failed: true },
+          );
+        }),
+      );
+    };
+  }
+
+  /** Made-up text for the sample pictures, as the server's OCR would read it. */
+  async imageText(emailId: string, remote: boolean): Promise<ImageTextResult> {
+    await wait(400);
+    const message = this.messages.find((m) => m.id === emailId);
+    if (!message) throw new BackendError("not_found", "That mail is gone.");
+    const german = lang() === "de";
+    const images: ImageText[] = message.attachments
+      .filter((attachment) => attachment.mimeType.startsWith("image/"))
+      .map((attachment) => ({
+        source: attachment.contentId ? `cid:${attachment.contentId}` : `blob:${attachment.id}`,
+        text: german
+          ? "CHILL VIBES\nPremiere: Freitag, 9. Oktober 2026, 20:00 Uhr\nKino am Hafen"
+          : "CHILL VIBES\nPremiere: Friday, 9 October 2026, 8 pm\nHarbour Cinema",
+        width: 1280,
+        height: 720,
+      }));
+    if (remote && message.bodyHtml?.includes("cdn.pixelparts.example/keycaps.jpg")) {
+      images.push({
+        source: "https://cdn.pixelparts.example/keycaps.jpg",
+        text: german
+          ? "Bubblegum-Set · Lieferung Donnerstag, 1. Oktober"
+          : "Bubblegum set · Delivery Thursday, 1 October",
+        width: 960,
+        height: 540,
+      });
+    }
+    // The appointment mails' poster (demo-dates), an embedded picture.
+    const poster = DEMO_IMAGE_TEXT.get(emailId);
+    if (poster) images.push({ source: "cid:poster@kaffeekuchen.example", text: poster, width: 420, height: 560 });
+    return { emailId, unavailable: false, images, skipped: 0 };
   }
 
   async companyDomain(email: string) {
@@ -853,7 +927,52 @@ export class DemoBackend implements Backend {
     return labels.length < 2 || DEMO_FREEMAIL.has(domain) ? null : domain;
   }
 
-  private calendar = new DemoCalendar(lang(), DEMO_ACCOUNTS[0]!.id, () => this.emit({ type: "calendar:changed" }));
+  private calendar = new DemoCalendar(
+    lang(),
+    DEMO_ACCOUNTS[0]!.id,
+    () => this.emit({ type: "calendar:changed" }),
+    undefined,
+    () => this.addressBook.contacts(),
+  );
+
+  async birthdayImportAvailable() {
+    return true;
+  }
+
+  async scanBirthdays(): Promise<BirthdayScan> {
+    await wait(250);
+    return { candidates: this.calendar.scanBirthdays(), truncated: false };
+  }
+
+  async importBirthdays(entries: BirthdayImportEntry[]): Promise<BirthdayImportResult> {
+    await wait(300);
+    const found = new Map(this.calendar.scanBirthdays().map((candidate) => [candidate.eventId, candidate]));
+    const result: BirthdayImportResult = { imported: [], failed: [] };
+    for (const entry of entries) {
+      const candidate = found.get(entry.eventId);
+      if (!candidate) {
+        result.failed.push({ eventId: entry.eventId, reason: "notFound" });
+        continue;
+      }
+      try {
+        let contactId: string;
+        let created = false;
+        if ("contactId" in entry) {
+          this.addressBook.setBirthday(entry.contactId, candidate.birthday, entry.overwrite === true);
+          contactId = entry.contactId;
+        } else {
+          contactId = this.addressBook.createNamed(entry.newContactName, candidate.birthday);
+          created = true;
+        }
+        // Like the server: an event of a calendar that is only read stays where it is.
+        if (candidate.mayDeleteEvent) this.calendar.removeEvent(entry.eventId);
+        result.imported.push({ eventId: entry.eventId, contactId, created, eventDeleted: candidate.mayDeleteEvent });
+      } catch (error) {
+        result.failed.push({ eventId: entry.eventId, reason: error instanceof Error ? error.message : String(error) });
+      }
+    }
+    return result;
+  }
 
   async calendarsAvailable() {
     return true;
@@ -1029,6 +1148,134 @@ export class DemoBackend implements Backend {
     this.masked.update(id, patch);
   }
 
+  /** The AI assistant, played with made-up answers. */
+  private assist = new DemoAssist(
+    lang(),
+    () => this.messages,
+    (mail) => {
+      this.emit({ type: "assist:changed" });
+      if (mail) for (const account of this.accounts) this.emit({ type: "mail:changed", accountId: account.id });
+    },
+  );
+
+  async assistOptions() {
+    return this.assist.options();
+  }
+
+  async assistFeatures() {
+    return this.assist.options().features;
+  }
+
+  async assistProviders() {
+    await wait(80);
+    return this.assist.listProviders();
+  }
+
+  async createAssistProvider(input: AssistProviderInput) {
+    await wait(150);
+    return this.assist.createProvider(input);
+  }
+
+  async updateAssistProvider(id: string, patch: AssistProviderInput) {
+    await wait(120);
+    this.assist.updateProvider(id, patch);
+  }
+
+  async deleteAssistProvider(id: string) {
+    await wait(100);
+    this.assist.deleteProvider(id);
+  }
+
+  async assistModels(providerId: string) {
+    await wait(400);
+    return this.assist.models(providerId);
+  }
+
+  async chatgptLogin(providerId: string) {
+    await wait(300);
+    return this.assist.chatgptLogin(providerId);
+  }
+
+  async chatgptPoll(providerId: string) {
+    await wait(120);
+    return this.assist.chatgptPoll(providerId);
+  }
+
+  async assistSettings() {
+    await wait(60);
+    return this.assist.getSettings();
+  }
+
+  async updateAssistSettings(patch: AssistSettingsPatch) {
+    await wait(100);
+    this.assist.updateSettings(patch);
+  }
+
+  async assistCompose(request: AssistComposeRequest, handlers?: AssistStreamHandlers) {
+    return this.assist.compose(request, handlers);
+  }
+
+  async assistSummarize(request: AssistSummarizeRequest, handlers?: AssistStreamHandlers) {
+    return this.assist.summarize(request, handlers);
+  }
+
+  async assistSpamCheck(emailId: string) {
+    return this.assist.spamCheck(emailId);
+  }
+
+  async extractEvents(emailId: string, _includeImages: boolean) {
+    return this.assist.extractEvents(emailId);
+  }
+
+  async assistUsage(days = 30) {
+    await wait(80);
+    return this.assist.usageReport(Math.min(90, Math.max(1, days)));
+  }
+
+  async assistLabels() {
+    await wait(60);
+    return this.assist.listLabels();
+  }
+
+  async createAssistLabel(input: AssistLabelInput) {
+    await wait(120);
+    return this.assist.createLabel(input);
+  }
+
+  async updateAssistLabel(id: string, patch: Partial<AssistLabelInput>) {
+    await wait(100);
+    this.assist.updateLabel(id, patch);
+  }
+
+  async deleteAssistLabel(id: string) {
+    await wait(100);
+    this.assist.deleteLabel(id);
+  }
+
+  async assistLabelLog(emailIds: string[] | null, limit = 100) {
+    await wait(60);
+    return this.assist.labelLog(emailIds, limit);
+  }
+
+  async undoAssistLabels(logIds: string[]) {
+    await wait(100);
+    this.assist.undo(logIds);
+  }
+
+  async recentInboxIds(limit: number) {
+    await wait(40);
+    const own = this.accounts[0]?.id;
+    return this.messages
+      .filter((message) => message.folderId === `${own}:inbox`)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, limit)
+      .map((message) => message.id);
+  }
+
+  async applyAssistLabels(emailIds: string[]) {
+    return this.assist.apply(emailIds);
+  }
+
   async searchContacts(query: string): Promise<Contact[]> {
     const q = query.trim().toLowerCase();
     const counts = new Map<string, Contact>();
@@ -1150,6 +1397,7 @@ export class DemoBackend implements Backend {
     const sorted = [...list].sort((a, b) => a.date.localeCompare(b.date));
     const last = sorted[sorted.length - 1]!;
     const firstSubject = sorted[0]!.subject;
+    const keywords = [...new Set(sorted.flatMap((m) => m.keywords ?? []))].sort();
     return {
       id,
       accountIds: [...new Set(sorted.map((m) => m.accountId))],
@@ -1162,6 +1410,7 @@ export class DemoBackend implements Backend {
       flagged: sorted.some((m) => m.flags.flagged),
       hasAttachments: sorted.some((m) => m.attachments.length > 0),
       hasDraft: sorted.some((m) => m.flags.draft),
+      ...(keywords.length > 0 ? { keywords } : {}),
     };
   }
 }

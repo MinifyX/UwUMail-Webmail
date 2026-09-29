@@ -47,7 +47,17 @@ export interface MoveRequest {
 }
 
 export type SettingsSection =
-  "appearance" | "mail" | "compose" | "profile" | "rules" | "masked" | "security" | "accounts" | "addons" | "about";
+  | "appearance"
+  | "mail"
+  | "compose"
+  | "profile"
+  | "rules"
+  | "masked"
+  | "assistant"
+  | "security"
+  | "accounts"
+  | "addons"
+  | "about";
 
 /** The parts of the app the switch at the top of the sidebar leads to. */
 export type AppSection = "mail" | "calendar" | "contacts";

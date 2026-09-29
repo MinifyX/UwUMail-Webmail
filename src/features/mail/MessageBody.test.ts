@@ -1,13 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Message } from "@/backend/types";
 import {
   buildDocument,
   buildPrintDocument,
   fixViewportHeightUnits,
   isRunaway,
+  readableBody,
   resolveAppearance,
   ROOT_ID,
 } from "./MessageBody";
+import { eventsInMail } from "@/lib/dates";
+import { loadRemotePictures } from "./remotePictures";
 
 function message(patch: Partial<Message>): Message {
   return {
@@ -87,6 +90,121 @@ describe("buildDocument", () => {
   // opaque white canvas, which made plain text unreadable in dark mode.
   it("gives dark plain text a matching color scheme", () => {
     expect(buildDocument(message({ bodyText: "Hi" }), false, "dark")).toContain(":root{color-scheme:dark}");
+  });
+});
+
+describe("remote pictures in the reader", () => {
+  const proxy = (url: string) => `/jmap/image/a1?url=${encodeURIComponent(url)}`;
+  const mail = message({
+    bodyHtml:
+      '<p>Hi</p><img src="https://cdn.example/hero.jpg" width="600" height="300"><img src="cid:logo">' +
+      '<div style="background:url(https://cdn.example/bg.png)">x</div>',
+  });
+
+  // Regression: a srcdoc frame's load event waits for every picture, so one dead tracking host
+  // kept the whole mail hidden until the server gave up on it.
+  it("names no remote picture in the document, only placeholders of their size", () => {
+    const doc = buildDocument(mail, true, "light", new Map(), proxy, true);
+    expect(doc).not.toMatch(/ src="\/jmap\/image/);
+    expect(doc).toContain(`data-uwu-src="${proxy("https://cdn.example/hero.jpg")}"`);
+    expect(doc).toContain("width='600'%20height='300'");
+    expect(doc).toContain("data-uwu-pending");
+    expect(doc).toContain("@keyframes uwu-shimmer");
+    // Backgrounds stay as they were, through the proxy.
+    expect(doc).toContain(proxy("https://cdn.example/bg.png"));
+    expect(doc).toContain(`img-src data: cid: blob: ${window.location.origin};`);
+  });
+
+  it("defers nothing while remote pictures are blocked, or without being asked to", () => {
+    const blocked = buildDocument(mail, false, "light", new Map(), proxy, true);
+    expect(blocked).not.toContain("data-uwu-");
+    expect(blocked).toContain('src="https://cdn.example/hero.jpg"');
+    const direct = buildDocument(mail, true, "light", new Map(), proxy);
+    expect(direct).not.toContain("data-uwu-");
+    expect(direct).toContain(`src="${proxy("https://cdn.example/hero.jpg")}"`);
+  });
+
+  // security-audit W-39: the reader's own markers in a mail made the server fetch an address
+  // (a read receipt) before the person allowed remote pictures.
+  it("drops the reader's own markers a mail brings along", () => {
+    const forged = message({
+      bodyHtml:
+        '<img src="data:image/gif;base64,R0lGOD" width="1" data-uwu-pending data-uwu-src="https://track.example/p" ' +
+        'data-uwu-url="https://track.example/p" data-UWU-srcset="https://track.example/q 1x" data-keep="1">' +
+        '<span data-uwu-date="0" class="uwu-date">Monday</span>',
+    });
+    for (const allow of [false, true]) {
+      const html = buildDocument(forged, allow, "light", new Map(), proxy, true);
+      const root = new DOMParser().parseFromString(html, "text/html").getElementById(ROOT_ID)!;
+      expect(root.innerHTML).not.toMatch(/data-uwu-/i);
+      expect(html).not.toContain("track.example");
+      expect(root.innerHTML).toContain('data-keep="1"');
+      const probe = vi.fn(async () => {});
+      const stop = loadRemotePictures(root, probe, () => {});
+      expect(probe).not.toHaveBeenCalled();
+      stop();
+    }
+    expect(readableBody(forged)).not.toMatch(/data-uwu-/i);
+  });
+
+  it("prints with the real pictures", () => {
+    const labels = { from: "From", to: "To", cc: "Cc", date: "Date" };
+    const doc = buildPrintDocument(mail, true, new Map(), labels, "today", proxy);
+    expect(doc).toContain(`src="${proxy("https://cdn.example/hero.jpg")}"`);
+    expect(doc).not.toContain("data-uwu-");
+  });
+});
+
+describe("found dates", () => {
+  const context = { subject: "Lesung", reference: "2026-09-29T10:00:00", locale: "de-DE" };
+  const marksOf = (mail: Message) =>
+    eventsInMail(readableBody(mail), context).map((event, index) => ({
+      from: event.from,
+      to: event.to,
+      index,
+      label: "Termin",
+    }));
+
+  it("wraps what the finder read in the very same markup, links and pictures intact", () => {
+    const mail = message({
+      subject: "Lesung",
+      bodyHtml:
+        '<p>Am <b>Freitag</b>, 16.10. um 19:30 Uhr <a href="https://shop.example/a?d=16.10.">liest Leni</a>.</p><img src="cid:poster">',
+    });
+    const marks = marksOf(mail);
+    expect(marks).toHaveLength(1);
+    const doc = new DOMParser().parseFromString(
+      buildDocument(mail, false, "light", new Map(), null, false, marks),
+      "text/html",
+    );
+    const parts = [...doc.querySelectorAll("[data-uwu-date]")];
+    expect(parts.map((part) => part.textContent).join("")).toBe("Freitag, 16.10. um 19:30 Uhr");
+    expect(parts[0]!.getAttribute("role")).toBe("button");
+    expect(parts[0]!.getAttribute("tabindex")).toBe("0");
+    expect(doc.querySelector("a")!.getAttribute("href")).toBe("https://shop.example/a?d=16.10.");
+    expect(doc.querySelector("style")!.textContent).toContain(".uwu-date");
+    expect(doc.querySelector("script")).toBeNull();
+  });
+
+  it("marks plain text after its links were made", () => {
+    const mail = message({
+      subject: "Lesung",
+      bodyHtml: null,
+      bodyText: "Lesung am 16.10. um 19 Uhr, Karten: https://tickets.example/16.10.2026",
+    });
+    const marks = marksOf(mail);
+    const doc = new DOMParser().parseFromString(
+      buildDocument(mail, false, "light", new Map(), null, false, marks),
+      "text/html",
+    );
+    expect(doc.querySelector("[data-uwu-date]")!.textContent).toBe("16.10. um 19 Uhr");
+    expect(doc.querySelector("a")!.textContent).toBe("https://tickets.example/16.10.2026");
+  });
+
+  it("leaves the document as it was without marks", () => {
+    const mail = message({ bodyHtml: "<p>Am 16.10. um 19 Uhr</p>" });
+    expect(buildDocument(mail, false, "light", new Map(), null, false, [])).toBe(buildDocument(mail, false, "light"));
+    expect(buildDocument(mail, false, "light")).not.toContain("uwu-date");
   });
 });
 

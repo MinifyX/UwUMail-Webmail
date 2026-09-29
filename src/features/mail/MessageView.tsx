@@ -38,11 +38,19 @@ import { startNewContact, useContactsUi } from "../contacts/state";
 import { useContacts, useContactsAvailable } from "../contacts/useContactsData";
 import { openDraftMessage } from "../compose/openDraft";
 import { useInlineImages } from "./useInlineImages";
+import { MessageLabels } from "../assist/LabelChips";
+import { MessageAssistCards, useMessageAssistItems } from "../assist/ReaderAssist";
+import { mailRights } from "./rights";
 import { nativeAndroid } from "@/backend/mobile";
 import { backend } from "@/backend/backend";
 import { blockSender } from "./selection";
 import { UnsubscribeButton } from "./Unsubscribe";
 import { buildPrintDocument, MessageBody, resolveAppearance, type Appearance } from "./MessageBody";
+import type { Anchor } from "../calendar/state";
+import { openInCalendar } from "../dates/addToCalendar";
+import { DatePopover, EventsBar } from "../dates/EventsBar";
+import { useMailEvents } from "../dates/useMailEvents";
+import type { DetectedEvent } from "@/lib/dates";
 
 interface AppearanceToggleProps {
   message: Message;
@@ -183,6 +191,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
   const trustedSenders = useSettings((s) => s.trustedSenders);
   // The same function for the whole life of the view, so the body isn't rebuilt on every render.
   const imageProxy = useMemo(() => backend().imageProxy(), []);
+  const imageSizes = useMemo(() => backend().imageSizes(), []);
   const mailAppearance = useSettings((s) => s.mailAppearance);
   const senderChoice = useSettings((s) => s.senderAppearance[message.from.email.toLowerCase()]);
   const darkImages = useSettings((s) => s.darkImages);
@@ -198,7 +207,9 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
   // Mail the server filed in Junk was found suspicious; do not auto-load its remote content on the
   // strength of the From address alone, which an attacker controls (security-audit W-4). An explicit
   // "load images" click still works.
-  const inJunk = folders.find((folder) => folder.id === message.folderId)?.role === "junk";
+  const folder = folders.find((entry) => entry.id === message.folderId);
+  const inJunk = folder?.role === "junk";
+  const labelRights = mailRights([message.folderId], folders);
   const trustedBy = matchingEntries(message.from.email, trustedSenders);
   const allowRemote = loadRemote || (!inJunk && (remoteSetting === "always" || trustedBy.length > 0));
 
@@ -211,6 +222,22 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
   );
   const decisionKey = `${message.id}|${allowRemote}`;
   const autoDark = autoDecision?.key === decisionKey ? autoDecision.dark : undefined;
+
+  const found = useMailEvents(message, { open: !collapsed, allowRemote, inJunk, own: folder?.shared !== true });
+  const [dateShown, setDateShown] = useState<{ index: number; anchor: Anchor } | null>(null);
+  // The underlined hit, with whatever the picture or the assistant added to it.
+  const shownHit = dateShown ? found.textEvents[dateShown.index] : undefined;
+  const shownEvent = shownHit
+    ? (found.events.find((event) => event.source === "text" && event.from === shownHit.from) ?? shownHit)
+    : undefined;
+  const addToCalendar = (event: DetectedEvent) => {
+    setDateShown(null);
+    openInCalendar(
+      event,
+      { subject: message.subject, from: message.from, threadId: useUi.getState().selectedThreadId ?? message.threadId },
+      t,
+    );
+  };
 
   if (collapsed) {
     return (
@@ -303,12 +330,17 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
 
       {showDetails && <AddressDetails id={detailsId} message={message} />}
 
+      {!message.flags.draft && <MessageLabels message={message} canEdit={labelRights.flag} />}
+      <MessageAssistCards message={message} inJunk={inJunk} />
+
       {message.hasRemoteContent && !allowRemote && (
         <RemoteImagesBanner email={message.from.email} onLoad={() => setLoadRemote(true)} />
       )}
       {message.hasRemoteContent && remoteSetting !== "always" && trustedBy.length > 0 && !inJunk && (
         <TrustedImagesNote entries={trustedBy} onUntrust={() => setLoadRemote(false)} />
       )}
+
+      <EventsBar messageId={message.id} found={found} onAdd={addToCalendar} />
 
       <div className="selectable">
         <MessageBody
@@ -320,8 +352,19 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
           darkImages={darkImages}
           loadRemoteImage={loadMailImage}
           imageProxy={imageProxy}
+          imageSizes={imageSizes}
+          dateMarks={found.marks}
+          onDate={(index, anchor) => setDateShown(index === null ? null : { index, anchor })}
         />
       </div>
+      {dateShown && shownEvent && (
+        <DatePopover
+          event={shownEvent}
+          anchor={dateShown.anchor}
+          onAdd={addToCalendar}
+          onClose={() => setDateShown(null)}
+        />
+      )}
 
       <MailInvitationCard message={message} />
 
@@ -420,6 +463,9 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
   const { data: contacts = [] } = useContacts();
   const known = contactsAvailable ? contactWithEmail(contacts, email) : undefined;
   const refresh = () => client.invalidateQueries();
+  const { data: folders = [] } = useFolders();
+  const ownMail = folders.find((folder) => folder.id === message.folderId)?.shared !== true;
+  const assistItems = useMessageAssistItems(message, ownMail, own);
   const block = (entry: string) => {
     useUi.getState().selectThread(null);
     void blockSender(entry, message.accountId, [message.id], refresh);
@@ -466,6 +512,7 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
               ]
             : []),
         ]),
+    ...assistItems,
   ];
   return (
     <Menu

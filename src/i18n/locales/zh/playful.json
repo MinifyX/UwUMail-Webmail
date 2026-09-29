@@ -220,5 +220,14 @@
   "profile": {
     "saved": "看起来不错 ✿",
     "removed": "头像没了，首字母回来啦 (・ω・)"
+  },
+  "assist": {
+    "thinking": "正在努力思考… (・ω・)",
+    "compose": {
+      "applied": "已经塞进你的草稿里啦 ✿"
+    },
+    "labels": {
+      "startersTitle": "要不要先用几个标签开个头？ (｀・ω・´)"
+    }
   }
 }

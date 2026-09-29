@@ -29,7 +29,7 @@ import { clearLocalDraft, markLocalDraftSaved, saveLocalDraft } from "./localDra
 import { AccountDot } from "@/components/ui/Avatar";
 import { Button, IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
-import { formatSize } from "@/lib/format";
+import { escapeHtml, formatSize } from "@/lib/format";
 import { modKey } from "@/lib/platform";
 import { htmlToPlainText, isSafeLinkTarget, quotableHtml } from "@/lib/safeHtml";
 import { useAccounts, useIdentities, useMaxSendDelay, useMessageActions, useSignatures } from "@/lib/queries";
@@ -39,6 +39,14 @@ import { initialDraft, replyFrom, type DraftState } from "./draft";
 import { RecipientInput } from "./RecipientInput";
 import { SendLaterDialog } from "./SendLater";
 import { announceSent } from "./undoSend";
+import {
+  ComposeAssistButton,
+  ComposeAssistPanel,
+  type ComposeAssistContext,
+  type ComposeAssistStart,
+} from "../assist/ComposeAssist";
+import { appendToOwnText, ownText, replaceOwnText } from "../assist/draftText";
+import { useAssistFeature } from "../assist/useAssist";
 
 /** Quiet for this long after the last change, then the draft goes to the server. */
 const DRAFT_SAVE_DELAY = 2500;
@@ -124,6 +132,26 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   /** Sent or thrown away: nothing may save the draft again. */
   const finished = useRef(false);
   const [saveState, setSaveState] = useState<SaveState>({ kind: "idle" });
+  // The AI assistant: what was asked, and where in the draft the answer may go.
+  const assistAvailable = useAssistFeature("compose");
+  const [assist, setAssist] = useState<{
+    key: number;
+    start: ComposeAssistStart;
+    context: ComposeAssistContext;
+    range: Range | null;
+  } | null>(null);
+  /** The last cursor or marked text inside the editor, kept while the focus is elsewhere. */
+  const lastRange = useRef<Range | null>(null);
+  useEffect(() => {
+    const remember = () => {
+      const selection = window.getSelection();
+      if (!selection?.rangeCount || !editor.current) return;
+      const range = selection.getRangeAt(0);
+      if (editor.current.contains(range.commonAncestorContainer)) lastRange.current = range.cloneRange();
+    };
+    document.addEventListener("selectionchange", remember);
+    return () => document.removeEventListener("selectionchange", remember);
+  }, []);
 
   /** Puts `signature` in place of the current one (null removes it). Only touches the editor, not React state. */
   const applySignature = useCallback(
@@ -373,6 +401,60 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
     }
   };
 
+  /** A range that still points into the editor as it is now. */
+  const liveRange = (range: Range | null) =>
+    range && editor.current?.contains(range.startContainer) && editor.current.contains(range.endContainer)
+      ? range
+      : null;
+
+  const openAssist = (start: ComposeAssistStart) => {
+    const html = editor.current?.innerHTML ?? body.current;
+    const range = liveRange(lastRange.current);
+    const marked = range && !range.collapsed ? range.toString().trim() : "";
+    setAssist((current) => ({
+      key: (current?.key ?? 0) + 1,
+      start,
+      range: range?.cloneRange() ?? null,
+      context: {
+        source: marked ? { scope: "selection", text: marked } : { scope: "own", text: ownText(html) },
+        subject: draft.subject,
+        replyToEmailId: inReplyTo ?? null,
+        language: i18n.language,
+      },
+    }));
+  };
+
+  /** Puts the assistant's text into the draft, with the browser's undo where it can. */
+  const applyAssist = (how: "insert" | "replace", text: string) => {
+    const node = editor.current;
+    if (!node || !assist) return;
+    const inline = escapeHtml(text.trim()).replace(/\r?\n/g, "<br>");
+    const target = how === "replace" ? liveRange(assist.range) : liveRange(lastRange.current);
+    const selection = window.getSelection();
+    if (how === "replace" && assist.context.source.scope === "selection" && target && selection) {
+      node.focus();
+      selection.removeAllRanges();
+      selection.addRange(target);
+      document.execCommand("insertHTML", false, inline);
+    } else if (how === "replace") {
+      node.innerHTML = replaceOwnText(node.innerHTML, text);
+    } else if (target && selection) {
+      node.focus();
+      selection.removeAllRanges();
+      target.collapse(false);
+      selection.addRange(target);
+      document.execCommand("insertHTML", false, inline);
+    } else {
+      node.innerHTML = appendToOwnText(node.innerHTML, text);
+    }
+    body.current = node.innerHTML;
+    setError(null);
+    changed();
+    setEdits((count) => count + 1);
+    setAssist(null);
+    toast(t("assist.compose.applied"), "success");
+  };
+
   const title =
     draft.subject ||
     t(request.mode === "forward" ? "compose.forward" : request.mode === "new" ? "compose.new" : "compose.reply");
@@ -608,6 +690,19 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         />
       </div>
 
+      {assist && (
+        <ComposeAssistPanel
+          key={assist.key}
+          start={assist.start}
+          context={assist.context}
+          subjectEmpty={!draft.subject.trim()}
+          onInsert={(text) => applyAssist("insert", text)}
+          onReplace={(text) => applyAssist("replace", text)}
+          onSubject={(subject) => update({ subject })}
+          onClose={() => setAssist(null)}
+        />
+      )}
+
       {attachments.length > 0 && (
         <ul className="flex flex-wrap gap-2 border-t border-hairline px-4 py-2">
           {attachments.map((attachment, index) => (
@@ -731,6 +826,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             />
           )}
         />
+        {assistAvailable && <ComposeAssistButton onPick={openAssist} />}
         <input
           ref={fileInput}
           type="file"

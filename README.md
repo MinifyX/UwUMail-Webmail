@@ -66,9 +66,31 @@ for the whole server or for single accounts.
   account's masked addresses — random ones for single websites, the same the
   portal and password managers make — to copy, describe, switch off, delete
   and bring back, and make new ones on the domains the admin allows.
+- **An AI assistant, where the server has one.** When the admin set up a
+  model (or lets people bring their own key, Ollama in the LAN included), the
+  composer writes from a short instruction or rewrites the draft — more
+  formal, shorter, proofread, translated — the reader summarizes a mail or the
+  whole conversation and gives a second opinion on spam next to the server's
+  own findings, and, once switched on, incoming mail gets your own labels,
+  each with the model's reason and one click to undo. The server asks the model, never the browser;
+  nothing lands in a draft or changes a mail without a click.
 - **Calendar and contacts.** When the server keeps them for the account, the
   calendar and the address books sit next to the mail, the same ones a phone
   syncs over CalDAV and CardDAV.
+- **Birthdays.** Birthdays and wedding anniversaries of the contacts, with or
+  without the year, fill a calendar of their own with the age ("turns 30");
+  a click opens the contact, and each contact can ring on the day, a day or
+  a week before. Birthdays kept as events in other calendars can be moved
+  into the contacts in one go, with a choice for every unclear one, and the
+  old events are deleted afterwards.
+- **Appointments in mail.** "Prime Day deals vom 6. – 9. Okt", "am Freitag,
+  17.10. um 19:30 Uhr", "tomorrow at 3pm": dates in a mail, German or
+  English, are underlined, and a bar above the mail offers them for the
+  calendar, whose editor opens filled in — title, times, place, and a note
+  quoting the mail with a link back to it. Pictures count too, once the
+  server has read their text. This is done by rules in the browser, not by
+  an AI; the server's AI assistant only reads a mail when you click "Check
+  with AI" or switched that on for every mail ([docs/dates.md](docs/dates.md)).
 - **Fits a phone.** Below 700 px it turns into the app's phone layout, with
   swipes and a full-screen composer, and it can be put on the home screen.
 - **Notifications with the tab closed.** Switched on in the settings, the
@@ -80,7 +102,10 @@ for the whole server or for single accounts.
 
 Mail HTML is never trusted: the server hands out a cleaned version, and the
 webmail shows it in a sandboxed frame that blocks scripts and remote content
-until you ask for them.
+until you ask for them. Once they may load, the text shows at once and every remote
+picture waits in its own place with a shimmer, sized by the server before it
+arrives, so nothing jumps; a thin bar counts them in. Pictures from dead hosts
+never hold the mail up: they end as a quiet box, tracking pixels as nothing.
 
 ## Working on it
 

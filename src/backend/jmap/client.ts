@@ -25,6 +25,10 @@ export const WEBMAIL = "urn:uwumail:jmap:webmail";
 export const REMOTE = "urn:uwumail:jmap:remote";
 /** Our own: the one-click unsubscribe of RFC 8058, done by the server (`Email/unsubscribe`). */
 export const UNSUBSCRIBE = "urn:uwumail:jmap:unsubscribe";
+/** Our own: the text in a mail's pictures, read by the server (`Email/imageText`). */
+export const IMAGETEXT = "urn:uwumail:jmap:imagetext";
+/** Our own: birthday events of other calendars moved into the contacts (`Birthdays/scan`, `/import`). */
+export const BIRTHDAYS = "urn:uwumail:jmap:birthdays";
 
 /** An account of the session: the person's own, or one somebody shares folders from. */
 export interface JmapAccount {
@@ -66,7 +70,7 @@ interface RawSession {
  * a browser inside the LAN — or a dev server proxying to it — can't reach. The
  * page itself was served by the right host, so its origin is the one that works.
  */
-function onOwnOrigin(url: string): string {
+export function onOwnOrigin(url: string): string {
   try {
     const parsed = new URL(url, window.location.origin);
     return parsed.pathname + parsed.search;
@@ -142,6 +146,11 @@ export function jmapSession(): JmapSession {
   return session;
 }
 
+/** The portal session's CSRF token, for requests made outside `call` (e.g. the assistant's stream). */
+export function csrfToken(): string {
+  return currentSession().csrfToken;
+}
+
 export function supports(capability: string): boolean {
   return capability in jmapSession().capabilities;
 }
@@ -164,11 +173,20 @@ export class JmapMethodError extends BackendError {
   readonly type: string;
   /** The server's own words, when it gave any. */
   readonly description: string | null;
+  /** Everything the error said, e.g. an extension's `retryAfter`. */
+  readonly details: Record<string, unknown>;
 
-  constructor(code: BackendErrorCode, message: string, type: string, description: string | null = null) {
+  constructor(
+    code: BackendErrorCode,
+    message: string,
+    type: string,
+    description: string | null = null,
+    details: Record<string, unknown> = {},
+  ) {
     super(code, message);
     this.type = type;
     this.description = description;
+    this.details = details;
   }
 }
 
@@ -177,12 +195,12 @@ function methodError(name: string, args: Record<string, unknown>): JmapMethodErr
   const given = typeof args.description === "string" ? args.description : null;
   const description = given ?? name;
   if (type === "accountNotFound" || type === "forbidden")
-    return new JmapMethodError("webmail_disabled", description, type);
+    return new JmapMethodError("webmail_disabled", description, type, given, args);
   if (type === "invalidArguments" || type === "invalidPatch")
-    return new JmapMethodError("invalid_input", description, type);
+    return new JmapMethodError("invalid_input", description, type, given, args);
   if (type === "unknownMethod" || type === "unknownCapability")
-    return new JmapMethodError("not_supported", description, type);
-  return new JmapMethodError("internal", `${type}: ${description}`, type, given);
+    return new JmapMethodError("not_supported", description, type, given, args);
+  return new JmapMethodError("internal", `${type}: ${description}`, type, given, args);
 }
 
 /** One JMAP request with as many method calls as fit; throws on a method-level error. */
@@ -255,6 +273,17 @@ export function remoteImagePath(url: string): string | null {
     .replaceAll("{accountId}", encodeURIComponent(session.accountId))
     .replaceAll("{url}", encodeURIComponent(url));
   return onOwnOrigin(filled);
+}
+
+/**
+ * Where the server tells the sizes of a mail's remote pictures (`imageSizesUrl`), on our own
+ * origin; null when it can't.
+ */
+export function imageSizesPath(): string | null {
+  if (!session) return null;
+  const remote = session.capabilities[REMOTE] as { imageSizesUrl?: unknown } | undefined;
+  if (typeof remote?.imageSizesUrl !== "string") return null;
+  return onOwnOrigin(remote.imageSizesUrl.replaceAll("{accountId}", encodeURIComponent(session.accountId)));
 }
 
 /** What a sender picture lookup may do, see `pictureUrl` in the server's docs. */

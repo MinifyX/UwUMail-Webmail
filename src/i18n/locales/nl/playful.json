@@ -225,5 +225,14 @@
   "profile": {
     "saved": "Ziet er goed uit ✿",
     "removed": "Foto weg, je initialen zijn terug (・ω・)"
+  },
+  "assist": {
+    "thinking": "Ik denk heel hard na… (・ω・)",
+    "compose": {
+      "applied": "Hup, in je concept gestopt ✿"
+    },
+    "labels": {
+      "startersTitle": "Zin om met een paar labels te beginnen? (｀・ω・´)"
+    }
   }
 }

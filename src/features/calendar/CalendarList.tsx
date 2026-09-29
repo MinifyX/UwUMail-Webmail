@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Check, Ellipsis, Plus, Users } from "lucide-react";
+import { Cake, Check, Ellipsis, Plus, Users } from "lucide-react";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { CalendarInfo } from "@/backend/types";
@@ -13,6 +13,7 @@ import { useT } from "@/i18n";
 import { queryKeys, useSharingAvailable } from "@/lib/queries";
 import { ShareDialog } from "../sharing/ShareDialog";
 import { toast } from "@/state/toasts";
+import { BirthdayHint, BirthdayImportDialog, useBirthdayImportAvailable } from "./BirthdayImport";
 import { CALENDAR_COLORS, DEFAULT_COLOR } from "./format";
 import { useCalendars } from "./useCalendarData";
 
@@ -27,6 +28,9 @@ export function CalendarList() {
   const [editing, setEditing] = useState<CalendarInfo | "new" | null>(null);
   const [deleting, setDeleting] = useState<CalendarInfo | null>(null);
   const [sharing, setSharing] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const { data: importAvailable = false } = useBirthdayImportAvailable();
+  const hasBirthdays = calendars.some((calendar) => calendar.isBirthdays);
   const { data: sharingAvailable = false } = useSharingAvailable();
   const sharingCalendar = calendars.find((calendar) => calendar.id === sharing);
 
@@ -64,6 +68,7 @@ export function CalendarList() {
         </h2>
         <IconButton icon={Plus} size="sm" label={t("calendar.newCalendar")} onClick={() => setEditing("new")} />
       </div>
+      <BirthdayHint onOpen={() => setImporting(true)} />
       <ul className="flex flex-col gap-0.5">
         {calendars.map((calendar) => {
           const color = calendar.color ?? DEFAULT_COLOR;
@@ -90,6 +95,7 @@ export function CalendarList() {
                 >
                   {calendar.isVisible && <Check className="size-3 text-white" strokeWidth={3.5} />}
                 </span>
+                {calendar.isBirthdays && <Cake className="size-3.5 shrink-0 text-muted" aria-hidden />}
                 <span className={clsx("min-w-0 flex-1 truncate", !calendar.isVisible && "text-muted")}>
                   {calendar.name}
                   {calendar.sharedBy && (
@@ -131,10 +137,14 @@ export function CalendarList() {
         items={
           menu
             ? [
-                ...(menu.calendar.mayWrite
+                ...(menu.calendar.mayWrite || menu.calendar.isBirthdays
                   ? [{ label: t("calendar.editCalendar"), onSelect: () => setEditing(menu.calendar) }]
                   : []),
-                ...(!menu.calendar.isDefault && menu.calendar.mayWrite
+                // Where birthdays go: from the birthdays calendar, or any calendar while there is none yet.
+                ...(importAvailable && (menu.calendar.isBirthdays || !hasBirthdays)
+                  ? [{ label: t("calendar.birthdays.import"), onSelect: () => setImporting(true) }]
+                  : []),
+                ...(!menu.calendar.isDefault && menu.calendar.mayWrite && !menu.calendar.isBirthdays
                   ? [
                       {
                         label: t("calendar.makeDefault"),
@@ -149,7 +159,7 @@ export function CalendarList() {
                 ...(sharingAvailable && menu.calendar.mayShare
                   ? [{ label: t("sharing.shareCalendar"), onSelect: () => setSharing(menu.calendar.id) }]
                   : []),
-                ...(menu.calendar.mayDelete && calendars.length > 1
+                ...(menu.calendar.mayDelete && !menu.calendar.isBirthdays && calendars.length > 1
                   ? [
                       {
                         label: menu.calendar.sharedBy ? t("sharing.leaveCalendar") : t("calendar.deleteCalendar"),
@@ -162,6 +172,8 @@ export function CalendarList() {
             : []
         }
       />
+
+      <BirthdayImportDialog open={importing} onClose={() => setImporting(false)} />
 
       <ShareDialog
         open={sharingCalendar !== undefined}
