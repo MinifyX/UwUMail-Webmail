@@ -68,13 +68,13 @@ const SERVER_PROVIDER: AssistProvider = {
 
 const DEMO_MODELS: Record<string, string[]> = {
   openai: ["gpt-5", "gpt-5-mini", "gpt-5-nano"],
-  anthropic: ["claude-haiku-4-5", "claude-opus-4-1", "claude-sonnet-4-5"],
+  anthropic: ["claude-haiku-4-5", "claude-opus-5", "claude-sonnet-4-5"],
   gemini: ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"],
   mistral: ["mistral-large-latest", "mistral-medium-latest", "mistral-small-latest"],
-  openrouter: ["mistralai/mistral-small-3.2-24b-instruct", "openai/gpt-5-mini", "qwen/qwen3-32b"],
+  openrouter: ["google/gemini-2.5-flash-lite", "mistralai/mistral-small-3.2-24b-instruct", "openai/gpt-5-mini"],
   ollama: ["gemma3:4b", "llama3.1:8b", "llama3.2:3b", "qwen3:8b"],
   openaiCompatible: ["local-model"],
-  chatgpt: ["gpt-5", "gpt-5-mini"],
+  chatgpt: ["gpt-5", "gpt-5.1", "gpt-5.1-codex", "gpt-5.1-codex-mini"],
 };
 
 /** A lower-case ASCII keyword from a label's name, the way the server makes one. */
@@ -198,6 +198,27 @@ export class DemoAssist {
       });
     }
     this.seedLabels();
+    this.seedUsage();
+  }
+
+  /** A few weeks of made-up use, so the settings have something to show. */
+  private seedUsage() {
+    const features: AssistFeature[] = ["summarize", "autoLabels", "compose", "spamCheck"];
+    for (let back = 1; back < 30; back += 1) {
+      // Quiet on some days, busier on others; always the same.
+      const requests = (back * 7) % 11;
+      if (requests === 0) continue;
+      const feature = features[back % features.length]!;
+      this.usage.push({
+        day: new Date(Date.now() - back * DAY).toISOString().slice(0, 10),
+        providerId: SERVER_PROVIDER.id,
+        providerName: SERVER_PROVIDER.name,
+        feature,
+        requests,
+        inputTokens: requests * 1450,
+        outputTokens: requests * (feature === "compose" ? 260 : 90),
+      });
+    }
   }
 
   /** The labels "the model" put on the sample mail before the demo started. */
