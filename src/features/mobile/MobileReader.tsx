@@ -145,7 +145,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
           {data.thread.subject || t("reader.noSubject")}
         </h1>
         <ThreadAssistButton
-          threadId={data.thread.id}
+          threadId={latest.threadId}
           messages={all}
           own={!rights.shared}
           mine={new Set(accounts.map((account) => account.email.toLowerCase()))}
@@ -232,7 +232,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
           <h2 className="selectable px-1.5 pb-1 text-[20px] leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>
-          <ThreadSummary threadId={data.thread.id} count={all.length} />
+          <ThreadSummary threadId={latest.threadId} count={all.length} />
           {hiddenCount > 1 && (
             <button
               type="button"

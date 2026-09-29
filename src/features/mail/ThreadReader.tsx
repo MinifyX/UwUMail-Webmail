@@ -200,7 +200,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
           />
         )}
         <ThreadAssistButton
-          threadId={data.thread.id}
+          threadId={latest.threadId}
           messages={all}
           own={!rights.shared}
           mine={new Set(accounts.map((account) => account.email.toLowerCase()))}
@@ -215,7 +215,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
           <h2 className="selectable px-1 pt-1 pb-2 text-[22px] leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>
-          <ThreadSummary threadId={data.thread.id} count={all.length} />
+          <ThreadSummary threadId={latest.threadId} count={all.length} />
           {hiddenCount > 1 && (
             <button
               type="button"
