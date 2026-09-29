@@ -88,6 +88,7 @@
     "remoteUntrust": "Stoppen",
     "remoteUntrustedAddress": "Afbeeldingen van {{email}} worden weer geblokkeerd",
     "remoteUntrustedDomain": "Afbeeldingen van {{domain}} worden weer geblokkeerd",
+    "remoteProgress": "Afbeeldingen laden {{done}}/{{total}}",
     "attachments_one": "{{count}} bijlage",
     "attachments_other": "{{count}} bijlagen",
     "earlier_one": "{{count}} eerder bericht",

@@ -90,6 +90,45 @@ describe("buildDocument", () => {
   });
 });
 
+describe("remote pictures in the reader", () => {
+  const proxy = (url: string) => `/jmap/image/a1?url=${encodeURIComponent(url)}`;
+  const mail = message({
+    bodyHtml:
+      '<p>Hi</p><img src="https://cdn.example/hero.jpg" width="600" height="300"><img src="cid:logo">' +
+      '<div style="background:url(https://cdn.example/bg.png)">x</div>',
+  });
+
+  // Regression: a srcdoc frame's load event waits for every picture, so one dead tracking host
+  // kept the whole mail hidden until the server gave up on it.
+  it("names no remote picture in the document, only placeholders of their size", () => {
+    const doc = buildDocument(mail, true, "light", new Map(), proxy, true);
+    expect(doc).not.toMatch(/ src="\/jmap\/image/);
+    expect(doc).toContain(`data-uwu-src="${proxy("https://cdn.example/hero.jpg")}"`);
+    expect(doc).toContain("width='600'%20height='300'");
+    expect(doc).toContain("data-uwu-pending");
+    expect(doc).toContain("@keyframes uwu-shimmer");
+    // Backgrounds stay as they were, through the proxy.
+    expect(doc).toContain(proxy("https://cdn.example/bg.png"));
+    expect(doc).toContain(`img-src data: cid: blob: ${window.location.origin};`);
+  });
+
+  it("defers nothing while remote pictures are blocked, or without being asked to", () => {
+    const blocked = buildDocument(mail, false, "light", new Map(), proxy, true);
+    expect(blocked).not.toContain("data-uwu-");
+    expect(blocked).toContain('src="https://cdn.example/hero.jpg"');
+    const direct = buildDocument(mail, true, "light", new Map(), proxy);
+    expect(direct).not.toContain("data-uwu-");
+    expect(direct).toContain(`src="${proxy("https://cdn.example/hero.jpg")}"`);
+  });
+
+  it("prints with the real pictures", () => {
+    const labels = { from: "From", to: "To", cc: "Cc", date: "Date" };
+    const doc = buildPrintDocument(mail, true, new Map(), labels, "today", proxy);
+    expect(doc).toContain(`src="${proxy("https://cdn.example/hero.jpg")}"`);
+    expect(doc).not.toContain("data-uwu-");
+  });
+});
+
 describe("frame height", () => {
   // Regression: the frame is as tall as its content, so 100vh grew forever.
   it("turns viewport height units into fixed pixels", () => {

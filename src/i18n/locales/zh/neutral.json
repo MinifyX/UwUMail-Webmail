@@ -86,6 +86,7 @@
     "remoteUntrust": "停止",
     "remoteUntrustedAddress": "来自 {{email}} 的图片已重新被阻止",
     "remoteUntrustedDomain": "来自 {{domain}} 的图片已重新被阻止",
+    "remoteProgress": "正在加载图片 {{done}}/{{total}}",
     "attachments_other": "{{count}} 个附件",
     "earlier_other": "{{count}} 封更早的邮件",
     "noSubject": "（无主题）",

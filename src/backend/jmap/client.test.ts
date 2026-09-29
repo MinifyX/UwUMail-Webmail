@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  imageSizesPath,
   loadJmapSession,
   pictureKind,
   pictureSource,
@@ -15,6 +16,7 @@ describe("remote pictures through the server", () => {
 
   it("fills the server's templates on our own origin", async () => {
     expect(remoteImagePath("https://cdn.example/a.png")).toBeNull();
+    expect(imageSizesPath()).toBeNull();
     const session = {
       accounts: { a7: {} },
       primaryAccounts: { "urn:ietf:params:jmap:mail": "a7" },
@@ -27,6 +29,7 @@ describe("remote pictures through the server", () => {
         "urn:uwumail:jmap:remote": {
           imageUrl: "https://mail.example.com/jmap/image/{accountId}?url={url}",
           pictureUrl: "https://mail.example.com/jmap/picture/{accountId}?email={email}",
+          imageSizesUrl: "https://mail.example.com/jmap/image/{accountId}/sizes",
         },
       },
     };
@@ -40,6 +43,7 @@ describe("remote pictures through the server", () => {
       "/jmap/image/a7?url=https%3A%2F%2Fcdn.example%2Fa.png%3Fw%3D1%26h%3D2",
     );
     expect(senderPicturePath("news@shop.example")).toBe("/jmap/picture/a7?email=news%40shop.example");
+    expect(imageSizesPath()).toBe("/jmap/image/a7/sizes");
     // Per address, and with the lookup's options: only what needs no other server, or only the logo.
     expect(senderPicturePath("mina@example.org", { local: true })).toBe(
       "/jmap/picture/a7?email=mina%40example.org&local=1",

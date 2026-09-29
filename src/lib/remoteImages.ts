@@ -19,7 +19,8 @@ const REMOTE = /^\s*https?:\/\//i;
  */
 const CSS_URL = /url\((?=(\s*))\1(?:"([^"]*)"|'([^']*)'|([^\s"'()]*))(?=(\s*))\5\)/gi;
 
-function swap(url: string, proxy: ImageProxy): string {
+/** One address through the proxy when it points at the web; anything else as it is. */
+export function proxyAddress(url: string, proxy: ImageProxy): string {
   return REMOTE.test(url) ? proxy(url.trim()) : url;
 }
 
@@ -37,12 +38,12 @@ export function proxyCss(css: string, proxy: ImageProxy): string {
  * hold commas themselves (`w_100,h_100`), so a bare comma is not taken as a separator; a candidate
  * written that way stays unproxied and blocked.
  */
-function proxySrcset(srcset: string, proxy: ImageProxy): string {
+export function proxySrcset(srcset: string, proxy: ImageProxy): string {
   return srcset
     .split(/,\s+/)
     .map((candidate) => {
       const [url = "", ...descriptor] = candidate.trim().split(/\s+/);
-      return [swap(url, proxy), ...descriptor].join(" ");
+      return [proxyAddress(url, proxy), ...descriptor].join(" ");
     })
     .join(", ");
 }
@@ -61,7 +62,7 @@ export function proxyRemoteImages(html: string, proxy: ImageProxy): string {
       // Links stay links; only an SVG <image> loads what its href names.
       if ((name === "href" || name === "xlink:href") && element.localName !== "image") continue;
       const value = element.getAttribute(name);
-      if (value !== null) element.setAttribute(name, swap(value, proxy));
+      if (value !== null) element.setAttribute(name, proxyAddress(value, proxy));
     }
     const srcset = element.getAttribute("srcset");
     if (srcset !== null) element.setAttribute("srcset", proxySrcset(srcset, proxy));

@@ -41,6 +41,8 @@ import type {
   ThreadPage,
   ThreadQuery,
   UnsubscribeOutcome,
+  ImageSizeProbe,
+  ImageTextResult,
 } from "./types";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
@@ -270,6 +272,16 @@ export interface Backend {
    * fetches them. Null where there is no such server; the pictures then load directly.
    */
   imageProxy(): ImageProxy | null;
+  /**
+   * Asks the server for the sizes of remote pictures before they load, so the reader can hold
+   * their place and skip dead hosts. Null where the server can't; the pictures then load directly.
+   */
+  imageSizes(): ImageSizeProbe | null;
+  /**
+   * The text in a mail's pictures (OCR by the server), e.g. for dates on a poster. Remote pictures
+   * are only read when `remote` is true, which the reader passes only once they may load.
+   */
+  imageText(emailId: string, remote: boolean): Promise<ImageTextResult>;
   /** Main domain of a company address (`news.shop.example` → `shop.example`); null for mail providers. */
   companyDomain(email: string): Promise<string | null>;
 

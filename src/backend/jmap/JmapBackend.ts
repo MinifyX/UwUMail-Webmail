@@ -62,6 +62,8 @@ import type {
   ThreadQuery,
   ThreadSummary,
   UnsubscribeOutcome,
+  ImageSizeProbe,
+  ImageTextResult,
 } from "../types";
 import {
   EDIT_PROPERTIES,
@@ -97,6 +99,7 @@ import {
   CALENDARS,
   CONTACTS,
   CORE,
+  IMAGETEXT,
   MAIL,
   REMOTE,
   SENDERS,
@@ -112,6 +115,7 @@ import {
   reloadJmapSession,
   whenSessionChanges,
   one,
+  imageSizesPath,
   remoteImagePath,
   responseOf,
   pictureKind,
@@ -158,6 +162,7 @@ import {
   visibilityOf,
   type JmapProfilePicture,
 } from "./profile";
+import { probeImageSizes, toImageTextResult } from "./images";
 import { SUGGEST, suggestionLimit, suggestionsToContacts, type JmapAddressSuggestion } from "./suggest";
 import {
   PRINCIPALS,
@@ -2352,6 +2357,28 @@ export class JmapBackend implements Backend {
   imageProxy(): ImageProxy | null {
     // Whatever can't be sent through it stays blocked by the reader's CSP, so `url` is a safe answer.
     return supports(REMOTE) ? (url) => remoteImagePath(url) ?? url : null;
+  }
+
+  imageSizes(): ImageSizeProbe | null {
+    const path = imageSizesPath();
+    if (!path) return null;
+    return async (urls, onSize, signal) => {
+      const { csrfToken } = (await import("../server")).currentSession();
+      await probeImageSizes(path, csrfToken, urls, onSize, signal);
+    };
+  }
+
+  /** `Email/imageText`; without the server's OCR there is nothing to ask. */
+  async imageText(emailId: string, remote: boolean): Promise<ImageTextResult> {
+    await this.start();
+    if (!supports(IMAGETEXT)) return { emailId, unavailable: true, images: [], skipped: 0 };
+    const target = unscopeId(emailId, this.accountId);
+    const raw = await one<Record<string, unknown>>(
+      "Email/imageText",
+      { accountId: target.accountId, emailId: target.id, remote },
+      [CORE, MAIL, IMAGETEXT],
+    );
+    return toImageTextResult(emailId, raw);
   }
 
   async companyDomain(email: string): Promise<string | null> {

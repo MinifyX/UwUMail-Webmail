@@ -19,7 +19,7 @@ import {
   demoRules,
   welcomeMessage,
 } from "./demo-data";
-import { DEMO_LINKED_PHOTOS, DEMO_PROFILE_PICTURES, demoSenderPicture } from "./demo-pictures";
+import { DEMO_LINKED_PHOTOS, DEMO_PROFILE_PICTURES, DEMO_REMOTE_PICTURES, demoSenderPicture } from "./demo-pictures";
 import { contactPhotoSource } from "./jmap/contacts";
 import type {
   BlockedSender,
@@ -58,6 +58,9 @@ import type {
   SharedAccount,
   Signature,
   ThreadDetail,
+  ImageSizeProbe,
+  ImageText,
+  ImageTextResult,
   ThreadPage,
   ThreadQuery,
   ThreadSummary,
@@ -842,8 +845,56 @@ export class DemoBackend implements Backend {
   }
 
   imageProxy() {
-    // No server to fetch through; the demo's remote pictures point at hosts that never answer.
-    return null;
+    // The demo's stand-in for the server "fetches" the sample mail's pictures; every other address
+    // stays as it is and blocked, like one the server can't take.
+    return (url: string) => DEMO_REMOTE_PICTURES[url.trim()]?.url ?? url;
+  }
+
+  /** Sizes the way the server tells them: each after its own moment, a dead host after a short wait. */
+  imageSizes(): ImageSizeProbe {
+    return async (urls, onSize, signal) => {
+      await Promise.all(
+        urls.map(async (url) => {
+          const known = DEMO_REMOTE_PICTURES[url];
+          await wait(known?.delay ?? 600);
+          if (signal.aborted) return;
+          onSize(
+            known?.url
+              ? { url, width: known.width, height: known.height, failed: false }
+              : { url, width: null, height: null, failed: true },
+          );
+        }),
+      );
+    };
+  }
+
+  /** Made-up text for the sample pictures, as the server's OCR would read it. */
+  async imageText(emailId: string, remote: boolean): Promise<ImageTextResult> {
+    await wait(400);
+    const message = this.messages.find((m) => m.id === emailId);
+    if (!message) throw new BackendError("not_found", "That mail is gone.");
+    const german = lang() === "de";
+    const images: ImageText[] = message.attachments
+      .filter((attachment) => attachment.mimeType.startsWith("image/"))
+      .map((attachment) => ({
+        source: attachment.contentId ? `cid:${attachment.contentId}` : `blob:${attachment.id}`,
+        text: german
+          ? "CHILL VIBES\nPremiere: Freitag, 9. Oktober 2026, 20:00 Uhr\nKino am Hafen"
+          : "CHILL VIBES\nPremiere: Friday, 9 October 2026, 8 pm\nHarbour Cinema",
+        width: 1280,
+        height: 720,
+      }));
+    if (remote && message.bodyHtml?.includes("cdn.pixelparts.example/keycaps.jpg")) {
+      images.push({
+        source: "https://cdn.pixelparts.example/keycaps.jpg",
+        text: german
+          ? "Bubblegum-Set · Lieferung Donnerstag, 1. Oktober"
+          : "Bubblegum set · Delivery Thursday, 1 October",
+        width: 960,
+        height: 540,
+      });
+    }
+    return { emailId, unavailable: false, images, skipped: 0 };
   }
 
   async companyDomain(email: string) {
