@@ -168,12 +168,28 @@ describe("places", () => {
     ["Where: Main Hall\nWhen: Oct 6 at 3pm", "Main Hall"],
     ["Treffen am 17.10. um 19 Uhr im Café Lindenblüte", "Café Lindenblüte"],
     ["Meetup on Oct 6 at 6pm at the Grand Hall", "Grand Hall"],
+    ["Am Freitag, 16.10. um 19:30 Uhr liest Leni im Café Lindenblüte aus ihrem Buch.", "Café Lindenblüte"],
+    ["Leni reads at Café Lindenblüte on Friday, October 16 at 7:30pm.", "Café Lindenblüte"],
   ])("%s", (text, place) => {
     expect(only(text).location).toBe(place);
   });
 
   it("finds none where none is said", () => {
     expect(only("Termin am 17.10. um 19 Uhr").location).toBeNull();
+  });
+
+  it.each([
+    "Im Anhang die Einladung für den 17.10. um 19 Uhr.",
+    "Die Party am 17.10. um 19 Uhr steht in der Regel fest.",
+    "Bei Fragen zum Termin am 17.10. um 19 Uhr melde dich.",
+    "The call on Oct 6 at 3pm is at the Moment still on.",
+  ])("takes no everyday phrase for a place: %s", (text) => {
+    expect(only(text).location).toBeNull();
+  });
+
+  it("writes a poster's shouting title like a name", () => {
+    expect(only("HERBSTFEST\nSa 17.10. · 14–18 Uhr").title).toBe("Herbstfest");
+    expect(only("SUMMER OPEN-AIR\nSat Oct 17 · 2–6pm").title).toBe("Summer Open-Air");
   });
 });
 

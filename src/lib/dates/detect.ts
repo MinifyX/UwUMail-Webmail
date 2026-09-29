@@ -107,6 +107,16 @@ const PLACE_LABEL =
   /^\s*(ort|wo|location|where|venue|adresse|address|treffpunkt|place|veranstaltungsort|raum|room)\s*:\s*(.{2,160})$/iu;
 const PLACE_AFTER =
   /^[\s,]{0,3}(?:im|in der|in dem|in|at the|at|bei|beim|auf dem|auf der|an der|am)\s+((?:\p{Lu}[\p{L}\p{N}'’&.-]*)(?:\s+(?:\p{Lu}[\p{L}\p{N}'’&.-]*|\d+[a-z]?|an der|am|in|der|of|the|de|&)){0,5})/u;
+/** The same, anywhere in a sentence: "liest Leni im Café Lindenblüte". */
+/**
+ * A place anywhere in the sentence: "liest Leni im Café Lindenblüte". Only the surer words: German
+ * writes every noun with a capital, so "in", "bei" or "am" would take "bei Fragen" for a place.
+ */
+const PLACE_IN =
+  /(?<![\p{L}])(?:im|in der|in dem|at the|at)\s+((?:\p{Lu}[\p{L}\p{N}'’&.-]*)(?:\s+(?:\p{Lu}[\p{L}\p{N}'’&.-]*|\d+[a-z]?|an der|am|in|der|of|the|de|&)){0,5})/gu;
+/** "im Anhang", "in der Regel", "at the Moment" … look like places and aren't. */
+const NOT_A_PLACE =
+  /^(anhang|anlage|voraus|vorfeld|rahmen|namen|auftrag|allgemeinen|übrigen|laufe|nachgang|moment|detail|details|einzelnen|grunde|sinne|prinzip|zuge|falle|regel|zwischenzeit|nähe|lage|zukunft|vergangenheit|woche|mail|e-mail|nachricht|betreff|kalender|shop|newsletter|kundenkonto|konto|browser|internet|app|team|jahr|monat|januar|februar|märz|april|mai|juni|juli|august|september|oktober|november|dezember|january|february|march|may|june|july|october|december|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|monday|tuesday|wednesday|thursday|friday|saturday|sunday|end|moment|latest|earliest|least|same|time|beginning|start)$/iu;
 const REPLY_PREFIX = /^\s*((re|aw|wg|fwd?|fw|antw|tr|sv|vs)\s*(\[\d+\])?\s*:\s*)+/iu;
 const MAX_TITLE = 80;
 
@@ -163,7 +173,19 @@ function asTitle(candidate: string): string | null {
   const text = trimEdges(candidate);
   const count = words(text).length;
   if (count === 0 || count > 8 || text.length < 3 || !/\p{L}{2}/u.test(text) || NOT_A_TITLE.test(text)) return null;
-  const title = text.length > MAX_TITLE ? `${text.slice(0, MAX_TITLE - 1).trimEnd()}…` : text;
+  // A poster's "HERBSTFEST" reads as "Herbstfest" in a calendar.
+  const shouting = text === text.toUpperCase() && /\p{Lu}{3}/u.test(text);
+  const cased = shouting
+    ? text.toLowerCase().replace(/(^|[\s-])(\p{L})/gu, (_, edge: string, letter: string) => edge + letter.toUpperCase())
+    : text;
+  const chars = Array.from(cased);
+  const title =
+    chars.length > MAX_TITLE
+      ? `${chars
+          .slice(0, MAX_TITLE - 1)
+          .join("")
+          .trimEnd()}…`
+      : cased;
   return title.charAt(0).toUpperCase() + title.slice(1);
 }
 
@@ -226,9 +248,16 @@ function locationFor(text: string, hit: FoundDate): string | null {
     const label = PLACE_LABEL.exec(line);
     if (label) return label[2]!.trim().replace(/[.;,]+$/, "");
   }
-  const [, sentenceEnd] = sentenceBounds(text, hit.from, hit.to);
+  const [sentenceStart, sentenceEnd] = sentenceBounds(text, hit.from, hit.to);
   const place = PLACE_AFTER.exec(text.slice(hit.to, sentenceEnd));
-  return place ? place[1]!.trim().replace(/[.,;:]+$/, "") : null;
+  if (place) return place[1]!.trim().replace(/[.,;:]+$/, "");
+  // Elsewhere in the sentence, as long as it isn't one of the phrases that only look like a place.
+  const sentence = `${text.slice(sentenceStart, hit.from)} ${text.slice(hit.to, sentenceEnd)}`;
+  for (const match of sentence.matchAll(PLACE_IN)) {
+    const name = match[1]!.trim().replace(/[.,;:]+$/, "");
+    if (!NOT_A_PLACE.test(name.split(/\s+/)[0]!)) return name;
+  }
+  return null;
 }
 
 function quoteFor(text: string, hit: FoundDate): string {

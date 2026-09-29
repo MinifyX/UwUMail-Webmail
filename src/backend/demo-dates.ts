@@ -44,7 +44,7 @@ export function saleMail(lang: Lang, now: number): string {
 <h1 style="color:#1f2a5c;margin:0 0 8px">Pixel Days ⌨️</h1>
 <p style="font-size:17px">${
     de
-      ? `Pixel Days ${range(first, last, lang)}: bis zu 40&nbsp;% auf alle Keycap-Sets.`
+      ? `Pixel Days ${range(first, last, lang)}: bis zu 40\u00a0% auf alle Keycap-Sets.`
       : `Pixel Days ${range(first, last, lang)}: up to 40% off all keycap sets.`
   }</p>
 <p>${
