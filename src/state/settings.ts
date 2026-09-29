@@ -54,6 +54,11 @@ export interface Settings {
   pushNotifications: boolean;
   /** Notifications show sender and subject, or only that something came. */
   pushShowContent: boolean;
+  /**
+   * The AI assistant reads appointments out of every opened mail by itself (costs tokens per
+   * mail). Follows the account as `assist.refineEvents`.
+   */
+  assistRefineEvents: boolean;
 }
 
 interface SettingsActions {
@@ -90,6 +95,7 @@ export const DEFAULT_SETTINGS: Settings = {
   undoSendSeconds: 10,
   pushNotifications: false,
   pushShowContent: true,
+  assistRefineEvents: false,
 };
 
 /**

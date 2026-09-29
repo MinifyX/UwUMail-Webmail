@@ -22,6 +22,7 @@ const base: SyncedSettings = {
   senderPictures: true,
   undoSendSeconds: 10,
   linkConfirm: true,
+  assistRefineEvents: false,
   trustedSenders: [],
   senderAppearance: {},
   linkDomains: [],
@@ -39,6 +40,9 @@ describe("keys the server takes", () => {
     expect(isSyncable("linkConfirm", false)).toBe(true);
     expect(isSyncable("darkImages", "yes")).toBe(false);
     expect(isSyncable("listDensity", "compact")).toBe(false);
+    expect(isSyncable("assist.refineEvents", true)).toBe(true);
+    expect(isSyncable("assist.refineEvents", "on")).toBe(false);
+    expect(isSyncable("assistRefineEvents", true)).toBe(false);
   });
 
   it("takes names every object inherits for nothing", () => {
@@ -111,6 +115,7 @@ describe("settings as keys", () => {
   it("covers every synced field of the defaults", () => {
     expect(Object.keys(settingsToValues(DEFAULT_SETTINGS)).sort()).toEqual(
       [
+        "assist.refineEvents",
         "conversations",
         "darkImages",
         "language",
@@ -149,6 +154,12 @@ describe("settings as keys", () => {
       senderAppearance: {},
       linkDomains: ["uwumail.test"],
     });
+  });
+
+  it("maps a choice with a key of its own onto its setting", () => {
+    expect(settingsToValues({ ...base, assistRefineEvents: true })).toMatchObject({ "assist.refineEvents": true });
+    expect(applyToSettings(base, { "assist.refineEvents": true })).toEqual({ assistRefineEvents: true });
+    expect(applyToSettings(base, { "assist.refineEvents": false })).toEqual({});
   });
 
   it("diffs into a patch with null for removals", () => {
