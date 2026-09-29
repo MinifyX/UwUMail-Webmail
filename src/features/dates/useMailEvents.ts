@@ -45,10 +45,13 @@ export interface MailEvents {
 
 const NONE: DetectedEvent[] = [];
 
-/** The mail has pictures the server could read: inline ones, attached ones or remote ones. */
-function hasPictures(message: Message): boolean {
+/**
+ * The mail has pictures of its own the server could read: embedded ones (cid:, data:) or attached
+ * ones. Remote ones count separately, only once they may load.
+ */
+function hasOwnPictures(message: Message): boolean {
   return (
-    /<img\b/i.test(message.bodyHtml ?? "") ||
+    /<img\b[^>]*\ssrc\s*=\s*["']?\s*(?:cid|data):/i.test(message.bodyHtml ?? "") ||
     message.attachments.some((attachment) => attachment.mimeType.toLowerCase().startsWith("image/"))
   );
 }
@@ -76,9 +79,9 @@ export function useMailEvents(message: Message, { open, allowRemote, inJunk }: M
 
   const textEvents = useMemo(() => (on ? eventsInMail(readableBody(message), context) : NONE), [on, message, context]);
 
-  const pictures = on && hasPictures(message);
   // Remote pictures only once they may load for the person anyway.
   const remote = allowRemote && message.hasRemoteContent;
+  const pictures = on && (remote || hasOwnPictures(message));
   const imageText = useQuery({
     queryKey: ["imageText", message.id, remote],
     queryFn: () => backend().imageText(message.id, remote),

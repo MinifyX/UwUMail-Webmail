@@ -282,6 +282,20 @@ describe("useMailEvents", () => {
     expect(result.current.events[0]).toMatchObject({ refined: true, end: "2026-10-16T21:30:00" });
   });
 
+  it("reads remote pictures only once they may load", async () => {
+    const mail = message({
+      bodyHtml: '<p>Party am 16.10.</p><img src="https://shop.example/poster.png">',
+      hasRemoteContent: true,
+    });
+    const blocked = renderHook(() => useMailEvents(mail, options), { wrapper: wrapper() });
+    await waitFor(() => expect(blocked.result.current.textEvents).toHaveLength(1));
+    expect(fake.imageText).not.toHaveBeenCalled();
+    blocked.unmount();
+    const allowed = renderHook(() => useMailEvents(mail, { ...options, allowRemote: true }), { wrapper: wrapper() });
+    await waitFor(() => expect(fake.imageText).toHaveBeenCalledWith("m1", true));
+    allowed.unmount();
+  });
+
   it("asks the assistant on its own only with assist.refineEvents", async () => {
     useSettings.getState().update({ assistRefineEvents: true });
     const { result } = renderHook(() => useMailEvents(message(), options), { wrapper: wrapper() });
