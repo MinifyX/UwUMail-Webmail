@@ -47,6 +47,8 @@ export function eventsInImageText(text: string, context: MailContext): DetectedE
 export function markMail(html: string, subject: string, marks: readonly Mark[]): string {
   if (marks.length === 0) return html;
   const body = parseBody(html);
+  // Only our own marks answer a click: a mail can't bring look-alikes.
+  for (const fake of body.querySelectorAll("[data-uwu-date]")) fake.removeAttribute("data-uwu-date");
   const collected = collectText(body, isForward(subject));
   markText(body, collected, marks);
   return body.innerHTML;

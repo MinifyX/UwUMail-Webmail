@@ -103,6 +103,15 @@ describe("mail", () => {
     expect(parseBody(marked).querySelector("[data-uwu-date]")!.textContent).toBe("6. – 9. Okt");
   });
 
+  it("drops look-alike marks the mail brings", () => {
+    const html = '<p data-uwu-date="0" class="uwu-date">Klick</p><p>Prime Day deals vom 6. – 9. Okt</p>';
+    const [event] = eventsInMail(html, CONTEXT);
+    const marked = parseBody(
+      markMail(html, CONTEXT.subject, [{ from: event!.from, to: event!.to, index: 0, label: "Termin" }]),
+    );
+    expect([...marked.querySelectorAll("[data-uwu-date]")].map((part) => part.textContent)).toEqual(["6. – 9. Okt"]);
+  });
+
   it("returns the markup untouched without marks", () => {
     expect(markMail("<p>x</p>", "s", [])).toBe("<p>x</p>");
   });
