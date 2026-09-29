@@ -361,6 +361,8 @@ export interface Backend {
   undoAssistLabels(logIds: string[]): Promise<void>;
   /** Asks the model now for mail that came before auto-labels were on; label ids per mail. */
   applyAssistLabels(emailIds: string[]): Promise<Record<string, string[]>>;
+  /** The newest mails of the own inbox (for labelling mail that came before auto-labels). */
+  recentInboxIds(limit: number): Promise<string[]>;
 
   /** Downloads the attachment and hands out a blob URL for it. */
   getAttachment(attachmentId: string): Promise<AttachmentContent>;

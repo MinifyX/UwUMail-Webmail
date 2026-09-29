@@ -2442,6 +2442,19 @@ export class JmapBackend implements Backend {
    * Recipient suggestions: ranked by the server from the address books and the mail history where
    * it offers that (`AddressSuggestion/query`), otherwise the address books' matches.
    */
+  async recentInboxIds(limit: number): Promise<string[]> {
+    await this.start();
+    const inbox = this.folderWithRole("inbox");
+    if (!inbox) return [];
+    const found = await one<QueryResponse>("Email/query", {
+      filter: { inMailbox: unscopeId(inbox.id, this.accountId).id },
+      sort: [{ property: "receivedAt", isAscending: false }],
+      limit: Math.min(100, Math.max(1, limit)),
+      calculateTotal: false,
+    });
+    return found.ids;
+  }
+
   async searchContacts(query: string): Promise<Contact[]> {
     const wanted = query.trim();
     if (!wanted) return [];

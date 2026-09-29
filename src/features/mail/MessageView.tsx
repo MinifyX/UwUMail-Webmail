@@ -38,6 +38,9 @@ import { startNewContact, useContactsUi } from "../contacts/state";
 import { useContacts, useContactsAvailable } from "../contacts/useContactsData";
 import { openDraftMessage } from "../compose/openDraft";
 import { useInlineImages } from "./useInlineImages";
+import { MessageLabels } from "../assist/LabelChips";
+import { MessageAssistCards, useMessageAssistItems } from "../assist/ReaderAssist";
+import { mailRights } from "./rights";
 import { nativeAndroid } from "@/backend/mobile";
 import { backend } from "@/backend/backend";
 import { blockSender } from "./selection";
@@ -198,7 +201,9 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
   // Mail the server filed in Junk was found suspicious; do not auto-load its remote content on the
   // strength of the From address alone, which an attacker controls (security-audit W-4). An explicit
   // "load images" click still works.
-  const inJunk = folders.find((folder) => folder.id === message.folderId)?.role === "junk";
+  const folder = folders.find((entry) => entry.id === message.folderId);
+  const inJunk = folder?.role === "junk";
+  const labelRights = mailRights([message.folderId], folders);
   const trustedBy = matchingEntries(message.from.email, trustedSenders);
   const allowRemote = loadRemote || (!inJunk && (remoteSetting === "always" || trustedBy.length > 0));
 
@@ -302,6 +307,9 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
       </header>
 
       {showDetails && <AddressDetails id={detailsId} message={message} />}
+
+      {!message.flags.draft && <MessageLabels message={message} canEdit={labelRights.flag} />}
+      <MessageAssistCards message={message} inJunk={inJunk} />
 
       {message.hasRemoteContent && !allowRemote && (
         <RemoteImagesBanner email={message.from.email} onLoad={() => setLoadRemote(true)} />
@@ -420,6 +428,9 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
   const { data: contacts = [] } = useContacts();
   const known = contactsAvailable ? contactWithEmail(contacts, email) : undefined;
   const refresh = () => client.invalidateQueries();
+  const { data: folders = [] } = useFolders();
+  const ownMail = folders.find((folder) => folder.id === message.folderId)?.shared !== true;
+  const assistItems = useMessageAssistItems(message, ownMail, own);
   const block = (entry: string) => {
     useUi.getState().selectThread(null);
     void blockSender(entry, message.accountId, [message.id], refresh);
@@ -466,6 +477,7 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
               ]
             : []),
         ]),
+    ...assistItems,
   ];
   return (
     <Menu

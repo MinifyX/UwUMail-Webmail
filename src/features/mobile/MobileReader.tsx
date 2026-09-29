@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
+import { ThreadAssistButton, ThreadSummary } from "../assist/ReaderAssist";
 import { MessageView } from "../mail/MessageView";
 import { requestMove } from "../mail/selection";
 import { mailRights } from "../mail/rights";
@@ -143,6 +144,13 @@ export function MobileReader({ threadId }: { threadId: string }) {
         <h1 className="min-w-0 flex-1 truncate px-1 text-[16px] font-bold">
           {data.thread.subject || t("reader.noSubject")}
         </h1>
+        <ThreadAssistButton
+          threadId={data.thread.id}
+          messages={all}
+          own={!rights.shared}
+          mine={new Set(accounts.map((account) => account.email.toLowerCase()))}
+          align="end"
+        />
         {rights.flag && (
           <IconButton
             icon={Star}
@@ -224,6 +232,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
           <h2 className="selectable px-1.5 pb-1 text-[20px] leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>
+          <ThreadSummary threadId={data.thread.id} count={all.length} />
           {hiddenCount > 1 && (
             <button
               type="button"

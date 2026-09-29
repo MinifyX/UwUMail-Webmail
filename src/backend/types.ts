@@ -1041,6 +1041,9 @@ export interface AssistLabelLogEntry {
   createdAt: string;
   /** Taken off again, with undo or by removing the keyword. */
   undone: boolean;
+  /** Who chose it, where the server says (newer servers). */
+  providerName: string | null;
+  model: string | null;
 }
 
 export interface AssistUsageDay {

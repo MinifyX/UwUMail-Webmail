@@ -1159,6 +1159,16 @@ export class DemoBackend implements Backend {
     this.assist.undo(logIds);
   }
 
+  async recentInboxIds(limit: number) {
+    await wait(40);
+    const own = this.accounts[0]?.id;
+    return this.messages
+      .filter((message) => message.folderId === `${own}:inbox`)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, limit)
+      .map((message) => message.id);
+  }
+
   async applyAssistLabels(emailIds: string[]) {
     return this.assist.apply(emailIds);
   }

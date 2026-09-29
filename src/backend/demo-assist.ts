@@ -227,6 +227,7 @@ export class DemoAssist {
   }
 
   private label(message: Message, label: AssistLabel, reason: string) {
+    const who = this.effective("autoLabels");
     message.keywords = [...new Set([...(message.keywords ?? []), label.keyword])].sort();
     this.log.unshift({
       id: `l${this.nextId++}`,
@@ -237,6 +238,8 @@ export class DemoAssist {
       reason,
       createdAt: new Date(new Date(message.date).getTime() + 2 * MINUTE).toISOString(),
       undone: false,
+      providerName: who?.providerName ?? SERVER_PROVIDER.name,
+      model: who?.model ?? SERVER_PROVIDER.fastModel,
     });
   }
 

@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { inTrash, useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
+import { ThreadAssistButton, ThreadSummary } from "../assist/ReaderAssist";
 import { MessageView } from "./MessageView";
 import { mailRights } from "./rights";
 import { requestMove } from "./selection";
@@ -198,6 +199,12 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
             onClick={() => void actions.setFlags([latest.id], { seen: false }).then(() => selectThread(null))}
           />
         )}
+        <ThreadAssistButton
+          threadId={data.thread.id}
+          messages={all}
+          own={!rights.shared}
+          mine={new Set(accounts.map((account) => account.email.toLowerCase()))}
+        />
         {rights.shared && !rights.flag && (
           <span className="ml-2 truncate text-[12px] font-semibold text-muted">{t("sharing.readOnly")}</span>
         )}
@@ -208,6 +215,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
           <h2 className="selectable px-1 pt-1 pb-2 text-[22px] leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>
+          <ThreadSummary threadId={data.thread.id} count={all.length} />
           {hiddenCount > 1 && (
             <button
               type="button"

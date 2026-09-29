@@ -245,6 +245,8 @@ export function toLabelLogEntry(raw: Raw): AssistLabelLogEntry {
     reason: asString(raw.reason) ?? "",
     createdAt: asString(raw.createdAt) ?? new Date(0).toISOString(),
     undone: raw.undone === true,
+    providerName: asString(raw.providerName),
+    model: asString(raw.model),
   };
 }
 
