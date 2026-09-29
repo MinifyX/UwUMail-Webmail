@@ -210,12 +210,7 @@ export function DatePopover({ event, anchor, onAdd, onClose }: DatePopoverProps)
             {!isUpcoming(event) && <p className="text-[12.5px] text-muted">{t("dates.over")}</p>}
           </div>
         </div>
-        <Button
-          variant="primary"
-          icon={CalendarPlus}
-          data-autofocus
-          {...armedActivation(shownAt, () => onAdd(event))}
-        >
+        <Button variant="primary" icon={CalendarPlus} data-autofocus {...armedActivation(shownAt, () => onAdd(event))}>
           {t("dates.addLong")}
         </Button>
         {/* After the main button, so that one takes the focus first. */}

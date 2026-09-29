@@ -8,10 +8,12 @@ import {
   providerCreate,
   providerUpdate,
   readAssistStream,
+  MAX_STREAM_BYTES,
   streamAssist,
   toAssistProvider,
   toAssistSettings,
   toEvents,
+  MAX_ASSIST_EVENTS,
   toSpamCheck,
   type EventStreamEvent,
 } from "./assist";
@@ -88,6 +90,25 @@ describe("reading an answer stream", () => {
     );
     await expect(reading).rejects.toBeInstanceOf(AssistError);
     await expect(reading).rejects.toMatchObject({ type: "providerFailed", retryAfter: 20, code: "connection_failed" });
+  });
+
+  it("breaks off a stream that never ends", async () => {
+    let cancelled = false;
+    const chunk = new TextEncoder().encode(`event: delta\ndata: {"text":"${"x".repeat(64 * 1024)}"}\n\n`);
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        controller.enqueue(chunk);
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+    let seen = 0;
+    await expect(readAssistStream(endless, { onDelta: (text) => (seen += text.length) })).rejects.toMatchObject({
+      code: "internal",
+    });
+    expect(seen).toBeLessThanOrEqual(MAX_STREAM_BYTES);
+    expect(cancelled).toBe(true);
   });
 
   it("fails when the stream ends without an answer", async () => {
@@ -243,6 +264,15 @@ describe("objects of the extension", () => {
       quote: "am Dienstag um 9:30",
     });
     expect(events[1]).toMatchObject({ end: "2026-10-09T00:00:00", timeZone: null, participants: [] });
+  });
+
+  it("bounds how many events and how much text a model's answer brings", () => {
+    const one = { start: "2026-10-06T09:30:00", title: "🎉".repeat(500), description: "d".repeat(5000) };
+    const events = toEvents({ events: Array.from({ length: 100 }, () => one) });
+    expect(events).toHaveLength(MAX_ASSIST_EVENTS);
+    expect(Array.from(events[0]!.title)).toHaveLength(200);
+    expect(events[0]!.title.endsWith("🎉")).toBe(true);
+    expect(events[0]!.description).toHaveLength(2000);
   });
 
   it("keeps the verdict to the four words and the server's signals as they are", () => {

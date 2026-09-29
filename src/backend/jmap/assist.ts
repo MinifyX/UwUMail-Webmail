@@ -299,9 +299,19 @@ export function toSpamCheck(raw: Raw, emailId: string): AssistSpamCheck {
 
 const LOCAL_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
 
+/** The most events of one mail taken from the assistant, and how long their texts may be. */
+export const MAX_ASSIST_EVENTS = 20;
+const MAX_EVENT_TEXT = { title: 200, location: 300, description: 2000, quote: 1000 } as const;
+
+/** At most `max` characters (never half an emoji); what the model wrote comes from the mail. */
+function clip(value: string | null, max: number): string | null {
+  if (value === null || value.length <= max) return value;
+  return Array.from(value).slice(0, max).join("");
+}
+
 /** The events of `Assist/extractEvents`; one without a readable start is left out. */
 export function toEvents(raw: Raw): AssistEvent[] {
-  const list = Array.isArray(raw.events) ? raw.events : [];
+  const list = Array.isArray(raw.events) ? raw.events.slice(0, MAX_ASSIST_EVENTS * 2) : [];
   return list
     .map((entry) => asObject(entry))
     .filter((entry): entry is Raw => entry !== null)
@@ -315,23 +325,24 @@ export function toEvents(raw: Raw): AssistEvent[] {
       const participants = Array.isArray(entry.participants) ? entry.participants : [];
       return [
         {
-          title: asString(entry.title) ?? "",
+          title: clip(asString(entry.title), MAX_EVENT_TEXT.title) ?? "",
           start,
           end,
           allDay,
           timeZone: asString(entry.timeZone),
-          location: asString(entry.location),
-          description: asString(entry.description),
+          location: clip(asString(entry.location), MAX_EVENT_TEXT.location),
+          description: clip(asString(entry.description), MAX_EVENT_TEXT.description),
           url: url && url.startsWith("https://") ? url : null,
           participants: participants
             .map((person) => asObject(person))
             .filter((person): person is Raw => person !== null && typeof person.email === "string")
             .map((person) => ({ name: asString(person.name) ?? "", email: person.email as string })),
           confidence: Math.min(1, Math.max(0, asNumber(entry.confidence) ?? 0)),
-          quote: asString(entry.quote) ?? "",
+          quote: clip(asString(entry.quote), MAX_EVENT_TEXT.quote) ?? "",
         },
       ];
-    });
+    })
+    .slice(0, MAX_ASSIST_EVENTS);
 }
 
 /** An hour after `start`, or the next day for an all-day event, as the server does. */
@@ -457,12 +468,16 @@ function parseData(data: string): Raw {
  * `done` event). An `error` event rejects with an `AssistError`; a stream that ends without
  * either one broke off.
  */
+/** More than any answer of a model; a stream that goes on beyond it is broken off. */
+export const MAX_STREAM_BYTES = 4 * 1024 * 1024;
+
 export async function readAssistStream(
   body: ReadableStream<Uint8Array>,
   handlers: AssistStreamHandlers = {},
 ): Promise<Raw> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
+  let received = 0;
   let result: Raw | null = null;
   let failure: AssistError | null = null;
   const parser = createEventStreamParser(({ event, data }) => {
@@ -481,6 +496,8 @@ export async function readAssistStream(
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
+      received += value.byteLength;
+      if (received > MAX_STREAM_BYTES) throw new BackendError("internal", "The answer is too long.");
       parser.push(decoder.decode(value, { stream: true }));
       if (result || failure) break;
     }
