@@ -39,6 +39,8 @@ export interface DetectedEvent {
   source: EventSource;
   description?: string | null;
   url?: string | null;
+  /** The assistant confirmed and refined this text hit. */
+  refined?: boolean;
 }
 
 export interface DetectOptions {

@@ -55,8 +55,8 @@ function initialForm(request: EditorRequest, defaultCalendar: string): Form {
     start: request.draft?.start ?? withClock(todayKey(), "09:00"),
     end: request.draft?.end ?? withClock(todayKey(), "10:00"),
     calendarId: defaultCalendar,
-    location: "",
-    description: "",
+    location: request.draft?.location ?? "",
+    description: request.draft?.description ?? "",
     recurrence: null,
   };
   const recurrence = source.recurrence;
@@ -111,7 +111,7 @@ function recurrenceOf(form: Form): Recurrence | null {
   };
 }
 
-/** The whole event: times, repetition, calendar, place and notes. Mounted once in the calendar. */
+/** The whole event: times, repetition, calendar, place and notes. Mounted once for the whole app. */
 export function EventEditor() {
   const request = useCalendarUi((s) => s.editor);
   const close = useCalendarUi((s) => s.closeEditor);

@@ -10,6 +10,7 @@ import { boilerplate } from "./structure";
 
 export { detectEvents, subjectTitle, MIN_CONFIDENCE, type DetectedEvent, type EventSource } from "./detect";
 export type { Mark } from "./dom";
+export { fromAssist, mergeEvents, sameAppointment } from "./merge";
 
 const FORWARDED = /^\s*(fwd?|fw|wg|tr|vs|weitergeleitet)\s*:/iu;
 

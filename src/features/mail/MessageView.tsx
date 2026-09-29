@@ -43,6 +43,11 @@ import { backend } from "@/backend/backend";
 import { blockSender } from "./selection";
 import { UnsubscribeButton } from "./Unsubscribe";
 import { buildPrintDocument, MessageBody, resolveAppearance, type Appearance } from "./MessageBody";
+import type { Anchor } from "../calendar/state";
+import { openInCalendar } from "../dates/addToCalendar";
+import { DatePopover, EventsBar } from "../dates/EventsBar";
+import { useMailEvents } from "../dates/useMailEvents";
+import type { DetectedEvent } from "@/lib/dates";
 
 interface AppearanceToggleProps {
   message: Message;
@@ -212,6 +217,22 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
   const decisionKey = `${message.id}|${allowRemote}`;
   const autoDark = autoDecision?.key === decisionKey ? autoDecision.dark : undefined;
 
+  const found = useMailEvents(message, { open: !collapsed, allowRemote, inJunk });
+  const [dateShown, setDateShown] = useState<{ index: number; anchor: Anchor } | null>(null);
+  // The underlined hit, with whatever the picture or the assistant added to it.
+  const shownHit = dateShown ? found.textEvents[dateShown.index] : undefined;
+  const shownEvent = shownHit
+    ? (found.events.find((event) => event.source === "text" && event.from === shownHit.from) ?? shownHit)
+    : undefined;
+  const addToCalendar = (event: DetectedEvent) => {
+    setDateShown(null);
+    openInCalendar(
+      event,
+      { subject: message.subject, from: message.from, threadId: useUi.getState().selectedThreadId ?? message.threadId },
+      t,
+    );
+  };
+
   if (collapsed) {
     return (
       <button
@@ -310,6 +331,8 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
         <TrustedImagesNote entries={trustedBy} onUntrust={() => setLoadRemote(false)} />
       )}
 
+      <EventsBar messageId={message.id} found={found} onAdd={addToCalendar} />
+
       <div className="selectable">
         <MessageBody
           message={message}
@@ -320,8 +343,18 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
           darkImages={darkImages}
           loadRemoteImage={loadMailImage}
           imageProxy={imageProxy}
+          dateMarks={found.marks}
+          onDate={(index, anchor) => setDateShown(index === null ? null : { index, anchor })}
         />
       </div>
+      {dateShown && shownEvent && (
+        <DatePopover
+          event={shownEvent}
+          anchor={dateShown.anchor}
+          onAdd={addToCalendar}
+          onClose={() => setDateShown(null)}
+        />
+      )}
 
       <MailInvitationCard message={message} />
 
