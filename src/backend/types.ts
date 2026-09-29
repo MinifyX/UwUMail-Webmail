@@ -707,6 +707,46 @@ export interface MaskedAddressPatch {
   url?: string | null;
 }
 
+/** What the server found out about one remote picture of a mail, see `Backend.imageSizes`. */
+export interface RemoteImageSize {
+  /** The picture's address as the mail has it, not the server's proxy address. */
+  url: string;
+  /** Pixels; null while the picture loads fine but its size is unknown. */
+  width: number | null;
+  height: number | null;
+  /** The picture can't be had: a dead host, an error, or not a picture. */
+  failed: boolean;
+}
+
+/**
+ * Asks the server for the sizes of a mail's remote pictures. `onSize` runs once per address as
+ * soon as the server knows, in any order; the promise settles when every address is answered or
+ * the server gave up. It rejects when the server can't be asked at all.
+ */
+export type ImageSizeProbe = (
+  urls: string[],
+  onSize: (size: RemoteImageSize) => void,
+  signal: AbortSignal,
+) => Promise<void>;
+
+/** The text in a mail's pictures, read by the server (OCR). */
+export interface ImageTextResult {
+  emailId: string;
+  /** The server can't read pictures (no OCR there); `images` is then empty. */
+  unavailable: boolean;
+  images: ImageText[];
+  /** Pictures the server left out, e.g. too big or too many. */
+  skipped: number;
+}
+
+export interface ImageText {
+  /** `cid:<content-id>` for an embedded picture, `blob:<blobId>` for an attached one, else the https URL. */
+  source: string;
+  text: string;
+  width: number;
+  height: number;
+}
+
 export type BackendEvent =
   | { type: "mail:changed"; accountId: string }
   | { type: "mail:received"; accountId: string; messageIds: string[] }

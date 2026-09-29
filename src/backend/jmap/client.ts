@@ -25,6 +25,8 @@ export const WEBMAIL = "urn:uwumail:jmap:webmail";
 export const REMOTE = "urn:uwumail:jmap:remote";
 /** Our own: the one-click unsubscribe of RFC 8058, done by the server (`Email/unsubscribe`). */
 export const UNSUBSCRIBE = "urn:uwumail:jmap:unsubscribe";
+/** Our own: the text in a mail's pictures, read by the server (`Email/imageText`). */
+export const IMAGETEXT = "urn:uwumail:jmap:imagetext";
 
 /** An account of the session: the person's own, or one somebody shares folders from. */
 export interface JmapAccount {
@@ -255,6 +257,17 @@ export function remoteImagePath(url: string): string | null {
     .replaceAll("{accountId}", encodeURIComponent(session.accountId))
     .replaceAll("{url}", encodeURIComponent(url));
   return onOwnOrigin(filled);
+}
+
+/**
+ * Where the server tells the sizes of a mail's remote pictures (`imageSizesUrl`), on our own
+ * origin; null when it can't.
+ */
+export function imageSizesPath(): string | null {
+  if (!session) return null;
+  const remote = session.capabilities[REMOTE] as { imageSizesUrl?: unknown } | undefined;
+  if (typeof remote?.imageSizesUrl !== "string") return null;
+  return onOwnOrigin(remote.imageSizesUrl.replaceAll("{accountId}", encodeURIComponent(session.accountId)));
 }
 
 /** What a sender picture lookup may do, see `pictureUrl` in the server's docs. */

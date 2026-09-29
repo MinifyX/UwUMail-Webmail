@@ -90,6 +90,7 @@
     "remoteUntrust": "Arrêter",
     "remoteUntrustedAddress": "Les images de {{email}} sont de nouveau bloquées",
     "remoteUntrustedDomain": "Les images de {{domain}} sont de nouveau bloquées",
+    "remoteProgress": "Chargement des images {{done}}/{{total}}",
     "attachments_one": "{{count}} pièce jointe",
     "attachments_many": "{{count}} pièces jointes",
     "attachments_other": "{{count}} pièces jointes",

@@ -80,7 +80,10 @@ for the whole server or for single accounts.
 
 Mail HTML is never trusted: the server hands out a cleaned version, and the
 webmail shows it in a sandboxed frame that blocks scripts and remote content
-until you ask for them.
+until you ask for them. Once they may load, the text shows at once and every remote
+picture waits in its own place with a shimmer, sized by the server before it
+arrives, so nothing jumps; a thin bar counts them in. Pictures from dead hosts
+never hold the mail up: they end as a quiet box, tracking pixels as nothing.
 
 ## Working on it
 

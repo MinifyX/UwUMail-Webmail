@@ -86,6 +86,7 @@
     "remoteUntrust": "やめる",
     "remoteUntrustedAddress": "{{email}} からの画像は再びブロックされます",
     "remoteUntrustedDomain": "{{domain}} からの画像は再びブロックされます",
+    "remoteProgress": "画像を読み込み中 {{done}}/{{total}}",
     "attachments_other": "添付ファイル {{count}} 件",
     "earlier_other": "以前のメール {{count}} 件",
     "noSubject": "（件名なし）",
