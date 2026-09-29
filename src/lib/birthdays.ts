@@ -133,3 +133,19 @@ export function daysBetweenDates(date: PartialDay, from: string, to: string): { 
   }
   return found;
 }
+
+/**
+ * What names are compared by, character by character: lower case, umlauts spelled out (or plain
+ * with `spellOut` false), ß as ss, other accents gone, anything but letters and digits a space.
+ */
+export function foldName(name: string, spellOut = true): string {
+  // Composed first, so "u" with a combining diaeresis is "ü" too.
+  const lower = name.normalize("NFC").toLowerCase();
+  const spelled = spellOut ? lower.replaceAll("ä", "ae").replaceAll("ö", "oe").replaceAll("ü", "ue") : lower;
+  return spelled
+    .replaceAll("ß", "ss")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}

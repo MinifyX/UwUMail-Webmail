@@ -1,6 +1,7 @@
 // Fictional address books and contacts for the demo, the same made-up people who write the demo
 // mail. No real people, addresses or numbers.
 
+import { parseDay } from "@/lib/birthdays";
 import { BackendError } from "./backend";
 import { demoPortrait } from "./demo-pictures";
 import type { AddressBookInfo, Contact, ContactInput, ContactRecord } from "./types";
@@ -224,17 +225,21 @@ export class DemoContacts {
   setBirthday(id: string, birthday: string, overwrite: boolean) {
     const contact = this.list.find((entry) => entry.id === id);
     if (!contact) throw new BackendError("not_found", "This contact is gone.");
-    if (contact.birthday && !overwrite && contact.birthday.slice(4) !== birthday.slice(4)) {
-      throw new BackendError("invalid_input", "The contact has another birthday.");
-    }
+    const had = parseDay(contact.birthday);
+    const found = parseDay(birthday);
+    if (!found) throw new BackendError("invalid_input", "That is no birthday.");
+    const sameDay = had !== null && had.month === found.month && had.day === found.day;
+    const clash = had !== null && (!sameDay || (had.year !== null && found.year !== null && had.year !== found.year));
+    if (clash && !overwrite) throw new BackendError("invalid_input", "The contact has another birthday.");
     // A year the contact knows stays when the calendar knew none.
-    const keep = contact.birthday && birthday.startsWith("--") && contact.birthday.slice(4) === birthday.slice(4);
+    const keep = sameDay && !clash && found.year === null;
     if (!keep) this.list = this.list.map((entry) => (entry.id === id ? { ...entry, birthday } : entry));
     this.changed();
   }
 
   /** A new contact for a birthday nobody had yet. */
   createNamed(name: string, birthday: string): string {
+    if (!name.trim()) throw new BackendError("invalid_input", "A new contact needs a name.");
     const words = name.trim().split(/\s+/);
     const surname = words.length > 1 ? words.pop()! : "";
     const id = `contact-${nextId++}`;

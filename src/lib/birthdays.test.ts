@@ -3,6 +3,7 @@ import {
   ageOn,
   dateIn,
   daysBetweenDates,
+  foldName,
   formatDay,
   nextTime,
   normalizeReminders,
@@ -88,5 +89,16 @@ describe("reminders", () => {
     expect(normalizeReminders([week, day, week])).toEqual([day, week]);
     expect(sameReminders([week, day], [day, week])).toBe(true);
     expect(sameReminders([day], [week])).toBe(false);
+  });
+});
+
+describe("foldName", () => {
+  it("compares names by characters, umlauts either way", () => {
+    expect(foldName("Jürgen Müller")).toBe("juergen mueller");
+    expect(foldName("Jürgen Müller", false)).toBe("jurgen muller");
+    expect(foldName("Jürgen")).toBe("juergen");
+    expect(foldName("STRAẞE Groß")).toBe("strasse gross");
+    expect(foldName("Zoë O'Neil-Øster")).toBe("zoe o neil øster");
+    expect(foldName("  🎂 Åsa  ")).toBe("asa");
   });
 });

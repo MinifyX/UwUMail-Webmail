@@ -893,8 +893,9 @@ export class DemoBackend implements Backend {
           contactId = this.addressBook.createNamed(entry.newContactName, candidate.birthday);
           created = true;
         }
-        this.calendar.removeEvent(entry.eventId);
-        result.imported.push({ eventId: entry.eventId, contactId, created, eventDeleted: true });
+        // Like the server: an event of a calendar that is only read stays where it is.
+        if (candidate.mayDeleteEvent) this.calendar.removeEvent(entry.eventId);
+        result.imported.push({ eventId: entry.eventId, contactId, created, eventDeleted: candidate.mayDeleteEvent });
       } catch (error) {
         result.failed.push({ eventId: entry.eventId, reason: error instanceof Error ? error.message : String(error) });
       }

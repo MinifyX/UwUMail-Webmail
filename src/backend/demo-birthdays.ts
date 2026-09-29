@@ -2,7 +2,9 @@
 // (docs/birthdays.md there) closely enough to show it: titles with the age, names read from event
 // titles and matched to the demo's made-up contacts.
 
-import { daysBetweenDates, parseDay, type PartialDay } from "@/lib/birthdays";
+import { daysBetweenDates, foldName, parseDay, type PartialDay } from "@/lib/birthdays";
+
+export { foldName };
 import type { BirthdayCandidate, BirthdayMatch, CalendarOccurrence, ContactRecord } from "./types";
 
 type Lang = "de" | "en";
@@ -79,19 +81,6 @@ export function birthdayOccurrences(
 const WORDS = new Set(["geburtstag", "geb", "birthday", "bday", "hbd"]);
 const FILLERS = new Set(["von", "vom", "hat", "of", "happy", "zum", "alles", "gute"]);
 const SIGNS = /[🎂🎉🎈🎁🥳🍰🧁]/gu;
-
-/** Lower case, umlauts spelled out or plain, accents gone: what names are compared by. */
-export function foldName(name: string, spellOut = true): string {
-  const spelled = spellOut
-    ? name.toLocaleLowerCase().replaceAll("ä", "ae").replaceAll("ö", "oe").replaceAll("ü", "ue")
-    : name.toLocaleLowerCase();
-  return spelled
-    .replaceAll("ß", "ss")
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
-}
 
 /** The name and year a birthday title gives, or null when it's no birthday title. */
 export function nameFromTitle(title: string): { name: string; year: number | null } | null {
