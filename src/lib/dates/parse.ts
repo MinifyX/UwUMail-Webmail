@@ -143,9 +143,13 @@ const T_BARE =
   /([01]?\d|2[0-3])(?![\d:.,]|\s?(?:%|€|\$|eur|min|std|stunden|hours?|tage?|days?|jahre?|years?|personen|people|leute|x(?!\p{L})|mal|times|euro|dollar|punkte|points|stück|pcs|°|\/))/iuy;
 const T_DASH = /\s{0,3}(?:[-–—‐‑]|bis|to|until|till)\s{0,3}/iuy;
 const T_ZONE = /\s{0,2}\(?(MESZ|MEZ|CEST|CET|UTC|GMT|BST|EST|EDT|ET|CST|CDT|CT|MST|MDT|PST|PDT|PT)\)?(?!\p{L})/uy;
-/** What may stand between a date and its time. Group 1: a word that lets a bare hour count. */
+/**
+ * What may stand between a date and its time: a label on the next line, the time alone on the next
+ * line ("Samstag, 17. Oktober<br>10:00 – 16:00 Uhr"), or a comma and a word. Groups 1 and 2: a word
+ * that lets a bare hour count.
+ */
 const TIME_AFTER =
-  /(?:[ \t]{0,3}\n\s{0,3}(uhrzeit|zeit|time|beginn|start|einlass|doors)[ \t]{0,2}:[ \t]{0,3}|[ \t]{0,3}[,|·•@/–—-]?[ \t]{0,3}(?:(um|ab|at|from|von|gegen|jeweils|ca\.?|circa|starting at|beginning at|beginnt um|beginn(?:t)?|starts? at|starts?|einlass(?: ab| um)?|doors(?: open)?(?: at)?)[: \t]{1,3})?)/iuy;
+  /(?:[ \t]{0,3}\n\s{0,3}(uhrzeit|zeit|time|beginn|start|einlass|doors)[ \t]{0,2}:[ \t]{0,3}|[ \t]{0,3}\n[ \t]{0,3}(?=\d{1,2}(?:[:.]\d{2}|\s?(?:uhr|[ap]\.?m)))|[ \t]{0,3}[,|·•@/–—-]?[ \t]{0,3}(?:(um|ab|at|from|von|gegen|jeweils|ca\.?|circa|starting at|beginning at|beginnt um|beginn(?:t)?|starts? at|starts?|einlass(?: ab| um)?|doors(?: open)?(?: at)?)[: \t]{1,3})?)/iuy;
 const TIME_BEFORE_GAP = /^\s{0,3},?\s{0,3}(?:(?:am|on|den|dem|,)\s{1,3}){0,2}$/iu;
 const BARE_OK_BEFORE = /(?<![\p{L}])(um|at|ab|gegen|von|from|ca\.?|circa)\s{1,3}$/iu;
 

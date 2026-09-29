@@ -77,6 +77,11 @@ describe("German dates", () => {
     ["Datum: 17.10.2026\nUhrzeit: 19:30", "2026-10-17 19:30", "17.10.2026\nUhrzeit: 19:30"],
     ["Einlass 17.10., Beginn: 20 Uhr", "2026-10-17 20:00", "17.10., Beginn: 20 Uhr"],
     ["am 17.10. um 20 Uhr MESZ", "2026-10-17 20:00", "17.10. um 20 Uhr MESZ"],
+    [
+      "Samstag, 17. Oktober 2026\n10:00 – 16:00 Uhr",
+      "2026-10-17 10:00-16:00",
+      "Samstag, 17. Oktober 2026\n10:00 – 16:00 Uhr",
+    ],
   ])("with time %s", (text, expected, covered) => {
     const hit = one(text);
     expect(hit.when).toBe(expected);
