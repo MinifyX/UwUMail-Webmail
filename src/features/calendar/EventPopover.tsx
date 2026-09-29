@@ -1,10 +1,12 @@
-import { AlignLeft, CalendarDays, Clock, Mail, MapPin, Pencil, Repeat, Trash, Users, X } from "lucide-react";
+import { AlignLeft, CalendarDays, Clock, Mail, MapPin, Pencil, Repeat, Trash, UserRound, Users, X } from "lucide-react";
 import { useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button, IconButton } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { deviceTimeZone } from "@/lib/calendarDates";
+import { showContact } from "../contacts/state";
+import { BirthdayMark } from "./BirthdayMark";
 import { describeRecurrence, eventColor, formatWhen } from "./format";
 import { InvitationAnswer, invitationStatusKey } from "./Invitation";
 import { LinkedText } from "./LinkedText";
@@ -38,6 +40,7 @@ export function EventPopover() {
   const color = eventColor(occurrence, calendars);
   const title = occurrence.title || t("calendar.untitled");
   const zone = occurrence.timeZone && occurrence.timeZone !== deviceTimeZone() ? occurrence.timeZone : null;
+  const birthday = occurrence.birthday ?? null;
 
   return (
     <Popover key={occurrence.id} anchor={popover.anchor} label={title} onClose={close}>
@@ -70,6 +73,30 @@ export function EventPopover() {
             <p className="text-[13px] text-muted">{formatWhen(occurrence)}</p>
           </div>
         </div>
+        {birthday && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pink-tint/40 px-3 py-2.5">
+            <BirthdayMark occurrence={occurrence} className="size-5 text-pink-ink" />
+            <span className="min-w-0 flex-1 text-[14px] font-semibold">
+              {birthday.age === null
+                ? birthday.name
+                : birthday.kind === "birth"
+                  ? `${birthday.name} · ${t("calendar.birthdays.turns", { count: birthday.age })}`
+                  : `${birthday.name} · ${t("calendar.birthdays.years", { count: birthday.age })}`}
+            </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={UserRound}
+              data-autofocus
+              onClick={() => {
+                close();
+                showContact(birthday.contactId);
+              }}
+            >
+              {t("calendar.birthdays.openContact")}
+            </Button>
+          </div>
+        )}
         {occurrence.invitation && (
           <Detail icon={Mail}>
             <p className="mb-2 flex items-center gap-2 text-muted">
@@ -113,7 +140,7 @@ export function EventPopover() {
             </ul>
           </Detail>
         )}
-        {occurrence.recurrence && (
+        {occurrence.recurrence && !birthday && (
           <Detail icon={Repeat}>
             {describeRecurrence(occurrence.recurrence, t)}
             {!occurrence.recurrenceEditable && <span className="block text-muted">{t("calendar.repeat.complex")}</span>}
@@ -144,8 +171,11 @@ export function EventPopover() {
             {calendar.sharedBy && (
               <span className="text-muted"> · {t("sharing.sharedBy", { name: calendar.sharedBy.name })}</span>
             )}
-            {occurrence.readOnly && !occurrence.invitation && (
-              <span className="text-muted"> · {t("calendar.readOnly")}</span>
+            {birthday ? (
+              <span className="text-muted"> · {t("calendar.birthdays.fromContacts")}</span>
+            ) : (
+              occurrence.readOnly &&
+              !occurrence.invitation && <span className="text-muted"> · {t("calendar.readOnly")}</span>
             )}
           </Detail>
         )}
