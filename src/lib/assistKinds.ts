@@ -21,17 +21,28 @@ export interface AssistKind {
   fastModel: string;
   /** Signs in with a ChatGPT subscription instead of a key (experimental). */
   signIn?: boolean;
+  /** Where the provider hands out keys. */
+  keyUrl?: string;
 }
 
 export const ASSIST_KINDS: readonly AssistKind[] = [
-  { kind: "openai", label: "OpenAI", key: "required", baseUrl: false, model: "gpt-5-mini", fastModel: "gpt-5-nano" },
   {
-    kind: "anthropic",
-    label: "Anthropic (Claude)",
+    kind: "openai",
+    label: "OpenAI",
     key: "required",
     baseUrl: false,
-    model: "claude-sonnet-4-5",
+    model: "gpt-5-mini",
+    fastModel: "gpt-5-nano",
+    keyUrl: "https://platform.openai.com/api-keys",
+  },
+  {
+    kind: "anthropic",
+    label: "Anthropic Claude",
+    key: "required",
+    baseUrl: false,
+    model: "claude-opus-5",
     fastModel: "claude-haiku-4-5",
+    keyUrl: "https://console.anthropic.com/settings/keys",
   },
   {
     kind: "gemini",
@@ -40,6 +51,7 @@ export const ASSIST_KINDS: readonly AssistKind[] = [
     baseUrl: false,
     model: "gemini-2.5-flash",
     fastModel: "gemini-2.5-flash-lite",
+    keyUrl: "https://aistudio.google.com/apikey",
   },
   {
     kind: "mistral",
@@ -48,6 +60,7 @@ export const ASSIST_KINDS: readonly AssistKind[] = [
     baseUrl: false,
     model: "mistral-medium-latest",
     fastModel: "mistral-small-latest",
+    keyUrl: "https://console.mistral.ai/api-keys",
   },
   {
     kind: "openrouter",
@@ -55,7 +68,8 @@ export const ASSIST_KINDS: readonly AssistKind[] = [
     key: "required",
     baseUrl: false,
     model: "openai/gpt-5-mini",
-    fastModel: "mistralai/mistral-small-3.2-24b-instruct",
+    fastModel: "google/gemini-2.5-flash-lite",
+    keyUrl: "https://openrouter.ai/settings/keys",
   },
   {
     kind: "ollama",
@@ -63,8 +77,8 @@ export const ASSIST_KINDS: readonly AssistKind[] = [
     key: "none",
     baseUrl: true,
     baseUrlExample: "http://192.0.2.10:11434",
-    model: "llama3.1:8b",
-    fastModel: "llama3.2:3b",
+    model: "",
+    fastModel: "",
   },
   {
     kind: "openaiCompatible",
@@ -80,8 +94,8 @@ export const ASSIST_KINDS: readonly AssistKind[] = [
     label: "ChatGPT",
     key: "none",
     baseUrl: false,
-    model: "gpt-5",
-    fastModel: "gpt-5-mini",
+    model: "gpt-5.1",
+    fastModel: "gpt-5.1-codex-mini",
     signIn: true,
   },
 ];
