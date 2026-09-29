@@ -28,7 +28,7 @@ import { deviceTimeZone, zonedWall } from "@/lib/calendarDates";
 import type {
   AssistFeatures,
   BlockedSender,
-  ExtractedEvent,
+  AssistEventsResult,
   ImageTextResult,
   Account,
   AttachmentContent,
@@ -867,7 +867,7 @@ export class DemoBackend implements Backend {
 
   // contract C2
   /** A stand-in for the assistant: the rules again, a little surer and with a note. */
-  async extractEvents(emailId: string, includeImages: boolean): Promise<ExtractedEvent[]> {
+  async extractEvents(emailId: string, includeImages: boolean): Promise<AssistEventsResult> {
     await wait(1200);
     const message = this.messages.find((m) => m.id === emailId);
     if (!message) throw new BackendError("not_found", "That mail is gone.");
@@ -881,7 +881,7 @@ export class DemoBackend implements Backend {
       ...eventsInMail(message.bodyHtml ?? textToHtml(message.bodyText ?? ""), context),
       ...(imageText ? eventsInImageText(imageText, context) : []),
     ];
-    return found
+    const events = found
       .filter((event) => !event.past)
       .map((event) => ({
         title: event.title || message.subject,
@@ -896,6 +896,7 @@ export class DemoBackend implements Backend {
         confidence: Math.min(1, event.confidence + 0.1),
         quote: event.quote,
       }));
+    return { events };
   }
 
   imageProxy() {

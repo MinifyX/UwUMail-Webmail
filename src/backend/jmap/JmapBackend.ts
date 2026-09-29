@@ -29,7 +29,7 @@ import type {
   Contact,
   ContactInput,
   ContactRecord,
-  ExtractedEvent,
+  AssistEventsResult,
   ImageTextResult,
   DraftContent,
   DraftSaveResult,
@@ -2373,7 +2373,7 @@ export class JmapBackend implements Backend {
   }
 
   // contract C2
-  async extractEvents(emailId: string, includeImages: boolean): Promise<ExtractedEvent[]> {
+  async extractEvents(emailId: string, includeImages: boolean): Promise<AssistEventsResult> {
     await this.start();
     if (!supports(ASSIST)) throw new BackendError("not_supported", "This server has no assistant.");
     const target = unscopeId(emailId, this.accountId);
@@ -2382,7 +2382,7 @@ export class JmapBackend implements Backend {
       { accountId: target.accountId, emailId: target.id, includeImages },
       [CORE, MAIL, ASSIST],
     );
-    return extractedEventsFrom(response);
+    return { events: extractedEventsFrom(response) };
   }
 
   imageProxy(): ImageProxy | null {

@@ -14,7 +14,7 @@ import type {
   DraftSaveResult,
   EventDeleteScope,
   EventInput,
-  ExtractedEvent,
+  AssistEventsResult,
   FlagChange,
   Folder,
   Identity,
@@ -279,7 +279,7 @@ export interface Backend {
   assistFeatures(): Promise<AssistFeatures | null>;
   // contract C2
   /** Appointments the assistant reads from a mail. Costs the person tokens: only on their say. */
-  extractEvents(emailId: string, includeImages: boolean): Promise<ExtractedEvent[]>;
+  extractEvents(emailId: string, includeImages: boolean): Promise<AssistEventsResult>;
   /**
    * Where a mail's remote pictures load from so their senders never see the reader: the server
    * fetches them. Null where there is no such server; the pictures then load directly.

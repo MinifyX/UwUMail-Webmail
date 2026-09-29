@@ -211,31 +211,41 @@ export interface ImageTextResult {
   skipped: number;
 }
 
-// contract C2: what the assistant (`urn:uwumail:jmap:assist`) may do for this person.
-export interface AssistFeatures {
-  compose: boolean;
-  summarize: boolean;
-  spamCheck: boolean;
-  extractEvents: boolean;
-  autoLabels: boolean;
+// contract C2: the AI assistant (`urn:uwumail:jmap:assist`). Same names as the assistant's own
+// webmail types; at merge the assistant's definitions win.
+export type AssistFeature = "compose" | "summarize" | "spamCheck" | "extractEvents" | "autoLabels";
+
+// contract C2: per feature, whether this person can use it right now.
+export type AssistFeatures = Record<AssistFeature, boolean>;
+
+// contract C2
+export interface AssistEventParticipant {
+  name: string;
+  email: string;
 }
 
 // contract C2: one appointment the assistant read from a mail (`Assist/extractEvents`).
-export interface ExtractedEvent {
+export interface AssistEvent {
   title: string;
-  /** JMAP LocalDateTime, "2026-10-06T00:00:00". */
+  /** JMAP LocalDateTime, "2026-10-06T00:00:00"; all-day events end the day after the last one. */
   start: string;
   end: string;
   allDay: boolean;
+  /** Null when the mail names none: the person's own. */
   timeZone: string | null;
   location: string | null;
   description: string | null;
   url: string | null;
-  participants: { name: string; email: string }[];
+  participants: AssistEventParticipant[];
   /** 0..1 */
   confidence: number;
   /** The text the event was read from. */
   quote: string;
+}
+
+// contract C2
+export interface AssistEventsResult {
+  events: AssistEvent[];
 }
 
 export type UnsubscribeOutcome =

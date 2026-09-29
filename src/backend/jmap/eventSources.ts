@@ -5,7 +5,7 @@
  */
 
 import { isWallTime } from "@/lib/calendarDates";
-import type { AssistFeatures, ExtractedEvent, ImageText, ImageTextResult } from "../types";
+import type { AssistFeatures, AssistEvent, ImageText, ImageTextResult } from "../types";
 
 // contract C1
 export const IMAGETEXT = "urn:uwumail:jmap:imagetext";
@@ -62,9 +62,9 @@ function localDateTime(value: unknown): string | null {
 }
 
 // contract C2
-export function extractedEventsFrom(response: unknown): ExtractedEvent[] {
+export function extractedEventsFrom(response: unknown): AssistEvent[] {
   const body = (response ?? {}) as Record<string, unknown>;
-  const events: ExtractedEvent[] = [];
+  const events: AssistEvent[] = [];
   for (const raw of (Array.isArray(body.events) ? body.events : []).slice(0, MAX_EVENTS)) {
     if (typeof raw !== "object" || raw === null) continue;
     const event = raw as Record<string, unknown>;
