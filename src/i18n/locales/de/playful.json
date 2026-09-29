@@ -225,5 +225,14 @@
   "profile": {
     "saved": "Siehst gut aus ✿",
     "removed": "Bild ist weg, deine Initialen sind zurück (・ω・)"
+  },
+  "assist": {
+    "thinking": "Ich denk ganz doll nach … (・ω・)",
+    "compose": {
+      "applied": "Hab’s in deinen Entwurf gesteckt ✿"
+    },
+    "labels": {
+      "startersTitle": "Magst du mit ein paar Labels anfangen? (｀・ω・´)"
+    }
   }
 }
