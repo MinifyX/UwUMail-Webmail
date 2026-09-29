@@ -1,8 +1,28 @@
 import type {
   Account,
   AddressBookInfo,
+  AssistComposeRequest,
+  AssistComposeResult,
+  AssistEventsResult,
+  AssistFeatures,
+  AssistLabel,
+  AssistLabelInput,
+  AssistLabelLogEntry,
+  AssistModels,
+  AssistOptions,
+  AssistProvider,
+  AssistProviderInput,
+  AssistSettings,
+  AssistSettingsPatch,
+  AssistSpamCheck,
+  AssistStreamHandlers,
+  AssistSummarizeRequest,
+  AssistSummary,
+  AssistUsage,
   AttachmentContent,
   BackendEvent,
+  ChatgptLogin,
+  ChatgptPoll,
   BlockedSender,
   CalendarInfo,
   CalendarOccurrence,
@@ -70,6 +90,55 @@ export class BackendError extends Error {
     super(message);
     this.name = "BackendError";
     this.code = code;
+  }
+}
+
+/**
+ * A refusal of the AI assistant, with the server's `type`: `assistUnavailable` (switched off, or
+ * no provider may do it), `overQuota` (the day's limit is used up), `providerFailed` (the model
+ * didn't give a usable answer; `retryAfter` seconds when it named them), `notFound`, `forbidden`,
+ * `invalidArguments` or, for a refused create or update, `invalidProperties`.
+ */
+export class AssistError extends BackendError {
+  readonly type: string;
+  /** The server's own words, for administrators more than for people. */
+  readonly description: string | null;
+  readonly retryAfter: number | null;
+  /** For `invalidProperties`: the fields it names. */
+  readonly properties: string[];
+
+  constructor(
+    type: string,
+    description: string | null = null,
+    extra: { retryAfter?: number | null; properties?: string[] } = {},
+  ) {
+    super(assistErrorCode(type), description ?? type);
+    this.name = "AssistError";
+    this.type = type;
+    this.description = description;
+    this.retryAfter = extra.retryAfter ?? null;
+    this.properties = extra.properties ?? [];
+  }
+}
+
+function assistErrorCode(type: string): BackendErrorCode {
+  switch (type) {
+    case "assistUnavailable":
+    case "unknownMethod":
+    case "unknownCapability":
+      return "not_supported";
+    case "notFound":
+      return "not_found";
+    case "forbidden":
+    case "overQuota":
+      return "forbidden";
+    case "invalidArguments":
+    case "invalidProperties":
+      return "invalid_input";
+    case "providerFailed":
+      return "connection_failed";
+    default:
+      return "internal";
   }
 }
 
@@ -243,6 +312,55 @@ export interface Backend {
   setProfilePicture(picture: Blob | null): Promise<ProfilePicture>;
   /** Changes who sees it and whether mails carry it. Throws `forbidden` for public where it isn't allowed. */
   updateProfilePicture(patch: ProfilePicturePatch): Promise<void>;
+
+  /**
+   * What the AI assistant may do for the account (the server's `urn:uwumail:jmap:assist`); null
+   * without it, and everything about it stays hidden.
+   */
+  assistOptions(): Promise<AssistOptions | null>;
+  /** Per feature whether the assistant can do it now; null without the assistant. */
+  assistFeatures(): Promise<AssistFeatures | null>;
+  /** The server's providers the person may use (in the admin's order), then their own. */
+  assistProviders(): Promise<AssistProvider[]>;
+  /** Adds an own provider. Throws an `AssistError` (`forbidden`, `overQuota`, `invalidProperties`). */
+  createAssistProvider(input: AssistProviderInput): Promise<AssistProvider>;
+  updateAssistProvider(id: string, patch: AssistProviderInput): Promise<void>;
+  deleteAssistProvider(id: string): Promise<void>;
+  /** Asks the provider for its models; doubles as a test of the key. */
+  assistModels(providerId: string): Promise<AssistModels>;
+  /** Starts the device-code sign-in of a `chatgpt` provider (experimental). */
+  chatgptLogin(providerId: string): Promise<ChatgptLogin>;
+  /** Whether that sign-in went through; ask every `interval` seconds while `pending`. */
+  chatgptPoll(providerId: string): Promise<ChatgptPoll>;
+  assistSettings(): Promise<AssistSettings>;
+  updateAssistSettings(patch: AssistSettingsPatch): Promise<void>;
+  /**
+   * Writes or rewrites a text; nothing goes into a draft. With handlers the text arrives in
+   * pieces while the model writes it (where the server streams); the whole answer at the end.
+   */
+  assistCompose(request: AssistComposeRequest, handlers?: AssistStreamHandlers): Promise<AssistComposeResult>;
+  /** Summarizes a mail or a conversation, streaming like `assistCompose`. */
+  assistSummarize(request: AssistSummarizeRequest, handlers?: AssistStreamHandlers): Promise<AssistSummary>;
+  /** A second opinion on a mail, with the server's own findings about it. */
+  assistSpamCheck(emailId: string, language?: string): Promise<AssistSpamCheck>;
+  /**
+   * Appointments, deadlines and trips in a mail, for "add to calendar". With `includeImages` the
+   * text in the mail's pictures is read too (where the server can).
+   */
+  extractEvents(emailId: string, includeImages: boolean): Promise<AssistEventsResult>;
+  /** What the person used: per day (UTC) and feature, and today per provider with its limits. */
+  assistUsage(days?: number): Promise<AssistUsage>;
+  assistLabels(): Promise<AssistLabel[]>;
+  createAssistLabel(input: AssistLabelInput): Promise<AssistLabel>;
+  updateAssistLabel(id: string, patch: Partial<AssistLabelInput>): Promise<void>;
+  /** Also takes its keyword off every mail. */
+  deleteAssistLabel(id: string): Promise<void>;
+  /** Labels the model set, newest first: for these mails, or the latest. */
+  assistLabelLog(emailIds: string[] | null, limit?: number): Promise<AssistLabelLogEntry[]>;
+  /** Takes labels the model set off again, by log entry. */
+  undoAssistLabels(logIds: string[]): Promise<void>;
+  /** Asks the model now for mail that came before auto-labels were on; label ids per mail. */
+  applyAssistLabels(emailIds: string[]): Promise<Record<string, string[]>>;
 
   /** Downloads the attachment and hands out a blob URL for it. */
   getAttachment(attachmentId: string): Promise<AttachmentContent>;

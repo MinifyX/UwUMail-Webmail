@@ -66,7 +66,7 @@ interface RawSession {
  * a browser inside the LAN — or a dev server proxying to it — can't reach. The
  * page itself was served by the right host, so its origin is the one that works.
  */
-function onOwnOrigin(url: string): string {
+export function onOwnOrigin(url: string): string {
   try {
     const parsed = new URL(url, window.location.origin);
     return parsed.pathname + parsed.search;
@@ -142,6 +142,11 @@ export function jmapSession(): JmapSession {
   return session;
 }
 
+/** The portal session's CSRF token, for requests made outside `call` (e.g. the assistant's stream). */
+export function csrfToken(): string {
+  return currentSession().csrfToken;
+}
+
 export function supports(capability: string): boolean {
   return capability in jmapSession().capabilities;
 }
@@ -164,11 +169,20 @@ export class JmapMethodError extends BackendError {
   readonly type: string;
   /** The server's own words, when it gave any. */
   readonly description: string | null;
+  /** Everything the error said, e.g. an extension's `retryAfter`. */
+  readonly details: Record<string, unknown>;
 
-  constructor(code: BackendErrorCode, message: string, type: string, description: string | null = null) {
+  constructor(
+    code: BackendErrorCode,
+    message: string,
+    type: string,
+    description: string | null = null,
+    details: Record<string, unknown> = {},
+  ) {
     super(code, message);
     this.type = type;
     this.description = description;
+    this.details = details;
   }
 }
 
@@ -177,12 +191,12 @@ function methodError(name: string, args: Record<string, unknown>): JmapMethodErr
   const given = typeof args.description === "string" ? args.description : null;
   const description = given ?? name;
   if (type === "accountNotFound" || type === "forbidden")
-    return new JmapMethodError("webmail_disabled", description, type);
+    return new JmapMethodError("webmail_disabled", description, type, given, args);
   if (type === "invalidArguments" || type === "invalidPatch")
-    return new JmapMethodError("invalid_input", description, type);
+    return new JmapMethodError("invalid_input", description, type, given, args);
   if (type === "unknownMethod" || type === "unknownCapability")
-    return new JmapMethodError("not_supported", description, type);
-  return new JmapMethodError("internal", `${type}: ${description}`, type, given);
+    return new JmapMethodError("not_supported", description, type, given, args);
+  return new JmapMethodError("internal", `${type}: ${description}`, type, given, args);
 }
 
 /** One JMAP request with as many method calls as fit; throws on a method-level error. */

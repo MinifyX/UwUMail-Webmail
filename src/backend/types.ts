@@ -155,6 +155,11 @@ export interface ThreadSummary {
   hasAttachments: boolean;
   /** Somewhere in the conversation is an unsent draft. */
   hasDraft: boolean;
+  /**
+   * The own keywords of its messages (lower case, without the `$` system ones), e.g. the labels
+   * the AI assistant sets; left out where the backend doesn't know them.
+   */
+  keywords?: string[];
 }
 
 export interface ThreadPage {
@@ -220,6 +225,8 @@ export interface Message {
   hasRemoteContent: boolean;
   attachments: Attachment[];
   unsubscribe?: Unsubscribe;
+  /** Its own keywords (lower case, without the `$` system ones), e.g. AI assistant labels. */
+  keywords?: string[];
 }
 
 export interface ThreadDetail {
@@ -725,4 +732,334 @@ export type BackendEvent =
   /** Masked addresses changed, here, on another device, or by arriving mail. */
   | { type: "masked:changed" }
   /** The own profile picture or its settings changed, here or elsewhere. */
-  | { type: "profile:changed" };
+  | { type: "profile:changed" }
+  /** The AI assistant's providers, settings or labels changed, here or on another device. */
+  | { type: "assist:changed" };
+
+// ---------------------------------------------------------------------------------------------
+// AI assistant (UwUMail Server's `urn:uwumail:jmap:assist`, see the server's docs/jmap-assist.md).
+// Every call to a model is made by the server; the webmail only asks it and shows the answers.
+
+/** What the assistant does, as the server names it. */
+export type AssistFeature = "compose" | "summarize" | "spamCheck" | "extractEvents" | "autoLabels";
+
+export const ASSIST_FEATURES: readonly AssistFeature[] = [
+  "compose",
+  "summarize",
+  "spamCheck",
+  "extractEvents",
+  "autoLabels",
+];
+
+/**
+ * Per feature, whether this person can use it right now. `autoLabels` means it *can* be switched
+ * on; whether it is on is `AssistSettings.autoLabels`.
+ */
+export type AssistFeatures = Record<AssistFeature, boolean>;
+
+/** What the server allows the person, from the own account's capability. */
+export interface AssistOptions {
+  features: AssistFeatures;
+  /** People may add providers with their own keys. */
+  mayAddProviders: boolean;
+  /** Such a provider may point into the local network (Ollama on the LAN). */
+  mayUsePrivateAddresses: boolean;
+  maxProviders: number;
+  maxLabels: number;
+  maxInstructionChars: number;
+  maxTextChars: number;
+}
+
+export type AssistProviderKind =
+  "openai" | "anthropic" | "gemini" | "mistral" | "openrouter" | "ollama" | "openaiCompatible" | "chatgpt";
+
+/** A way to reach a model: the admin's for the server, or the person's own with their key. */
+export interface AssistProvider {
+  id: string;
+  name: string;
+  kind: AssistProviderKind;
+  scope: "server" | "personal";
+  /** For `ollama` and `openaiCompatible`; null for server providers and fixed addresses. */
+  baseUrl: string | null;
+  hasKey: boolean;
+  /** The last four characters of the key, like `…a1b2`. */
+  keyHint: string | null;
+  /** The model for writing. */
+  model: string | null;
+  /** The cheaper model for everything else; `model` when null. */
+  fastModel: string | null;
+  features: AssistFeature[];
+  /** A server provider's daily limit per person. */
+  quota: { requestsPerDay: number | null; tokensPerDay: number | null } | null;
+  /** `chatgpt`: an unofficial way to use a ChatGPT subscription. */
+  experimental: boolean;
+  /** `chatgpt`: signed in; others: a key is stored or none is needed. */
+  connected: boolean;
+}
+
+/** What may be set on an own provider. `apiKey` left out keeps the stored key, `""` removes it. */
+export interface AssistProviderInput {
+  name?: string;
+  /** Only when it is made. */
+  kind?: AssistProviderKind;
+  baseUrl?: string | null;
+  apiKey?: string;
+  model?: string | null;
+  fastModel?: string | null;
+}
+
+export interface AssistModel {
+  id: string;
+  name: string;
+}
+
+/** The models a provider offers, and its settings (or the kind's suggestion). */
+export interface AssistModels {
+  models: AssistModel[];
+  model: string | null;
+  fastModel: string | null;
+}
+
+/** OpenAI's device-code login for a `chatgpt` provider (experimental). */
+export interface ChatgptLogin {
+  userCode: string;
+  verificationUri: string;
+  /** Seconds between two polls. */
+  interval: number;
+  expiresAt: string | null;
+}
+
+export interface ChatgptPoll {
+  status: "pending" | "connected" | "expired" | "failed";
+  description: string | null;
+}
+
+/** A provider, and a model of it; `model` null means the provider's own for that feature. */
+export interface AssistChoice {
+  providerId: string;
+  model: string | null;
+}
+
+/** What a feature really uses. */
+export interface AssistEffective {
+  providerId: string;
+  providerName: string;
+  model: string | null;
+  scope: "server" | "personal";
+}
+
+export interface AssistSettings {
+  /** What every feature uses unless it has its own choice. */
+  default: AssistChoice | null;
+  features: Record<AssistFeature, AssistChoice | null>;
+  /** Labels are put on incoming mail (opt-in). */
+  autoLabels: boolean;
+  /** Per feature what will really be used, or null when nothing can. */
+  effective: Record<AssistFeature, AssistEffective | null>;
+}
+
+/** A change of the settings: only what is named changes, per feature too. */
+export interface AssistSettingsPatch {
+  default?: AssistChoice | null;
+  features?: Partial<Record<AssistFeature, AssistChoice | null>>;
+  autoLabels?: boolean;
+}
+
+export interface AssistTokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+}
+
+/** Who answered: comes with every answer of a model. */
+export interface AssistAnswer {
+  providerId: string;
+  providerName: string;
+  model: string | null;
+  usage: AssistTokenUsage | null;
+}
+
+export type AssistComposeMode = "write" | "rewrite" | "adjust";
+
+export type AssistPreset = "formal" | "casual" | "shorter" | "friendlier" | "clearer" | "proofread" | "translate";
+
+export const ASSIST_PRESETS: readonly AssistPreset[] = [
+  "formal",
+  "casual",
+  "shorter",
+  "friendlier",
+  "clearer",
+  "proofread",
+  "translate",
+];
+
+/** `Assist/compose`: a new text from an instruction, or the draft's text rewritten. */
+export interface AssistComposeRequest {
+  mode: AssistComposeMode;
+  instruction?: string | null;
+  preset?: AssistPreset | null;
+  /** For `translate`: a language name or tag. */
+  targetLanguage?: string | null;
+  /** The draft as plain text; needed for `rewrite` and `adjust`. */
+  text?: string | null;
+  subject?: string | null;
+  /** The mail being answered, as context. */
+  replyToEmailId?: string | null;
+  /** `write` only: also propose a subject. */
+  wantSubject?: boolean;
+  /** The UI language as a hint. */
+  language?: string | null;
+}
+
+export interface AssistComposeResult extends AssistAnswer {
+  text: string;
+  /** A proposed subject, or null. */
+  subject: string | null;
+}
+
+/** One mail, or a whole conversation. */
+export interface AssistSummarizeRequest {
+  emailId?: string | null;
+  threadId?: string | null;
+  language?: string | null;
+}
+
+export interface AssistSummary extends AssistAnswer {
+  emailId: string | null;
+  threadId: string | null;
+  /** One or two sentences, then up to five lines starting with `- `. */
+  summary: string;
+}
+
+/** What the text arrives in while the model writes (the stream endpoint). */
+export interface AssistStreamHandlers {
+  onSubject?: (subject: string) => void;
+  /** The next piece of the text. */
+  onDelta?: (text: string) => void;
+  /** Aborting closes the request, which stops the model. */
+  signal?: AbortSignal;
+}
+
+export type AssistVerdict = "legitimate" | "suspicious" | "spam" | "phishing";
+
+/** What the server itself found about a mail, next to the model's opinion. */
+export interface AssistSpamSignals {
+  /** SPF, DKIM and DMARC as the server recorded them; null each when the mail came from no other server. */
+  authentication: {
+    spf: string | null;
+    dkim: string | null;
+    dmarc: string | null;
+    fromDomain: string | null;
+  };
+  /** The spam filter's points and its limit for Junk; null when it did not look. */
+  spamScore: number | null;
+  spamThreshold: number | null;
+  /** The rules that counted. */
+  tests: string[];
+  inJunk: boolean;
+  sender: {
+    address: string;
+    earlierMessages: number;
+    earlierInJunk: number;
+    writtenTo: number;
+    inContacts: boolean;
+    /** When the first mail from it came (UTC), null when this is the first. */
+    firstSeen: string | null;
+  };
+}
+
+export interface AssistSpamCheck extends AssistAnswer {
+  emailId: string;
+  verdict: AssistVerdict;
+  /** 0 to 1. */
+  confidence: number;
+  reasons: string[];
+  signals: AssistSpamSignals;
+}
+
+/** Somebody an event names, with an address from the address book or the mail's headers. */
+export interface AssistEventParticipant {
+  name: string;
+  email: string;
+}
+
+/**
+ * An appointment, deadline or trip the model read out of a mail. `start` and `end` are JMAP
+ * LocalDateTimes (`2026-10-06T09:30:00`); all-day events start at `T00:00:00` and end the day
+ * after the last one. `timeZone` is null when the mail names none (use the person's).
+ */
+export interface AssistEvent {
+  title: string;
+  start: string;
+  end: string;
+  allDay: boolean;
+  timeZone: string | null;
+  location: string | null;
+  description: string | null;
+  /** Only ever an `https` address that is in the mail. */
+  url: string | null;
+  participants: AssistEventParticipant[];
+  /** 0 to 1. */
+  confidence: number;
+  /** The text it was read from, as it stands in the mail. */
+  quote: string;
+}
+
+export interface AssistEventsResult {
+  events: AssistEvent[];
+  /** Who answered; null where the backend doesn't say. */
+  answer?: AssistAnswer | null;
+}
+
+/** The person's own word for a kind of mail; set on mail as the keyword `keyword`. */
+export interface AssistLabel {
+  id: string;
+  name: string;
+  /** What belongs there: what the model reads. */
+  description: string;
+  keyword: string;
+  /** `#rrggbb`, or null for the default. */
+  color: string | null;
+}
+
+export interface AssistLabelInput {
+  name: string;
+  description: string;
+  color: string | null;
+}
+
+/** A label the model put on a mail, and why. */
+export interface AssistLabelLogEntry {
+  id: string;
+  emailId: string;
+  labelId: string;
+  name: string;
+  keyword: string;
+  reason: string;
+  createdAt: string;
+  /** Taken off again, with undo or by removing the keyword. */
+  undone: boolean;
+}
+
+export interface AssistUsageDay {
+  day: string;
+  providerId: string;
+  providerName: string;
+  feature: string;
+  requests: number;
+  inputTokens: number;
+  outputTokens: number;
+}
+
+export interface AssistUsageToday {
+  providerId: string;
+  providerName: string;
+  requests: number;
+  tokens: number;
+  requestsPerDay: number | null;
+  tokensPerDay: number | null;
+}
+
+export interface AssistUsage {
+  days: AssistUsageDay[];
+  today: AssistUsageToday[];
+}
