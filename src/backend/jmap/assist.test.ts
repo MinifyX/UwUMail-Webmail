@@ -13,6 +13,7 @@ import {
   toAssistProvider,
   toAssistSettings,
   toEvents,
+  toChatgptLogin,
   MAX_ASSIST_EVENTS,
   toSpamCheck,
   type EventStreamEvent,
@@ -264,6 +265,20 @@ describe("objects of the extension", () => {
       quote: "am Dienstag um 9:30",
     });
     expect(events[1]).toMatchObject({ end: "2026-10-09T00:00:00", timeZone: null, participants: [] });
+  });
+
+  it("takes only a web page as the sign-in address", () => {
+    expect(
+      toChatgptLogin({ userCode: "AB-12", verificationUri: "https://auth.example.com/codex/device" }),
+    ).toMatchObject({ userCode: "AB-12", interval: 5 });
+    for (const verificationUri of [
+      "javascript:void 0",
+      "http://auth.example.com/",
+      "https:\\\\x.example",
+      "/local",
+    ]) {
+      expect(() => toChatgptLogin({ userCode: "AB-12", verificationUri })).toThrow();
+    }
   });
 
   it("bounds how many events and how much text a model's answer brings", () => {

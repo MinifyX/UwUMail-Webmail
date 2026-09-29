@@ -150,7 +150,10 @@ export function toAssistModels(raw: Raw): AssistModels {
 export function toChatgptLogin(raw: Raw): ChatgptLogin {
   const userCode = asString(raw.userCode);
   const verificationUri = asString(raw.verificationUri);
-  if (!userCode || !verificationUri) throw new BackendError("internal", "The server started no sign-in.");
+  // Opened in a new tab: a web page, never a script or a local address (security-audit W-44).
+  if (!userCode || !verificationUri || !/^https:\/\/[^/\\]/i.test(verificationUri)) {
+    throw new BackendError("internal", "The server started no sign-in.");
+  }
   return {
     userCode,
     verificationUri,
