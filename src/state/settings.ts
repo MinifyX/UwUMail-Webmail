@@ -54,6 +54,8 @@ export interface Settings {
   pushNotifications: boolean;
   /** Notifications show sender and subject, or only that something came. */
   pushShowContent: boolean;
+  /** Dates in mails are offered for the calendar, see lib/dates. Synced as `mail.detectEvents`. */
+  detectEvents: boolean;
 }
 
 interface SettingsActions {
@@ -90,6 +92,7 @@ export const DEFAULT_SETTINGS: Settings = {
   undoSendSeconds: 10,
   pushNotifications: false,
   pushShowContent: true,
+  detectEvents: true,
 };
 
 /**

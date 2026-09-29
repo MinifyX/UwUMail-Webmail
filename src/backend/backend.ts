@@ -1,6 +1,7 @@
 import type {
   Account,
   AddressBookInfo,
+  AssistFeatures,
   AttachmentContent,
   BackendEvent,
   BlockedSender,
@@ -13,9 +14,11 @@ import type {
   DraftSaveResult,
   EventDeleteScope,
   EventInput,
+  ExtractedEvent,
   FlagChange,
   Folder,
   Identity,
+  ImageTextResult,
   MailScheduling,
   MaskedAddress,
   MaskedAddressInput,
@@ -265,6 +268,18 @@ export interface Backend {
   companyLogo(email: string): Promise<Blob | null>;
   /** A remote image of a mail, for dark mode to recolor; null where the page has to do without. */
   fetchMailImage(url: string): Promise<Blob | null>;
+  // contract C1
+  /**
+   * The text in a mail's pictures, read by the server. Remote pictures only with `remote`, which
+   * the reader passes only when the person allowed this mail's pictures.
+   */
+  imageText(emailId: string, remote: boolean): Promise<ImageTextResult>;
+  // contract C2
+  /** What the assistant may do for this person; null without one. */
+  assistFeatures(): Promise<AssistFeatures | null>;
+  // contract C2
+  /** Appointments the assistant reads from a mail. Costs the person tokens: only on their say. */
+  extractEvents(emailId: string, includeImages: boolean): Promise<ExtractedEvent[]>;
   /**
    * Where a mail's remote pictures load from so their senders never see the reader: the server
    * fetches them. Null where there is no such server; the pictures then load directly.

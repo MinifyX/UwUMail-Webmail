@@ -13,6 +13,7 @@ import type {
   SharedAccount,
 } from "./types";
 import { demoBanner } from "./demo-pictures";
+import { posterMail, posterText, readingMail, saleMail } from "./demo-dates";
 
 type Lang = "de" | "en";
 type Localized = Record<Lang, string>;
@@ -24,7 +25,10 @@ interface SampleMessage {
   bcc?: Address[];
   replyTo?: Address[];
   minutesAgo: number;
-  body: Localized;
+  /** Text, or built from the moment the demo starts (for dates that must lie ahead). */
+  body: Localized | ((lang: Lang, now: number) => string);
+  /** What the server's OCR reads from the mail's picture, see DemoBackend.imageText. */
+  imageText?: (lang: Lang, now: number) => string;
   html?: boolean;
   seen?: boolean;
   flagged?: boolean;
@@ -425,6 +429,24 @@ export const SAMPLE_THREADS: SampleThread[] = [
   },
 ];
 
+SAMPLE_THREADS.push(
+  {
+    account: "private",
+    subject: p("Pixel Days: bis zu 40 % auf Keycaps ⌨️", "Pixel Days: up to 40% off keycaps ⌨️"),
+    messages: [{ from: shop, minutesAgo: 95, html: true, body: saleMail }],
+  },
+  {
+    account: "private",
+    subject: p("Lesung mit Leni 📚", "Leni's reading 📚"),
+    messages: [{ from: mia, minutesAgo: 130, body: readingMail }],
+  },
+  {
+    account: "private",
+    subject: p("Unser Herbstfest 🍂", "Our autumn fair 🍂"),
+    messages: [{ from: bakery, minutesAgo: 200, html: true, body: posterMail, imageText: posterText }],
+  },
+);
+
 export const DEMO_ACCOUNTS: Account[] = [
   {
     id: "acc-private",
@@ -501,6 +523,9 @@ export function buildFolders(accountId: string, lang: Lang): Folder[] {
   return folders;
 }
 
+/** Text in the demo mails' pictures by message id, as the server's OCR would read it. */
+export const DEMO_IMAGE_TEXT = new Map<string, string>();
+
 export function buildMessages(lang: Lang, now = Date.now()): Message[] {
   const messages: Message[] = [];
   let counter = 0;
@@ -510,7 +535,7 @@ export function buildMessages(lang: Lang, now = Date.now()): Message[] {
     const threadId = `thr-${threadIndex + 1}`;
     for (const sample of thread.messages) {
       counter += 1;
-      const body = sample.body[lang];
+      const body = typeof sample.body === "function" ? sample.body(lang, now) : sample.body[lang];
       const text = sample.html
         ? body
             .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -543,6 +568,7 @@ export function buildMessages(lang: Lang, now = Date.now()): Message[] {
         hasRemoteContent: sample.remote ?? false,
         attachments: (sample.attachments ?? []).map((a, i) => ({ ...a, id: `att-${counter}-${i}` })),
       });
+      if (sample.imageText) DEMO_IMAGE_TEXT.set(`msg-${counter}`, sample.imageText(lang, now));
     }
   });
   return messages;

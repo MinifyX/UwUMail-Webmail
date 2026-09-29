@@ -22,6 +22,7 @@ const base: SyncedSettings = {
   senderPictures: true,
   undoSendSeconds: 10,
   linkConfirm: true,
+  detectEvents: true,
   trustedSenders: [],
   senderAppearance: {},
   linkDomains: [],
@@ -39,6 +40,17 @@ describe("keys the server takes", () => {
     expect(isSyncable("linkConfirm", false)).toBe(true);
     expect(isSyncable("darkImages", "yes")).toBe(false);
     expect(isSyncable("listDensity", "compact")).toBe(false);
+  });
+
+  it("keeps namespaced choices under their server key", () => {
+    expect(isSyncable("mail.detectEvents", false)).toBe(true);
+    expect(isSyncable("mail.detectEvents", "off")).toBe(false);
+    // The name here is not a key there.
+    expect(isSyncable("detectEvents", false)).toBe(false);
+    expect(settingsToValues({ ...base, detectEvents: false })["mail.detectEvents"]).toBe(false);
+    expect(settingsToValues(base)).not.toHaveProperty("detectEvents");
+    expect(applyToSettings(base, { "mail.detectEvents": false })).toEqual({ detectEvents: false });
+    expect(applyToSettings(base, { detectEvents: false })).toEqual({});
   });
 
   it("takes names every object inherits for nothing", () => {
@@ -115,6 +127,7 @@ describe("settings as keys", () => {
         "darkImages",
         "language",
         "linkConfirm",
+        "mail.detectEvents",
         "mailAppearance",
         "remoteImages",
         "senderPictures",

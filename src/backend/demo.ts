@@ -15,14 +15,21 @@ import {
   buildMessages,
   buildSharedMailbox,
   DEMO_ACCOUNTS,
+  DEMO_IMAGE_TEXT,
   DEMO_PEOPLE,
   demoRules,
   welcomeMessage,
 } from "./demo-data";
 import { DEMO_LINKED_PHOTOS, DEMO_PROFILE_PICTURES, demoSenderPicture } from "./demo-pictures";
 import { contactPhotoSource } from "./jmap/contacts";
+import { eventsInImageText, eventsInMail } from "@/lib/dates";
+import { textToHtml } from "@/lib/format";
+import { deviceTimeZone, zonedWall } from "@/lib/calendarDates";
 import type {
+  AssistFeatures,
   BlockedSender,
+  ExtractedEvent,
+  ImageTextResult,
   Account,
   AttachmentContent,
   Address,
@@ -839,6 +846,56 @@ export class DemoBackend implements Backend {
   async fetchMailImage(): Promise<Blob | null> {
     // The demo's images are embedded; remote ones can only be read where their server allows it.
     return null;
+  }
+
+  // contract C1
+  async imageText(emailId: string): Promise<ImageTextResult> {
+    // Like the server's OCR, which takes a moment per picture.
+    await wait(500);
+    const text = DEMO_IMAGE_TEXT.get(emailId);
+    return {
+      unavailable: false,
+      images: text ? [{ source: "cid:poster@kaffeekuchen.example", text, width: 420, height: 560 }] : [],
+      skipped: 0,
+    };
+  }
+
+  // contract C2
+  async assistFeatures(): Promise<AssistFeatures> {
+    return { compose: false, summarize: false, spamCheck: false, extractEvents: true, autoLabels: false };
+  }
+
+  // contract C2
+  /** A stand-in for the assistant: the rules again, a little surer and with a note. */
+  async extractEvents(emailId: string, includeImages: boolean): Promise<ExtractedEvent[]> {
+    await wait(1200);
+    const message = this.messages.find((m) => m.id === emailId);
+    if (!message) throw new BackendError("not_found", "That mail is gone.");
+    const context = {
+      subject: message.subject,
+      reference: zonedWall(message.date, deviceTimeZone()),
+      locale: navigator.language,
+    };
+    const imageText = includeImages ? DEMO_IMAGE_TEXT.get(emailId) : undefined;
+    const found = [
+      ...eventsInMail(message.bodyHtml ?? textToHtml(message.bodyText ?? ""), context),
+      ...(imageText ? eventsInImageText(imageText, context) : []),
+    ];
+    return found
+      .filter((event) => !event.past)
+      .map((event) => ({
+        title: event.title || message.subject,
+        start: event.start,
+        end: event.end,
+        allDay: event.allDay,
+        timeZone: event.timeZone,
+        location: event.location,
+        description: lang() === "de" ? "Von der Demo-KI erkannt." : "Found by the demo assistant.",
+        url: null,
+        participants: [],
+        confidence: Math.min(1, event.confidence + 0.1),
+        quote: event.quote,
+      }));
   }
 
   imageProxy() {

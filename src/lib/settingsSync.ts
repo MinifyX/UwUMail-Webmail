@@ -29,8 +29,26 @@ export const SYNCED_CHOICES = [
   "senderPictures",
   "undoSendSeconds",
   "linkConfirm",
+  "detectEvents",
 ] as const;
 export type SyncedChoice = (typeof SYNCED_CHOICES)[number];
+
+/** Choices whose key on the server isn't their name here: the newer ones are namespaced. */
+const SERVER_KEYS: Partial<Record<SyncedChoice, string>> = {
+  detectEvents: "mail.detectEvents",
+};
+
+/** The server's key for a choice. */
+export function choiceKey(choice: SyncedChoice): string {
+  return SERVER_KEYS[choice] ?? choice;
+}
+
+/** The choice a server key stands for; null for list entries and unknown keys. */
+function choiceOf(key: string): SyncedChoice | null {
+  const renamed = (Object.keys(SERVER_KEYS) as SyncedChoice[]).find((choice) => SERVER_KEYS[choice] === key);
+  if (renamed) return renamed;
+  return Object.hasOwn(CHOICES, key) && !(key in SERVER_KEYS) ? (key as SyncedChoice) : null;
+}
 
 /** Lists that are one key per entry. */
 export const SYNCED_LISTS = ["trustedSenders", "senderAppearance", "linkDomains"] as const;
@@ -61,6 +79,7 @@ const CHOICES: Record<SyncedChoice, (value: unknown) => boolean> = {
   senderPictures: isBoolean,
   undoSendSeconds: oneOf(...UNDO_SEND_CHOICES),
   linkConfirm: isBoolean,
+  detectEvents: isBoolean,
 };
 
 const ENTRY_MAX = 254;
@@ -141,7 +160,8 @@ export function valueBytes(value: unknown): number {
 export function isSyncable(key: string, value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (valueBytes(value) > MAX_VALUE_BYTES) return false;
-  if (Object.hasOwn(CHOICES, key)) return CHOICES[key as SyncedChoice](value);
+  const choice = choiceOf(key);
+  if (choice) return CHOICES[choice](value);
   const colon = key.indexOf(":");
   if (colon < 0) return false;
   const entry = key.slice(colon + 1);
@@ -161,7 +181,7 @@ export function isSyncable(key: string, value: unknown): boolean {
 
 /** Choices are one key each; the server may miss them, but they are never removed. */
 export function isChoiceKey(key: string): boolean {
-  return Object.hasOwn(CHOICES, key);
+  return choiceOf(key) !== null;
 }
 
 export function isSignatureKey(key: string): boolean {
@@ -176,7 +196,7 @@ export function syncableValues(values: SettingsValues): SettingsValues {
 /** The synced settings as keys. Entries the server wouldn't take stay out: they are this device's. */
 export function settingsToValues(settings: SyncedSettings): SettingsValues {
   const values: SettingsValues = {};
-  for (const key of SYNCED_CHOICES) values[key] = settings[key];
+  for (const key of SYNCED_CHOICES) values[choiceKey(key)] = settings[key];
   for (const entry of settings.trustedSenders) values[`trustedSenders:${entry}`] = true;
   for (const [address, look] of Object.entries(settings.senderAppearance)) values[`senderAppearance:${address}`] = look;
   for (const domain of settings.linkDomains) values[`linkDomains:${domain}`] = true;
@@ -194,10 +214,11 @@ export function applyToSettings(settings: SyncedSettings, patch: SettingsPatch):
   let looks: Record<string, "light" | "dark"> | null = null;
   for (const [key, value] of Object.entries(patch)) {
     if (value !== null && !isSyncable(key, value)) continue;
-    if (isChoiceKey(key)) {
+    const choice = choiceOf(key);
+    if (choice) {
       // A choice is never removed, only changed.
-      if (value !== null && settings[key as SyncedChoice] !== value) {
-        Object.assign(changed, { [key]: value });
+      if (value !== null && settings[choice] !== value) {
+        Object.assign(changed, { [choice]: value });
       }
       continue;
     }

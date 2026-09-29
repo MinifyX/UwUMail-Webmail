@@ -20,6 +20,7 @@ import { BackendError, type Backend, type SignatureStore } from "../backend";
 import type {
   Account,
   AddressBookInfo,
+  AssistFeatures,
   AttachmentContent,
   BackendEvent,
   BlockedSender,
@@ -28,6 +29,8 @@ import type {
   Contact,
   ContactInput,
   ContactRecord,
+  ExtractedEvent,
+  ImageTextResult,
   DraftContent,
   DraftSaveResult,
   EventDeleteScope,
@@ -158,6 +161,7 @@ import {
   visibilityOf,
   type JmapProfilePicture,
 } from "./profile";
+import { ASSIST, IMAGETEXT, assistFeaturesFrom, extractedEventsFrom, imageTextFrom } from "./eventSources";
 import { SUGGEST, suggestionLimit, suggestionsToContacts, type JmapAddressSuggestion } from "./suggest";
 import {
   PRINCIPALS,
@@ -2347,6 +2351,38 @@ export class JmapBackend implements Backend {
     } catch {
       return null;
     }
+  }
+
+  // contract C1
+  async imageText(emailId: string, remote: boolean): Promise<ImageTextResult> {
+    await this.start();
+    if (!supports(IMAGETEXT)) return { unavailable: true, images: [], skipped: 0 };
+    const target = unscopeId(emailId, this.accountId);
+    const response = await one<unknown>(
+      "Email/imageText",
+      { accountId: target.accountId, emailId: target.id, remote },
+      [CORE, MAIL, IMAGETEXT],
+    );
+    return imageTextFrom(response);
+  }
+
+  // contract C2
+  async assistFeatures(): Promise<AssistFeatures | null> {
+    await this.start();
+    return supports(ASSIST) ? assistFeaturesFrom(accountCapability(ASSIST) ?? {}) : null;
+  }
+
+  // contract C2
+  async extractEvents(emailId: string, includeImages: boolean): Promise<ExtractedEvent[]> {
+    await this.start();
+    if (!supports(ASSIST)) throw new BackendError("not_supported", "This server has no assistant.");
+    const target = unscopeId(emailId, this.accountId);
+    const response = await one<unknown>(
+      "Assist/extractEvents",
+      { accountId: target.accountId, emailId: target.id, includeImages },
+      [CORE, MAIL, ASSIST],
+    );
+    return extractedEventsFrom(response);
   }
 
   imageProxy(): ImageProxy | null {

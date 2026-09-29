@@ -193,6 +193,51 @@ export interface Unsubscribe {
 /** What else there is when the one-click way didn't work: a mail, the sender's page, or nothing. */
 export type UnsubscribeFallback = "mail" | "page" | null;
 
+// contract C1: text read from a mail's pictures (`urn:uwumail:jmap:imagetext`, `Email/imageText`).
+export interface ImageText {
+  /** `cid:<content-id>`, `blob:<blobId>` or the https URL of a remote picture. */
+  source: string;
+  text: string;
+  width: number;
+  height: number;
+}
+
+// contract C1
+export interface ImageTextResult {
+  /** The server reads no pictures (no OCR installed); `images` is empty then. */
+  unavailable: boolean;
+  images: ImageText[];
+  /** Pictures left out (too big, too many, remote ones not allowed). */
+  skipped: number;
+}
+
+// contract C2: what the assistant (`urn:uwumail:jmap:assist`) may do for this person.
+export interface AssistFeatures {
+  compose: boolean;
+  summarize: boolean;
+  spamCheck: boolean;
+  extractEvents: boolean;
+  autoLabels: boolean;
+}
+
+// contract C2: one appointment the assistant read from a mail (`Assist/extractEvents`).
+export interface ExtractedEvent {
+  title: string;
+  /** JMAP LocalDateTime, "2026-10-06T00:00:00". */
+  start: string;
+  end: string;
+  allDay: boolean;
+  timeZone: string | null;
+  location: string | null;
+  description: string | null;
+  url: string | null;
+  participants: { name: string; email: string }[];
+  /** 0..1 */
+  confidence: number;
+  /** The text the event was read from. */
+  quote: string;
+}
+
 export type UnsubscribeOutcome =
   | { kind: "done"; via: "oneClick" | "mail" }
   | { kind: "openPage"; url: string }
