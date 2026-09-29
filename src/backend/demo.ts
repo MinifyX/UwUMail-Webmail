@@ -22,6 +22,9 @@ import {
 import { DEMO_LINKED_PHOTOS, DEMO_PROFILE_PICTURES, demoSenderPicture } from "./demo-pictures";
 import { contactPhotoSource } from "./jmap/contacts";
 import type {
+  BirthdayImportEntry,
+  BirthdayImportResult,
+  BirthdayScan,
   BlockedSender,
   Account,
   AttachmentContent,
@@ -853,7 +856,51 @@ export class DemoBackend implements Backend {
     return labels.length < 2 || DEMO_FREEMAIL.has(domain) ? null : domain;
   }
 
-  private calendar = new DemoCalendar(lang(), DEMO_ACCOUNTS[0]!.id, () => this.emit({ type: "calendar:changed" }));
+  private calendar = new DemoCalendar(
+    lang(),
+    DEMO_ACCOUNTS[0]!.id,
+    () => this.emit({ type: "calendar:changed" }),
+    undefined,
+    () => this.addressBook.contacts(),
+  );
+
+  async birthdayImportAvailable() {
+    return true;
+  }
+
+  async scanBirthdays(): Promise<BirthdayScan> {
+    await wait(250);
+    return { candidates: this.calendar.scanBirthdays(), truncated: false };
+  }
+
+  async importBirthdays(entries: BirthdayImportEntry[]): Promise<BirthdayImportResult> {
+    await wait(300);
+    const found = new Map(this.calendar.scanBirthdays().map((candidate) => [candidate.eventId, candidate]));
+    const result: BirthdayImportResult = { imported: [], failed: [] };
+    for (const entry of entries) {
+      const candidate = found.get(entry.eventId);
+      if (!candidate) {
+        result.failed.push({ eventId: entry.eventId, reason: "notFound" });
+        continue;
+      }
+      try {
+        let contactId: string;
+        let created = false;
+        if ("contactId" in entry) {
+          this.addressBook.setBirthday(entry.contactId, candidate.birthday, entry.overwrite === true);
+          contactId = entry.contactId;
+        } else {
+          contactId = this.addressBook.createNamed(entry.newContactName, candidate.birthday);
+          created = true;
+        }
+        this.calendar.removeEvent(entry.eventId);
+        result.imported.push({ eventId: entry.eventId, contactId, created, eventDeleted: true });
+      } catch (error) {
+        result.failed.push({ eventId: entry.eventId, reason: error instanceof Error ? error.message : String(error) });
+      }
+    }
+    return result;
+  }
 
   async calendarsAvailable() {
     return true;

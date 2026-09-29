@@ -25,6 +25,8 @@ export const WEBMAIL = "urn:uwumail:jmap:webmail";
 export const REMOTE = "urn:uwumail:jmap:remote";
 /** Our own: the one-click unsubscribe of RFC 8058, done by the server (`Email/unsubscribe`). */
 export const UNSUBSCRIBE = "urn:uwumail:jmap:unsubscribe";
+/** Our own: birthday events of other calendars moved into the contacts (`Birthdays/scan`, `/import`). */
+export const BIRTHDAYS = "urn:uwumail:jmap:birthdays";
 
 /** An account of the session: the person's own, or one somebody shares folders from. */
 export interface JmapAccount {

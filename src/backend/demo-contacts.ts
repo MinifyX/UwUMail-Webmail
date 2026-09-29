@@ -57,6 +57,8 @@ function sampleContacts(lang: Lang, accountId: string): ContactRecord[] {
         },
       ],
       birthday: "1996-04-12",
+      anniversary: "2021-06-12",
+      reminders: [{ daysBefore: 1, time: "09:00" }],
       note: de ? "Mag Hafermilch und lange Spaziergänge." : "Likes oat milk and long walks.",
       photo: demoPortrait("#cdeee0", "#7a4a2a", "#2f9e77"),
     }),
@@ -196,6 +198,8 @@ export class DemoContacts {
         .filter((postal) => [postal.street, postal.postcode, postal.locality, postal.country].some((v) => v.trim()))
         .map((postal, index) => ({ ...postal, id: postal.id || `a${index + 1}` })),
       birthday: input.birthdayChanged ? input.birthday : (before?.birthday ?? null),
+      anniversary: input.anniversaryChanged ? (input.anniversary ?? null) : (before?.anniversary ?? null),
+      reminders: input.reminders !== undefined ? [...input.reminders] : [...(before?.reminders ?? [])],
       note: input.note.trim(),
       photo: input.photo !== undefined ? input.photo : (before?.photo ?? null),
       isGroup: false,
@@ -214,6 +218,47 @@ export class DemoContacts {
     if (!before) throw new BackendError("not_found", "This contact is gone.");
     this.list = this.list.map((contact) => (contact.id === id ? this.record(id, input, before) : contact));
     this.changed();
+  }
+
+  /** A birthday moved in from a calendar; another one it had stays unless `overwrite`. */
+  setBirthday(id: string, birthday: string, overwrite: boolean) {
+    const contact = this.list.find((entry) => entry.id === id);
+    if (!contact) throw new BackendError("not_found", "This contact is gone.");
+    if (contact.birthday && !overwrite && contact.birthday.slice(4) !== birthday.slice(4)) {
+      throw new BackendError("invalid_input", "The contact has another birthday.");
+    }
+    // A year the contact knows stays when the calendar knew none.
+    const keep = contact.birthday && birthday.startsWith("--") && contact.birthday.slice(4) === birthday.slice(4);
+    if (!keep) this.list = this.list.map((entry) => (entry.id === id ? { ...entry, birthday } : entry));
+    this.changed();
+  }
+
+  /** A new contact for a birthday nobody had yet. */
+  createNamed(name: string, birthday: string): string {
+    const words = name.trim().split(/\s+/);
+    const surname = words.length > 1 ? words.pop()! : "";
+    const id = `contact-${nextId++}`;
+    this.list.push({
+      id,
+      accountId: this.accountId,
+      addressBookId: this.books.find((book) => book.isDefault)?.id ?? this.books[0]?.id ?? "",
+      displayName: name.trim(),
+      given: words.join(" "),
+      surname,
+      organization: "",
+      title: "",
+      emails: [],
+      phones: [],
+      addresses: [],
+      birthday,
+      anniversary: null,
+      reminders: [],
+      note: "",
+      photo: null,
+      isGroup: false,
+    });
+    this.changed();
+    return id;
   }
 
   deleteContact(id: string) {

@@ -11,11 +11,15 @@ import {
   withClock,
   type WallTime,
 } from "@/lib/calendarDates";
+import { formatDay, partialDay } from "@/lib/birthdays";
 import { expandRecurrence, weekdayOf } from "@/lib/recurrence";
 import { BackendError } from "./backend";
+import { BIRTHDAYS_CALENDAR_ID, birthdayOccurrences, candidateFor, nameFromTitle } from "./demo-birthdays";
 import type {
+  BirthdayCandidate,
   CalendarInfo,
   CalendarOccurrence,
+  ContactRecord,
   EventDeleteScope,
   EventInput,
   EventParticipant,
@@ -74,8 +78,23 @@ function sampleCalendars(lang: Lang, accountId: string): CalendarInfo[] {
       mayWrite: false,
       sharedBy: { email: "leni@uwumail.example", name: "Leni" },
     },
+    {
+      ...base,
+      id: BIRTHDAYS_CALENDAR_ID,
+      name: lang === "de" ? "Geburtstage" : "Birthdays",
+      color: "#f5a623",
+      isDefault: false,
+      sortOrder: 4,
+      mayWrite: false,
+      mayDelete: false,
+      isBirthdays: true,
+    },
   ];
-  return list.map((calendar) => ({ ...calendar, mayShare: !calendar.sharedBy, sharedBy: calendar.sharedBy ?? null }));
+  return list.map((calendar) => ({
+    ...calendar,
+    mayShare: !calendar.sharedBy && !calendar.isBirthdays,
+    sharedBy: calendar.sharedBy ?? null,
+  }));
 }
 
 function sampleEvents(lang: Lang): DemoEvent[] {
@@ -185,6 +204,32 @@ function sampleEvents(lang: Lang): DemoEvent[] {
       end: withClock(addDays(today, 3), "00:00"),
       recurrence: { frequency: "yearly", interval: 1, byDay: null, until: null, count: null },
     }),
+    // Birthdays kept as events, for the import into the contacts: Mia has none yet, Noah's is
+    // known already, Oma Hilde is no contact.
+    event({
+      id: "ev-bday-mia",
+      title: de ? "Geburtstag von Mia Mood (*1999)" : "Mia Mood's birthday (1999)",
+      allDay: true,
+      start: withClock(addDays(today, 20), "00:00"),
+      end: withClock(addDays(today, 21), "00:00"),
+      recurrence: { frequency: "yearly", interval: 1, byDay: null, until: null, count: null },
+    }),
+    event({
+      id: "ev-bday-oma",
+      title: "🎂 Oma Hilde",
+      allDay: true,
+      start: withClock(addDays(today, 40), "00:00"),
+      end: withClock(addDays(today, 41), "00:00"),
+      recurrence: { frequency: "yearly", interval: 1, byDay: null, until: null, count: null },
+    }),
+    event({
+      id: "ev-bday-noah",
+      title: de ? "Geb. Noah" : "bday Noah",
+      allDay: true,
+      start: "2020-09-30T00:00:00",
+      end: "2020-10-01T00:00:00",
+      recurrence: { frequency: "yearly", interval: 1, byDay: null, until: null, count: null },
+    }),
     event({
       id: "ev-run",
       calendarId: "cal-sport",
@@ -224,14 +269,38 @@ export class DemoCalendar {
   private nextId = 1;
 
   constructor(
-    lang: Lang,
+    private lang: Lang,
     private accountId: string,
     private changed: () => void,
     /** The demo's own address, as it stands among an event's participants. */
     private ownEmail = "mini@uwumail.example",
+    /** The contacts whose dates fill the birthdays calendar. */
+    private contacts: () => ContactRecord[] = () => [],
   ) {
     this.calendarList = sampleCalendars(lang, accountId);
     this.events = sampleEvents(lang);
+  }
+
+  /** The yearly all-day events of the other calendars that are birthdays, like the server's scan. */
+  scanBirthdays(): BirthdayCandidate[] {
+    const contacts = this.contacts();
+    return this.events.flatMap((event) => {
+      const calendar = this.calendarList.find((candidate) => candidate.id === event.calendarId);
+      if (!calendar || calendar.isBirthdays || !event.allDay || event.recurrence?.frequency !== "yearly") return [];
+      const found = nameFromTitle(event.title);
+      if (!found) return [];
+      const month = Number(event.start.slice(5, 7));
+      const day = Number(event.start.slice(8, 10));
+      const date = partialDay(found.year, month, day) ?? partialDay(null, month, day);
+      if (!date) return [];
+      return [candidateFor(event, formatDay(date), found.name, contacts, calendar.mayWrite)];
+    });
+  }
+
+  /** Takes an event away for good (a birthday that went into a contact). */
+  removeEvent(eventId: string) {
+    this.events = this.events.filter((event) => event.id !== eventId);
+    this.changed();
   }
 
   /** Like the server: the answer goes into the event (and, for real, to the organizer). */
@@ -320,6 +389,7 @@ export class DemoCalendar {
 
   deleteCalendar(id: string) {
     const calendar = this.calendar(id);
+    if (calendar.isBirthdays) throw new BackendError("forbidden", "The birthdays calendar comes from the contacts.");
     if (calendar.isDefault && this.calendarList.length === 1) {
       throw new BackendError("invalid_input", "The only calendar stays.");
     }
@@ -391,11 +461,14 @@ export class DemoCalendar {
         });
       }
     }
+    if (colors.has(BIRTHDAYS_CALENDAR_ID)) {
+      found.push(...birthdayOccurrences(this.contacts(), from, to, this.accountId, this.lang));
+    }
     return found.sort((a, b) => a.start.localeCompare(b.start));
   }
 
   createEvent(input: EventInput): string {
-    this.calendar(input.calendarId);
+    this.writable(input.calendarId);
     const id = `ev-${this.nextId++}`;
     this.events.push({
       id,
@@ -416,7 +489,7 @@ export class DemoCalendar {
   updateEvent(eventId: string, input: EventInput, occurrenceStart?: string) {
     const event = this.events.find((candidate) => candidate.id === eventId);
     if (!event) throw new BackendError("not_found", "That event is gone.");
-    this.calendar(input.calendarId);
+    this.writable(input.calendarId);
     const length = diffMinutes(input.start, input.end);
     let start = input.start;
     if (event.recurrence && occurrenceStart) {
@@ -451,6 +524,13 @@ export class DemoCalendar {
   private calendar(id: string): CalendarInfo {
     const calendar = this.calendarList.find((candidate) => candidate.id === id);
     if (!calendar) throw new BackendError("not_found", "That calendar is gone.");
+    return calendar;
+  }
+
+  /** A calendar events may go into: not the birthdays calendar, which the contacts fill. */
+  private writable(id: string): CalendarInfo {
+    const calendar = this.calendar(id);
+    if (calendar.isBirthdays) throw new BackendError("forbidden", "The birthdays calendar comes from the contacts.");
     return calendar;
   }
 
