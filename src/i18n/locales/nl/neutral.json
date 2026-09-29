@@ -319,7 +319,9 @@
     "signaturesPerAddressDesc": "Eén per afzenderadres, met vet, links en afbeeldingen, voor nieuwe mail en antwoorden. Hij staat op je mailserver, dus het portaal en je andere mailapps gebruiken dezelfde.",
     "addSignature": "Handtekening toevoegen",
     "profile": "Profielfoto",
-    "assistant": "AI-assistent"
+    "assistant": "AI-assistent",
+    "detectEvents": "Afspraken in mails herkennen",
+    "detectEventsDesc": "Datums zoals „vr 17 okt. om 19:30” of „6–9 okt.” worden onderstreept en voor je agenda aangeboden, ook uit de tekst in afbeeldingen. Dat gebeurt met vaste regels, zonder AI; de AI-assistent leest een mail alleen als je daarom vraagt."
   },
   "theme": {
     "system": "Systeem",
@@ -1533,5 +1535,31 @@
       "lastDays_other": "Laatste {{count}} dagen",
       "nothing": "In deze periode niets verbruikt."
     }
+  },
+  "dates": {
+    "barLabel": "Afspraken in deze mail",
+    "found_one": "{{count}} afspraak gevonden",
+    "found_other": "{{count}} afspraken gevonden",
+    "add": "In agenda",
+    "addLong": "In agenda zetten",
+    "addNamed": "{{title}}, {{when}}, in de agenda zetten",
+    "dismiss": "Verbergen voor deze mail",
+    "dismissed": "Verborgen voor deze mail.",
+    "undoDismiss": "Weer tonen",
+    "refine": "Nauwkeuriger met AI",
+    "refineAgain": "AI opnieuw vragen",
+    "refineHint": "De AI-assistent leest deze mail en vindt de afspraken nauwkeuriger. Telt mee voor je AI-tegoed.",
+    "refineFailed": "De AI kon de mail nu niet lezen.",
+    "fromAssistant": "AI",
+    "fromPicture": "uit afbeelding",
+    "ambiguous": "Of {{other}}?",
+    "weekdayMismatch": "De weekdag past niet bij de datum.",
+    "markLabel": "Afspraak: {{when}}. In agenda zetten",
+    "popoverLabel": "Afspraak: {{title}}",
+    "popoverHeading": "Gevonden in deze mail",
+    "over": "Al voorbij.",
+    "notesQuote": "„{{quote}}”",
+    "notesFrom": "Uit de mail „{{subject}}” van {{sender}}",
+    "noSubject": "(geen onderwerp)"
   }
 }

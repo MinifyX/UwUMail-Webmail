@@ -8,6 +8,9 @@ import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
 import { useAccounts, useBackendEvents, useIdentities, useSignatures } from "@/lib/queries";
 import { useUi } from "@/state/ui";
 import { CalendarShell } from "../calendar/CalendarShell";
+import { DeleteScopeQuestion } from "../calendar/DeleteScopeQuestion";
+import { EventEditor } from "../calendar/EventEditor";
+import { openLinkedMail } from "../dates/mailLink";
 import { ContactEditor } from "../contacts/ContactEditor";
 import { ContactsShell } from "../contacts/ContactsShell";
 import { DeleteContactQuestion } from "../contacts/DeleteContactQuestion";
@@ -58,6 +61,9 @@ export function MailShell() {
     ui.openCompose({ mode: saved.mode, restore: saved });
     ui.setComposeMinimized(true);
   }, [phone]);
+
+  // A link back to a mail, as an event found in it carries in its notes.
+  useEffect(() => openLinkedMail(), []);
 
   const section = useUi((s) => s.section);
   const { data: calendarAvailable = false } = useCalendarsAvailable();
@@ -168,6 +174,13 @@ export function MailShell() {
       <FolderDialogs />
       <ContactEditor />
       <DeleteContactQuestion />
+      {/* Also for appointments found in a mail, so outside the calendar too. */}
+      {calendarAvailable && (
+        <>
+          <EventEditor />
+          <DeleteScopeQuestion />
+        </>
+      )}
     </div>
   );
 }

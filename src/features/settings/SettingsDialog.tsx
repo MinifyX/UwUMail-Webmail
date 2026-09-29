@@ -278,6 +278,14 @@ function Reading() {
           description={t("settings.senderPicturesDesc")}
         />
       </div>
+      <div className="border-b border-hairline py-4 last:border-0">
+        <Toggle
+          checked={settings.detectEvents}
+          onChange={(detectEvents) => settings.update({ detectEvents })}
+          label={t("settings.detectEvents")}
+          description={t("settings.detectEventsDesc")}
+        />
+      </div>
       {phone && (
         <Row label={t("settings.swipeRight")} description={t("settings.swipeDesc")}>
           <SwipeSelect value={settings.swipeRight} onChange={(swipeRight) => settings.update({ swipeRight })} />

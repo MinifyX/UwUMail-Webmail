@@ -83,6 +83,14 @@ for the whole server or for single accounts.
   a week before. Birthdays kept as events in other calendars can be moved
   into the contacts in one go, with a choice for every unclear one, and the
   old events are deleted afterwards.
+- **Appointments in mail.** "Prime Day deals vom 6. – 9. Okt", "am Freitag,
+  17.10. um 19:30 Uhr", "tomorrow at 3pm": dates in a mail, German or
+  English, are underlined, and a bar above the mail offers them for the
+  calendar, whose editor opens filled in — title, times, place, and a note
+  quoting the mail with a link back to it. Pictures count too, once the
+  server has read their text. This is done by rules in the browser, not by
+  an AI; the server's AI assistant only reads a mail when you click "Check
+  with AI" or switched that on for every mail ([docs/dates.md](docs/dates.md)).
 - **Fits a phone.** Below 700 px it turns into the app's phone layout, with
   swipes and a full-screen composer, and it can be put on the home screen.
 - **Notifications with the tab closed.** Switched on in the settings, the

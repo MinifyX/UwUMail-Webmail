@@ -38,6 +38,7 @@ export type SyncedChoice = (typeof SYNCED_CHOICES)[number];
  */
 export const KEYED_CHOICES = {
   assistRefineEvents: "assist.refineEvents",
+  detectEvents: "mail.detectEvents",
 } as const;
 export type KeyedChoice = keyof typeof KEYED_CHOICES;
 
@@ -81,6 +82,7 @@ const CHOICES: Record<SyncedChoice | (typeof KEYED_CHOICES)[KeyedChoice], (value
   undoSendSeconds: oneOf(...UNDO_SEND_CHOICES),
   linkConfirm: isBoolean,
   "assist.refineEvents": isBoolean,
+  "mail.detectEvents": isBoolean,
 };
 
 const ENTRY_MAX = 254;

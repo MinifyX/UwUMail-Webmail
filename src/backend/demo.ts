@@ -16,6 +16,7 @@ import {
   buildMessages,
   buildSharedMailbox,
   DEMO_ACCOUNTS,
+  DEMO_IMAGE_TEXT,
   DEMO_PEOPLE,
   demoRules,
   welcomeMessage,
@@ -913,6 +914,9 @@ export class DemoBackend implements Backend {
         height: 540,
       });
     }
+    // The appointment mails' poster (demo-dates), an embedded picture.
+    const poster = DEMO_IMAGE_TEXT.get(emailId);
+    if (poster) images.push({ source: "cid:poster@kaffeekuchen.example", text: poster, width: 420, height: 560 });
     return { emailId, unavailable: false, images, skipped: 0 };
   }
 

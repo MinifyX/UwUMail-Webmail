@@ -327,7 +327,9 @@
     "signaturesPerAddressDesc": "Une par adresse d'expéditeur, avec gras, liens et images, ajoutée aux nouveaux e-mails et aux réponses. Elle est conservée sur votre serveur de messagerie : le portail et vos autres applications de messagerie utilisent la même.",
     "addSignature": "Ajouter une signature",
     "profile": "Photo de profil",
-    "assistant": "Assistant IA"
+    "assistant": "Assistant IA",
+    "detectEvents": "Repérer les rendez-vous dans les e-mails",
+    "detectEventsDesc": "Les dates comme « ven. 17 oct. à 19h30 » ou « 6–9 oct. » sont soulignées et proposées pour votre agenda, y compris le texte des images. Cela se fait par des règles, sans IA ; l'assistant IA ne lit un e-mail que si vous le lui demandez."
   },
   "theme": {
     "system": "Système",
@@ -1585,5 +1587,32 @@
       "lastDays_other": "{{count}} derniers jours",
       "nothing": "Rien de consommé sur cette période."
     }
+  },
+  "dates": {
+    "barLabel": "Rendez-vous dans cet e-mail",
+    "found_one": "{{count}} rendez-vous repéré",
+    "found_many": "{{count}} rendez-vous repérés",
+    "found_other": "{{count}} rendez-vous repérés",
+    "add": "Ajouter à l'agenda",
+    "addLong": "Ajouter à l'agenda",
+    "addNamed": "Ajouter {{title}}, {{when}}, à l'agenda",
+    "dismiss": "Masquer pour cet e-mail",
+    "dismissed": "Masqué pour cet e-mail.",
+    "undoDismiss": "Afficher à nouveau",
+    "refine": "Préciser avec l'IA",
+    "refineAgain": "Redemander à l'IA",
+    "refineHint": "L'assistant IA lit cet e-mail et repère les rendez-vous plus précisément. Compte dans votre quota d'IA.",
+    "refineFailed": "L'IA n'a pas pu le lire pour l'instant.",
+    "fromAssistant": "IA",
+    "fromPicture": "d'une image",
+    "ambiguous": "Ou {{other}} ?",
+    "weekdayMismatch": "Le jour de la semaine ne correspond pas à la date.",
+    "markLabel": "Rendez-vous : {{when}}. Ajouter à l'agenda",
+    "popoverLabel": "Rendez-vous : {{title}}",
+    "popoverHeading": "Repéré dans cet e-mail",
+    "over": "Déjà passé.",
+    "notesQuote": "« {{quote}} »",
+    "notesFrom": "De l'e-mail « {{subject}} » de {{sender}}",
+    "noSubject": "(sans objet)"
   }
 }

@@ -311,7 +311,9 @@
     "signaturesPerAddressDesc": "每个发件地址一个，可使用粗体、链接和图片，会添加到新邮件和回复中。它保存在你的邮件服务器上，因此门户和你的其他邮件应用都使用同一个。",
     "addSignature": "添加签名",
     "profile": "头像",
-    "assistant": "AI 助手"
+    "assistant": "AI 助手",
+    "detectEvents": "识别邮件中的日程",
+    "detectEventsDesc": "像“10月17日周五 19:30”或“10月6日至9日”这样的日期会加下划线，并建议添加到日历，图片中的文字也包括在内。这是按固定规则完成的，不使用 AI；只有你要求时，AI 助手才会读取邮件。"
   },
   "theme": {
     "system": "系统",
@@ -1479,5 +1481,30 @@
       "lastDays_other": "最近 {{count}} 天",
       "nothing": "这段时间内没有使用。"
     }
+  },
+  "dates": {
+    "barLabel": "此邮件中的日程",
+    "found_other": "找到 {{count}} 个日程",
+    "add": "添加到日历",
+    "addLong": "添加到日历",
+    "addNamed": "将 {{title}}（{{when}}）添加到日历",
+    "dismiss": "在此邮件中隐藏",
+    "dismissed": "已在此邮件中隐藏。",
+    "undoDismiss": "重新显示",
+    "refine": "用 AI 更准确识别",
+    "refineAgain": "再问一次 AI",
+    "refineHint": "AI 助手会读取此邮件并更准确地识别日程。会消耗你的 AI 额度。",
+    "refineFailed": "AI 暂时无法读取。",
+    "fromAssistant": "AI",
+    "fromPicture": "来自图片",
+    "ambiguous": "还是 {{other}}？",
+    "weekdayMismatch": "星期与日期不符。",
+    "markLabel": "日程：{{when}}。添加到日历",
+    "popoverLabel": "日程：{{title}}",
+    "popoverHeading": "在此邮件中找到",
+    "over": "已经结束。",
+    "notesQuote": "“{{quote}}”",
+    "notesFrom": "来自 {{sender}} 的邮件“{{subject}}”",
+    "noSubject": "（无主题）"
   }
 }

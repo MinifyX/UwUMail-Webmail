@@ -319,7 +319,9 @@
     "signaturesPerAddressDesc": "Eine pro Absenderadresse, mit Fett, Links und Bildern, für neue Mails und Antworten. Sie liegt auf deinem Mailserver, also nutzen das Portal und deine anderen Mail-Apps dieselbe.",
     "addSignature": "Signatur hinzufügen",
     "profile": "Profilbild",
-    "assistant": "KI-Assistent"
+    "assistant": "KI-Assistent",
+    "detectEvents": "Termine in Mails erkennen",
+    "detectEventsDesc": "Angaben wie „Fr., 17.10. um 19:30 Uhr“ oder „6.–9. Okt.“ werden unterstrichen und für deinen Kalender angeboten, auch aus dem Text in Bildern. Das passiert nach festen Regeln, ohne KI; der KI-Assistent liest eine Mail nur, wenn du ihn darum bittest."
   },
   "theme": {
     "system": "System",
@@ -1533,5 +1535,31 @@
       "lastDays_other": "Letzte {{count}} Tage",
       "nothing": "In dieser Zeit nichts verbraucht."
     }
+  },
+  "dates": {
+    "barLabel": "Termine in dieser Mail",
+    "found_one": "{{count}} Termin erkannt",
+    "found_other": "{{count}} Termine erkannt",
+    "add": "In Kalender",
+    "addLong": "In Kalender eintragen",
+    "addNamed": "{{title}}, {{when}}, in den Kalender eintragen",
+    "dismiss": "Für diese Mail ausblenden",
+    "dismissed": "Für diese Mail ausgeblendet.",
+    "undoDismiss": "Wieder zeigen",
+    "refine": "Mit KI genauer erkennen",
+    "refineAgain": "KI nochmal fragen",
+    "refineHint": "Der KI-Assistent liest diese Mail und erkennt die Termine genauer. Zählt zu deinem KI-Kontingent.",
+    "refineFailed": "Die KI konnte die Mail gerade nicht lesen.",
+    "fromAssistant": "KI",
+    "fromPicture": "aus Bild",
+    "ambiguous": "Oder {{other}}?",
+    "weekdayMismatch": "Der Wochentag passt nicht zum Datum.",
+    "markLabel": "Termin: {{when}}. In Kalender eintragen",
+    "popoverLabel": "Termin: {{title}}",
+    "popoverHeading": "In dieser Mail erkannt",
+    "over": "Schon vorbei.",
+    "notesQuote": "„{{quote}}“",
+    "notesFrom": "Aus der Mail „{{subject}}“ von {{sender}}",
+    "noSubject": "(kein Betreff)"
   }
 }

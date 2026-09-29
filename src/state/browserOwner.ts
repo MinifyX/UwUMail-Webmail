@@ -1,4 +1,5 @@
 import { clearLocalDraft } from "@/features/compose/localDraft";
+import { useDismissedDates } from "@/features/dates/dismissed";
 import { DEFAULT_SETTINGS, useSettings } from "./settings";
 
 /**
@@ -41,6 +42,7 @@ export function claimBrowser(login: string): boolean {
   if (previous === null || previous === owner) return false;
   useSettings.setState({ ...DEFAULT_SETTINGS });
   clearLocalDraft();
+  useDismissedDates.getState().clear();
   write(SYNC_META_KEY, null);
   return true;
 }

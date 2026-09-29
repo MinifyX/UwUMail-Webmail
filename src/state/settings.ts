@@ -59,6 +59,8 @@ export interface Settings {
    * mail). Follows the account as `assist.refineEvents`.
    */
   assistRefineEvents: boolean;
+  /** Dates in mails are offered for the calendar, see lib/dates. Follows the account as `mail.detectEvents`. */
+  detectEvents: boolean;
 }
 
 interface SettingsActions {
@@ -96,6 +98,7 @@ export const DEFAULT_SETTINGS: Settings = {
   pushNotifications: false,
   pushShowContent: true,
   assistRefineEvents: false,
+  detectEvents: true,
 };
 
 /**

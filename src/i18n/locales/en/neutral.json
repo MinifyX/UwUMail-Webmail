@@ -319,7 +319,9 @@
     "signaturesPerAddressDesc": "One per sender address, with bold, links and pictures, added to new mail and replies. It's kept on your mail server, so the portal and your other mail apps use the same one.",
     "addSignature": "Add signature",
     "profile": "Profile picture",
-    "assistant": "AI assistant"
+    "assistant": "AI assistant",
+    "detectEvents": "Find appointments in mail",
+    "detectEventsDesc": "Dates like “Fri, Oct 17 at 7:30pm” or “Oct 6–9” are underlined and offered for your calendar, also from the text in pictures. This happens by rules, without any AI; the AI assistant only reads a mail when you ask it to."
   },
   "theme": {
     "system": "System",
@@ -1533,5 +1535,31 @@
       "lastDays_other": "Last {{count}} days",
       "nothing": "Nothing used in this time."
     }
+  },
+  "dates": {
+    "barLabel": "Appointments in this mail",
+    "found_one": "{{count}} appointment found",
+    "found_other": "{{count}} appointments found",
+    "add": "Add to calendar",
+    "addLong": "Add to calendar",
+    "addNamed": "Add {{title}}, {{when}}, to the calendar",
+    "dismiss": "Hide for this mail",
+    "dismissed": "Hidden for this mail.",
+    "undoDismiss": "Show again",
+    "refine": "Check with AI",
+    "refineAgain": "Try AI again",
+    "refineHint": "The AI assistant reads this mail and finds appointments more precisely. Uses your AI quota.",
+    "refineFailed": "The AI couldn't read it right now.",
+    "fromAssistant": "AI",
+    "fromPicture": "from picture",
+    "ambiguous": "Or {{other}}?",
+    "weekdayMismatch": "The weekday doesn't match the date.",
+    "markLabel": "Appointment: {{when}}. Add to calendar",
+    "popoverLabel": "Appointment: {{title}}",
+    "popoverHeading": "Found in this mail",
+    "over": "Already over.",
+    "notesQuote": "“{{quote}}”",
+    "notesFrom": "From the mail “{{subject}}” by {{sender}}",
+    "noSubject": "(no subject)"
   }
 }

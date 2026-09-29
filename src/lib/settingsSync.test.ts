@@ -23,6 +23,7 @@ const base: SyncedSettings = {
   undoSendSeconds: 10,
   linkConfirm: true,
   assistRefineEvents: false,
+  detectEvents: true,
   trustedSenders: [],
   senderAppearance: {},
   linkDomains: [],
@@ -120,6 +121,7 @@ describe("settings as keys", () => {
         "darkImages",
         "language",
         "linkConfirm",
+        "mail.detectEvents",
         "mailAppearance",
         "remoteImages",
         "senderPictures",
@@ -160,6 +162,16 @@ describe("settings as keys", () => {
     expect(settingsToValues({ ...base, assistRefineEvents: true })).toMatchObject({ "assist.refineEvents": true });
     expect(applyToSettings(base, { "assist.refineEvents": true })).toEqual({ assistRefineEvents: true });
     expect(applyToSettings(base, { "assist.refineEvents": false })).toEqual({});
+  });
+
+  it("keeps finding dates in mail under its namespaced key", () => {
+    expect(isSyncable("mail.detectEvents", false)).toBe(true);
+    expect(isSyncable("mail.detectEvents", "off")).toBe(false);
+    expect(isSyncable("detectEvents", false)).toBe(false);
+    expect(settingsToValues({ ...base, detectEvents: false })["mail.detectEvents"]).toBe(false);
+    expect(settingsToValues(base)).not.toHaveProperty("detectEvents");
+    expect(applyToSettings(base, { "mail.detectEvents": false })).toEqual({ detectEvents: false });
+    expect(applyToSettings(base, { detectEvents: false })).toEqual({});
   });
 
   it("diffs into a patch with null for removals", () => {
