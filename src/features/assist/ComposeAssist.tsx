@@ -52,6 +52,7 @@ export function ComposeAssistButton({ onPick }: { onPick: (start: ComposeAssistS
   return (
     <Menu
       side="above"
+      align="end"
       items={[
         {
           label: <MenuLabel icon={Sparkles} text={t("assist.compose.write")} />,

@@ -214,6 +214,7 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
   const { authentication: auth, sender } = result.signals;
   const noAuth = auth.spf === null && auth.dkim === null && auth.dmarc === null;
   const share = scoreShare(result.signals.spamScore, result.signals.spamThreshold);
+  const points = new Intl.NumberFormat(language, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const over = share !== null && share >= 1;
   return (
     <div className="flex flex-col gap-2">
@@ -242,10 +243,10 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
             <>
               <span className={clsx("font-semibold", over && "text-danger")}>
                 {result.signals.spamThreshold === null
-                  ? t("assist.spam.scoreOnly", { score: result.signals.spamScore.toFixed(1) })
+                  ? t("assist.spam.scoreOnly", { score: points.format(result.signals.spamScore) })
                   : t("assist.spam.scoreOf", {
-                      score: result.signals.spamScore.toFixed(1),
-                      threshold: result.signals.spamThreshold.toFixed(1),
+                      score: points.format(result.signals.spamScore),
+                      threshold: points.format(result.signals.spamThreshold),
                     })}
               </span>
               {share !== null && (
