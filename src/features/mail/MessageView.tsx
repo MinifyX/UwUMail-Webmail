@@ -223,7 +223,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
   const decisionKey = `${message.id}|${allowRemote}`;
   const autoDark = autoDecision?.key === decisionKey ? autoDecision.dark : undefined;
 
-  const found = useMailEvents(message, { open: !collapsed, allowRemote, inJunk });
+  const found = useMailEvents(message, { open: !collapsed, allowRemote, inJunk, own: folder?.shared !== true });
   const [dateShown, setDateShown] = useState<{ index: number; anchor: Anchor } | null>(null);
   // The underlined hit, with whatever the picture or the assistant added to it.
   const shownHit = dateShown ? found.textEvents[dateShown.index] : undefined;

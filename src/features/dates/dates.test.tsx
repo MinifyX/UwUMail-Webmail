@@ -327,6 +327,18 @@ describe("useMailEvents", () => {
     expect(fake.imageText).not.toHaveBeenCalled();
   });
 
+  // security-audit W-45: mail in a mailbox someone shared never goes to the person's assistant.
+  it("never asks the assistant about mail someone shared", async () => {
+    useSettings.getState().update({ assistRefineEvents: true });
+    const { result } = renderHook(() => useMailEvents(message(), { ...options, own: false }), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.textEvents.length).toBeGreaterThan(0));
+    // Whatever was still on its way has arrived.
+    await act(async () => {});
+    expect(result.current.canRefine).toBe(false);
+    act(() => result.current.refine());
+    expect(fake.extractEvents).not.toHaveBeenCalled();
+  });
+
   it("stays quiet when switched off, in junk, for drafts and for invitations", async () => {
     const quiet = [
       { mail: message(), options, before: () => useSettings.getState().update({ detectEvents: false }) },

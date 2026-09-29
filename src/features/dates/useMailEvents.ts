@@ -26,6 +26,11 @@ export interface MailEventsOptions {
   allowRemote: boolean;
   /** Filed as junk: its dates are no offer worth making. */
   inJunk: boolean;
+  /**
+   * The mail is the person's own, not in a mailbox someone shared: only that goes to their
+   * assistant, like summaries and spam checks (security-audit W-45). Defaults to true.
+   */
+  own?: boolean;
 }
 
 export interface MailEvents {
@@ -61,7 +66,10 @@ function hasOwnPictures(message: Message): boolean {
  * text of its pictures once the server has read them (`Email/imageText`), and refined by the
  * assistant only when the person asks, by click or by their `assist.refineEvents` setting.
  */
-export function useMailEvents(message: Message, { open, allowRemote, inJunk }: MailEventsOptions): MailEvents {
+export function useMailEvents(
+  message: Message,
+  { open, allowRemote, inJunk, own = true }: MailEventsOptions,
+): MailEvents {
   const { t, i18n } = useT();
   const detect = useSettings((s) => s.detectEvents);
   const refineAlways = useSettings((s) => s.assistRefineEvents);
@@ -97,11 +105,11 @@ export function useMailEvents(message: Message, { open, allowRemote, inJunk }: M
   const features = useQuery({
     queryKey: ["assistFeatures"],
     queryFn: () => backend().assistFeatures(),
-    enabled: on,
+    enabled: on && own,
     staleTime: Infinity,
     retry: false,
   });
-  const canRefine = on && features.data?.extractEvents === true;
+  const canRefine = on && own && features.data?.extractEvents === true;
   const [asked, setAsked] = useState<string | null>(null);
   const includeImages = pictures && (!message.hasRemoteContent || allowRemote);
   const assistant = useQuery({
