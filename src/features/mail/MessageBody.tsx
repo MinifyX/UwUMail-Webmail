@@ -21,12 +21,23 @@ function linkify(html: string) {
 }
 
 /**
+ * The reader's own markers (`data-uwu-date`, `data-uwu-pending`, `data-uwu-src`, …) tell the app
+ * what to do with an element: open a date, load a picture. A mail never gets to set them, whatever
+ * later step it reaches (security-audit W-39).
+ */
+const OWN_MARKER = /^data-uwu-/;
+const purifier = DOMPurify();
+purifier.addHook("uponSanitizeAttribute", (_node, data) => {
+  if (OWN_MARKER.test(data.attrName)) data.keepAttr = false;
+});
+
+/**
  * The engine already sanitizes HTML. We sanitize again here because the demo
  * backend and future addons can also produce message bodies. `alsoForbid` drops more elements with
  * their content.
  */
 function sanitize(html: string, alsoForbid: string[] = []) {
-  return DOMPurify.sanitize(html, {
+  return purifier.sanitize(html, {
     WHOLE_DOCUMENT: false,
     FORBID_TAGS: [
       ...alsoForbid,
@@ -393,8 +404,11 @@ export function MessageBody({
     if (darkImages && shownDark && message.bodyHtml !== null) {
       stops.push(darkenImages(root, allowRemote ? loadRemoteImage : undefined));
     }
-    // After darkenImages, which follows each picture from the moment it gets its real address.
-    stops.push(loadRemotePictures(root, imageSizes, (next) => setProgress({ ...next, signature })));
+    // After darkenImages, which follows each picture from the moment it gets its real address. Only
+    // where remote pictures may load at all: the probe makes the server fetch each address.
+    if (allowRemote && message.bodyHtml !== null) {
+      stops.push(loadRemotePictures(root, imageSizes, (next) => setProgress({ ...next, signature })));
+    }
 
     let pending = 0;
     let last = 0;

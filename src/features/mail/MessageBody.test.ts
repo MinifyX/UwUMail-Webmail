@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Message } from "@/backend/types";
 import {
   buildDocument,
@@ -10,6 +10,7 @@ import {
   ROOT_ID,
 } from "./MessageBody";
 import { eventsInMail } from "@/lib/dates";
+import { loadRemotePictures } from "./remotePictures";
 
 function message(patch: Partial<Message>): Message {
   return {
@@ -121,6 +122,29 @@ describe("remote pictures in the reader", () => {
     const direct = buildDocument(mail, true, "light", new Map(), proxy);
     expect(direct).not.toContain("data-uwu-");
     expect(direct).toContain(`src="${proxy("https://cdn.example/hero.jpg")}"`);
+  });
+
+  // security-audit W-39: the reader's own markers in a mail made the server fetch an address
+  // (a read receipt) before the person allowed remote pictures.
+  it("drops the reader's own markers a mail brings along", () => {
+    const forged = message({
+      bodyHtml:
+        '<img src="data:image/gif;base64,R0lGOD" width="1" data-uwu-pending data-uwu-src="https://track.example/p" ' +
+        'data-uwu-url="https://track.example/p" data-UWU-srcset="https://track.example/q 1x" data-keep="1">' +
+        '<span data-uwu-date="0" class="uwu-date">Monday</span>',
+    });
+    for (const allow of [false, true]) {
+      const html = buildDocument(forged, allow, "light", new Map(), proxy, true);
+      const root = new DOMParser().parseFromString(html, "text/html").getElementById(ROOT_ID)!;
+      expect(root.innerHTML).not.toMatch(/data-uwu-/i);
+      expect(html).not.toContain("track.example");
+      expect(root.innerHTML).toContain('data-keep="1"');
+      const probe = vi.fn(async () => {});
+      const stop = loadRemotePictures(root, probe, () => {});
+      expect(probe).not.toHaveBeenCalled();
+      stop();
+    }
+    expect(readableBody(forged)).not.toMatch(/data-uwu-/i);
   });
 
   it("prints with the real pictures", () => {
