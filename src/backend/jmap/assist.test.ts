@@ -271,12 +271,7 @@ describe("objects of the extension", () => {
     expect(
       toChatgptLogin({ userCode: "AB-12", verificationUri: "https://auth.example.com/codex/device" }),
     ).toMatchObject({ userCode: "AB-12", interval: 5 });
-    for (const verificationUri of [
-      "javascript:void 0",
-      "http://auth.example.com/",
-      "https:\\\\x.example",
-      "/local",
-    ]) {
+    for (const verificationUri of ["javascript:void 0", "http://auth.example.com/", "https:\\\\x.example", "/local"]) {
       expect(() => toChatgptLogin({ userCode: "AB-12", verificationUri })).toThrow();
     }
   });
