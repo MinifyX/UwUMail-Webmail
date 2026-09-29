@@ -441,12 +441,21 @@ export class DemoBackend implements Backend {
   async setFlags(messageIds: string[], change: FlagChange) {
     const touched = this.messages.filter((m) => messageIds.includes(m.id));
     if (change.seen !== undefined) this.allowed(touched, "maySetSeen");
-    if (change.flagged !== undefined) this.allowed(touched, "maySetKeywords");
+    if (change.flagged !== undefined || change.keywords) this.allowed(touched, "maySetKeywords");
     for (const message of this.messages) {
       if (!messageIds.includes(message.id)) continue;
       if (change.seen !== undefined) message.flags.seen = change.seen;
       if (change.flagged !== undefined) message.flags.flagged = change.flagged;
+      if (change.keywords) {
+        const keywords = new Set(message.keywords ?? []);
+        for (const [keyword, on] of Object.entries(change.keywords)) {
+          if (on) keywords.add(keyword.toLowerCase());
+          else keywords.delete(keyword.toLowerCase());
+        }
+        message.keywords = [...keywords].sort();
+      }
     }
+    if (change.keywords) this.assist.keywordsChanged(messageIds, change.keywords);
     this.emitChanged(messageIds);
   }
 

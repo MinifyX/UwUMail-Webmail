@@ -807,6 +807,16 @@ export class DemoAssist {
     this.changed(true);
   }
 
+  /** Keywords set or taken off by hand: a label the model set and the person took off counts as undone. */
+  keywordsChanged(emailIds: string[], keywords: Record<string, boolean>) {
+    const removed = new Set(Object.keys(keywords).filter((keyword) => !keywords[keyword]));
+    if (removed.size === 0) return;
+    for (const entry of this.log) {
+      if (emailIds.includes(entry.emailId) && removed.has(entry.keyword)) entry.undone = true;
+    }
+    this.changed(false);
+  }
+
   async apply(emailIds: string[]): Promise<Record<string, string[]>> {
     if (!this.effective("autoLabels")) throw new AssistError("assistUnavailable", "No provider may label mail.");
     await thinking(600);

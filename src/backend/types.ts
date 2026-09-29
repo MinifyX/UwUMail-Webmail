@@ -234,7 +234,10 @@ export interface ThreadDetail {
   messages: Message[];
 }
 
-export type FlagChange = Partial<Pick<MessageFlags, "seen" | "flagged">>;
+export type FlagChange = Partial<Pick<MessageFlags, "seen" | "flagged">> & {
+  /** Own keywords (e.g. AI assistant labels) to set (true) or take off (false). */
+  keywords?: Record<string, boolean>;
+};
 
 export interface OutgoingAttachment {
   filename: string;

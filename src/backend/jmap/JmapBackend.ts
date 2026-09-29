@@ -1042,6 +1042,10 @@ export class JmapBackend implements Backend {
     const patch: Record<string, unknown> = {};
     if (change.seen !== undefined) patch["keywords/$seen"] = change.seen ? true : null;
     if (change.flagged !== undefined) patch["keywords/$flagged"] = change.flagged ? true : null;
+    for (const [keyword, on] of Object.entries(change.keywords ?? {})) {
+      // Only own keywords: the `$` system ones have their own switches.
+      if (/^[a-z0-9._-]{1,64}$/i.test(keyword)) patch[`keywords/${keyword.toLowerCase()}`] = on ? true : null;
+    }
     if (Object.keys(patch).length === 0) return;
     const groups = groupByAccount(messageIds, this.accountId);
     for (const [accountId, ids] of groups) {
@@ -2183,10 +2187,6 @@ export class JmapBackend implements Backend {
     if (Object.keys(patch).length > 0) await this.setProfile({ ...patch });
   }
 
-  /**
-   * Recipient suggestions: ranked by the server from the address books and the mail history where
-   * it offers that (`AddressSuggestion/query`), otherwise the address books' matches.
-   */
   async assistOptions(): Promise<AssistOptions | null> {
     await this.start();
     return assistOptionsFrom(jmapSession().accounts[this.accountId]?.accountCapabilities);
@@ -2438,6 +2438,10 @@ export class JmapBackend implements Backend {
     return response.labeled ?? {};
   }
 
+  /**
+   * Recipient suggestions: ranked by the server from the address books and the mail history where
+   * it offers that (`AddressSuggestion/query`), otherwise the address books' matches.
+   */
   async searchContacts(query: string): Promise<Contact[]> {
     const wanted = query.trim();
     if (!wanted) return [];
