@@ -75,3 +75,14 @@ describe("isSafeLinkTarget", () => {
     expect(isSafeLinkTarget("file:///C:/Windows")).toBe(false);
   });
 });
+
+describe("foreign markup in the composer", () => {
+  it("loses the composer's own markers, the own body keeps them", () => {
+    const html = '<div data-uwu-signature="1">Not my signature</div><p data-other="x">Hi</p>';
+    const foreign = quotableHtml(html, { foreign: true });
+    expect(foreign).not.toContain("data-uwu-signature");
+    expect(foreign).toContain('data-other="x"');
+    expect(foreign).toContain("Not my signature");
+    expect(quotableHtml(html)).toContain("data-uwu-signature");
+  });
+});
