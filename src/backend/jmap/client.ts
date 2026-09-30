@@ -137,7 +137,9 @@ async function fetchJmapSession(): Promise<JmapSession> {
     accounts,
     apiUrl: onOwnOrigin(raw.apiUrl),
     downloadUrl: raw.downloadUrl,
-    uploadUrl: onOwnOrigin(raw.uploadUrl),
+    // A template: `{accountId}` sits in the path, which URL parsing would turn into %7BaccountId%7D.
+    // uploadBlob fills it in first and puts the result on our own origin then.
+    uploadUrl: raw.uploadUrl,
     eventSourceUrl: onOwnOrigin(raw.eventSourceUrl),
     capabilities: raw.capabilities ?? {},
     state: raw.state,
