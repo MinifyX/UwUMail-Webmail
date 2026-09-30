@@ -19,6 +19,9 @@ export type SwipeAction = "read" | "archive" | "spam" | "trash" | "flag" | "none
 /** Seconds a sent mail waits before it goes out, so it can still be taken back. 0 sends at once. */
 export const UNDO_SEND_CHOICES = [0, 5, 10, 20, 30] as const;
 export type UndoSendSeconds = (typeof UNDO_SEND_CHOICES)[number];
+/** The money AI costs are shown in where the person may choose (English): euros or dollars. */
+export const CURRENCY_CHOICES = ["EUR", "USD"] as const;
+export type CurrencyChoice = (typeof CURRENCY_CHOICES)[number];
 
 export interface Settings {
   listDensity: ListDensity;
@@ -61,6 +64,8 @@ export interface Settings {
   assistRefineEvents: boolean;
   /** Dates in mails are offered for the calendar, see lib/dates. Follows the account as `mail.detectEvents`. */
   detectEvents: boolean;
+  /** AI costs in English: euros or dollars (other languages have their own currency). This browser only. */
+  assistCurrency: CurrencyChoice;
 }
 
 interface SettingsActions {
@@ -99,6 +104,7 @@ export const DEFAULT_SETTINGS: Settings = {
   pushShowContent: true,
   assistRefineEvents: false,
   detectEvents: true,
+  assistCurrency: "EUR",
 };
 
 /**
@@ -192,6 +198,9 @@ export const useSettings = create<Settings & SettingsActions>()(
         const state = { ...current, ...(persisted as Partial<Settings>) };
         if (!(LANGUAGE_SETTINGS as readonly unknown[]).includes(state.language)) {
           state.language = DEFAULT_SETTINGS.language;
+        }
+        if (!(CURRENCY_CHOICES as readonly unknown[]).includes(state.assistCurrency)) {
+          state.assistCurrency = DEFAULT_SETTINGS.assistCurrency;
         }
         return state;
       },

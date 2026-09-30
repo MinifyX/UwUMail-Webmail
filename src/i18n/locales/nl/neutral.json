@@ -1436,7 +1436,14 @@
       "effectiveNone": "Geen model beschikbaar",
       "eventsTitle": "Afspraken",
       "refineEvents": "Naar afspraken zoeken zodra een mail opengaat",
-      "refineEventsDesc": "Het model leest elke mail die je opent op datums; dat telt mee voor je daglimiet. Uit: alleen als je erom vraagt."
+      "refineEventsDesc": "Het model leest elke mail die je opent op datums; dat telt mee voor je daglimiet. Uit: alleen als je erom vraagt.",
+      "costsTitle": "Kosten",
+      "currency": "Valuta",
+      "currencyHint": "AI-kosten worden in deze valuta getoond, omgerekend met de ECB-referentiekoersen.",
+      "currencies": {
+        "EUR": "Euro (€)",
+        "USD": "Amerikaanse dollar ($)"
+      }
     },
     "providers": {
       "title": "Aanbieders",
@@ -1498,8 +1505,14 @@
         "urlMissing": "Voor deze aanbieder is het adres nodig.",
         "urlScheme": "Het adres moet beginnen met http:// of https://.",
         "urlLogin": "Laat gebruikersnaam en wachtwoord weg uit het adres.",
-        "keyMissing": "Deze aanbieder heeft een API-sleutel nodig."
-      }
+        "keyMissing": "Deze aanbieder heeft een API-sleutel nodig.",
+        "priceInvalid": "Een prijs van 0 tot 10.000, bijv. 0,40."
+      },
+      "inputPrice": "Invoerprijs (USD per miljoen tokens)",
+      "outputPrice": "Uitvoerprijs (USD per miljoen tokens)",
+      "priceHint": "Leeg gebruikt de bekende prijs van het model.",
+      "priceAuto": "automatisch: {{price}}",
+      "priceUnknown": "onbekend"
     },
     "chatgpt": {
       "warningTitle": "Experimenteel en onofficieel",
@@ -1541,6 +1554,11 @@
       "tokensLeft": "vandaag nog {{left}} over",
       "requestsLeft_one": "vandaag nog {{left}} verzoek over",
       "requestsLeft_other": "vandaag nog {{left}} verzoeken over"
+    },
+    "cost": {
+      "free": "gratis",
+      "below": "< {{amount}}",
+      "about": "≈ {{amount}}"
     }
   },
   "dates": {

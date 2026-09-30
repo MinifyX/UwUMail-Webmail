@@ -17,6 +17,8 @@ import {
   MAX_ASSIST_EVENTS,
   toSpamCheck,
   toEstimate,
+  toCost,
+  toUsage,
   type EventStreamEvent,
 } from "./assist";
 import { JmapMethodError } from "./client";
@@ -381,6 +383,47 @@ describe("an estimate", () => {
       model: null,
       tokensLeftToday: 0,
       requestsLeftToday: null,
+      cost: null,
+    });
+  });
+});
+
+describe("costs", () => {
+  it("are read only when complete, and a server without them has none", () => {
+    expect(toCost({ amount: 0.02, currency: "EUR", usd: 0.023 })).toEqual({
+      amount: 0.02,
+      currency: "EUR",
+      usd: 0.023,
+    });
+    expect(toCost({ amount: 0.02, currency: "EUR" })).toEqual({ amount: 0.02, currency: "EUR", usd: null });
+    expect(toCost(undefined)).toBeNull();
+    expect(toCost({ amount: -1, currency: "EUR" })).toBeNull();
+    expect(toCost({ amount: 1, currency: "euro" })).toBeNull();
+    const usage = toUsage({
+      days: [{ day: "2026-09-30", feature: "compose", requests: 1, cost: { amount: 0.5, currency: "USD", usd: 0.5 } }],
+      today: [{ providerId: "q1", requests: 1, tokens: 10 }],
+    });
+    expect(usage.days[0]!.cost).toEqual({ amount: 0.5, currency: "USD", usd: 0.5 });
+    expect(usage.today[0]!.cost).toBeNull();
+  });
+
+  it("come with a provider's price and its override, and an override goes back as it is", () => {
+    const provider = toAssistProvider({
+      id: "q9",
+      kind: "openai",
+      inputPricePerMillion: 0.5,
+      outputPricePerMillion: null,
+      price: { inputPerMillion: 0.5, outputPerMillion: 10, source: "manual" },
+    });
+    expect(provider).toMatchObject({
+      inputPricePerMillion: 0.5,
+      outputPricePerMillion: null,
+      price: { inputPerMillion: 0.5, outputPerMillion: 10, source: "manual" },
+    });
+    expect(toAssistProvider({ id: "q1", price: { inputPerMillion: "x" } }).price).toBeNull();
+    expect(providerUpdate({ inputPricePerMillion: null, outputPricePerMillion: 2 })).toEqual({
+      inputPricePerMillion: null,
+      outputPricePerMillion: 2,
     });
   });
 });
@@ -577,6 +620,25 @@ describe("JmapBackend's assistant", () => {
     await expect(backend.assistEstimate({ method: "Assist/spamCheck", emailId: "a7~e1" })).rejects.toMatchObject({
       type: "forbidden",
     });
+  });
+
+  it("asks estimates and usage in the person's currency", async () => {
+    const backend = await load();
+    jmap.one.mockResolvedValueOnce({
+      inputTokens: 1,
+      outputTokens: 1,
+      cost: { amount: 1, currency: "JPY", usd: 0.007 },
+    });
+    const estimate = await backend.assistEstimate({ method: "Assist/spamCheck", emailId: "e1" }, "JPY");
+    expect(jmap.one).toHaveBeenLastCalledWith(
+      "Assist/estimate",
+      { method: "Assist/spamCheck", arguments: { emailId: "e1", language: null }, currency: "JPY" },
+      using,
+    );
+    expect(estimate?.cost?.currency).toBe("JPY");
+    jmap.one.mockResolvedValueOnce({ days: [], today: [] });
+    await backend.assistUsage(30, "USD");
+    expect(jmap.one).toHaveBeenLastCalledWith("Assist/usage", { days: 30, currency: "USD" }, using);
   });
 
   it("has no estimate from a server that doesn't know the method", async () => {

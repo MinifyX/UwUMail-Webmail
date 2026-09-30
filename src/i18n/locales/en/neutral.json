@@ -1436,7 +1436,14 @@
       "effectiveNone": "No model available",
       "eventsTitle": "Appointments",
       "refineEvents": "Look for appointments whenever a mail opens",
-      "refineEventsDesc": "The model reads every mail you open for dates, which counts towards your daily limit. Off: only when you ask."
+      "refineEventsDesc": "The model reads every mail you open for dates, which counts towards your daily limit. Off: only when you ask.",
+      "costsTitle": "Costs",
+      "currency": "Currency",
+      "currencyHint": "AI costs are shown in this currency, converted with the ECB reference rates.",
+      "currencies": {
+        "EUR": "Euro (€)",
+        "USD": "US dollar ($)"
+      }
     },
     "providers": {
       "title": "Providers",
@@ -1498,8 +1505,14 @@
         "urlMissing": "The address is needed for this provider.",
         "urlScheme": "The address has to start with http:// or https://.",
         "urlLogin": "Leave user name and password out of the address.",
-        "keyMissing": "This provider needs an API key."
-      }
+        "keyMissing": "This provider needs an API key.",
+        "priceInvalid": "A price from 0 to 10,000, e.g. 0.40."
+      },
+      "inputPrice": "Input price (USD per million tokens)",
+      "outputPrice": "Output price (USD per million tokens)",
+      "priceHint": "Empty uses the known price of the model.",
+      "priceAuto": "automatic: {{price}}",
+      "priceUnknown": "unknown"
     },
     "chatgpt": {
       "warningTitle": "Experimental and unofficial",
@@ -1541,6 +1554,11 @@
       "tokensLeft": "{{left}} left today",
       "requestsLeft_one": "{{left}} request left today",
       "requestsLeft_other": "{{left}} requests left today"
+    },
+    "cost": {
+      "free": "free",
+      "below": "< {{amount}}",
+      "about": "≈ {{amount}}"
     }
   },
   "dates": {

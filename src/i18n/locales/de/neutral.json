@@ -1436,7 +1436,14 @@
       "effectiveNone": "Kein Modell verfügbar",
       "eventsTitle": "Termine",
       "refineEvents": "Beim Öffnen jeder Mail nach Terminen suchen",
-      "refineEventsDesc": "Das Modell liest jede Mail, die du öffnest, auf Termine – das zählt gegen dein Tageslimit. Aus: nur, wenn du danach fragst."
+      "refineEventsDesc": "Das Modell liest jede Mail, die du öffnest, auf Termine – das zählt gegen dein Tageslimit. Aus: nur, wenn du danach fragst.",
+      "costsTitle": "Kosten",
+      "currency": "Währung",
+      "currencyHint": "KI-Kosten werden in dieser Währung gezeigt, umgerechnet mit den EZB-Referenzkursen.",
+      "currencies": {
+        "EUR": "Euro (€)",
+        "USD": "US-Dollar ($)"
+      }
     },
     "providers": {
       "title": "Anbieter",
@@ -1498,8 +1505,14 @@
         "urlMissing": "Für diesen Anbieter wird die Adresse gebraucht.",
         "urlScheme": "Die Adresse muss mit http:// oder https:// beginnen.",
         "urlLogin": "Lass Benutzername und Passwort aus der Adresse weg.",
-        "keyMissing": "Dieser Anbieter braucht einen API-Schlüssel."
-      }
+        "keyMissing": "Dieser Anbieter braucht einen API-Schlüssel.",
+        "priceInvalid": "Ein Preis von 0 bis 10.000, z. B. 0,40."
+      },
+      "inputPrice": "Preis Eingabe (USD pro Million Tokens)",
+      "outputPrice": "Preis Ausgabe (USD pro Million Tokens)",
+      "priceHint": "Leer nimmt den bekannten Preis des Modells.",
+      "priceAuto": "automatisch: {{price}}",
+      "priceUnknown": "unbekannt"
     },
     "chatgpt": {
       "warningTitle": "Experimentell und inoffiziell",
@@ -1541,6 +1554,11 @@
       "tokensLeft": "heute noch {{left}} übrig",
       "requestsLeft_one": "heute noch {{left}} Anfrage übrig",
       "requestsLeft_other": "heute noch {{left}} Anfragen übrig"
+    },
+    "cost": {
+      "free": "kostenlos",
+      "below": "< {{amount}}",
+      "about": "≈ {{amount}}"
     }
   },
   "dates": {

@@ -5,6 +5,7 @@ import { backend } from "@/backend/backend";
 import type { AssistEstimate, AssistEstimateRequest } from "@/backend/types";
 import { useT } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
+import { formatCost, useAssistCurrency } from "./cost";
 
 /** How long a changing request (the draft being typed) has to stay still before it is asked about. */
 export const ESTIMATE_SETTLE_MS = 400;
@@ -20,6 +21,7 @@ const TOUCH_TIP_MS = 4000;
  * and on any error: then there is simply no estimate.
  */
 export function useAssistEstimate(request: AssistEstimateRequest | null, active: boolean): AssistEstimate | null {
+  const currency = useAssistCurrency();
   const key = request ? JSON.stringify(request) : null;
   const [settled, setSettled] = useState(key);
   useEffect(() => {
@@ -28,8 +30,8 @@ export function useAssistEstimate(request: AssistEstimateRequest | null, active:
     return () => clearTimeout(timer);
   }, [key, settled]);
   const { data } = useQuery({
-    queryKey: [...queryKeys.assistEstimate, settled],
-    queryFn: () => backend().assistEstimate(JSON.parse(settled!) as AssistEstimateRequest),
+    queryKey: [...queryKeys.assistEstimate, settled, currency],
+    queryFn: () => backend().assistEstimate(JSON.parse(settled!) as AssistEstimateRequest, currency),
     enabled: active && settled !== null,
     // What is left today moves with every answer; the rest only with the text.
     staleTime: 60_000,
@@ -44,13 +46,15 @@ export function roughly(tokens: number): number {
   return tokens < 1000 ? Math.round(tokens / 10) * 10 : Math.round(tokens / 100) * 100;
 }
 
-/** "≈ 1,200 tokens · 48,000 left today", in the person's language and number format. */
+/** "≈ 1,200 tokens · ≈ €0.02 · 48,000 left today", in the person's language and number format. */
 export function useEstimateText(estimate: AssistEstimate | null): string | null {
   const { t, i18n } = useT();
   if (!estimate) return null;
   const number = new Intl.NumberFormat(i18n.language);
   const total = roughly(estimate.totalTokens);
   const parts = [t("assist.estimate.tokens", { count: total, tokens: number.format(total) })];
+  // A server from before prices has no cost, and one the admin keeps to themselves says null.
+  if (estimate.cost) parts.push(formatCost(estimate.cost, i18n.language, t, true));
   if (estimate.tokensLeftToday !== null) {
     parts.push(
       t("assist.estimate.tokensLeft", {

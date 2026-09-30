@@ -368,9 +368,9 @@ export interface Backend {
    * About what a call would cost, without asking the model; null where the server can't tell
    * (an older one without `Assist/estimate`).
    */
-  assistEstimate(request: AssistEstimateRequest): Promise<AssistEstimate | null>;
+  assistEstimate(request: AssistEstimateRequest, currency?: string): Promise<AssistEstimate | null>;
   /** What the person used: per day (UTC) and feature, and today per provider with its limits. */
-  assistUsage(days?: number): Promise<AssistUsage>;
+  assistUsage(days?: number, currency?: string): Promise<AssistUsage>;
   assistLabels(): Promise<AssistLabel[]>;
   createAssistLabel(input: AssistLabelInput): Promise<AssistLabel>;
   updateAssistLabel(id: string, patch: Partial<AssistLabelInput>): Promise<void>;

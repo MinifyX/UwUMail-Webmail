@@ -4,6 +4,7 @@ import { AssistError, backend, BackendError } from "@/backend/backend";
 import type { AssistAnswer, AssistFeature, AssistLabel, AssistStreamHandlers } from "@/backend/types";
 import { translate } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
+import { useAssistCurrency } from "./cost";
 
 /** What the assistant may do for the account; null hides everything about it. */
 export function useAssistOptions() {
@@ -63,9 +64,10 @@ export function useLabelLog(emailId: string, enabled: boolean) {
 
 export function useAssistUsage(enabled = true) {
   const { data: options } = useAssistOptions();
+  const currency = useAssistCurrency();
   return useQuery({
-    queryKey: queryKeys.assistUsage,
-    queryFn: () => backend().assistUsage(30),
+    queryKey: [...queryKeys.assistUsage, currency],
+    queryFn: () => backend().assistUsage(30, currency),
     enabled: enabled && Boolean(options),
   });
 }

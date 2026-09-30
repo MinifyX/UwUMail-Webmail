@@ -2426,7 +2426,7 @@ export class JmapBackend implements Backend {
     return { events: toEvents(answer), answer: answerOf(answer) };
   }
 
-  async assistEstimate(request: AssistEstimateRequest): Promise<AssistEstimate | null> {
+  async assistEstimate(request: AssistEstimateRequest, currency?: string): Promise<AssistEstimate | null> {
     const args =
       request.method === "Assist/compose"
         ? this.composeArgs(request.request)
@@ -2436,7 +2436,11 @@ export class JmapBackend implements Backend {
             ? { emailId: this.ownEmailId(request.emailId), language: request.language ?? null }
             : { emailId: this.ownEmailId(request.emailId), includeImages: request.includeImages };
     try {
-      const answer = await this.assistCall("Assist/estimate", { method: request.method, arguments: args });
+      const answer = await this.assistCall("Assist/estimate", {
+        method: request.method,
+        arguments: args,
+        ...(currency ? { currency } : {}),
+      });
       return toEstimate(answer, request.method);
     } catch (error) {
       // A server from before estimates: there is simply nothing to show.
@@ -2445,8 +2449,13 @@ export class JmapBackend implements Backend {
     }
   }
 
-  async assistUsage(days = 30): Promise<AssistUsage> {
-    return toUsage(await this.assistCall("Assist/usage", { days: Math.min(90, Math.max(1, Math.round(days))) }));
+  async assistUsage(days = 30, currency?: string): Promise<AssistUsage> {
+    return toUsage(
+      await this.assistCall("Assist/usage", {
+        days: Math.min(90, Math.max(1, Math.round(days))),
+        ...(currency ? { currency } : {}),
+      }),
+    );
   }
 
   async assistLabels(): Promise<AssistLabel[]> {

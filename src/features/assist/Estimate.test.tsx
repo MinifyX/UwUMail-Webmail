@@ -21,6 +21,7 @@ const ESTIMATE: AssistEstimate = {
   model: "mistral-small-latest",
   tokensLeftToday: 48000,
   requestsLeftToday: 190,
+  cost: null,
 };
 
 let estimate: AssistEstimate | null = ESTIMATE;
@@ -94,7 +95,7 @@ describe("EstimateTip", () => {
     expect(fake.assistEstimate).not.toHaveBeenCalled();
     fireEvent.pointerOver(button, { pointerType: "mouse" });
     expect((await screen.findByRole("tooltip")).textContent).toBe("≈ 1,200 tokens · 48,000 left today");
-    expect(fake.assistEstimate).toHaveBeenCalledWith(SUMMARY);
+    expect(fake.assistEstimate).toHaveBeenCalledWith(SUMMARY, "EUR");
     expect(button.getAttribute("aria-describedby")).toBe(screen.getByRole("tooltip").id);
     fireEvent.pointerOut(button, { pointerType: "mouse" });
     expect(screen.queryByRole("tooltip")).toBeNull();
@@ -156,7 +157,7 @@ describe("EstimateTip", () => {
     expect(screen.queryByRole("tooltip")).toBeNull();
     await act(async () => vi.advanceTimersByTimeAsync(50));
     expect(fake.assistEstimate).toHaveBeenCalledTimes(2);
-    expect(fake.assistEstimate).toHaveBeenLastCalledWith(compose("Hallo Welt"));
+    expect(fake.assistEstimate).toHaveBeenLastCalledWith(compose("Hallo Welt"), "EUR");
   });
 });
 
@@ -189,11 +190,14 @@ describe("the reader's AI menu", () => {
     const find = await screen.findByRole("menuitem", { name: "Find appointment" });
     fireEvent.pointerOver(find, { pointerType: "mouse" });
     await screen.findByRole("tooltip");
-    expect(fake.assistEstimate).toHaveBeenCalledWith({
-      method: "Assist/extractEvents",
-      emailId: "e2",
-      includeImages: false,
-    });
+    expect(fake.assistEstimate).toHaveBeenCalledWith(
+      {
+        method: "Assist/extractEvents",
+        emailId: "e2",
+        includeImages: false,
+      },
+      "EUR",
+    );
     fireEvent.click(find);
     expect(useAssistReader.getState().eventSearches).toEqual({ e2: true });
   });
@@ -205,10 +209,13 @@ describe("the reader's AI menu", () => {
       pointerType: "mouse",
     });
     await screen.findByRole("tooltip");
-    expect(fake.assistEstimate).toHaveBeenCalledWith({
-      method: "Assist/summarize",
-      request: { threadId: "t1", language: "en" },
-    });
+    expect(fake.assistEstimate).toHaveBeenCalledWith(
+      {
+        method: "Assist/summarize",
+        request: { threadId: "t1", language: "en" },
+      },
+      "EUR",
+    );
   });
 
   it("has no “Find appointment” without a calendar", async () => {
@@ -234,20 +241,23 @@ describe("the composer's AI menu", () => {
     fireEvent.click(screen.getByRole("button", { name: "AI assistant" }));
     fireEvent.pointerOver(screen.getByRole("menuitem", { name: "Translate…" }), { pointerType: "mouse" });
     await screen.findByRole("tooltip");
-    expect(fake.assistEstimate).toHaveBeenCalledWith({
-      method: "Assist/compose",
-      request: {
-        mode: "rewrite",
-        instruction: null,
-        preset: "translate",
-        targetLanguage: "de",
-        text: "hey leni, friday works",
-        subject: "Lunch",
-        replyToEmailId: "e1",
-        wantSubject: false,
-        language: "en",
+    expect(fake.assistEstimate).toHaveBeenCalledWith(
+      {
+        method: "Assist/compose",
+        request: {
+          mode: "rewrite",
+          instruction: null,
+          preset: "translate",
+          targetLanguage: "de",
+          text: "hey leni, friday works",
+          subject: "Lunch",
+          replyToEmailId: "e1",
+          wantSubject: false,
+          language: "en",
+        },
       },
-    });
+      "EUR",
+    );
     // Writing needs an instruction first: its cost shows on the panel's button.
     fireEvent.pointerOver(screen.getByRole("menuitem", { name: "Write it for me" }), { pointerType: "mouse" });
     expect(fake.assistEstimate).toHaveBeenCalledOnce();
