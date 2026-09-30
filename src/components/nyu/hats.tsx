@@ -24,8 +24,9 @@ export function NyuHat({ hat }: { hat: Hat }) {
       </g>
     );
   }
+  // The nightcap sits a little higher than the others, so the sleepy eyes still show.
   return (
-    <g>
+    <g transform="translate(0 -18)">
       <path d="M176 172 Q196 44 318 60 Q360 70 358 176Z" fill={NYU.sky} {...line} />
       <path d="M318 62 Q170 30 104 118 L128 134 Q176 82 262 76Z" fill={NYU.sky} {...line} />
       <path d="M204 110 Q260 96 330 114 M190 146 Q264 130 350 150" fill="none" stroke={NYU.paper} strokeWidth={14} />

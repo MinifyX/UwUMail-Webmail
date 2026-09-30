@@ -82,7 +82,7 @@ function Archived() {
         </Sticker>
       </g>
       <g className="nyu-c-hop">
-        <Nyu mood="uwu" x={86} y={128} scale={0.38} tilt={-4} />
+        <Nyu mood="uwu" x={76} y={130} scale={0.38} tilt={-4} />
       </g>
       <Sticker edge={EDGE}>
         <path d="M142 128 H258 L248 200 H152Z" fill={NYU.kraft} {...S} />
