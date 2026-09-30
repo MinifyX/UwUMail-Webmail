@@ -71,16 +71,24 @@ OpenAI-compatible server, and a ChatGPT subscription.
 
 Hovering an AI button (a long press on a touch screen) shows a line like
 
-> ≈ 1,200 tokens · ≈ €0.02 · 48,000 left today
+> ≈ 1,250 tokens · ≈ €0.02 (max €0.05) · 48,000 left today
 
-- **Tokens** are what the request would send plus the expected answer. The
+and, from a 0.20.0 server on, a short breakdown below it: input, pictures,
+answer, thinking, extra calls and fees, each only when it isn't zero, plus
+"Calibrated from your last calls" when the numbers were corrected by how far
+earlier estimates were off.
+
+- **Tokens** are what the request would send plus the expected answer, over
+  every model call the request makes (reading pictures, parts of a long thread,
+  a retry now and then) and with the thinking of reasoning models. The
   server builds the real prompt for it (the same cutting, the same conversation,
   the same picture text) without asking the model, and counts about four
   characters to a token, so it is approximate: providers count with their own
   tokenizers.
 - **Cost** shows for your own providers always, for the server's only when the
   admin switched _Show costs_ on for that provider, and only where the price is
-  known. Small amounts get enough digits ("< €0.0001", "€0.0023").
+  known. Small amounts get enough digits ("< €0.0001", "€0.0023"). **Max** is
+  the worst case, every call answering as long as it may.
 - **Left today** is what remains of your daily limit, in tokens or requests;
   it is left out when there is no limit or the provider is your own.
 - The estimate is asked the first time you hover, and kept until the mail or
