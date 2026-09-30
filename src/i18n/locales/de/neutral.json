@@ -238,6 +238,8 @@
     "theme": "Design",
     "motion": "Animationen",
     "motionDesc": "Mit „Wie System“ richtet sich {{brand}} nach der Einstellung für reduzierte Bewegung in deinem Betriebssystem.",
+    "nyuAnimations": "Nyu-Animationen",
+    "nyuAnimationsDesc": "Kurze Szenen beim Senden, Archivieren und Öffnen von Mails und während der Assistent nachdenkt. „Reduziert“ zeigt sie als Standbild, genau wie reduzierte Bewegung.",
     "tone": "Ton",
     "language": "Sprache",
     "conversations": "Mails als Unterhaltungen gruppieren",
@@ -331,6 +333,11 @@
   "motion": {
     "system": "Wie System",
     "on": "An",
+    "off": "Aus"
+  },
+  "nyuAnimations": {
+    "on": "An",
+    "reduced": "Reduziert",
     "off": "Aus"
   },
   "language": {

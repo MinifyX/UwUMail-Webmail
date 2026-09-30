@@ -8,6 +8,9 @@ export type Tone = "playful" | "neutral";
 export type ThemeSetting = "system" | "light" | "dark";
 /** Animations: follow the system's reduced-motion setting, or override it. */
 export type MotionSetting = "system" | "on" | "off";
+/** Nyu's little scenes (sending, archiving, occasions, the AI thinking): see components/nyu/level. */
+export const NYU_ANIMATIONS = ["on", "reduced", "off"] as const;
+export type NyuAnimations = (typeof NYU_ANIMATIONS)[number];
 /** "system" follows the browser's languages; the others are the languages the webmail speaks. */
 export const LANGUAGE_SETTINGS = ["system", "de", "en", "fr", "nl", "ja", "zh"] as const;
 export type LanguageSetting = (typeof LANGUAGE_SETTINGS)[number];
@@ -28,6 +31,8 @@ export interface Settings {
   tone: Tone;
   theme: ThemeSetting;
   motion: MotionSetting;
+  /** Capped at "reduced" while motion is reduced (setting or operating system). Follows the account as `nyu.animations`. */
+  nyuAnimations: NyuAnimations;
   language: LanguageSetting;
   conversations: boolean;
   remoteImages: RemoteImages;
@@ -85,6 +90,7 @@ export const DEFAULT_SETTINGS: Settings = {
   tone: "playful",
   theme: "system",
   motion: "system",
+  nyuAnimations: "on",
   language: "system",
   conversations: true,
   remoteImages: "ask",
@@ -201,6 +207,9 @@ export const useSettings = create<Settings & SettingsActions>()(
         }
         if (!(CURRENCY_CHOICES as readonly unknown[]).includes(state.assistCurrency)) {
           state.assistCurrency = DEFAULT_SETTINGS.assistCurrency;
+        }
+        if (!(NYU_ANIMATIONS as readonly unknown[]).includes(state.nyuAnimations)) {
+          state.nyuAnimations = DEFAULT_SETTINGS.nyuAnimations;
         }
         return state;
       },

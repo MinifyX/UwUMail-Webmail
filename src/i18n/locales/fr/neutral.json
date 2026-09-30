@@ -245,6 +245,8 @@
     "theme": "Thème",
     "motion": "Animations",
     "motionDesc": "Avec Système, {{brand}} suit le réglage de réduction des animations de votre système d'exploitation.",
+    "nyuAnimations": "Animations de Nyu",
+    "nyuAnimationsDesc": "De courtes scènes quand vous envoyez, archivez ou ouvrez un e-mail, et pendant que l'assistant réfléchit. Réduites les montre en images fixes, comme la réduction des animations.",
     "tone": "Ton",
     "language": "Langue",
     "conversations": "Regrouper les messages en conversations",
@@ -339,6 +341,11 @@
   "motion": {
     "system": "Système",
     "on": "Activées",
+    "off": "Désactivées"
+  },
+  "nyuAnimations": {
+    "on": "Activées",
+    "reduced": "Réduites",
     "off": "Désactivées"
   },
   "language": {

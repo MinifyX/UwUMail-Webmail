@@ -231,6 +231,8 @@
     "theme": "テーマ",
     "motion": "アニメーション",
     "motionDesc": "「システム」を選ぶと、{{brand}} は OS の「視差効果を減らす」設定に従います。",
+    "nyuAnimations": "Nyu のアニメーション",
+    "nyuAnimationsDesc": "メールの送信・アーカイブ・表示時や、アシスタントが考えている間に短いシーンを表示します。「控えめ」では、視差効果を減らす設定と同じく静止画で表示します。",
     "tone": "トーン",
     "language": "言語",
     "conversations": "メールをスレッドにまとめる",
@@ -323,6 +325,11 @@
   "motion": {
     "system": "システム",
     "on": "オン",
+    "off": "オフ"
+  },
+  "nyuAnimations": {
+    "on": "オン",
+    "reduced": "控えめ",
     "off": "オフ"
   },
   "language": {
