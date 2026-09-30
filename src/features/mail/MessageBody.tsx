@@ -3,9 +3,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ImageSizeProbe, Message } from "@/backend/types";
 import { useT } from "@/i18n";
 import { markMail, type Mark } from "@/lib/dates";
-import { textToHtml } from "@/lib/format";
+import { escapeHtml, textToHtml } from "@/lib/format";
 import { replaceContentIds } from "@/lib/inlineImages";
 import { proxyRemoteImages, type ImageProxy } from "@/lib/remoteImages";
+import { SAFE_LINK_MARKER, unwrapSafeLink, unwrapSafeLinkElement } from "@/lib/safeLinks";
 import type { MailAppearance } from "@/state/settings";
 import { hideLinkStatus, watchLinks } from "./linkEvents";
 import { darkenImages, type RemoteImageLoader } from "./darkImages";
@@ -16,8 +17,18 @@ import type { Anchor } from "../calendar/state";
 
 const URL_PATTERN = /\bhttps?:\/\/[^\s<]+[^\s<.,;:!?)"'\]]/g;
 
-function linkify(html: string) {
-  return html.replace(URL_PATTERN, (url) => `<a href="${url}">${url}</a>`);
+/** Web addresses in escaped plain text as links; a Microsoft Safe Link shows and links its real target. */
+export function linkify(html: string) {
+  return html.replace(URL_PATTERN, (escaped) => {
+    const safe = unwrapSafeLink(unescapeHtml(escaped));
+    if (!safe) return `<a href="${escaped}">${escaped}</a>`;
+    const target = escapeHtml(safe.target);
+    return `<a href="${target}" ${SAFE_LINK_MARKER}="${escapeHtml(safe.host)}">${target}</a>`;
+  });
+}
+
+function unescapeHtml(text: string) {
+  return text.replace(/&(amp|lt|gt|quot);/g, (_, name: string) => ({ amp: "&", lt: "<", gt: ">", quot: '"' })[name]!);
 }
 
 /**
@@ -29,6 +40,11 @@ const OWN_MARKER = /^data-uwu-/;
 const purifier = DOMPurify();
 purifier.addHook("uponSanitizeAttribute", (_node, data) => {
   if (OWN_MARKER.test(data.attrName)) data.keepAttr = false;
+});
+// Microsoft Safe Links show and open their real target (lib/safeLinks). Runs after the mail's own
+// markers are gone, so only the reader sets this one.
+purifier.addHook("afterSanitizeAttributes", (node) => {
+  if (node.nodeName === "A" || node.nodeName === "AREA") unwrapSafeLinkElement(node);
 });
 
 /**

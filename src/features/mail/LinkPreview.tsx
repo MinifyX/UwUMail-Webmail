@@ -1,4 +1,4 @@
-import { AlertTriangle, Route } from "lucide-react";
+import { AlertTriangle, Route, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
@@ -23,7 +23,15 @@ function StatusExtra({ check }: { check: LinkCheck }) {
     );
   }
   const redirect = check.redirect;
-  if (!redirect) return null;
+  if (!redirect) {
+    if (!check.safeLink) return null;
+    return (
+      <span className="flex min-w-0 items-center gap-1 text-muted">
+        <ShieldOff className="size-3.5 shrink-0" aria-hidden />
+        <span className="truncate">{t("link.safeLink")}</span>
+      </span>
+    );
+  }
   const text = redirect.target
     ? t("link.statusRedirect", { target: shortTarget(redirect.target) })
     : t(redirect.hidden?.service === "tracking" ? "link.tracking" : "link.service", {
@@ -62,7 +70,7 @@ export function LinkStatus() {
           <LinkAddress href={check.href} compact />
         )}
       </span>
-      {(check.misleading || check.redirect) && <StatusExtra check={check} />}
+      {(check.misleading || check.redirect || check.safeLink) && <StatusExtra check={check} />}
     </div>
   );
 }

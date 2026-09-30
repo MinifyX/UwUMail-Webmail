@@ -475,7 +475,9 @@
     "otherTarget": "Destination différente de celle affichée",
     "statusRedirect": "redirige vers {{target}}",
     "unsupported": "{{brand}} n'ouvre pas ce type de lien.",
-    "sheetTitle": "Lien"
+    "sheetTitle": "Lien",
+    "safeLink": "Lien Microsoft Safe Links retiré",
+    "safeLinkBody": "Microsoft avait emballé ce lien dans une adresse d'analyse. Vous voyez et ouvrez l'adresse réelle à la place."
   },
   "density": {
     "relaxed": "Aéré",

@@ -459,7 +459,9 @@
     "otherTarget": "目标与显示的不同",
     "statusRedirect": "重定向至 {{target}}",
     "unsupported": "{{brand}} 不会打开这类链接。",
-    "sheetTitle": "链接"
+    "sheetTitle": "链接",
+    "safeLink": "已移除 Microsoft 安全链接",
+    "safeLinkBody": "Microsoft 将此链接包装成了扫描地址。这里显示并打开的是真实地址。"
   },
   "density": {
     "relaxed": "宽松",

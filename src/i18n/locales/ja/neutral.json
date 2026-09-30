@@ -459,7 +459,9 @@
     "otherTarget": "表示と異なるリンク先",
     "statusRedirect": "{{target}} へ転送",
     "unsupported": "{{brand}} はこの種類のリンクを開きません。",
-    "sheetTitle": "リンク"
+    "sheetTitle": "リンク",
+    "safeLink": "Microsoft セーフ リンクを解除しました",
+    "safeLinkBody": "Microsoft がこのリンクをスキャン用アドレスで包んでいました。代わりに本来のアドレスを表示して開きます。"
   },
   "density": {
     "relaxed": "ゆったり",

@@ -467,7 +467,9 @@
     "otherTarget": "Anderes Ziel als angezeigt",
     "statusRedirect": "leitet weiter zu {{target}}",
     "unsupported": "Diese Art Link öffnet {{brand}} nicht.",
-    "sheetTitle": "Link"
+    "sheetTitle": "Link",
+    "safeLink": "Microsoft-Safe-Link entfernt",
+    "safeLinkBody": "Microsoft hatte diesen Link in eine Prüfadresse verpackt. Du siehst und öffnest stattdessen die echte Adresse."
   },
   "density": {
     "relaxed": "Entspannt",

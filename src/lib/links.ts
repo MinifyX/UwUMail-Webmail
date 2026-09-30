@@ -6,6 +6,7 @@ import type { MailtoDraft } from "@/backend/types";
 import { isIpAddress, isLookalikeHost, isPunycodeHost, isSharedHost, registrableDomain, unicodeHost } from "./domains";
 import { parseMailto } from "./mailto";
 import { detectRedirect, type Redirect } from "./redirects";
+import { unwrapSafeLink } from "./safeLinks";
 
 const DOMAIN = /^(?:https?:\/\/)?((?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d+)?(?:[/?#]\S*)?$/i;
 const EMAIL = /^(?:mailto:)?([^\s@<>]+@((?:[a-z0-9-]+\.)+[a-z]{2,}))$/i;
@@ -168,8 +169,10 @@ function decodeSafely(text: string) {
 
 /** Everything the app knows about a link from a mail before it opens. */
 export interface LinkCheck {
-  /** The link as written in the mail; this is what opens. */
+  /** The link as written in the mail, without a Microsoft Safe Link around it; this is what opens. */
   href: string;
+  /** The Microsoft Safe Links host that was removed from around the link, if any. */
+  safeLink: string | null;
   kind: "web" | "mail";
   /** Lower-case ASCII (xn--) host of a web link. */
   host: string | null;
@@ -190,8 +193,14 @@ export interface LinkCheck {
   rememberable: string | null;
 }
 
-export function checkLink(href: string, text: string): LinkCheck | null {
-  const trimmed = href.trim();
+/**
+ * `safeLink` names the Safe Links host the reader already removed from the link (see lib/safeLinks);
+ * a link still wrapped in one is unwrapped here, so every check looks at the real target.
+ */
+export function checkLink(href: string, text: string, safeLink: string | null = null): LinkCheck | null {
+  const unwrapped = unwrapSafeLink(href);
+  const trimmed = unwrapped ? unwrapped.target : href.trim();
+  safeLink = unwrapped?.host ?? safeLink;
   if (!isOpenableLink(trimmed)) return null;
   const misleading = misleadingLink(trimmed, text);
   if (/^mailto:/i.test(trimmed)) {
@@ -199,6 +208,7 @@ export function checkLink(href: string, text: string): LinkCheck | null {
     if (!mailto) return null;
     return {
       href: trimmed,
+      safeLink,
       kind: "mail",
       host: null,
       unicodeHost: null,
@@ -239,6 +249,7 @@ export function checkLink(href: string, text: string): LinkCheck | null {
       : null;
   return {
     href: trimmed,
+    safeLink,
     kind: "web",
     host,
     unicodeHost: punycode ? unicodeHost(host) : null,

@@ -467,7 +467,9 @@
     "otherTarget": "Ander doel dan getoond",
     "statusRedirect": "stuurt door naar {{target}}",
     "unsupported": "{{brand}} opent dit soort links niet.",
-    "sheetTitle": "Link"
+    "sheetTitle": "Link",
+    "safeLink": "Microsoft Safe Link verwijderd",
+    "safeLinkBody": "Microsoft had deze link verpakt in een scanadres. Je ziet en opent in plaats daarvan het echte adres."
   },
   "density": {
     "relaxed": "Ruim",

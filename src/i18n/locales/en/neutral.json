@@ -467,7 +467,9 @@
     "otherTarget": "Different target than shown",
     "statusRedirect": "redirects to {{target}}",
     "unsupported": "{{brand}} doesn't open this kind of link.",
-    "sheetTitle": "Link"
+    "sheetTitle": "Link",
+    "safeLink": "Microsoft Safe Link removed",
+    "safeLinkBody": "Microsoft had wrapped this link in a scanner address. You see and open the real address instead."
   },
   "density": {
     "relaxed": "Relaxed",
