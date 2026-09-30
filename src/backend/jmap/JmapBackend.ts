@@ -12,6 +12,7 @@ import { deviceTimeZone } from "@/lib/calendarDates";
 import { newestFirst } from "@/lib/maskedAddresses";
 import { textToHtml } from "@/lib/format";
 import { cleanSignatureHtml } from "@/lib/signatures";
+import { cleanFilename } from "@/lib/filename";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { createLimiter } from "@/lib/concurrency";
@@ -2668,7 +2669,7 @@ export class JmapBackend implements Backend {
     const part = email?.attachments?.find((candidate) => `${emailId}:${candidate.blobId}` === attachmentId);
     // (`emailId` is the id as the interface knows it, so the comparison holds for shared mail too.)
     if (!part) throw new BackendError("not_found", "That attachment is gone.");
-    const filename = part.name ?? "attachment";
+    const filename = cleanFilename(part.name ?? "attachment");
     const blob = await this.attachmentBlob(attachmentId, filename);
     const { isDangerous } = await import("@/lib/attachments");
     return {

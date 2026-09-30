@@ -13,6 +13,9 @@ describe("attachmentKind", () => {
 
   it("flags files that run code, even with a harmless looking name", () => {
     expect(isDangerous("Rechnung_2026.pdf.exe")).toBe(true);
+    expect(isDangerous("page.xslt")).toBe(true);
+    expect(isDangerous("page.xht")).toBe(true);
+    expect(isDangerous("xrechnung.xml")).toBe(false);
     expect(isDangerous("makro.XLSM")).toBe(true);
     expect(isDangerous("rechnung.pdf")).toBe(false);
   });
