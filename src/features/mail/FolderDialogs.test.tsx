@@ -8,6 +8,7 @@ import { openFolderDialog, useFolderDialog } from "@/state/folderDialog";
 import { useSettings } from "@/state/settings";
 import { useToasts } from "@/state/toasts";
 import { FolderDialogs } from "./FolderDialogs";
+import { ARMING_MS } from "./LinkWarning";
 
 const folder = (patch: Partial<Folder>): Folder => ({
   id: "f",
@@ -87,7 +88,14 @@ describe("folder dialogs", () => {
     expect(screen.getByText("4 messages will be deleted forever. This can't be undone.")).toBeTruthy();
     expect(fake.emptyFolder).not.toHaveBeenCalled();
 
+    // The click that comes with the gesture that opened the question doesn't answer it (W-24).
+    const opened = performance.now();
+    const now = vi.spyOn(performance, "now").mockReturnValue(opened + 10);
     fireEvent.click(screen.getByRole("button", { name: "Empty trash" }));
+    expect(fake.emptyFolder).not.toHaveBeenCalled();
+    now.mockReturnValue(opened + ARMING_MS + 10);
+    fireEvent.click(screen.getByRole("button", { name: "Empty trash" }));
+    now.mockRestore();
     await waitFor(() => expect(fake.emptyFolder).toHaveBeenCalledWith("trash"));
     await waitFor(() =>
       expect(useToasts.getState().toasts.map((toast) => toast.message)).toContain("4 messages deleted forever"),

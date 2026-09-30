@@ -12,6 +12,7 @@ import { closeFolderDialog, useFolderDialog, type FolderDialog } from "@/state/f
 import { toast } from "@/state/toasts";
 import { useUi } from "@/state/ui";
 import { folderNameProblem } from "./folderName";
+import { armedActivation } from "./LinkWarning";
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
@@ -142,6 +143,9 @@ function DeleteQuestion({ folder }: { folder: Folder }) {
   const refresh = useRefreshFolders();
   const [busy, setBusy] = useState(false);
   const current = folders.find((f) => f.id === folder.id) ?? folder;
+  // The gesture that opened the question (a held Enter on the menu item) must not also answer it
+  // (security-audit W-24, like W-18).
+  const [shownAt] = useState(() => performance.now());
   const hasChildren = folders.some((f) => f.parentId === folder.id);
 
   if (hasChildren) {
@@ -182,7 +186,7 @@ function DeleteQuestion({ folder }: { folder: Folder }) {
         {current.total > 0 ? t("folders.deleteBody", { count: current.total }) : t("folders.deleteBodyEmpty")}
       </p>
       <div className="flex flex-wrap justify-center gap-2 pt-1">
-        <Button variant="danger" autoFocus busy={busy} onClick={() => void remove()}>
+        <Button variant="danger" autoFocus busy={busy} {...armedActivation(shownAt, () => void remove())}>
           {t("folders.deleteConfirm")}
         </Button>
         <Button variant="ghost" onClick={closeFolderDialog}>
@@ -199,6 +203,8 @@ function EmptyQuestion({ folder }: { folder: Folder }) {
   const refresh = useRefreshFolders();
   const [busy, setBusy] = useState(false);
   const count = (folders.find((f) => f.id === folder.id) ?? folder).total;
+  // As for deleting a folder: a held Enter doesn't empty the trash for good (security-audit W-24).
+  const [shownAt] = useState(() => performance.now());
   const role = folder.role === "junk" ? "junk" : "trash";
 
   const empty = async () => {
@@ -222,7 +228,7 @@ function EmptyQuestion({ folder }: { folder: Folder }) {
       <h2 className="text-[18px] font-extrabold text-balance">{t(`folders.emptyTitle.${role}`)}</h2>
       <p className="text-[13px] text-muted">{t("folders.emptyBody", { count })}</p>
       <div className="flex flex-wrap justify-center gap-2 pt-1">
-        <Button variant="danger" autoFocus busy={busy} onClick={() => void empty()}>
+        <Button variant="danger" autoFocus busy={busy} {...armedActivation(shownAt, () => void empty())}>
           {t(`folders.empty.${role}`)}
         </Button>
         <Button variant="ghost" onClick={closeFolderDialog}>
