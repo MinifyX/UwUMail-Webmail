@@ -275,6 +275,7 @@
   animation: none !important;
 }
 
+[data-nyu="reduced"] .nyu-flyer,
 [data-nyu="off"] .nyu-flyer {
   display: none;
 }
