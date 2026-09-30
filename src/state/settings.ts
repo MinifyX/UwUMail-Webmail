@@ -203,8 +203,25 @@ export const useSettings = create<Settings & SettingsActions>()(
       name: "uwumail.webmail",
       version: 1,
       // A language this version doesn't speak (left by a newer one) falls back to the browser's.
+      // Only the settings this version knows, each of the type it has here: a stored key can't
+      // shadow an action (`update`) or bring a value the app can't read.
       merge: (persisted, current) => {
-        const state = { ...current, ...(persisted as Partial<Settings>) };
+        const state = { ...current };
+        const stored = persisted && typeof persisted === "object" ? (persisted as Record<string, unknown>) : {};
+        const target = state as unknown as Record<string, unknown>;
+        for (const [key, fallback] of Object.entries(DEFAULT_SETTINGS)) {
+          if (!Object.hasOwn(stored, key)) continue;
+          const value = stored[key];
+          const fits =
+            fallback === null
+              ? true
+              : Array.isArray(fallback)
+                ? Array.isArray(value)
+                : typeof fallback === "object"
+                  ? typeof value === "object" && value !== null && !Array.isArray(value)
+                  : typeof value === typeof fallback;
+          if (fits) target[key] = value;
+        }
         if (!(LANGUAGE_SETTINGS as readonly unknown[]).includes(state.language)) {
           state.language = DEFAULT_SETTINGS.language;
         }
