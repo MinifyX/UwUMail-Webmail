@@ -123,7 +123,9 @@
     "hideAddresses": "Adressen verbergen",
     "replyTo": "Antwoord aan",
     "copyAddress": "{{email}} kopiëren",
-    "addressCopied": "Adres gekopieerd"
+    "addressCopied": "Adres gekopieerd",
+    "teamsMeeting": "Teams-vergadering",
+    "teamsJoin": "Deelnemen"
   },
   "compose": {
     "new": "Nieuw bericht",
@@ -435,7 +437,8 @@
       "title": "Dit bestand downloaden?",
       "body": "Dit soort bestand kan programma's op je computer starten. Download het alleen als je het verwachtte en de afzender vertrouwt.",
       "confirm": "Toch downloaden"
-    }
+    },
+    "tnef": "Outlook heeft deze mail ingepakt. Werk de server bij om de inhoud te zien."
   },
   "link": {
     "warningTitle": "Deze link gaat ergens anders heen",
@@ -467,7 +470,9 @@
     "otherTarget": "Ander doel dan getoond",
     "statusRedirect": "stuurt door naar {{target}}",
     "unsupported": "{{brand}} opent dit soort links niet.",
-    "sheetTitle": "Link"
+    "sheetTitle": "Link",
+    "safeLink": "Microsoft Safe Link verwijderd",
+    "safeLinkBody": "Microsoft had deze link verpakt in een scanadres. Je ziet en opent in plaats daarvan het echte adres."
   },
   "density": {
     "relaxed": "Ruim",
@@ -1553,19 +1558,41 @@
       "limitReached": "De daglimiet is bereikt. Die wordt om middernacht (UTC) weer gereset.",
       "lastDays_one": "Laatste dag",
       "lastDays_other": "Laatste {{count}} dagen",
-      "nothing": "In deze periode niets verbruikt."
+      "nothing": "In deze periode niets verbruikt.",
+      "thinking": "waarvan {{formatted}} nadenken"
     },
     "estimate": {
       "tokens_one": "≈ {{tokens}} token",
       "tokens_other": "≈ {{tokens}} tokens",
       "tokensLeft": "vandaag nog {{left}} over",
       "requestsLeft_one": "vandaag nog {{left}} verzoek over",
-      "requestsLeft_other": "vandaag nog {{left}} verzoeken over"
+      "requestsLeft_other": "vandaag nog {{left}} verzoeken over",
+      "pictures_one": "{{formatted}} afbeelding",
+      "pictures_other": "{{formatted}} afbeeldingen",
+      "breakdown": {
+        "input": "Invoer",
+        "pictures": "Afbeeldingen",
+        "answer": "Antwoord",
+        "thinking": "Nadenken",
+        "extraCalls": "Extra aanroepen",
+        "fees": "Kosten per verzoek"
+      },
+      "purpose": {
+        "pictures": "afbeeldingen lezen",
+        "chunk": "delen samenvatten",
+        "retry": "nieuwe poging",
+        "refine": "verfijnen",
+        "other": "meer stappen"
+      },
+      "times": "{{count}} × {{what}}",
+      "sometimes": "{{what}} (soms)",
+      "calibrated": "Bijgesteld op basis van je laatste aanroepen"
     },
     "cost": {
       "free": "gratis",
       "below": "< {{amount}}",
-      "about": "≈ {{amount}}"
+      "about": "≈ {{amount}}",
+      "withMax": "{{amount}} (max. {{max}})"
     }
   },
   "dates": {

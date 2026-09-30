@@ -16,13 +16,17 @@ const ESTIMATE: AssistEstimate = {
   method: "Assist/spamCheck",
   inputTokens: 1100,
   outputTokens: 134,
+  reasoningTokens: 0,
   totalTokens: 1234,
+  imageCount: 0,
+  calls: [],
+  calibrated: false,
   providerId: "q1",
   providerName: "Mistral (Server)",
   model: "mistral-small-latest",
   tokensLeftToday: 48000,
   requestsLeftToday: null,
-  cost: { amount: 0.0213, currency: "EUR", usd: 0.0248 },
+  cost: { amount: 0.0213, currency: "EUR", usd: 0.0248, max: null, parts: null },
 };
 
 const today = new Date().toISOString().slice(0, 10);
@@ -134,6 +138,76 @@ describe("costs in the UI", () => {
     );
     fireEvent.pointerOver(screen.getByRole("button"), { pointerType: "mouse" });
     expect((await screen.findByRole("tooltip")).textContent).toBe("≈ 1,200 tokens · 48,000 left today");
+  });
+
+  it("adds the worst case, a breakdown of the non-zero parts and the calibration from a newer server", async () => {
+    fake.assistEstimate.mockResolvedValueOnce({
+      ...ESTIMATE,
+      inputTokens: 2000,
+      outputTokens: 300,
+      reasoningTokens: 700,
+      totalTokens: 3000,
+      imageCount: 2,
+      calibrated: true,
+      calls: [
+        { purpose: "main", inputTokens: 1500, outputTokens: 250, reasoningTokens: 700, images: 0, weight: 1 },
+        { purpose: "pictures", inputTokens: 250, outputTokens: 25, reasoningTokens: 0, images: 1, weight: 1 },
+        { purpose: "pictures", inputTokens: 250, outputTokens: 25, reasoningTokens: 0, images: 1, weight: 1 },
+        { purpose: "retry", inputTokens: 1500, outputTokens: 250, reasoningTokens: 0, images: 0, weight: 0.05 },
+        { purpose: "webSearch", inputTokens: 10, outputTokens: 0, reasoningTokens: 0, images: 0, weight: 1 },
+      ],
+      cost: {
+        amount: 0.02,
+        currency: "EUR",
+        usd: 0.023,
+        max: { amount: 0.05, currency: "EUR", usd: 0.058 },
+        parts: { input: 0.005, output: 0.004, reasoning: 0.009, images: 0.002, requests: 0, other: 0 },
+      },
+    });
+    renderWith(
+      <EstimateTip request={{ method: "Assist/extractEvents", emailId: "e3", includeImages: true }}>
+        <button type="button">Find</button>
+      </EstimateTip>,
+    );
+    fireEvent.pointerOver(screen.getByRole("button"), { pointerType: "mouse" });
+    const tip = await screen.findByRole("tooltip");
+    expect(tip.textContent).toContain("≈ 3,000 tokens · ≈ €0.02 (max €0.05) · 48,000 left today");
+    expect(tip.textContent).toContain("Input≈ 2,000 tokens · ≈ €0.005");
+    expect(tip.textContent).toContain("Pictures2 pictures · ≈ €0.002");
+    expect(tip.textContent).toContain("Answer≈ 300 tokens · ≈ €0.004");
+    expect(tip.textContent).toContain("Thinking≈ 700 tokens · ≈ €0.009");
+    expect(tip.textContent).toContain("Extra calls2 × reading pictures, retry (sometimes), more steps");
+    expect(tip.textContent).not.toContain("Fees");
+    expect(tip.textContent).toContain("Calibrated from your last calls");
+  });
+
+  it("keeps the short tooltip when the server says nothing more", async () => {
+    fake.assistEstimate.mockResolvedValueOnce({
+      ...ESTIMATE,
+      cost: {
+        amount: 0.0213,
+        currency: "EUR",
+        usd: 0.0248,
+        max: { amount: 0.0213, currency: "EUR", usd: 0.0248 },
+        parts: null,
+      },
+    });
+    renderWith(
+      <EstimateTip request={{ method: "Assist/spamCheck", emailId: "e4" }}>
+        <button type="button">Check</button>
+      </EstimateTip>,
+    );
+    fireEvent.pointerOver(screen.getByRole("button"), { pointerType: "mouse" });
+    expect((await screen.findByRole("tooltip")).textContent).toBe("≈ 1,200 tokens · ≈ €0.021 · 48,000 left today");
+  });
+
+  it("shows the thinking of reasoning models in the usage", async () => {
+    fake.assistUsage.mockResolvedValueOnce({
+      days: [{ ...USAGE.days[0]!, reasoningTokens: 1200 }],
+      today: [],
+    });
+    renderWith(<UsageSettings />);
+    expect(await screen.findByText(/3 requests · 4.5K tokens \(1.2K thinking\) · €1.50$/)).toBeTruthy();
   });
 
   it("shows what was spent today, per feature and over the month", async () => {

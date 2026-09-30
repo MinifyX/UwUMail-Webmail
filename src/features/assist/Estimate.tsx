@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cloneElement, useEffect, useId, useRef, useState, type HTMLAttributes, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { backend } from "@/backend/backend";
-import type { AssistEstimate, AssistEstimateRequest } from "@/backend/types";
+import type { AssistCost, AssistEstimate, AssistEstimateRequest } from "@/backend/types";
 import { useT } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
 import { formatCost, useAssistCurrency } from "./cost";
@@ -54,7 +54,13 @@ export function useEstimateText(estimate: AssistEstimate | null): string | null 
   const total = roughly(estimate.totalTokens);
   const parts = [t("assist.estimate.tokens", { count: total, tokens: number.format(total) })];
   // A server from before prices has no cost, and one the admin keeps to themselves says null.
-  if (estimate.cost) parts.push(formatCost(estimate.cost, i18n.language, t, true));
+  if (estimate.cost) {
+    const about = formatCost(estimate.cost, i18n.language, t, true);
+    const max = estimate.cost.max;
+    const most = max && max.amount > estimate.cost.amount ? formatCost(max, i18n.language, t) : null;
+    // A worst case that reads the same as the estimate says nothing more.
+    parts.push(most && !about.endsWith(most) ? t("assist.cost.withMax", { amount: about, max: most }) : about);
+  }
   if (estimate.tokensLeftToday !== null) {
     parts.push(
       t("assist.estimate.tokensLeft", {
@@ -71,6 +77,89 @@ export function useEstimateText(estimate: AssistEstimate | null): string | null 
     );
   }
   return parts.join(" · ");
+}
+
+export interface BreakdownLine {
+  key: "input" | "pictures" | "answer" | "thinking" | "extraCalls" | "fees";
+  label: string;
+  value: string;
+}
+
+/** Purposes of extra calls the texts know; others read as "other". */
+const PURPOSES = ["pictures", "chunk", "retry", "refine"];
+
+/**
+ * What an estimate is made of, one line per part that isn't zero: input, pictures, answer,
+ * thinking, the extra calls and fees. Empty from an older server, which doesn't say.
+ */
+export function useEstimateBreakdown(estimate: AssistEstimate | null): BreakdownLine[] {
+  const { t, i18n } = useT();
+  if (!estimate) return [];
+  const parts = estimate.cost?.parts ?? null;
+  if (estimate.calls.length === 0 && !parts) return [];
+  const number = new Intl.NumberFormat(i18n.language);
+  const currency = estimate.cost?.currency ?? "";
+  const money = (amount: number | undefined) =>
+    amount && amount > 0
+      ? formatCost({ amount, currency } satisfies Pick<AssistCost, "amount" | "currency">, i18n.language, t, true)
+      : null;
+  const tokens = (count: number) => {
+    const rough = roughly(count);
+    return t("assist.estimate.tokens", { count: rough, tokens: number.format(rough) });
+  };
+  const join = (...values: (string | null)[]) => values.filter(Boolean).join(" · ");
+  const label = (key: BreakdownLine["key"]) => t(`assist.estimate.breakdown.${key}`);
+  const lines: BreakdownLine[] = [];
+  if (estimate.inputTokens > 0 || money(parts?.input)) {
+    lines.push({ key: "input", label: label("input"), value: join(tokens(estimate.inputTokens), money(parts?.input)) });
+  }
+  if (estimate.imageCount > 0 || money(parts?.images)) {
+    lines.push({
+      key: "pictures",
+      label: label("pictures"),
+      value: join(
+        estimate.imageCount > 0
+          ? t("assist.estimate.pictures", { count: estimate.imageCount, formatted: number.format(estimate.imageCount) })
+          : null,
+        money(parts?.images),
+      ),
+    });
+  }
+  if (estimate.outputTokens > 0 || money(parts?.output)) {
+    lines.push({
+      key: "answer",
+      label: label("answer"),
+      value: join(tokens(estimate.outputTokens), money(parts?.output)),
+    });
+  }
+  if (estimate.reasoningTokens > 0 || money(parts?.reasoning)) {
+    lines.push({
+      key: "thinking",
+      label: label("thinking"),
+      value: join(estimate.reasoningTokens > 0 ? tokens(estimate.reasoningTokens) : null, money(parts?.reasoning)),
+    });
+  }
+  // Extra calls by purpose, in the order they come: "4 × reading pictures, retry (sometimes)".
+  const extra = new Map<string, { count: number; sometimes: boolean }>();
+  for (const call of estimate.calls) {
+    if (call.purpose === "main" || call.weight <= 0) continue;
+    const purpose = PURPOSES.includes(call.purpose) ? call.purpose : "other";
+    const entry = extra.get(purpose) ?? { count: 0, sometimes: true };
+    entry.count += 1;
+    entry.sometimes &&= call.weight < 1;
+    extra.set(purpose, entry);
+  }
+  if (extra.size > 0) {
+    const what = [...extra].map(([purpose, { count, sometimes }]) => {
+      const name = t(`assist.estimate.purpose.${purpose}`);
+      const counted = count > 1 ? t("assist.estimate.times", { count, what: name }) : name;
+      return sometimes ? t("assist.estimate.sometimes", { what: counted }) : counted;
+    });
+    lines.push({ key: "extraCalls", label: label("extraCalls"), value: what.join(", ") });
+  }
+  const fees = money((parts?.requests ?? 0) + (parts?.other ?? 0));
+  if (fees) lines.push({ key: "fees", label: label("fees"), value: fees });
+  return lines;
 }
 
 type Place = { left: number; top?: number; bottom?: number };
@@ -119,6 +208,8 @@ export function EstimateTip({ request, hint, children, beside = false }: Estimat
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const estimate = useAssistEstimate(request, place !== null);
   const text = useEstimateText(estimate);
+  const breakdown = useEstimateBreakdown(estimate);
+  const { t } = useT();
   const lines = [hint, text].filter((line): line is string => Boolean(line));
 
   useEffect(
@@ -200,6 +291,17 @@ export function EstimateTip({ request, hint, children, beside = false }: Estimat
                 {line}
               </span>
             ))}
+            {breakdown.length > 0 && (
+              <span className="mt-1 grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-px border-t border-canvas/20 pt-1 text-[11.5px]">
+                {breakdown.map((line) => (
+                  <span key={line.key} className="contents">
+                    <span className="opacity-70">{line.label}</span>
+                    <span>{line.value}</span>
+                  </span>
+                ))}
+              </span>
+            )}
+            {estimate?.calibrated && <span className="text-[11px] opacity-70">{t("assist.estimate.calibrated")}</span>}
           </span>,
           document.body,
         )}

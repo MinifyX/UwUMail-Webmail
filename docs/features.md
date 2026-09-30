@@ -38,6 +38,11 @@ talks to it over JMAP.
   the server before it arrives, so nothing jumps; a thin bar counts them in.
   Pictures from dead hosts never hold the mail up: they end as a quiet box,
   tracking pixels as nothing. The server fetches them, never the browser.
+- **Mail from Microsoft 365.** Links wrapped in Microsoft Safe Links show and
+  open their real address, and every link check looks at that one (the stored
+  mail stays as it came). Outlook's packed winmail.dat is unpacked by the
+  server into ordinary attachments and invitations; an older server shows it
+  as one file with a note to update. A Teams meeting link gets a join button.
 - **Unsubscribing in one click.** Where the sender offers it (RFC 8058), the
   server does the one-click unsubscribe itself — through the same guards as
   remote pictures, only for links the sender's DKIM signature covers. Mail

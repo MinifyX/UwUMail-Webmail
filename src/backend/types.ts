@@ -1156,21 +1156,62 @@ export type AssistEstimateRequest =
   | { method: "Assist/extractEvents"; emailId: string; includeImages: boolean };
 
 /**
+ * One model call a request would make: the main one, and the extra ones the server really makes
+ * for it (reading pictures, summarizing a long thread in chunks, a retry on an invalid answer, …).
+ * `purpose` is open-ended; `weight` is how likely the call is (a retry happens only sometimes).
+ */
+export interface AssistEstimateCall {
+  purpose: string;
+  inputTokens: number;
+  outputTokens: number;
+  reasoningTokens: number;
+  images: number;
+  weight: number;
+}
+
+/** What an estimated cost is made of, in the estimate's currency. */
+export interface AssistCostParts {
+  input: number;
+  output: number;
+  reasoning: number;
+  images: number;
+  /** Fees per request, over all calls. */
+  requests: number;
+  other: number;
+}
+
+/** An estimated cost, with the worst case and its parts where the server says (newer servers). */
+export interface AssistEstimateCost extends AssistCost {
+  /** Every call answering as long as it may, thinking included. */
+  max: AssistCost | null;
+  parts: AssistCostParts | null;
+}
+
+/**
  * About how many tokens a call would use and how much of the day's allowance is left; nothing is
- * asked of the model and nothing counts. The left values are null where there is no limit.
+ * asked of the model and nothing counts. The left values are null where there is no limit. The
+ * token counts cover every call of the request; `totalTokens` includes thinking.
  */
 export interface AssistEstimate {
   method: AssistEstimateMethod;
   inputTokens: number;
   outputTokens: number;
+  /** Thinking of a reasoning model; 0 for others and from an older server. */
+  reasoningTokens: number;
   totalTokens: number;
+  /** Pictures the model would look at. */
+  imageCount: number;
+  /** Every model call of the request; empty from an older server. */
+  calls: AssistEstimateCall[];
+  /** The numbers were corrected by how far earlier estimates were off from the real calls. */
+  calibrated: boolean;
   providerId: string;
   providerName: string;
   model: string | null;
   tokensLeftToday: number | null;
   requestsLeftToday: number | null;
   /** About what it costs; null where the price is unknown or hidden from the person (or an older server). */
-  cost: AssistCost | null;
+  cost: AssistEstimateCost | null;
 }
 
 /** The person's own word for a kind of mail; set on mail as the keyword `keyword`. */
@@ -1214,6 +1255,8 @@ export interface AssistUsageDay {
   requests: number;
   inputTokens: number;
   outputTokens: number;
+  /** Thinking of a reasoning model, counted apart from the answer; missing or 0 from an older server. */
+  reasoningTokens?: number;
   /** Null (or missing, from an older server) where the price was unknown or is hidden. */
   cost?: AssistCost | null;
 }

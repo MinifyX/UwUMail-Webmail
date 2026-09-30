@@ -355,3 +355,37 @@ describe("buildPrintDocument", () => {
     expect(doc.match(/<style>/g)).toHaveLength(1);
   });
 });
+
+describe("Microsoft Safe Links", () => {
+  const safe = (target: string) =>
+    `https://eur01.safelinks.protection.outlook.com/?url=${encodeURIComponent(target)}&amp;data=05%7C02&amp;reserved=0`;
+
+  it("shows and links the real target in HTML mail, with the reader's marker", () => {
+    const html = readableBody(
+      message({
+        bodyHtml: `<a href="${safe("https://shop.example/deal")}">Zum Angebot</a> <a href="${safe("https://docs.example.org/")}">${safe("https://docs.example.org/")}</a>`,
+      }),
+    );
+    expect(html).toContain('href="https://shop.example/deal"');
+    expect(html).toContain(">Zum Angebot<");
+    expect(html).toContain('href="https://docs.example.org/"');
+    expect(html).toContain(">https://docs.example.org/<");
+    expect(html).toContain('data-uwu-safelink="eur01.safelinks.protection.outlook.com"');
+    expect(html).not.toContain("safelinks.protection.outlook.com/?");
+  });
+
+  it("never unwraps into a script link", () => {
+    const html = readableBody(message({ bodyHtml: `<a href="${safe("javascript:alert(1)")}">x</a>` }));
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("data-uwu-safelink");
+  });
+
+  it("links the real target in plain text", () => {
+    const text = `Look: ${safe("https://shop.example/a?b=1&c=2").replace(/&amp;/g, "&")} and https://plain.example/x`;
+    const html = readableBody(message({ bodyText: text }));
+    expect(html).toContain(
+      '<a href="https://shop.example/a?b=1&amp;c=2" data-uwu-safelink="eur01.safelinks.protection.outlook.com">https://shop.example/a?b=1&amp;c=2</a>',
+    );
+    expect(html).toContain('<a href="https://plain.example/x">https://plain.example/x</a>');
+  });
+});

@@ -127,7 +127,9 @@
     "hideAddresses": "Masquer les adresses",
     "replyTo": "Répondre à",
     "copyAddress": "Copier {{email}}",
-    "addressCopied": "Adresse copiée"
+    "addressCopied": "Adresse copiée",
+    "teamsMeeting": "Réunion Teams",
+    "teamsJoin": "Rejoindre"
   },
   "compose": {
     "new": "Nouveau message",
@@ -443,7 +445,8 @@
       "title": "Télécharger ce fichier ?",
       "body": "Ce type de fichier peut lancer des programmes sur votre ordinateur. Ne le téléchargez que si vous l'attendiez et faites confiance à l'expéditeur.",
       "confirm": "Télécharger quand même"
-    }
+    },
+    "tnef": "Outlook a empaqueté ce message. Mettez le serveur à jour pour voir son contenu."
   },
   "link": {
     "warningTitle": "Ce lien mène ailleurs",
@@ -475,7 +478,9 @@
     "otherTarget": "Destination différente de celle affichée",
     "statusRedirect": "redirige vers {{target}}",
     "unsupported": "{{brand}} n'ouvre pas ce type de lien.",
-    "sheetTitle": "Lien"
+    "sheetTitle": "Lien",
+    "safeLink": "Lien Microsoft Safe Links retiré",
+    "safeLinkBody": "Microsoft avait emballé ce lien dans une adresse d'analyse. Vous voyez et ouvrez l'adresse réelle à la place."
   },
   "density": {
     "relaxed": "Aéré",
@@ -1605,7 +1610,8 @@
       "lastDays_one": "Dernier jour",
       "lastDays_many": "{{count}} derniers jours",
       "lastDays_other": "{{count}} derniers jours",
-      "nothing": "Rien de consommé sur cette période."
+      "nothing": "Rien de consommé sur cette période.",
+      "thinking": "dont {{formatted}} de réflexion"
     },
     "estimate": {
       "tokens_one": "≈ {{tokens}} jeton",
@@ -1614,12 +1620,34 @@
       "tokensLeft": "encore {{left}} aujourd'hui",
       "requestsLeft_one": "encore {{left}} requête aujourd'hui",
       "requestsLeft_many": "encore {{left}} requêtes aujourd'hui",
-      "requestsLeft_other": "encore {{left}} requêtes aujourd'hui"
+      "requestsLeft_other": "encore {{left}} requêtes aujourd'hui",
+      "pictures_one": "{{formatted}} image",
+      "pictures_many": "{{formatted}} images",
+      "pictures_other": "{{formatted}} images",
+      "breakdown": {
+        "input": "Entrée",
+        "pictures": "Images",
+        "answer": "Réponse",
+        "thinking": "Réflexion",
+        "extraCalls": "Appels supplémentaires",
+        "fees": "Frais"
+      },
+      "purpose": {
+        "pictures": "lecture des images",
+        "chunk": "résumé par parties",
+        "retry": "nouvel essai",
+        "refine": "affinage",
+        "other": "autres étapes"
+      },
+      "times": "{{count}} × {{what}}",
+      "sometimes": "{{what}} (parfois)",
+      "calibrated": "Ajusté d'après vos derniers appels"
     },
     "cost": {
       "free": "gratuit",
       "below": "< {{amount}}",
-      "about": "≈ {{amount}}"
+      "about": "≈ {{amount}}",
+      "withMax": "{{amount}} (max {{max}})"
     }
   },
   "dates": {

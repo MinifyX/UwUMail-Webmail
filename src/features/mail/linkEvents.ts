@@ -1,4 +1,5 @@
 import { checkLink } from "@/lib/links";
+import { SAFE_LINK_MARKER } from "@/lib/safeLinks";
 import { requestOpenLink, useLinks, type ReaderArea } from "@/state/links";
 
 /** HTML links and image-map areas, and SVG links, which may carry their target as `xlink:href`. */
@@ -23,6 +24,11 @@ function linkOf(target: EventTarget | null): Element | null {
 
 function linkText(anchor: Element) {
   return anchor.textContent ?? "";
+}
+
+/** The Safe Links host the reader removed from this link (see readableBody), if any. */
+function safeLinkOf(anchor: Element): string | null {
+  return anchor.getAttribute(SAFE_LINK_MARKER);
 }
 
 /** The bottom of the scrolling box around the mail, where the status line goes. */
@@ -59,7 +65,7 @@ export function watchLinks(frame: HTMLIFrameElement, doc: Document) {
     // The click that ends a long press belongs to the sheet.
     if (performance.now() < ignoreClicksUntil) return;
     hideLinkStatus();
-    requestOpenLink(hrefOf(anchor) ?? "", linkText(anchor));
+    requestOpenLink(hrefOf(anchor) ?? "", linkText(anchor), safeLinkOf(anchor));
   });
   // The middle button opens a link in a new tab without a `click`, and dragging one onto the tab
   // bar opens it too: both would go past the question (security-audit W-17). A middle click asks
@@ -70,14 +76,14 @@ export function watchLinks(frame: HTMLIFrameElement, doc: Document) {
     event.preventDefault();
     if (event.button !== 1) return;
     hideLinkStatus();
-    requestOpenLink(hrefOf(anchor) ?? "", linkText(anchor));
+    requestOpenLink(hrefOf(anchor) ?? "", linkText(anchor), safeLinkOf(anchor));
   });
   doc.addEventListener("dragstart", (event) => {
     if (linkOf(event.target)) event.preventDefault();
   });
 
   const show = (anchor: Element) => {
-    const check = checkLink(hrefOf(anchor) ?? "", linkText(anchor));
+    const check = checkLink(hrefOf(anchor) ?? "", linkText(anchor), safeLinkOf(anchor));
     if (check) useLinks.setState({ hover: { check, area: readerArea(frame) } });
     else hideLinkStatus();
   };
@@ -114,7 +120,7 @@ export function watchLinks(frame: HTMLIFrameElement, doc: Document) {
       start = { x: touch.clientX, y: touch.clientY };
       timer = window.setTimeout(() => {
         start = null;
-        const check = checkLink(hrefOf(anchor) ?? "", linkText(anchor));
+        const check = checkLink(hrefOf(anchor) ?? "", linkText(anchor), safeLinkOf(anchor));
         if (!check) return;
         ignoreClicksUntil = performance.now() + 1000;
         useLinks.setState({ sheet: check, hover: null });

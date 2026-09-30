@@ -172,6 +172,22 @@ describe("the demo's assistant", () => {
     );
   });
 
+  it("lists every call of an estimate, with its parts and worst case", () => {
+    const { assist, messages } = setup("en");
+    const estimate = assist.estimate({ method: "Assist/spamCheck", emailId: messages[0]!.id }, "EUR");
+    expect(estimate.calls.map((call) => [call.purpose, call.weight])).toEqual([
+      ["main", 1],
+      ["retry", 0.05],
+    ]);
+    const main = estimate.calls[0]!;
+    expect(estimate.inputTokens).toBe(Math.round(main.inputTokens * 1.05));
+    expect(estimate.totalTokens).toBe(estimate.inputTokens + estimate.outputTokens + estimate.reasoningTokens);
+    const cost = estimate.cost!;
+    expect(cost.max!.amount).toBeGreaterThan(cost.amount);
+    const parts = cost.parts!;
+    expect(parts.input + parts.output + parts.images).toBeCloseTo(cost.amount);
+  });
+
   it("prices estimates and usage in the currency asked for, own prices and local models included", async () => {
     const { assist, messages } = setup("en");
     const request = { method: "Assist/spamCheck", emailId: messages[0]!.id } as const;

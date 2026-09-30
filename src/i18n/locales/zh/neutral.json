@@ -119,7 +119,9 @@
     "hideAddresses": "隐藏地址",
     "replyTo": "回复至",
     "copyAddress": "复制 {{email}}",
-    "addressCopied": "地址已复制"
+    "addressCopied": "地址已复制",
+    "teamsMeeting": "Teams 会议",
+    "teamsJoin": "加入"
   },
   "compose": {
     "new": "新邮件",
@@ -427,7 +429,8 @@
       "title": "要下载此文件吗？",
       "body": "这类文件可以在你的电脑上运行程序。只有在你预期会收到它并且信任发件人时才下载。",
       "confirm": "仍然下载"
-    }
+    },
+    "tnef": "这封邮件被 Outlook 打包了。请更新服务器以查看其内容。"
   },
   "link": {
     "warningTitle": "此链接指向别处",
@@ -459,7 +462,9 @@
     "otherTarget": "目标与显示的不同",
     "statusRedirect": "重定向至 {{target}}",
     "unsupported": "{{brand}} 不会打开这类链接。",
-    "sheetTitle": "链接"
+    "sheetTitle": "链接",
+    "safeLink": "已移除 Microsoft 安全链接",
+    "safeLinkBody": "Microsoft 将此链接包装成了扫描地址。这里显示并打开的是真实地址。"
   },
   "density": {
     "relaxed": "宽松",
@@ -1499,17 +1504,38 @@
       "limitUsed": "已用今日额度的 {{percent}}%",
       "limitReached": "今日额度已用完。额度将于午夜（UTC）重置。",
       "lastDays_other": "最近 {{count}} 天",
-      "nothing": "这段时间内没有使用。"
+      "nothing": "这段时间内没有使用。",
+      "thinking": "其中思考 {{formatted}}"
     },
     "estimate": {
       "tokens_other": "约 {{tokens}} 个 token",
       "tokensLeft": "今日剩余 {{left}}",
-      "requestsLeft_other": "今日剩余 {{left}} 次请求"
+      "requestsLeft_other": "今日剩余 {{left}} 次请求",
+      "pictures_other": "{{formatted}} 张图片",
+      "breakdown": {
+        "input": "输入",
+        "pictures": "图片",
+        "answer": "回答",
+        "thinking": "思考",
+        "extraCalls": "额外调用",
+        "fees": "费用"
+      },
+      "purpose": {
+        "pictures": "读取图片",
+        "chunk": "分段摘要",
+        "retry": "重试",
+        "refine": "细化",
+        "other": "其他步骤"
+      },
+      "times": "{{count}} × {{what}}",
+      "sometimes": "{{what}}（有时）",
+      "calibrated": "已根据你最近的调用校准"
     },
     "cost": {
       "free": "免费",
       "below": "低于 {{amount}}",
-      "about": "约 {{amount}}"
+      "about": "约 {{amount}}",
+      "withMax": "{{amount}}（最多 {{max}}）"
     }
   },
   "dates": {
