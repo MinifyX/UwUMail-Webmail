@@ -9,6 +9,8 @@ import {
   type AssistComposeRequest,
   type AssistComposeResult,
   type AssistEffective,
+  type AssistEstimate,
+  type AssistEstimateRequest,
   type AssistEvent,
   type AssistEventsResult,
   type AssistFeature,
@@ -117,6 +119,14 @@ async function thinking(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 const tokens = (text: string) => Math.max(1, Math.round(text.length / 4));
+
+/** Which feature answers a method whose cost is asked for. */
+const ESTIMATE_FEATURES: Record<AssistEstimateRequest["method"], AssistFeature> = {
+  "Assist/compose": "compose",
+  "Assist/summarize": "summarize",
+  "Assist/spamCheck": "spamCheck",
+  "Assist/extractEvents": "extractEvents",
+};
 
 const WEEKDAYS: Record<string, number> = {
   sonntag: 0,
@@ -721,6 +731,68 @@ export class DemoAssist {
     }
     await thinking(700);
     return { events, answer: this.answer("extractEvents", text, JSON.stringify(events)) };
+  }
+
+  /** What a call would cost, counted like the server: about four characters a token. */
+  estimate(request: AssistEstimateRequest): AssistEstimate {
+    const feature = ESTIMATE_FEATURES[request.method];
+    const effective = this.effective(feature);
+    if (!effective) throw new AssistError("assistUnavailable", "No provider may do that.");
+    let input: string;
+    let outputTokens: number;
+    switch (request.method) {
+      case "Assist/compose": {
+        const { request: ask } = request;
+        const replyTo = ask.replyToEmailId ? this.messages().find((m) => m.id === ask.replyToEmailId) : undefined;
+        input = [ask.instruction, ask.text, ask.subject, replyTo ? this.text(replyTo) : null].filter(Boolean).join("\n");
+        outputTokens = ask.mode === "write" ? 400 : Math.max(60, Math.round(tokens(ask.text ?? "") * 1.2));
+        break;
+      }
+      case "Assist/summarize": {
+        const { threadId, emailId } = request.request;
+        const mails = threadId
+          ? this.messages()
+              .filter((message) => message.threadId === threadId)
+              .slice(-20)
+          : [this.message(emailId ?? "")];
+        if (mails.length === 0) throw new AssistError("notFound", "That conversation is gone.");
+        input = mails.map((message) => this.text(message)).join("\n\n");
+        outputTokens = 220;
+        break;
+      }
+      case "Assist/spamCheck":
+        input = this.text(this.message(request.emailId));
+        outputTokens = 180;
+        break;
+      case "Assist/extractEvents":
+        input = this.text(this.message(request.emailId));
+        outputTokens = 320;
+        break;
+    }
+    const inputTokens = tokens(input) + 350;
+    const provider = this.providers.find((entry) => entry.id === effective.providerId);
+    const today = new Date().toISOString().slice(0, 10);
+    const used = this.usage.filter((entry) => entry.day === today && entry.providerId === effective.providerId);
+    const quota = provider?.scope === "server" ? provider.quota : null;
+    const left = (limit: number | null | undefined, spent: number) =>
+      limit === null || limit === undefined ? null : Math.max(0, limit - spent);
+    return {
+      method: request.method,
+      inputTokens,
+      outputTokens,
+      totalTokens: inputTokens + outputTokens,
+      providerId: effective.providerId,
+      providerName: effective.providerName,
+      model: effective.model,
+      tokensLeftToday: left(
+        quota?.tokensPerDay,
+        used.reduce((sum, entry) => sum + entry.inputTokens + entry.outputTokens, 0),
+      ),
+      requestsLeftToday: left(
+        quota?.requestsPerDay,
+        used.reduce((sum, entry) => sum + entry.requests, 0),
+      ),
+    };
   }
 
   usageReport(days: number): AssistUsage {

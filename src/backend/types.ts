@@ -1122,6 +1122,32 @@ export interface AssistEventsResult {
   answer?: AssistAnswer | null;
 }
 
+/** The methods whose cost `Assist/estimate` can tell before asking the model. */
+export type AssistEstimateMethod = "Assist/compose" | "Assist/summarize" | "Assist/spamCheck" | "Assist/extractEvents";
+
+/** What would be asked: the same arguments the real call gets. */
+export type AssistEstimateRequest =
+  | { method: "Assist/compose"; request: AssistComposeRequest }
+  | { method: "Assist/summarize"; request: AssistSummarizeRequest }
+  | { method: "Assist/spamCheck"; emailId: string; language?: string | null }
+  | { method: "Assist/extractEvents"; emailId: string; includeImages: boolean };
+
+/**
+ * About how many tokens a call would use and how much of the day's allowance is left; nothing is
+ * asked of the model and nothing counts. The left values are null where there is no limit.
+ */
+export interface AssistEstimate {
+  method: AssistEstimateMethod;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  providerId: string;
+  providerName: string;
+  model: string | null;
+  tokensLeftToday: number | null;
+  requestsLeftToday: number | null;
+}
+
 /** The person's own word for a kind of mail; set on mail as the keyword `keyword`. */
 export interface AssistLabel {
   id: string;

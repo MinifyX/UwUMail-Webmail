@@ -1534,6 +1534,13 @@
       "lastDays_one": "Letzter Tag",
       "lastDays_other": "Letzte {{count}} Tage",
       "nothing": "In dieser Zeit nichts verbraucht."
+    },
+    "estimate": {
+      "tokens_one": "≈ {{tokens}} Token",
+      "tokens_other": "≈ {{tokens}} Tokens",
+      "tokensLeft": "heute noch {{left}} übrig",
+      "requestsLeft_one": "heute noch {{left}} Anfrage übrig",
+      "requestsLeft_other": "heute noch {{left}} Anfragen übrig"
     }
   },
   "dates": {
@@ -1550,6 +1557,10 @@
     "refineAgain": "KI nochmal fragen",
     "refineHint": "Der KI-Assistent liest diese Mail und erkennt die Termine genauer. Zählt zu deinem KI-Kontingent.",
     "refineFailed": "Die KI konnte die Mail gerade nicht lesen.",
+    "find": "Termin suchen",
+    "finding": "Die KI sucht nach Terminen …",
+    "findNone": "Die KI hat in dieser Mail keine Termine gefunden.",
+    "findClose": "Schließen",
     "fromAssistant": "KI",
     "fromPicture": "aus Bild",
     "ambiguous": "Oder {{other}}?",

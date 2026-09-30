@@ -1480,6 +1480,11 @@
       "limitReached": "本日の上限に達しました。午前 0 時（UTC）にリセットされます。",
       "lastDays_other": "過去 {{count}} 日間",
       "nothing": "この期間の使用はありません。"
+    },
+    "estimate": {
+      "tokens_other": "約 {{tokens}} トークン",
+      "tokensLeft": "本日残り {{left}}",
+      "requestsLeft_other": "本日残り {{left}} 回"
     }
   },
   "dates": {
@@ -1495,6 +1500,10 @@
     "refineAgain": "もう一度 AI に聞く",
     "refineHint": "AI アシスタントがこのメールを読み、予定をより正確に見つけます。AI の利用枠を消費します。",
     "refineFailed": "AI が今は読み取れませんでした。",
+    "find": "予定を探す",
+    "finding": "AI が予定を探しています…",
+    "findNone": "AI はこのメールに予定を見つけられませんでした。",
+    "findClose": "閉じる",
     "fromAssistant": "AI",
     "fromPicture": "画像から",
     "ambiguous": "または {{other}}？",

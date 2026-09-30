@@ -40,6 +40,7 @@ export const queryKeys = {
   assistLabels: ["assistLabels"] as const,
   assistLabelLog: ["assistLabelLog"] as const,
   assistUsage: ["assistUsage"] as const,
+  assistEstimate: ["assistEstimate"] as const,
 };
 
 /** What went wrong, for a toast: a refusal of a shared folder's owner in the reader's words. */
@@ -431,6 +432,7 @@ export function useBackendEvents() {
             queryKeys.assistLabels,
             queryKeys.assistLabelLog,
             queryKeys.assistUsage,
+            queryKeys.assistEstimate,
           ]) {
             void client.invalidateQueries({ queryKey: key });
           }

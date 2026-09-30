@@ -1534,6 +1534,13 @@
       "lastDays_one": "Last day",
       "lastDays_other": "Last {{count}} days",
       "nothing": "Nothing used in this time."
+    },
+    "estimate": {
+      "tokens_one": "≈ {{tokens}} token",
+      "tokens_other": "≈ {{tokens}} tokens",
+      "tokensLeft": "{{left}} left today",
+      "requestsLeft_one": "{{left}} request left today",
+      "requestsLeft_other": "{{left}} requests left today"
     }
   },
   "dates": {
@@ -1550,6 +1557,10 @@
     "refineAgain": "Try AI again",
     "refineHint": "The AI assistant reads this mail and finds appointments more precisely. Uses your AI quota.",
     "refineFailed": "The AI couldn't read it right now.",
+    "find": "Find appointment",
+    "finding": "The AI is looking for appointments…",
+    "findNone": "The AI found no appointments in this mail.",
+    "findClose": "Close",
     "fromAssistant": "AI",
     "fromPicture": "from picture",
     "ambiguous": "Or {{other}}?",

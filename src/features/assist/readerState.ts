@@ -11,6 +11,8 @@ interface AssistReaderState {
   done: Record<string, { text: string; answer: AssistAnswer | null }>;
   /** Finished spam checks, by mail. */
   spamResults: Record<string, AssistSpamCheck>;
+  /** Mails the person asked the assistant to read for appointments, by button or menu. */
+  eventSearches: Record<string, true>;
   showSummary: (key: string) => void;
   hideSummary: (key: string) => void;
   showSpamCheck: (emailId: string) => void;
@@ -19,6 +21,8 @@ interface AssistReaderState {
   forget: (key: string) => void;
   rememberSpamCheck: (result: AssistSpamCheck) => void;
   forgetSpamCheck: (emailId: string) => void;
+  findEvents: (emailId: string) => void;
+  stopFindEvents: (emailId: string) => void;
 }
 
 const without = <T>(record: Record<string, T>, key: string): Record<string, T> => {
@@ -32,6 +36,7 @@ export const useAssistReader = create<AssistReaderState>()((set) => ({
   spamChecks: {},
   done: {},
   spamResults: {},
+  eventSearches: {},
   showSummary: (key) => set((state) => ({ summaries: { ...state.summaries, [key]: true } })),
   hideSummary: (key) => set((state) => ({ summaries: without(state.summaries, key) })),
   showSpamCheck: (emailId) => set((state) => ({ spamChecks: { ...state.spamChecks, [emailId]: true } })),
@@ -40,6 +45,8 @@ export const useAssistReader = create<AssistReaderState>()((set) => ({
   forget: (key) => set((state) => ({ done: without(state.done, key) })),
   rememberSpamCheck: (result) => set((state) => ({ spamResults: { ...state.spamResults, [result.emailId]: result } })),
   forgetSpamCheck: (emailId) => set((state) => ({ spamResults: without(state.spamResults, emailId) })),
+  findEvents: (emailId) => set((state) => ({ eventSearches: { ...state.eventSearches, [emailId]: true } })),
+  stopFindEvents: (emailId) => set((state) => ({ eventSearches: without(state.eventSearches, emailId) })),
 }));
 
 export const mailKey = (emailId: string) => `mail:${emailId}`;

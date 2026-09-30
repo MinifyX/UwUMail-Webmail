@@ -28,6 +28,7 @@ import type {
   BirthdayImportResult,
   BirthdayScan,
   AssistComposeRequest,
+  AssistEstimateRequest,
   AssistLabelInput,
   AssistProviderInput,
   AssistSettingsPatch,
@@ -1225,6 +1226,11 @@ export class DemoBackend implements Backend {
 
   async extractEvents(emailId: string, _includeImages: boolean) {
     return this.assist.extractEvents(emailId);
+  }
+
+  async assistEstimate(request: AssistEstimateRequest) {
+    await wait(60);
+    return this.assist.estimate(request);
   }
 
   async assistUsage(days = 30) {

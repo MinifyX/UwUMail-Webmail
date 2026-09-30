@@ -1480,6 +1480,11 @@
       "limitReached": "今日额度已用完。额度将于午夜（UTC）重置。",
       "lastDays_other": "最近 {{count}} 天",
       "nothing": "这段时间内没有使用。"
+    },
+    "estimate": {
+      "tokens_other": "约 {{tokens}} 个 token",
+      "tokensLeft": "今日剩余 {{left}}",
+      "requestsLeft_other": "今日剩余 {{left}} 次请求"
     }
   },
   "dates": {
@@ -1495,6 +1500,10 @@
     "refineAgain": "再问一次 AI",
     "refineHint": "AI 助手会读取此邮件并更准确地识别日程。会消耗你的 AI 额度。",
     "refineFailed": "AI 暂时无法读取。",
+    "find": "查找日程",
+    "finding": "AI 正在查找日程…",
+    "findNone": "AI 未在此邮件中找到日程。",
+    "findClose": "关闭",
     "fromAssistant": "AI",
     "fromPicture": "来自图片",
     "ambiguous": "还是 {{other}}？",

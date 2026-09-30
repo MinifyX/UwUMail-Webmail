@@ -1586,6 +1586,15 @@
       "lastDays_many": "{{count}} derniers jours",
       "lastDays_other": "{{count}} derniers jours",
       "nothing": "Rien de consommé sur cette période."
+    },
+    "estimate": {
+      "tokens_one": "≈ {{tokens}} jeton",
+      "tokens_many": "≈ {{tokens}} jetons",
+      "tokens_other": "≈ {{tokens}} jetons",
+      "tokensLeft": "encore {{left}} aujourd'hui",
+      "requestsLeft_one": "encore {{left}} requête aujourd'hui",
+      "requestsLeft_many": "encore {{left}} requêtes aujourd'hui",
+      "requestsLeft_other": "encore {{left}} requêtes aujourd'hui"
     }
   },
   "dates": {
@@ -1603,6 +1612,10 @@
     "refineAgain": "Redemander à l'IA",
     "refineHint": "L'assistant IA lit cet e-mail et repère les rendez-vous plus précisément. Compte dans votre quota d'IA.",
     "refineFailed": "L'IA n'a pas pu le lire pour l'instant.",
+    "find": "Chercher un rendez-vous",
+    "finding": "L'IA cherche des rendez-vous …",
+    "findNone": "L'IA n'a trouvé aucun rendez-vous dans cet e-mail.",
+    "findClose": "Fermer",
     "fromAssistant": "IA",
     "fromPicture": "d'une image",
     "ambiguous": "Ou {{other}} ?",

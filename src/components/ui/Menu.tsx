@@ -1,5 +1,14 @@
 import clsx from "clsx";
-import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Fragment,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 
 export interface MenuItem {
@@ -7,6 +16,8 @@ export interface MenuItem {
   onSelect: () => void;
   /** A heading above the first item of a group; items of one group follow each other. */
   group?: string;
+  /** Puts something around the item's button, e.g. a tooltip that needs its events. */
+  wrap?: (button: ReactElement) => ReactNode;
 }
 
 interface MenuProps {
@@ -24,6 +35,8 @@ interface MenuProps {
   side?: "below" | "above";
   className?: string;
 }
+
+const wrapped = (item: MenuItem, button: ReactElement): ReactNode => (item.wrap ? item.wrap(button) : button);
 
 /** A small popup list of actions. Closes on selection, Escape and clicks outside. */
 export function Menu({ trigger, items, align = "start", side = "below", className }: MenuProps) {
@@ -98,17 +111,20 @@ export function Menu({ trigger, items, align = "start", side = "below", classNam
                   {item.group}
                 </p>
               )}
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setOpen(false);
-                  item.onSelect();
-                }}
-                className="rounded-xl px-3 py-2 text-left text-[13px] font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none"
-              >
-                {item.label}
-              </button>
+              {wrapped(
+                item,
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false);
+                    item.onSelect();
+                  }}
+                  className="rounded-xl px-3 py-2 text-left text-[13px] font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none"
+                >
+                  {item.label}
+                </button>,
+              )}
             </Fragment>
           ))}
         </div>

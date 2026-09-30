@@ -14,6 +14,8 @@ import {
   type AssistAnswer,
   type AssistChoice,
   type AssistEffective,
+  type AssistEstimate,
+  type AssistEstimateMethod,
   type AssistEvent,
   type AssistFeature,
   type AssistFeatures,
@@ -384,6 +386,34 @@ export function toUsage(raw: Raw): AssistUsage {
         requestsPerDay: asNumber(entry.requestsPerDay),
         tokensPerDay: asNumber(entry.tokensPerDay),
       })),
+  };
+}
+
+const ESTIMATED: readonly AssistEstimateMethod[] = [
+  "Assist/compose",
+  "Assist/summarize",
+  "Assist/spamCheck",
+  "Assist/extractEvents",
+];
+
+/** The answer of `Assist/estimate`; a limit that isn't a number is no limit. */
+export function toEstimate(raw: Raw, method: AssistEstimateMethod): AssistEstimate {
+  const inputTokens = asCount(raw.inputTokens);
+  const outputTokens = asCount(raw.outputTokens);
+  const left = (value: unknown) => {
+    const number = asNumber(value);
+    return number === null ? null : Math.max(0, Math.floor(number));
+  };
+  return {
+    method: ESTIMATED.includes(raw.method as AssistEstimateMethod) ? (raw.method as AssistEstimateMethod) : method,
+    inputTokens,
+    outputTokens,
+    totalTokens: asNumber(raw.totalTokens) === null ? inputTokens + outputTokens : asCount(raw.totalTokens),
+    providerId: asString(raw.providerId) ?? "",
+    providerName: asString(raw.providerName) ?? "",
+    model: asString(raw.model),
+    tokensLeftToday: left(raw.tokensLeftToday),
+    requestsLeftToday: left(raw.requestsLeftToday),
   };
 }
 

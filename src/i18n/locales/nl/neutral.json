@@ -1534,6 +1534,13 @@
       "lastDays_one": "Laatste dag",
       "lastDays_other": "Laatste {{count}} dagen",
       "nothing": "In deze periode niets verbruikt."
+    },
+    "estimate": {
+      "tokens_one": "≈ {{tokens}} token",
+      "tokens_other": "≈ {{tokens}} tokens",
+      "tokensLeft": "vandaag nog {{left}} over",
+      "requestsLeft_one": "vandaag nog {{left}} verzoek over",
+      "requestsLeft_other": "vandaag nog {{left}} verzoeken over"
     }
   },
   "dates": {
@@ -1550,6 +1557,10 @@
     "refineAgain": "AI opnieuw vragen",
     "refineHint": "De AI-assistent leest deze mail en vindt de afspraken nauwkeuriger. Telt mee voor je AI-tegoed.",
     "refineFailed": "De AI kon de mail nu niet lezen.",
+    "find": "Afspraak zoeken",
+    "finding": "De AI zoekt naar afspraken…",
+    "findNone": "De AI vond geen afspraken in deze mail.",
+    "findClose": "Sluiten",
     "fromAssistant": "AI",
     "fromPicture": "uit afbeelding",
     "ambiguous": "Of {{other}}?",
