@@ -123,7 +123,9 @@
     "hideAddresses": "Adressen ausblenden",
     "replyTo": "Antwort an",
     "copyAddress": "{{email}} kopieren",
-    "addressCopied": "Adresse kopiert"
+    "addressCopied": "Adresse kopiert",
+    "teamsMeeting": "Teams-Besprechung",
+    "teamsJoin": "Teilnehmen"
   },
   "compose": {
     "new": "Neue Mail",
@@ -435,7 +437,8 @@
       "title": "Diese Datei herunterladen?",
       "body": "Dateien dieser Art können Programme auf deinem Rechner starten. Lade sie nur herunter, wenn du sie erwartet hast und der Absenderin oder dem Absender vertraust.",
       "confirm": "Trotzdem herunterladen"
-    }
+    },
+    "tnef": "Outlook hat diese Mail verpackt. Aktualisiere den Server, um den Inhalt zu sehen."
   },
   "link": {
     "warningTitle": "Dieser Link führt woanders hin",

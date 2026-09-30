@@ -119,7 +119,9 @@
     "hideAddresses": "隐藏地址",
     "replyTo": "回复至",
     "copyAddress": "复制 {{email}}",
-    "addressCopied": "地址已复制"
+    "addressCopied": "地址已复制",
+    "teamsMeeting": "Teams 会议",
+    "teamsJoin": "加入"
   },
   "compose": {
     "new": "新邮件",
@@ -427,7 +429,8 @@
       "title": "要下载此文件吗？",
       "body": "这类文件可以在你的电脑上运行程序。只有在你预期会收到它并且信任发件人时才下载。",
       "confirm": "仍然下载"
-    }
+    },
+    "tnef": "这封邮件被 Outlook 打包了。请更新服务器以查看其内容。"
   },
   "link": {
     "warningTitle": "此链接指向别处",

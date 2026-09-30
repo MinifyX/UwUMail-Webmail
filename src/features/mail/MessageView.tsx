@@ -13,6 +13,7 @@ import {
   Sun,
   UserPlus,
   UserRound,
+  Video,
 } from "lucide-react";
 import { Fragment, useId, useMemo, useState } from "react";
 import type { Account, Message } from "@/backend/types";
@@ -45,7 +46,9 @@ import { nativeAndroid } from "@/backend/mobile";
 import { backend } from "@/backend/backend";
 import { blockSender } from "./selection";
 import { UnsubscribeButton } from "./Unsubscribe";
-import { buildPrintDocument, MessageBody, resolveAppearance, type Appearance } from "./MessageBody";
+import { buildPrintDocument, MessageBody, readableBody, resolveAppearance, type Appearance } from "./MessageBody";
+import { teamsMeetingLink } from "@/lib/outlook";
+import { requestOpenLink } from "@/state/links";
 import type { Anchor } from "../calendar/state";
 import { openInCalendar } from "../dates/addToCalendar";
 import { DatePopover, EventsBar } from "../dates/EventsBar";
@@ -172,6 +175,25 @@ function TrustedImagesNote({ entries, onUntrust }: { entries: string[]; onUntrus
         {t("reader.remoteUntrust")}
       </button>
     </p>
+  );
+}
+
+/** A Teams meeting link in the mail: one button to join, asked about like every link from a mail. */
+function TeamsMeetingBar({ message }: { message: Message }) {
+  const { t } = useT();
+  const link = useMemo(() => teamsMeetingLink(readableBody(message)), [message]);
+  if (!link) return null;
+  return (
+    <section
+      aria-label={t("reader.teamsMeeting")}
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-[13px]"
+    >
+      <Video className="size-4 shrink-0 text-pink" aria-hidden />
+      <p className="min-w-0 flex-1 font-semibold">{t("reader.teamsMeeting")}</p>
+      <Button size="sm" icon={Video} onClick={() => requestOpenLink(link, link)}>
+        {t("reader.teamsJoin")}
+      </Button>
+    </section>
   );
 }
 
@@ -341,6 +363,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
       )}
 
       <EventsBar messageId={message.id} found={found} onAdd={addToCalendar} />
+      {!message.flags.draft && <TeamsMeetingBar message={message} />}
 
       <div className="selectable">
         <MessageBody

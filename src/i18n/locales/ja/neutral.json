@@ -119,7 +119,9 @@
     "hideAddresses": "アドレスを隠す",
     "replyTo": "返信先",
     "copyAddress": "{{email}} をコピー",
-    "addressCopied": "アドレスをコピーしました"
+    "addressCopied": "アドレスをコピーしました",
+    "teamsMeeting": "Teams 会議",
+    "teamsJoin": "参加"
   },
   "compose": {
     "new": "新規メール",
@@ -427,7 +429,8 @@
       "title": "このファイルをダウンロードしますか？",
       "body": "この種類のファイルはパソコン上でプログラムを実行できます。心当たりがあり、送信者を信頼できる場合のみダウンロードしてください。",
       "confirm": "ダウンロードする"
-    }
+    },
+    "tnef": "このメールは Outlook によってまとめられています。内容を表示するにはサーバーを更新してください。"
   },
   "link": {
     "warningTitle": "このリンクは別の場所へ移動します",

@@ -123,7 +123,9 @@
     "hideAddresses": "Adressen verbergen",
     "replyTo": "Antwoord aan",
     "copyAddress": "{{email}} kopiëren",
-    "addressCopied": "Adres gekopieerd"
+    "addressCopied": "Adres gekopieerd",
+    "teamsMeeting": "Teams-vergadering",
+    "teamsJoin": "Deelnemen"
   },
   "compose": {
     "new": "Nieuw bericht",
@@ -435,7 +437,8 @@
       "title": "Dit bestand downloaden?",
       "body": "Dit soort bestand kan programma's op je computer starten. Download het alleen als je het verwachtte en de afzender vertrouwt.",
       "confirm": "Toch downloaden"
-    }
+    },
+    "tnef": "Outlook heeft deze mail ingepakt. Werk de server bij om de inhoud te zien."
   },
   "link": {
     "warningTitle": "Deze link gaat ergens anders heen",

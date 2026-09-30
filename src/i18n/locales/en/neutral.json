@@ -123,7 +123,9 @@
     "hideAddresses": "Hide addresses",
     "replyTo": "Reply to",
     "copyAddress": "Copy {{email}}",
-    "addressCopied": "Address copied"
+    "addressCopied": "Address copied",
+    "teamsMeeting": "Teams meeting",
+    "teamsJoin": "Join"
   },
   "compose": {
     "new": "New message",
@@ -435,7 +437,8 @@
       "title": "Download this file?",
       "body": "This kind of file can run programs on your computer. Only download it if you expected it and trust the sender.",
       "confirm": "Download anyway"
-    }
+    },
+    "tnef": "Outlook packed this mail. Update the server to see its contents."
   },
   "link": {
     "warningTitle": "This link goes somewhere else",

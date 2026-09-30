@@ -127,7 +127,9 @@
     "hideAddresses": "Masquer les adresses",
     "replyTo": "Répondre à",
     "copyAddress": "Copier {{email}}",
-    "addressCopied": "Adresse copiée"
+    "addressCopied": "Adresse copiée",
+    "teamsMeeting": "Réunion Teams",
+    "teamsJoin": "Rejoindre"
   },
   "compose": {
     "new": "Nouveau message",
@@ -443,7 +445,8 @@
       "title": "Télécharger ce fichier ?",
       "body": "Ce type de fichier peut lancer des programmes sur votre ordinateur. Ne le téléchargez que si vous l'attendiez et faites confiance à l'expéditeur.",
       "confirm": "Télécharger quand même"
-    }
+    },
+    "tnef": "Outlook a empaqueté ce message. Mettez le serveur à jour pour voir son contenu."
   },
   "link": {
     "warningTitle": "Ce lien mène ailleurs",
