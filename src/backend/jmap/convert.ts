@@ -1,5 +1,6 @@
 /** Turning JMAP objects (RFC 8621) into the shapes the interface works with. */
 
+import { cleanFilename } from "@/lib/filename";
 import type { JmapRights } from "./sharing";
 import type {
   Address,
@@ -165,7 +166,7 @@ export function toAttachments(email: JmapEmail): Attachment[] {
     .filter((part) => !!part.blobId)
     .map((part) => ({
       id: `${email.id}:${part.blobId}`,
-      filename: part.name ?? "attachment",
+      filename: cleanFilename(part.name ?? "attachment"),
       mimeType: part.type ?? "application/octet-stream",
       size: part.size ?? 0,
       inline: part.disposition === "inline" || !!part.cid,

@@ -56,7 +56,7 @@ const EXTENSION_KINDS: Record<string, AttachmentKind> = {
 };
 
 /**
- * Same list as the engine (crates/uwumail-core/src/attachments.rs): files that run code when opened,
+ * Same list as the engine (crates/uwumail-smtp/src/spam/attachments.rs): files that run code when opened,
  * plus web pages, a common way to deliver fake login pages.
  */
 const DANGEROUS = new Set(
@@ -68,6 +68,9 @@ const DANGEROUS = new Set(
     // svg renders script and foreignObject when opened from disk; rdp/wsb/pub/desktop start a
     // connection, run a command or launch a program (security-audit W-7).
     "svg svgz rdp wsb pub desktop",
+    // XHTML and XSLT render (and script) like a web page when opened in a browser. Plain xml is
+    // left out: e-invoices (XRechnung, ZUGFeRD) come as .xml every day (security-audit W-44).
+    "xht xsl xslt",
   ]
     .join(" ")
     .split(" "),

@@ -21,9 +21,19 @@ export function isEmbeddedSource(value: string): boolean {
  * the composer. Unlike the mail view, there is no sandboxed frame around it,
  * so styles must not leak into the app and nothing may load from the internet
  * (a tracking pixel would otherwise fire just by pressing "Reply").
+ *
+ * With `foreign`, the markup comes from somebody else (a quoted or forwarded mail, a paste, a
+ * drop) and loses the composer's own `data-uwu-*` markers too, so it can't pose as the
+ * signature block that switching signatures replaces (security-audit W-42). The composer's own
+ * body keeps them when it is cleaned again.
  */
-export function quotableHtml(html: string): string {
+export function quotableHtml(html: string, { foreign = false }: { foreign?: boolean } = {}): string {
   const purify = DOMPurify();
+  if (foreign) {
+    purify.addHook("uponSanitizeAttribute", (_node, data) => {
+      if (/^data-uwu-/i.test(data.attrName)) data.keepAttr = false;
+    });
+  }
   purify.addHook("afterSanitizeAttributes", (node) => {
     if (node instanceof Element) {
       for (const name of ["src", "srcset", "background", "poster"]) {

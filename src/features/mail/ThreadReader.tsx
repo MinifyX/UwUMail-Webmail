@@ -213,7 +213,8 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
       </header>
 
       <div data-reader-scroll className="min-h-0 flex-1 overflow-y-auto">
-        <div className={clsx("mx-auto flex max-w-[820px] flex-col gap-3", variant === "pro" ? "p-5" : "p-4")}>
+        {/* The mail fills the reading pane; only very wide windows keep lines readable with a cap. */}
+        <div className={clsx("mx-auto flex w-full max-w-[1400px] flex-col gap-3", variant === "pro" ? "p-4" : "p-3")}>
           <h2 className="selectable px-1 pt-1 pb-2 text-[22px] leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>

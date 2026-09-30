@@ -27,7 +27,10 @@ const fake = {
   listAccounts: vi.fn(async () => [{ id: "acc", email: "me@example.org" }]),
   listFolders: vi.fn(async () => []),
   mailRulesAvailable: vi.fn(async () => true),
-  mailRules: vi.fn(async () => ({ script: stored, active: true })),
+  mailRules: vi.fn(async (): Promise<{ script: string | null; active: boolean; otherActive?: string | null }> => ({
+    script: stored,
+    active: true,
+  })),
   validateMailRules: vi.fn(async (): Promise<string | null> => null),
   saveMailRules: vi.fn(async (script: string) => {
     stored = script;
@@ -82,5 +85,20 @@ describe("mail rules settings", () => {
     expect(text.value).toBe(stored);
     expect(screen.getByText("These rules were edited elsewhere")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "New rule" })).toBeNull();
+  });
+
+  it("saves nothing over another app's active script until the person chooses these rules", async () => {
+    stored = null;
+    fake.mailRules.mockResolvedValueOnce({ script: null, active: false, otherActive: "vacation" });
+    renderRules();
+    expect(await screen.findByText(/Another filter script, “vacation”/)).toBeTruthy();
+    expect((screen.getByRole("button", { name: "New rule" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(fake.saveMailRules).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Use these rules instead" }));
+    await waitFor(() => expect(fake.saveMailRules).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect((screen.getByRole("button", { name: "New rule" }) as HTMLButtonElement).disabled).toBe(false),
+    );
   });
 });

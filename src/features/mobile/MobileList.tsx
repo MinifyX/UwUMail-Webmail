@@ -26,7 +26,6 @@ import {
   useAccounts,
   useMessageActions,
   useThreadActions as useCardActions,
-  useThreads,
   useVisibleAccounts,
 } from "@/lib/queries";
 import { openFolderDialog } from "@/state/folderDialog";
@@ -36,6 +35,7 @@ import { ThreadRow } from "../mail/ThreadRow";
 import { useViewInfo } from "../mail/view";
 import { openDraftThread } from "../compose/openDraft";
 import { useSelectionActions } from "../mail/selection";
+import { useListThreads } from "../labels/useLabels";
 import { PullToRefresh } from "./PullToRefresh";
 import { SwipeRow } from "./SwipeRow";
 import { useThreadActions } from "./threadActions";
@@ -83,7 +83,7 @@ export function MobileList() {
     return () => clearTimeout(timer);
   }, [draftSearch, setSearch]);
 
-  const query = useThreads(view, filter, search);
+  const query = useListThreads(view, filter, search);
   const threads = flattenThreads(query.data?.pages);
   // Every search already runs on the server, so there is nothing extra to ask it for.
   const serverButton = null;

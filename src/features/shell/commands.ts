@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   Sparkles,
   Star,
+  Tag,
   Trash,
   Undo2,
   UserPlus,
@@ -67,7 +68,11 @@ async function afterChange(client: QueryClient) {
 export function buildCommands(
   client: QueryClient,
   t: (key: string, options?: Record<string, unknown>) => string,
-  { calendar = false, contacts = false }: { calendar?: boolean; contacts?: boolean } = {},
+  {
+    calendar = false,
+    contacts = false,
+    labels = false,
+  }: { calendar?: boolean; contacts?: boolean; labels?: boolean } = {},
 ): Command[] {
   const ui = useUi.getState();
   const settings = useSettings.getState();
@@ -186,6 +191,24 @@ export function buildCommands(
       keys: ["mod+a"],
       run: () => useUi.getState().checkAllVisible(),
     },
+    ...(labels
+      ? [
+          {
+            id: "label",
+            title: t("shortcuts.label"),
+            icon: Tag,
+            keys: ["l"],
+            needsThread: true,
+            // The ticked conversations, or else the open one.
+            run: () => {
+              const { checkedThreadIds, selectedThreadId, openLabelPicker } = useUi.getState();
+              openLabelPicker(
+                checkedThreadIds.length > 0 ? checkedThreadIds : selectedThreadId ? [selectedThreadId] : [],
+              );
+            },
+          },
+        ]
+      : []),
     {
       id: "undo",
       title: t("shortcuts.undo"),

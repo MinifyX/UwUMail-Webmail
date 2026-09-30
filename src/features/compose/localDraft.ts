@@ -22,10 +22,30 @@ export function clearLocalDraft() {
   }
 }
 
-/** Marks the kept copy as safely in the Drafts folder, so it isn't brought back on its own. */
-export function markLocalDraftSaved(draftKey: string) {
+/**
+ * Marks the kept copy as safely in the Drafts folder, so it isn't brought back on its own. With the
+ * draft's id, only that id stays on this device: addresses, subject and text (and the quoted mail
+ * in them) are in the Drafts folder already and needn't wait in local storage after the tab is gone.
+ */
+export function markLocalDraftSaved(draftKey: string, emailId?: string) {
   const draft = loadLocalDraft();
-  if (draft) saveLocalDraft({ ...draft, draftKey, savedToServer: true });
+  if (!draft) return;
+  saveLocalDraft(
+    emailId
+      ? {
+          mode: draft.mode,
+          accountId: draft.accountId,
+          to: [],
+          cc: [],
+          bcc: [],
+          subject: "",
+          html: "",
+          draftKey,
+          emailId,
+          savedToServer: true,
+        }
+      : { ...draft, draftKey, savedToServer: true },
+  );
 }
 
 /** The kept draft, if it has anything worth bringing back. */
@@ -34,6 +54,7 @@ export function loadLocalDraft(): SavedDraft | null {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const draft = JSON.parse(raw) as SavedDraft;
+    if (typeof draft.emailId === "string" && draft.emailId && draft.savedToServer === true) return draft;
     const text = draft.html.replace(/<[^>]*>/g, "").trim();
     return draft.to.length + draft.cc.length + draft.bcc.length > 0 || draft.subject || text ? draft : null;
   } catch {

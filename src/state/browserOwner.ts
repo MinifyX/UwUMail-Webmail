@@ -10,6 +10,11 @@ import { DEFAULT_SETTINGS, useSettings } from "./settings";
 const OWNER_KEY = "uwumail.webmail.owner";
 /** The settings sync's own bookkeeping (see state/accountSync). */
 export const SYNC_META_KEY = "uwumail.webmail.settingsSync";
+/**
+ * The random id this browser's push subscription goes by (see push/index). A new login gets a new
+ * one, so the server can't tie two people's subscriptions to one browser.
+ */
+export const PUSH_DEVICE_KEY = "uwumail.webmail.pushDevice";
 
 function read(key: string): string | null {
   try {
@@ -32,7 +37,7 @@ function write(key: string, value: string | null): void {
  * Called once the server has said who is signed in. When that is someone else than last time,
  * everything the webmail kept in this browser for the previous login goes first: the settings
  * start from the defaults (the server brings this account's own back), the kept draft and the
- * sync queue are dropped. Answers whether anything was cleared.
+ * sync queue and the push device id are dropped. Answers whether anything was cleared.
  */
 export function claimBrowser(login: string): boolean {
   const owner = login.trim().toLowerCase();
@@ -44,5 +49,6 @@ export function claimBrowser(login: string): boolean {
   clearLocalDraft();
   useDismissedDates.getState().clear();
   write(SYNC_META_KEY, null);
+  write(PUSH_DEVICE_KEY, null);
   return true;
 }

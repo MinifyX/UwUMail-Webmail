@@ -40,6 +40,7 @@ export const queryKeys = {
   assistSettings: ["assistSettings"] as const,
   assistLabels: ["assistLabels"] as const,
   assistLabelLog: ["assistLabelLog"] as const,
+  labelSettings: ["labelSettings"] as const,
   assistUsage: ["assistUsage"] as const,
   assistEstimate: ["assistEstimate"] as const,
 };
@@ -115,17 +116,19 @@ export function useFolders() {
 
 const PAGE_SIZE = 50;
 
-export function useThreads(view: MailboxView, filter: ListFilter, search: string) {
+/** The list's conversations; `labels` are keywords every mail must have (see features/labels). */
+export function useThreads(view: MailboxView, filter: ListFilter, search: string, labels: string[] = []) {
   const conversations = useSettings((s) => s.conversations);
   const { accountIds } = useVisibleAccounts();
   return useInfiniteQuery({
-    queryKey: [...queryKeys.threads, view, filter, search, conversations, accountIds],
+    queryKey: [...queryKeys.threads, view, filter, search, labels, conversations, accountIds],
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
       backend().listThreads({
         view,
         filter,
         search,
+        ...(labels.length > 0 ? { labels } : {}),
         conversations,
         accountIds: accountIds ?? undefined,
         cursor: pageParam,
@@ -212,6 +215,8 @@ function invalidateMail(client: QueryClient) {
     client.invalidateQueries({ queryKey: queryKeys.threads }),
     client.invalidateQueries({ queryKey: queryKeys.thread }),
     client.invalidateQueries({ queryKey: queryKeys.folders }),
+    // Labels count their mail like folders do.
+    client.invalidateQueries({ queryKey: queryKeys.assistLabels }),
   ]);
 }
 
@@ -385,6 +390,7 @@ export function useBackendEvents() {
           // The open conversation too: a reply or a draft may have joined it. Unchanged data keeps its objects.
           void client.invalidateQueries({ queryKey: queryKeys.thread });
           void client.invalidateQueries({ queryKey: queryKeys.folders });
+          void client.invalidateQueries({ queryKey: queryKeys.assistLabels });
           break;
         case "accounts:changed":
           void client.invalidateQueries({ queryKey: queryKeys.sharedAccounts });
@@ -435,6 +441,7 @@ export function useBackendEvents() {
             queryKeys.assistSettings,
             queryKeys.assistLabels,
             queryKeys.assistLabelLog,
+            queryKeys.labelSettings,
             queryKeys.assistUsage,
             queryKeys.assistEstimate,
           ]) {

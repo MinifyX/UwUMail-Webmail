@@ -3,6 +3,7 @@ import type { DraftContent } from "@/backend/types";
 import { translate } from "@/i18n";
 import { toast } from "@/state/toasts";
 import { useUi } from "@/state/ui";
+import { clearLocalDraft } from "./localDraft";
 
 /** Opens a draft from the Drafts folder in the composer, to keep writing it. */
 export async function openDraftMessage(messageId: string) {
@@ -12,6 +13,24 @@ export async function openDraftMessage(messageId: string) {
     const message = reason instanceof Error ? reason.message : String(reason);
     toast(translate("toast.draftOpenFailed", { reason: message }), "error");
   }
+}
+
+/**
+ * Brings back, as the bar above the write button, a draft whose copy on this device was reduced to
+ * its id once it reached the Drafts folder (see localDraft). A draft that is gone meanwhile (sent or
+ * deleted elsewhere) is forgotten.
+ */
+export async function reopenSavedDraft(emailId: string) {
+  let draft: DraftContent;
+  try {
+    draft = await backend().openDraft(emailId);
+  } catch {
+    if (!useUi.getState().compose) clearLocalDraft();
+    return;
+  }
+  if (useUi.getState().compose) return;
+  openDraftContent(draft);
+  useUi.getState().setComposeMinimized(true);
 }
 
 /** Puts a draft read back from the server into the composer. */

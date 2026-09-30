@@ -40,6 +40,7 @@ const SHORTCUTS: [string, string, string?][] = [
   ["!", "spam"],
   ["s", "flag"],
   ["u", "unread"],
+  ["l", "label"],
   ["x", "select"],
   ["mod+a", "selectAll"],
   ["z", "undo"],

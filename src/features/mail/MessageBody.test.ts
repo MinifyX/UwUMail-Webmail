@@ -60,6 +60,20 @@ describe("buildDocument", () => {
     expect(doc).not.toContain("overflow-wrap:anywhere");
   });
 
+  // Safari follows `href` on any MathML element; the reader's link handler catches only a/area (W-45).
+  it("keeps no link the reader can't catch: MathML carries none", () => {
+    const html = readableBody(
+      message({
+        bodyHtml:
+          '<p>E = <math><mi href="https://elsewhere.example/">mc</mi><mn xlink:href="https://other.example/">2</mn></math></p>',
+      }),
+    );
+    expect(html).not.toContain("elsewhere.example");
+    expect(html).not.toContain("other.example");
+    expect(html).toContain("<math");
+    expect(html).toContain("mc");
+  });
+
   it("blocks remote images until allowed", () => {
     const blocked = buildDocument(message({ bodyHtml: "<p>Hi</p>" }), false, "light");
     const allowed = buildDocument(message({ bodyHtml: "<p>Hi</p>" }), true, "light");
@@ -72,8 +86,9 @@ describe("buildDocument", () => {
     const mail = message({ bodyHtml: '<img src="https://track.example/open.gif"><img src="cid:logo">' });
     const allowed = buildDocument(mail, true, "light", new Map(), proxy);
     expect(allowed).toContain('src="/jmap/image/a1?url=https%3A%2F%2Ftrack.example%2Fopen.gif"');
-    // The origin itself, not 'self': Firefox takes 'self' in a srcdoc frame for about:srcdoc.
-    expect(allowed).toContain(`img-src data: cid: blob: ${window.location.origin};`);
+    // The origin itself, not 'self': Firefox takes 'self' in a srcdoc frame for about:srcdoc. And
+    // only the proxy's path on it, not the whole webmail (W-40).
+    expect(allowed).toContain(`img-src data: cid: blob: ${window.location.origin}/jmap/image/a1;`);
     expect(allowed).not.toContain("'self'");
     expect(allowed).not.toMatch(/img-src[^;]* https?:[ ;]/);
     const blocked = buildDocument(mail, false, "light", new Map(), proxy);
@@ -112,7 +127,40 @@ describe("remote pictures in the reader", () => {
     expect(doc).toContain("@keyframes uwu-shimmer");
     // Backgrounds stay as they were, through the proxy.
     expect(doc).toContain(proxy("https://cdn.example/bg.png"));
-    expect(doc).toContain(`img-src data: cid: blob: ${window.location.origin};`);
+    expect(doc).toContain(`img-src data: cid: blob: ${window.location.origin}/jmap/image/a1;`);
+  });
+
+  // W-40: once pictures may load, nothing a mail names may load from the webmail's own server.
+  it("drops picture addresses on the webmail's own origin", () => {
+    const own = window.location.origin;
+    const local = message({
+      bodyHtml:
+        '<img src="/api/session"><img src="' +
+        own +
+        '/api/x"><img src="//host.example/a.png">' +
+        '<div style="background:url(/api/y)">x</div><table background="api/z"><tr><td>t</td></tr></table>' +
+        '<img src="https://cdn.example/a.png" srcset="/api/small 1x, https://cdn.example/b.png 2x">' +
+        '<style>.x{background:url("/api/s")}</style><svg><image href="/api/i"></image></svg>',
+    });
+    for (const [withProxy, defer] of [
+      [proxy, true],
+      [proxy, false],
+      [null, false],
+    ] as const) {
+      const doc = buildDocument(local, true, "light", new Map(), withProxy, defer);
+      expect(doc).not.toMatch(/\/api\//);
+      expect(doc).not.toContain("//host.example/a.png");
+    }
+    const printed = buildPrintDocument(local, true, new Map(), { from: "", to: "", cc: "", date: "" }, "", proxy);
+    expect(printed).not.toMatch(/\/api\//);
+  });
+
+  // W-41: the reader's own Safe Link and date marks outlive the step that defers the pictures.
+  it("keeps the Safe Link marker once pictures are allowed", () => {
+    const safe = "https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fshop.example%2F&data=x&reserved=0";
+    const linked = message({ bodyHtml: `<a href="${safe}">shop</a><img src="https://cdn.example/a.png">` });
+    const doc = buildDocument(linked, true, "light", new Map(), proxy, true);
+    expect(doc).toContain("data-uwu-safelink");
   });
 
   it("defers nothing while remote pictures are blocked, or without being asked to", () => {

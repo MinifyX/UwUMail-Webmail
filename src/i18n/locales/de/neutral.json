@@ -325,7 +325,8 @@
     "profile": "Profilbild",
     "assistant": "KI-Assistent",
     "detectEvents": "Termine in Mails erkennen",
-    "detectEventsDesc": "Angaben wie „Fr., 17.10. um 19:30 Uhr“ oder „6.–9. Okt.“ werden unterstrichen und für deinen Kalender angeboten, auch aus dem Text in Bildern. Das passiert nach festen Regeln, ohne KI; der KI-Assistent liest eine Mail nur, wenn du ihn darum bittest."
+    "detectEventsDesc": "Angaben wie „Fr., 17.10. um 19:30 Uhr“ oder „6.–9. Okt.“ werden unterstrichen und für deinen Kalender angeboten, auch aus dem Text in Bildern. Das passiert nach festen Regeln, ohne KI; der KI-Assistent liest eine Mail nur, wenn du ihn darum bittest.",
+    "labels": "Labels"
   },
   "theme": {
     "system": "System",
@@ -386,7 +387,8 @@
     "contactsEdit": "Kontakt bearbeiten",
     "contactsDelete": "Kontakt löschen",
     "contactsNext": "Nächster Kontakt",
-    "contactsPrevious": "Vorheriger Kontakt"
+    "contactsPrevious": "Vorheriger Kontakt",
+    "label": "Label setzen"
   },
   "palette": {
     "placeholder": "Befehl eingeben",
@@ -628,6 +630,9 @@
     "valid": "Der Server nimmt diese Regeln an.",
     "inactive": "Diese Regeln sind auf dem Server gerade ausgeschaltet.",
     "activate": "Einschalten",
+    "otherActive": "Gerade sortiert ein anderes Filterskript, „{{name}}“, deine Mails auf dem Server. Wenn du hier Regeln speicherst, wird es abgeschaltet.",
+    "otherActiveUnnamed": "Gerade sortiert ein anderes Filterskript deine Mails auf dem Server. Wenn du hier Regeln speicherst, wird es abgeschaltet.",
+    "takeOver": "Stattdessen diese Regeln nutzen",
     "name": "Name",
     "namePlaceholder": "z. B. „Rechnungen“",
     "when": "Wenn eine Mail ankommt",
@@ -656,7 +661,8 @@
       "cc": "Cc",
       "toOrCc": "An oder Cc",
       "subject": "Betreff",
-      "listId": "Mailingliste"
+      "listId": "Mailingliste",
+      "hasLabel": "Label"
     },
     "op": {
       "label": "Vergleich",
@@ -672,12 +678,18 @@
       "trash": "In den Papierkorb",
       "markRead": "Als gelesen markieren",
       "flag": "Markieren",
-      "forward": "Weiterleiten"
+      "forward": "Weiterleiten",
+      "label": "Label setzen"
     },
     "summary": {
       "move": "nach {{folder}}",
       "forward": "an {{address}} weiterleiten",
-      "stop": "hört auf"
+      "stop": "hört auf",
+      "label": {
+        "is": "Label {{name}} gesetzt",
+        "isNot": "Label {{name}} nicht gesetzt"
+      },
+      "setLabel": "Label {{name}}"
     },
     "problem": {
       "noName": "Gib der Regel einen Namen.",
@@ -685,7 +697,8 @@
       "noActions": "Füg mindestens eine Aktion hinzu.",
       "noFolder": "Wähl einen Ordner.",
       "badAddress": "Gib eine vollständige Adresse ein, z. B. name@example.org.",
-      "tooMany": "Pro Regel ein Ordner und eine Weiterleitung."
+      "tooMany": "Pro Regel ein Ordner und eine Weiterleitung.",
+      "noLabel": "Wähle ein Label."
     },
     "foreignTitle": "Diese Regeln wurden woanders bearbeitet",
     "foreignBody": "Ein anderes Programm hat das Regel-Skript geändert, deshalb zeigt {{brand}} es als Text. Du kannst es hier bearbeiten oder durch Regeln ersetzen, die du in {{brand}} verwaltest.",
@@ -694,7 +707,13 @@
     "check": "Prüfen",
     "replace": "Durch {{brand}}-Regeln ersetzen",
     "replaceConfirm": "Skript ersetzen",
-    "replaceBody": "Das Skript oben wird gelöscht und du fängst mit einer leeren Regelliste an."
+    "replaceBody": "Das Skript oben wird gelöscht und du fängst mit einer leeren Regelliste an.",
+    "labelOp": {
+      "is": "ist gesetzt",
+      "isNot": "ist nicht gesetzt"
+    },
+    "labelValue": "Label",
+    "chooseLabel": "Label wählen"
   },
   "calendar": {
     "title": "Kalender",
@@ -1344,7 +1363,6 @@
     "labels": {
       "title": "Labels",
       "description": "Deine eigenen Wörter für Arten von Mails. Labels erscheinen hier und in anderen Mail-Apps (als Schlagwörter). Das Modell wählt nur aus deinen Labels; es verschiebt, löscht oder beantwortet nie eine Mail.",
-      "descriptionManual": "Deine eigenen Wörter für Arten von Mails, von Hand in der Leseansicht gesetzt. Sie erscheinen auch in anderen Mail-Apps (als Schlagwörter).",
       "auto": "Neue Mails automatisch labeln",
       "autoDesc": "Eingehende Mails bekommen die passenden Labels. Dafür liest das Modell die Namen und Beschreibungen deiner Labels und den Anfang jeder Mail.",
       "autoNoLabels": "Leg zuerst ein paar Labels an; dann bekommen eingehende Mails die passenden.",
@@ -1624,5 +1642,166 @@
     "notesQuote": "„{{quote}}“",
     "notesFrom": "Aus der Mail „{{subject}}“ von {{sender}}",
     "noSubject": "(kein Betreff)"
+  },
+  "layout": {
+    "resizeFolders": "Breite der Ordner",
+    "resizeList": "Breite der Mail-Liste"
+  },
+  "labels": {
+    "view": {
+      "subtitle": "Alle Mails mit diesem Label, aus allen Ordnern"
+    },
+    "nav": {
+      "title": "Labels",
+      "manage": "Labels verwalten",
+      "unread_one": "{{name}}, {{count}} ungelesen",
+      "unread_other": "{{name}}, {{count}} ungelesen"
+    },
+    "filter": {
+      "title": "Nur Mails mit dem Label {{name}}"
+    },
+    "group": {
+      "on": "Nach Labels gruppieren",
+      "off": "Nicht mehr nach Labels gruppieren",
+      "none": "Ohne Label"
+    },
+    "quick": {
+      "title": "Labels",
+      "button": "Labels",
+      "more": "Labels …",
+      "search": "Label suchen oder anlegen",
+      "for_one": "Für {{count}} Unterhaltung. Enter oder ein Klick setzt ein Label oder nimmt es ab.",
+      "for_other": "Für {{count}} Unterhaltungen. Enter oder ein Klick setzt ein Label oder nimmt es ab.",
+      "create": "„{{name}}“ anlegen",
+      "none": "Noch keine Labels. Tippe einen Namen, um eins anzulegen.",
+      "added_one": "Label „{{name}}“ gesetzt",
+      "added_other": "Label „{{name}}“ bei {{count}} Unterhaltungen gesetzt",
+      "removed_one": "Label „{{name}}“ entfernt",
+      "removed_other": "Label „{{name}}“ bei {{count}} Unterhaltungen entfernt",
+      "addName": "Label {{name}} setzen",
+      "removeName": "Label {{name}} entfernen"
+    },
+    "suggest": {
+      "menu": "Neu labeln",
+      "menuLatest": "Neueste Mail neu labeln",
+      "title": "Neu labeln",
+      "intro": "Angehakte Labels kommen an die Mail, die anderen ab. Der Assistent hat angehakt, was passt.",
+      "fits": "passt",
+      "fitsNot": "passt nicht",
+      "isSet": "jetzt gesetzt",
+      "willAdd": "wird gesetzt",
+      "willRemove": "wird entfernt",
+      "apply_one": "{{count}} Änderung übernehmen",
+      "apply_other": "{{count}} Änderungen übernehmen",
+      "keep": "So lassen",
+      "applied_one": "{{count}} Label geändert",
+      "applied_other": "{{count}} Labels geändert",
+      "unchanged": "Labels unverändert",
+      "noLabels": "Du hast noch keine Labels.",
+      "newTitle": "Ideen für neue Labels",
+      "create": "Anlegen und setzen",
+      "createNamed": "„{{name}}“ anlegen und an diese Mail setzen",
+      "created": "Label „{{name}}“ angelegt und gesetzt",
+      "createdShort": "Angelegt und gesetzt",
+      "exists": "Schon eins deiner Labels",
+      "retry": "Nochmal versuchen"
+    },
+    "source": {
+      "ai": "Vom Assistenten gesetzt",
+      "rule": "Durch die Bedingungen des Labels gesetzt",
+      "sender": "Wegen des Absenders gesetzt",
+      "detector": "Von der eingebauten Erkennung gesetzt",
+      "classifier": "Vom lernenden Klassifikator gesetzt"
+    },
+    "detector": {
+      "none": "Keine",
+      "invoice": "Rechnungen",
+      "appointment": "Termine",
+      "newsletter": "Newsletter",
+      "shipping": "Versand"
+    },
+    "condition": {
+      "from": "Absender (Adresse oder Domain)",
+      "subject": "Betreff enthält",
+      "text": "Text enthält",
+      "hasAttachment": "Hat einen Anhang",
+      "fromPlaceholder": "z. B. shop.example",
+      "subjectPlaceholder": "z. B. Rechnung",
+      "textPlaceholder": "z. B. Bestellnummer",
+      "attachmentYes": "Ja",
+      "attachmentNo": "Nein"
+    },
+    "settings": {
+      "title": "Labels",
+      "description": "Deine eigenen Wörter für Arten von Mails. Sie erscheinen hier und in anderen Mail-Apps (als Schlagwörter). Du setzt sie von Hand, oder sie kommen von selbst dran.",
+      "autoTitle": "Ohne KI",
+      "autoDescription": "Labels können ganz ohne KI an neue Mails kommen: über eigene Bedingungen, eine eingebaute Erkennung, Absender, die du schon gelabelt hast, und einen kleinen Klassifikator, der von dir lernt. Dafür verlässt nichts den Server.",
+      "auto": "Neue Mails ohne KI selbst labeln",
+      "autoDesc": "Nutzt, was bei jedem Label unten eingestellt ist.",
+      "aiOn": "Der Assistent labelt neue Mails zusätzlich und beurteilt die Labels, die noch nicht gesetzt wurden.",
+      "aiOff": "Der Assistent labelt keine neuen Mails.",
+      "toAi": "KI-Einstellungen",
+      "manage": "Labels verwalten",
+      "listTitle": "Deine Labels",
+      "mailCount_one": "{{count}} Mail",
+      "mailCount_other": "{{count}} Mails",
+      "conditionCount_one": "{{count}} Bedingung",
+      "conditionCount_other": "{{count}} Bedingungen",
+      "learnsSenders": "lernt Absender",
+      "learnsFrom_one": "aus {{count}} Mail gelernt",
+      "learnsFrom_other": "aus {{count}} Mails gelernt",
+      "automaticTitle": "Von selbst setzen",
+      "automaticHint": "Das alles funktioniert ohne KI.",
+      "detector": "Eingebaute Erkennung",
+      "detectorHint": "Erkennt eine Art von Mail von selbst, z. B. Rechnungen an Beträgen und Rechnungsnummern.",
+      "conditions": "Bedingungen",
+      "noConditions": "Keine Bedingungen.",
+      "matchAll": "Alle treffen zu",
+      "matchAny": "Eine trifft zu",
+      "conditionField": "Bedingung",
+      "conditionValue": "Wert",
+      "removeCondition": "Bedingung entfernen",
+      "addCondition": "Bedingung hinzufügen",
+      "conditionProblem": "Gib einen Wert mit höchstens {{max}} Zeichen ein.",
+      "learnSenders": "Absender lernen",
+      "learnSendersDesc": "Hast du Mails eines Absenders zweimal von Hand mit diesem Label versehen, bekommen seine Mails es von selbst. Nimmst du es von Hand ab, wird das wieder verlernt.",
+      "classifier": "Aus meinen Labels lernen",
+      "classifierDesc": "Ein kleiner Klassifikator auf dem Server lernt aus Mails, die du von Hand labelst oder entlabelst. Er wird erst ab {{min}} Beispielen aktiv und nur, wenn er sich ziemlich sicher ist.",
+      "examples_one": "Bisher {{count}} von {{min}} Beispielen.",
+      "examples_other": "Bisher {{count}} von {{min}} Beispielen.",
+      "examplesReady_one": "Aus {{count}} Beispiel gelernt: aktiv.",
+      "examplesReady_other": "Aus {{count}} Beispielen gelernt: aktiv.",
+      "listDescription": "Name, Farbe und was jedes Label von selbst an Mails setzt."
+    },
+    "log": {
+      "title": "Zuletzt von selbst gesetzt",
+      "description": "Labels, die automatisch an Mails kamen, und warum.",
+      "empty": "Noch nichts.",
+      "undone": "wieder abgenommen"
+    },
+    "reason": {
+      "rule": "Die Bedingungen des Labels treffen zu: {{conditions}}",
+      "ruleAny": "Eine Bedingung des Labels trifft zu: {{conditions}}",
+      "sender": "Du hast Mails von {{address}} dieses Label schon von Hand gegeben ({{count}}×)",
+      "invoiceAttachment": "Sieht nach einer Rechnung aus: Anhang „{{attachment}}“",
+      "invoiceWord": "Sieht nach einer Rechnung aus: „{{word}}“",
+      "invoiceWordAmount": "Sieht nach einer Rechnung aus: „{{word}}“, {{amount}}",
+      "appointmentCalendar": "Enthält eine Einladung oder eine Kalenderdatei",
+      "appointmentWord": "Sieht nach einem Termin aus: „{{word}}“",
+      "appointmentWordDate": "Sieht nach einem Termin aus: „{{word}}“, {{when}}",
+      "newsletter": "Ein Newsletter: Abmeldelink und der Header {{header}}",
+      "shipping": "Sieht nach einer Versandmitteilung aus",
+      "shippingCarrier": "Versandmitteilung von {{carrier}}",
+      "shippingTracking": "Versandmitteilung, Sendungsnummer {{tracking}}",
+      "shippingBoth": "Versandmitteilung von {{carrier}}, Sendungsnummer {{tracking}}",
+      "classifier": "Der Klassifikator ist sich zu {{percent}} sicher (gelernt aus {{examples}} Beispielen)",
+      "field": {
+        "from": "Absender {{value}}",
+        "subject": "Betreff enthält „{{value}}“",
+        "text": "Text enthält „{{value}}“",
+        "attachmentYes": "hat einen Anhang",
+        "attachmentNo": "hat keinen Anhang"
+      }
+    }
   }
 }

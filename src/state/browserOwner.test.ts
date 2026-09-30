@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { loadLocalDraft, saveLocalDraft } from "@/features/compose/localDraft";
-import { claimBrowser, SYNC_META_KEY } from "./browserOwner";
+import { claimBrowser, PUSH_DEVICE_KEY, SYNC_META_KEY } from "./browserOwner";
 import { DEFAULT_SETTINGS, useSettings } from "./settings";
 
 function leaveTraces() {
@@ -41,7 +41,9 @@ describe("claimBrowser", () => {
   it("clears what the last login left when someone else signs in", () => {
     claimBrowser("a@example.org");
     leaveTraces();
+    localStorage.setItem(PUSH_DEVICE_KEY, "device-of-a");
     expect(claimBrowser("b@example.org")).toBe(true);
+    expect(localStorage.getItem(PUSH_DEVICE_KEY)).toBeNull();
     const settings = useSettings.getState();
     expect(settings.trustedSenders).toEqual([]);
     expect(settings.linkDomains).toEqual([]);

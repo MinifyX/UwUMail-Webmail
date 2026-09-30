@@ -2,14 +2,19 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   imageSizesPath,
   loadJmapSession,
+  onOwnOrigin,
   pictureKind,
   pictureSource,
   reconnectDelay,
   remoteImagePath,
   senderPicturePath,
+  reloadJmapSession,
   socketUrlFor,
+  uploadBlob,
   withPictureOptions,
 } from "./client";
+
+vi.mock("../server", () => ({ currentSession: () => ({ csrfToken: "t0k" }) }));
 
 describe("remote pictures through the server", () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -96,5 +101,43 @@ describe("push over the WebSocket", () => {
 
   it("waits longer after each lost connection, up to half a minute", () => {
     expect([0, 1, 2, 5, 10].map(reconnectDelay)).toEqual([1000, 2000, 4000, 30_000, 30_000]);
+  });
+});
+
+describe("uploads", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("fill the account into the server's template before the URL is parsed", async () => {
+    const session = {
+      accounts: { a1: {} },
+      primaryAccounts: { "urn:ietf:params:jmap:mail": "a1" },
+      apiUrl: "https://mail.example.com/jmap/api",
+      downloadUrl: "https://mail.example.com/jmap/download/{accountId}/{blobId}/{name}?accept={type}",
+      uploadUrl: "https://mail.example.com/jmap/upload/{accountId}/",
+      eventSourceUrl: "https://mail.example.com/jmap/eventsource/?types={types}",
+      state: "1",
+      capabilities: {},
+    };
+    const fetchMock = vi.fn(async (url: string) =>
+      url.startsWith("/jmap/upload/")
+        ? new Response(JSON.stringify({ blobId: "b1", type: "application/sieve", size: 3 }), { status: 201 })
+        : new Response(JSON.stringify(session), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    await reloadJmapSession();
+
+    await expect(uploadBlob(new Blob(["abc"]), "application/sieve")).resolves.toMatchObject({ blobId: "b1" });
+    const [url, init] = fetchMock.mock.calls.at(-1) as unknown as [string, RequestInit];
+    expect(url).toBe("/jmap/upload/a1/");
+    expect((init.headers as Record<string, string>)["x-csrf-token"]).toBe("t0k");
+  });
+});
+
+describe("URLs the server announces", () => {
+  it("keep their path on our own origin and never name another host", () => {
+    expect(onOwnOrigin("https://mail.example.com/jmap/api?x=1")).toBe("/jmap/api?x=1");
+    expect(onOwnOrigin("https://mail.example.com//other.example/jmap")).toBe("/other.example/jmap");
+    expect(onOwnOrigin("/\\\\other.example/jmap")).toBe("/jmap");
+    expect(onOwnOrigin("//other.example/jmap")).toBe("/jmap");
   });
 });

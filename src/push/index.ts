@@ -31,12 +31,13 @@ import {
   type PushConfig,
   type PushTexts,
 } from "./shared";
+import { PUSH_DEVICE_KEY } from "@/state/browserOwner";
 
 export { PushError };
 
 /** Where the webmail and its service worker live: `/mail/`. */
 const BASE = import.meta.env.BASE_URL;
-const DEVICE_KEY = "uwumail.webmail.pushDevice";
+const DEVICE_KEY = PUSH_DEVICE_KEY;
 
 /** Whether this browser can do Web Push at all (a secure page with service workers and notifications). */
 export function browserCanPush(): boolean {

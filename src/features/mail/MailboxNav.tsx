@@ -36,6 +36,7 @@ import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
 import { PORTAL_URL } from "@/backend/server";
 import { ScheduledNavItem } from "../compose/ScheduledSends";
+import { LabelNavSection } from "../labels/LabelNav";
 import { AppSwitch } from "../shell/AppSwitch";
 import { ShareDialog } from "../sharing/ShareDialog";
 import { buildFolderTree, countsUnread, type FolderNode } from "./folderTree";
@@ -448,6 +449,8 @@ export function MailboxNav({ className }: { className?: string }) {
             folders={folders.filter((f) => f.accountId === account.id)}
           />
         ))}
+
+        <LabelNavSection />
 
         {sharedAccounts.map((owner) => (
           <SharedSection key={owner.id} owner={owner} folders={allFolders.filter((f) => f.accountId === owner.id)} />

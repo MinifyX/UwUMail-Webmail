@@ -10,6 +10,8 @@ import type {
   AssistLabel,
   AssistLabelInput,
   AssistLabelLogEntry,
+  LabelSettings,
+  LabelSuggestions,
   AssistModels,
   AssistOptions,
   AssistProvider,
@@ -284,9 +286,13 @@ export interface Backend {
 
   /** Whether the server filters incoming mail with rules (JMAP Sieve); without an id, whether any mailbox does. */
   mailRulesAvailable(accountId?: string): Promise<boolean>;
-  /** The script named "UwUMail" (see lib/sieveRules), null when there is none yet, and whether it filters. */
-  mailRules(accountId?: string): Promise<{ script: string | null; active: boolean }>;
-  /** Stores the script as "UwUMail" and makes it the active one. */
+  /**
+   * The script named "UwUMail" (see lib/sieveRules), null when there is none yet, and whether it
+   * filters. `otherActive` names another script that filters the mail instead (written elsewhere),
+   * which saving the rules would switch off.
+   */
+  mailRules(accountId?: string): Promise<{ script: string | null; active: boolean; otherActive?: string | null }>;
+  /** Stores the script as "UwUMail" and makes it the active one (a server runs only one). */
   saveMailRules(script: string, accountId?: string): Promise<void>;
   /** The server's complaint about a script, or null when it would take it. */
   validateMailRules(script: string, accountId?: string): Promise<string | null>;
@@ -382,6 +388,14 @@ export interface Backend {
   undoAssistLabels(logIds: string[]): Promise<void>;
   /** Asks the model now for mail that came before auto-labels were on; label ids per mail. */
   applyAssistLabels(emailIds: string[]): Promise<Record<string, string[]>>;
+  /**
+   * "Label again": the model judges every label for this mail and may suggest new ones. Changes
+   * nothing; applying is `setFlags` with the keywords (and `createAssistLabel` for a new one).
+   */
+  suggestLabels(emailId: string, language?: string): Promise<LabelSuggestions>;
+  /** Whether labels are set by themselves without AI (conditions, senders, detectors, classifier). */
+  labelSettings(): Promise<LabelSettings>;
+  updateLabelSettings(patch: Partial<LabelSettings>): Promise<void>;
   /** The newest mails of the own inbox (for labelling mail that came before auto-labels). */
   recentInboxIds(limit: number): Promise<string[]>;
 

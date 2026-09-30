@@ -1,12 +1,15 @@
 import clsx from "clsx";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { backend } from "@/backend/backend";
 import { useT } from "@/i18n";
 import { useIsPhone, useMediaQuery } from "@/lib/device";
 import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
+import { fitPanes, keyedWidth, PANE_LIMITS, type Pane } from "@/lib/paneSizes";
 import { useAccounts, useBackendEvents, useIdentities, useSignatures } from "@/lib/queries";
+import { usePanes } from "@/state/panes";
 import { useUi } from "@/state/ui";
+import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { CalendarShell } from "../calendar/CalendarShell";
 import { DeleteScopeQuestion } from "../calendar/DeleteScopeQuestion";
 import { EventEditor } from "../calendar/EventEditor";
@@ -18,6 +21,9 @@ import { useContactsAvailable } from "../contacts/useContactsData";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
 import { Composer } from "../compose/Composer";
 import { loadLocalDraft } from "../compose/localDraft";
+import { useAssistOptions } from "../assist/useAssist";
+import { LabelPicker } from "../labels/LabelMenus";
+import { LabelSuggestDialog } from "../labels/LabelSuggest";
 import { FolderDialogs } from "../mail/FolderDialogs";
 import { MailboxNav } from "../mail/MailboxNav";
 import { scrollReader, wantsTextSelectAll } from "../mail/readerKeys";
@@ -35,6 +41,25 @@ const SCROLL_KEYS = [" ", "PageDown", "PageUp", "Home", "End"];
 
 /** Wide enough for folders, list and reader side by side. */
 const THREE_COLUMNS = "(min-width: 1100px)";
+/** Wide enough for list and reader side by side (Tailwind's `lg`). */
+const TWO_COLUMNS = "(min-width: 1024px)";
+/** The shell's padding on both sides and the handles between the columns, in pixels. */
+const CHROME = 24;
+const HANDLE = 12;
+
+/** The width of an element, following it as the window changes. */
+function useWidth() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState<number | null>(null);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => setWidth(entry?.contentRect.width ?? null));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  return [ref, width] as const;
+}
 
 export function MailShell() {
   const { t } = useT();
@@ -44,6 +69,14 @@ export function MailShell() {
   const setDrawerOpen = useUi((s) => s.setFolderDrawerOpen);
   const phone = useIsPhone();
   const roomForFolders = useMediaQuery(THREE_COLUMNS);
+  const sideBySide = useMediaQuery(TWO_COLUMNS);
+  const stored = usePanes((s) => s.widths);
+  const [shellRef, shellWidth] = useWidth();
+  // What the columns really get: the reader keeps its minimum in narrow windows.
+  const widths =
+    shellWidth === null
+      ? stored
+      : fitPanes(stored, shellWidth - CHROME - HANDLE * (roomForFolders ? 2 : 1), roomForFolders);
   useAccounts();
   // Loaded early, so a reply opens with the right sender address.
   useIdentities();
@@ -68,9 +101,12 @@ export function MailShell() {
   const section = useUi((s) => s.section);
   const { data: calendarAvailable = false } = useCalendarsAvailable();
   const { data: contactsAvailable = false } = useContactsAvailable();
+  const { data: assistOptions } = useAssistOptions();
+  const labelsAvailable = Boolean(assistOptions);
   const commands = useMemo(
-    () => buildCommands(client, t, { calendar: calendarAvailable, contacts: contactsAvailable }),
-    [client, t, calendarAvailable, contactsAvailable],
+    () =>
+      buildCommands(client, t, { calendar: calendarAvailable, contacts: contactsAvailable, labels: labelsAvailable }),
+    [client, t, calendarAvailable, contactsAvailable, labelsAvailable],
   );
 
   const hotkeys = useMemo(() => {
@@ -131,19 +167,25 @@ export function MailShell() {
       ) : phone ? (
         <MobileShell />
       ) : (
-        <div className="relative flex min-h-0 flex-1 gap-3 p-3">
+        <div
+          ref={shellRef}
+          className="relative flex min-h-0 flex-1 p-3 max-lg:gap-3"
+          style={{ "--list-w": `${widths.list}px`, "--sidebar-w": `${widths.sidebar}px` } as CSSProperties}
+        >
           {roomForFolders && (
-            <MailboxNav className="min-h-0 w-[240px] shrink-0 rounded-[22px] border border-hairline" />
+            <>
+              <MailboxNav className="min-h-0 w-(--sidebar-w) shrink-0 rounded-[22px] border border-hairline" />
+              <PaneHandle pane="sidebar" width={widths.sidebar} label={t("layout.resizeFolders")} />
+            </>
           )}
           <ThreadList
             variant="simple"
             className={clsx(
-              "rounded-[22px] border border-hairline",
-              selectedThreadId
-                ? "hidden w-[380px] shrink-0 lg:flex"
-                : "w-full max-w-[560px] shrink-0 max-lg:max-w-none",
+              "shrink-0 rounded-[22px] border border-hairline lg:w-(--list-w)",
+              selectedThreadId ? "hidden lg:flex" : "w-full",
             )}
           />
+          {sideBySide && <PaneHandle pane="list" width={widths.list} label={t("layout.resizeList")} />}
           <ThreadReader
             variant="simple"
             className={clsx(
@@ -172,6 +214,12 @@ export function MailShell() {
       <ShortcutsDialog />
       <MoveDialog />
       <FolderDialogs />
+      {labelsAvailable && (
+        <>
+          <LabelPicker />
+          <LabelSuggestDialog />
+        </>
+      )}
       <ContactEditor />
       <DeleteContactQuestion />
       {/* Also for appointments found in a mail, so outside the calendar too. */}
@@ -182,5 +230,24 @@ export function MailShell() {
         </>
       )}
     </div>
+  );
+}
+
+/** The handle right of a column, which drags it wider or narrower. */
+function PaneHandle({ pane, width, label }: { pane: Pane; width: number; label: string }) {
+  const setWidth = usePanes((s) => s.setWidth);
+  const save = usePanes((s) => s.save);
+  const reset = usePanes((s) => s.reset);
+  return (
+    <ResizeHandle
+      label={label}
+      width={width}
+      min={PANE_LIMITS[pane].min}
+      max={PANE_LIMITS[pane].max}
+      onResize={(next) => setWidth(pane, next)}
+      onCommit={save}
+      onReset={() => reset(pane)}
+      keyedWidth={(key, shift) => keyedWidth(pane, width, key, shift)}
+    />
   );
 }

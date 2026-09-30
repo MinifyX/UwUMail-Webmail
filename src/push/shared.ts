@@ -264,7 +264,26 @@ function inAccount(mail: NewMail, title: string): string {
   return mail.shared ? `${mail.shared.name} · ${title}` : title;
 }
 
+/** The longest sender name a notification shows. */
+const MAX_SENDER = 80;
+
+/**
+ * A sender's name as a notification shows it: without direction marks, invisible spaces and control
+ * characters (which could turn the name around or push text out of view, like W-21 in the reader),
+ * and cut to a sane length.
+ */
+export function notificationName(name: string): string {
+  const plain = name
+    .replace(/[\p{Cc}\p{Zl}\p{Zp}]/gu, " ")
+    // Direction marks, isolates and invisible spaces; the joiner stays, emoji need it.
+    .replace(/[\u061c\u200b\u200c\u200e\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const chars = [...plain];
+  return chars.length > MAX_SENDER ? `${chars.slice(0, MAX_SENDER - 1).join("")}…` : plain;
+}
+
 function sender(mail: NewMail, texts: PushTexts): string {
   const first = mail.from?.[0];
-  return first?.name?.trim() || first?.email?.trim() || texts.newMail;
+  return notificationName(first?.name ?? "") || notificationName(first?.email ?? "") || texts.newMail;
 }

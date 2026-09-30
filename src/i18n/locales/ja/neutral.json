@@ -317,7 +317,8 @@
     "profile": "プロフィール画像",
     "assistant": "AI アシスタント",
     "detectEvents": "メール内の予定を見つける",
-    "detectEventsDesc": "「10月17日(金) 19:30」や「10月6日〜9日」のような日時に下線を引き、カレンダーへの追加を提案します。画像内の文字も対象です。AI は使わず、決まったルールで判定します。AI アシスタントがメールを読むのは、あなたが頼んだときだけです。"
+    "detectEventsDesc": "「10月17日(金) 19:30」や「10月6日〜9日」のような日時に下線を引き、カレンダーへの追加を提案します。画像内の文字も対象です。AI は使わず、決まったルールで判定します。AI アシスタントがメールを読むのは、あなたが頼んだときだけです。",
+    "labels": "ラベル"
   },
   "theme": {
     "system": "システム",
@@ -378,7 +379,8 @@
     "contactsEdit": "連絡先を編集",
     "contactsDelete": "連絡先を削除",
     "contactsNext": "次の連絡先",
-    "contactsPrevious": "前の連絡先"
+    "contactsPrevious": "前の連絡先",
+    "label": "ラベルを付ける"
   },
   "palette": {
     "placeholder": "コマンドを入力",
@@ -614,6 +616,9 @@
     "valid": "サーバーはこのルールを受け付けます。",
     "inactive": "これらのルールは現在、サーバー上で無効になっています。",
     "activate": "有効にする",
+    "otherActive": "現在、別のフィルタースクリプト「{{name}}」がサーバー上でメールを振り分けています。ここでルールを保存すると、そのスクリプトは無効になります。",
+    "otherActiveUnnamed": "現在、別のフィルタースクリプトがサーバー上でメールを振り分けています。ここでルールを保存すると、そのスクリプトは無効になります。",
+    "takeOver": "代わりにこのルールを使う",
     "name": "名前",
     "namePlaceholder": "例:「請求書」",
     "when": "メールが届いたとき",
@@ -642,7 +647,8 @@
       "cc": "Cc",
       "toOrCc": "宛先または Cc",
       "subject": "件名",
-      "listId": "メーリングリスト"
+      "listId": "メーリングリスト",
+      "hasLabel": "ラベル"
     },
     "op": {
       "label": "比較方法",
@@ -658,12 +664,18 @@
       "trash": "ゴミ箱に移動",
       "markRead": "既読にする",
       "flag": "フラグを付ける",
-      "forward": "転送"
+      "forward": "転送",
+      "label": "ラベルを付ける"
     },
     "summary": {
       "move": "{{folder}} へ",
       "forward": "{{address}} へ転送",
-      "stop": "終了"
+      "stop": "終了",
+      "label": {
+        "is": "ラベル「{{name}}」あり",
+        "isNot": "ラベル「{{name}}」なし"
+      },
+      "setLabel": "ラベル「{{name}}」"
     },
     "problem": {
       "noName": "ルールに名前を付けてください。",
@@ -671,7 +683,8 @@
       "noActions": "操作を 1 つ以上追加してください。",
       "noFolder": "フォルダを選択してください。",
       "badAddress": "name@example.com のような完全なアドレスを 1 つ入力してください。",
-      "tooMany": "1 つのルールにつき、フォルダと転送はそれぞれ 1 つまでです。"
+      "tooMany": "1 つのルールにつき、フォルダと転送はそれぞれ 1 つまでです。",
+      "noLabel": "ラベルを選択してください。"
     },
     "foreignTitle": "これらのルールは別の場所で編集されました",
     "foreignBody": "別のプログラムがルールのスクリプトを変更したため、{{brand}} はテキストとして表示しています。ここで編集するか、{{brand}} で管理するルールに置き換えられます。",
@@ -680,7 +693,13 @@
     "check": "チェック",
     "replace": "{{brand}} のルールに置き換える",
     "replaceConfirm": "スクリプトを置き換える",
-    "replaceBody": "上のスクリプトは削除され、空のルール一覧から始まります。"
+    "replaceBody": "上のスクリプトは削除され、空のルール一覧から始まります。",
+    "labelOp": {
+      "is": "が付いている",
+      "isNot": "が付いていない"
+    },
+    "labelValue": "ラベル",
+    "chooseLabel": "ラベルを選択"
   },
   "calendar": {
     "title": "カレンダー",
@@ -1300,7 +1319,6 @@
     "labels": {
       "title": "ラベル",
       "description": "メールの種類を表す、あなた独自の言葉です。ラベルはここでも他のメールアプリでも（キーワードとして）メールに表示されます。モデルはあなたのラベルの中から選ぶだけで、メールを移動・削除したり返信したりすることはありません。",
-      "descriptionManual": "メールの種類を表す、あなた独自の言葉です。閲覧画面から手動で付けます。他のメールアプリでも（キーワードとして）表示されます。",
       "auto": "新着メールに自動でラベルを付ける",
       "autoDesc": "受信したメールに、合うラベルが付きます。そのためにモデルは、ラベルの名前と説明、そして各メールの冒頭を読みます。",
       "autoNoLabels": "まずラベルをいくつか追加してください。その後、受信したメールに合うラベルが付きます。",
@@ -1566,5 +1584,155 @@
     "notesQuote": "「{{quote}}」",
     "notesFrom": "{{sender}} からのメール「{{subject}}」より",
     "noSubject": "（件名なし）"
+  },
+  "layout": {
+    "resizeFolders": "フォルダの幅",
+    "resizeList": "メール一覧の幅"
+  },
+  "labels": {
+    "view": {
+      "subtitle": "このラベルが付いたすべてのフォルダのメール"
+    },
+    "nav": {
+      "title": "ラベル",
+      "manage": "ラベルを管理",
+      "unread_other": "{{name}}、未読 {{count}} 件"
+    },
+    "filter": {
+      "title": "ラベル「{{name}}」のメールだけ"
+    },
+    "group": {
+      "on": "ラベルごとにまとめる",
+      "off": "ラベルごとのまとめをやめる",
+      "none": "ラベルなし"
+    },
+    "quick": {
+      "title": "ラベル",
+      "button": "ラベル",
+      "more": "ラベル…",
+      "search": "ラベルを検索または作成",
+      "for_other": "{{count}} 件のスレッドが対象です。Enter かクリックでラベルを付けたり外したりします。",
+      "create": "「{{name}}」を作成",
+      "none": "ラベルはまだありません。名前を入力すると作成できます。",
+      "added_other": "ラベル「{{name}}」を {{count}} 件に付けました",
+      "removed_other": "ラベル「{{name}}」を {{count}} 件から外しました",
+      "addName": "ラベル「{{name}}」を付ける",
+      "removeName": "ラベル「{{name}}」を外す"
+    },
+    "suggest": {
+      "menu": "ラベルを付け直す",
+      "menuLatest": "最新のメールのラベルを付け直す",
+      "title": "ラベルを付け直す",
+      "intro": "チェックしたラベルがメールに付き、外したものは外れます。合うものはアシスタントがチェックしています。",
+      "fits": "合う",
+      "fitsNot": "合わない",
+      "isSet": "現在付いている",
+      "willAdd": "付けます",
+      "willRemove": "外します",
+      "apply_other": "{{count}} 件の変更を適用",
+      "keep": "このままにする",
+      "applied_other": "{{count}} 件のラベルを変更しました",
+      "unchanged": "ラベルは変更されていません",
+      "noLabels": "ラベルはまだありません。",
+      "newTitle": "新しいラベルの提案",
+      "create": "作成して付ける",
+      "createNamed": "「{{name}}」を作成してこのメールに付ける",
+      "created": "ラベル「{{name}}」を作成して付けました",
+      "createdShort": "作成して付けました",
+      "exists": "既にあるラベルです",
+      "retry": "もう一度試す"
+    },
+    "source": {
+      "ai": "アシスタントが付けました",
+      "rule": "ラベルの条件で付きました",
+      "sender": "差出人をもとに付きました",
+      "detector": "内蔵の判定で付きました",
+      "classifier": "学習した分類器が付けました"
+    },
+    "detector": {
+      "none": "なし",
+      "invoice": "請求書",
+      "appointment": "予定",
+      "newsletter": "ニュースレター",
+      "shipping": "配送"
+    },
+    "condition": {
+      "from": "差出人（アドレスまたはドメイン）",
+      "subject": "件名に含む",
+      "text": "本文に含む",
+      "hasAttachment": "添付ファイルあり",
+      "fromPlaceholder": "例: shop.example",
+      "subjectPlaceholder": "例: 請求書",
+      "textPlaceholder": "例: 注文番号",
+      "attachmentYes": "はい",
+      "attachmentNo": "いいえ"
+    },
+    "settings": {
+      "title": "ラベル",
+      "description": "メールの種類を表す自分の言葉です。ここでも他のメールアプリでも（キーワードとして）表示されます。手で付けることも、自動で付くようにすることもできます。",
+      "autoTitle": "AI なし",
+      "autoDescription": "ラベルは AI を使わずに新しいメールに付けられます。ラベル自身の条件、内蔵の判定、以前にラベルを付けた差出人、そしてあなたから学ぶ小さな分類器によるものです。そのためにサーバーの外へ出るものはありません。",
+      "auto": "新しいメールに AI なしで自動でラベルを付ける",
+      "autoDesc": "下の各ラベルの設定を使います。",
+      "aiOn": "アシスタントも新しいメールにラベルを付け、まだ付いていないラベルを判断します。",
+      "aiOff": "アシスタントは新しいメールにラベルを付けません。",
+      "toAi": "AI の設定",
+      "manage": "ラベルを管理",
+      "listTitle": "あなたのラベル",
+      "mailCount_other": "{{count}} 件",
+      "conditionCount_other": "条件 {{count}} 個",
+      "learnsSenders": "差出人を学習",
+      "learnsFrom_other": "{{count}} 件から学習",
+      "automaticTitle": "自動で付ける",
+      "automaticHint": "これらはすべて AI なしで動きます。",
+      "detector": "内蔵の判定",
+      "detectorHint": "メールの種類を自動で判定します。例: 金額や請求書番号から請求書を判定します。",
+      "conditions": "条件",
+      "noConditions": "条件はありません。",
+      "matchAll": "すべてに一致",
+      "matchAny": "いずれかに一致",
+      "conditionField": "条件",
+      "conditionValue": "値",
+      "removeCondition": "条件を削除",
+      "addCondition": "条件を追加",
+      "conditionProblem": "{{max}} 文字以内の値を入力してください。",
+      "learnSenders": "差出人を学習する",
+      "learnSendersDesc": "ある差出人のメールにこのラベルを手で 2 回付けると、その差出人のメールには自動で付くようになります。手で外すと学習を取り消します。",
+      "classifier": "自分のラベルから学習する",
+      "classifierDesc": "サーバー上の小さな分類器が、あなたが手で付けたり外したりしたラベルから学習します。{{min}} 件の例が集まってから、十分に確信がある場合だけ動きます。",
+      "examples_other": "現在 {{count}} / {{min}} 件の例。",
+      "examplesReady_other": "{{count}} 件の例から学習済み: 有効。",
+      "listDescription": "名前、色、そして各ラベルを自動で付ける条件。"
+    },
+    "log": {
+      "title": "最近自動で付いたラベル",
+      "description": "自動でメールに付いたラベルとその理由です。",
+      "empty": "まだありません。",
+      "undone": "後で外されました"
+    },
+    "reason": {
+      "rule": "ラベルの条件に一致しました：{{conditions}}",
+      "ruleAny": "ラベルの条件のひとつに一致しました：{{conditions}}",
+      "sender": "{{address}} からのメールにこのラベルを手動で付けたことがあります（{{count}}回）",
+      "invoiceAttachment": "請求書のようです：添付ファイル「{{attachment}}」",
+      "invoiceWord": "請求書のようです：「{{word}}」",
+      "invoiceWordAmount": "請求書のようです：「{{word}}」、{{amount}}",
+      "appointmentCalendar": "招待またはカレンダーファイルを含みます",
+      "appointmentWord": "予定のようです：「{{word}}」",
+      "appointmentWordDate": "予定のようです：「{{word}}」、{{when}}",
+      "newsletter": "ニュースレター：配信停止リンクとヘッダー {{header}}",
+      "shipping": "発送通知のようです",
+      "shippingCarrier": "{{carrier}} の発送通知",
+      "shippingTracking": "発送通知、追跡番号 {{tracking}}",
+      "shippingBoth": "{{carrier}} の発送通知、追跡番号 {{tracking}}",
+      "classifier": "分類器の確信度は {{percent}} です（{{examples}} 件の例から学習）",
+      "field": {
+        "from": "差出人 {{value}}",
+        "subject": "件名に「{{value}}」を含む",
+        "text": "本文に「{{value}}」を含む",
+        "attachmentYes": "添付ファイルあり",
+        "attachmentNo": "添付ファイルなし"
+      }
+    }
   }
 }

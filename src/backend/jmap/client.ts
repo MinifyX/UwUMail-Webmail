@@ -69,13 +69,16 @@ interface RawSession {
  * A self-hosted server often announces the name it has on the internet, which
  * a browser inside the LAN — or a dev server proxying to it — can't reach. The
  * page itself was served by the right host, so its origin is the one that works.
+ *
+ * A path that starts with several slashes would read as another host (`//host/…`) where the answer
+ * is used as a URL, and the CSRF token would go there; it keeps a single one.
  */
 export function onOwnOrigin(url: string): string {
   try {
     const parsed = new URL(url, window.location.origin);
-    return parsed.pathname + parsed.search;
+    return parsed.pathname.replace(/^[/\\]+/, "/") + parsed.search;
   } catch {
-    return url;
+    return "/";
   }
 }
 
@@ -134,7 +137,9 @@ async function fetchJmapSession(): Promise<JmapSession> {
     accounts,
     apiUrl: onOwnOrigin(raw.apiUrl),
     downloadUrl: raw.downloadUrl,
-    uploadUrl: onOwnOrigin(raw.uploadUrl),
+    // A template: `{accountId}` sits in the path, which URL parsing would turn into %7BaccountId%7D.
+    // uploadBlob fills it in first and puts the result on our own origin then.
+    uploadUrl: raw.uploadUrl,
     eventSourceUrl: onOwnOrigin(raw.eventSourceUrl),
     capabilities: raw.capabilities ?? {},
     state: raw.state,

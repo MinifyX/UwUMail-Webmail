@@ -11,6 +11,7 @@ import {
   PenLine,
   SlidersHorizontal,
   Sparkles,
+  Tags,
   VenetianMask,
   X,
 } from "lucide-react";
@@ -33,6 +34,7 @@ import { NYU_ANIMATIONS, useSettings, type LanguageSetting, type SwipeAction } f
 import { toast } from "@/state/toasts";
 import { AssistantSettings } from "../assist/settings/AssistantSettings";
 import { useAssistOptions } from "../assist/useAssist";
+import { LabelsSettingsPage } from "../labels/LabelSettings";
 import { MaskedAddresses } from "../masked/MaskedAddresses";
 import { useMaskedOptions } from "../masked/useMasked";
 import { MailRules } from "../rules/MailRules";
@@ -62,6 +64,7 @@ const SECTIONS: { id: SettingsSection; icon: LucideIcon }[] = [
   { id: "profile", icon: CircleUserRound },
   { id: "rules", icon: ListFilter },
   { id: "masked", icon: VenetianMask },
+  { id: "labels", icon: Tags },
   { id: "assistant", icon: Sparkles },
   { id: "about", icon: Info },
 ];
@@ -363,6 +366,8 @@ export function SettingsDialog() {
       (id !== "rules" || rulesAccounts.length > 0) &&
       (id !== "masked" || Boolean(maskedOptions)) &&
       (id !== "profile" || Boolean(profileOptions)) &&
+      // Labels live in the assistant's extension, but work without any AI.
+      (id !== "labels" || Boolean(assistOptions)) &&
       (id !== "assistant" || Boolean(assistOptions)),
   );
 
@@ -416,6 +421,7 @@ export function SettingsDialog() {
             {section === "profile" && <ProfilePictureSettings />}
             {section === "rules" && <MailRules />}
             {section === "masked" && <MaskedAddresses />}
+            {section === "labels" && <LabelsSettingsPage />}
             {section === "assistant" && <AssistantSettings />}
             {section === "about" && <About />}
           </div>

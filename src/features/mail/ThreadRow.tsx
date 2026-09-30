@@ -20,6 +20,8 @@ interface ThreadRowProps {
   showAccount: boolean;
   actions: ReturnType<typeof useThreadActions>;
   onSelect: (event: React.MouseEvent) => void;
+  /** A right click on the row, e.g. for its label menu. */
+  onContextMenu?: (event: React.MouseEvent) => void;
   /** Ticked for actions on several conversations. */
   checked?: boolean;
   /** Thread ids a drag from this row carries (desktop), or none to not drag. */
@@ -73,6 +75,7 @@ export function ThreadRow({
   showAccount,
   actions,
   onSelect,
+  onContextMenu,
   checked = false,
   dragIds,
   inTrash = false,
@@ -96,11 +99,13 @@ export function ThreadRow({
   return (
     <div
       data-thread-id={thread.id}
+      onContextMenu={onContextMenu}
       draggable={dragIds !== undefined}
       onDragStart={(event) => {
         if (!dragIds) return;
         event.dataTransfer.setData(THREAD_DRAG_TYPE, JSON.stringify(dragIds));
-        event.dataTransfer.effectAllowed = "move";
+        // Onto a folder it moves, onto a label it copies (the label goes on).
+        event.dataTransfer.effectAllowed = "copyMove";
       }}
       className={clsx(
         "group relative flex text-left transition-colors",

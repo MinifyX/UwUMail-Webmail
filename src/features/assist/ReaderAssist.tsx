@@ -1,10 +1,11 @@
-import { CalendarSearch, FileText, ShieldQuestion, Sparkles, type LucideIcon } from "lucide-react";
+import { CalendarSearch, FileText, ShieldQuestion, Sparkles, Tags, type LucideIcon } from "lucide-react";
 import type { ReactElement } from "react";
 import type { AssistEstimateRequest, Message } from "@/backend/types";
 import { IconButton } from "@/components/ui/Button";
 import type { MenuItem } from "@/components/ui/Menu";
 import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
+import { useUi } from "@/state/ui";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
 import { findEventsWithAssistant, includesImages } from "../dates/useMailEvents";
 import { EstimateTip } from "./Estimate";
@@ -23,6 +24,7 @@ export function useReaderAssist(own: boolean) {
     summarize: own && options?.features.summarize === true,
     spamCheck: own && options?.features.spamCheck === true,
     findEvents: extract && calendars,
+    labelAgain: own && options?.features.autoLabels === true,
   };
 }
 
@@ -46,6 +48,20 @@ function spamRequest(emailId: string, language: string): AssistEstimateRequest {
 /** Reading a mail for appointments; its pictures as far as they load without asking. */
 function eventsRequest(message: Message): AssistEstimateRequest {
   return { method: "Assist/extractEvents", emailId: message.id, includeImages: includesImages(message, false) };
+}
+
+function suggestRequest(emailId: string, language: string): AssistEstimateRequest {
+  return { method: "AssistLabel/suggest", emailId, language };
+}
+
+/** "Label again" for one mail: the model judges every label, the person decides. */
+function labelAgainItem(emailId: string, language: string, text: string, group?: string): MenuItem {
+  return {
+    group,
+    label: <ItemLabel icon={Tags} text={text} />,
+    onSelect: () => useUi.getState().openLabelSuggest(emailId),
+    wrap: estimated(suggestRequest(emailId, language)),
+  };
 }
 
 function ItemLabel({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
@@ -96,6 +112,7 @@ export function useMessageAssistItems(message: Message, own: boolean, fromMe: bo
           },
         ]
       : []),
+    ...(can.labelAgain ? [labelAgainItem(message.id, i18n.language, t("labels.suggest.menu"), group)] : []),
   ];
 }
 
@@ -163,6 +180,15 @@ export function ThreadAssistButton({ threadId, messages, own, mine, align }: Thr
             onSelect: () => showSpamCheck(newest.id),
             wrap: estimated(spamRequest(newest.id, language)),
           },
+        ]
+      : []),
+    ...(can.labelAgain && forEvents
+      ? [
+          labelAgainItem(
+            forEvents.id,
+            language,
+            messages.length > 1 ? t("labels.suggest.menuLatest") : t("labels.suggest.menu"),
+          ),
         ]
       : []),
   ];

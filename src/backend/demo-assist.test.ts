@@ -36,6 +36,54 @@ describe("the demo's assistant", () => {
     expect(entry!.reason).not.toBe("");
   });
 
+  it("labels again: judges every label, says what is set, and changes nothing", async () => {
+    const { assist, messages } = setup("en");
+    const order = messages.find((message) => message.keywords?.includes("orders-shipping"))!;
+    const before = [...order.keywords!];
+    const asking = assist.suggest(order.id);
+    await vi.runAllTimersAsync();
+    const result = await asking;
+    expect(result.verdicts.map((verdict) => verdict.labelId)).toEqual(assist.listLabels().map((label) => label.id));
+    expect(result.verdicts.every((verdict) => verdict.reason !== "")).toBe(true);
+    expect(result.verdicts.find((verdict) => verdict.isSet)?.labelId).toBe(
+      assist.listLabels().find((label) => label.keyword === "orders-shipping")!.id,
+    );
+    expect(order.keywords).toEqual(before);
+    expect(result.newLabels.length).toBeLessThanOrEqual(2);
+    expect(assist.estimate({ method: "AssistLabel/suggest", emailId: order.id }).totalTokens).toBeGreaterThan(0);
+  });
+
+  it("suggests new labels only when none fits", async () => {
+    const { assist, messages } = setup("en");
+    for (const label of assist.listLabels()) assist.deleteLabel(label.id);
+    const asking = assist.suggest(messages[0]!.id);
+    await vi.runAllTimersAsync();
+    const result = await asking;
+    expect(result.verdicts).toEqual([]);
+    expect(result.newLabels.length).toBeGreaterThan(0);
+    expect(result.newLabels.length).toBeLessThanOrEqual(2);
+  });
+
+  it("keeps a label's automatic parts and counts hand-set labels as examples", () => {
+    const { assist, messages } = setup("en");
+    const made = assist.createLabel({
+      name: "Travel",
+      description: "",
+      color: null,
+      rules: { match: "any", conditions: [{ field: "subject", value: "flight" }] },
+      detector: null,
+      learnSenders: false,
+    });
+    expect(made).toMatchObject({ learnSenders: false, classifier: true, examples: 0, rules: { match: "any" } });
+    assist.keywordsChanged([messages[0]!.id], { [made.keyword]: true });
+    assist.updateLabel(made.id, { detector: "appointment", rules: null });
+    expect(assist.listLabels().find((label) => label.id === made.id)).toMatchObject({
+      detector: "appointment",
+      rules: null,
+      examples: 1,
+    });
+  });
+
   it("streams a text in pieces that add up to the answer, with who wrote it", async () => {
     const { assist } = setup();
     const pieces: string[] = [];

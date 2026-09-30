@@ -19,6 +19,12 @@ import {
   toEstimate,
   toCost,
   toUsage,
+  labelCreate,
+  labelUpdate,
+  toAssistLabel,
+  toLabelLogEntry,
+  toLabelSettings,
+  toLabelSuggestions,
   type EventStreamEvent,
 } from "./assist";
 import { JmapMethodError } from "./client";
@@ -724,5 +730,131 @@ describe("JmapBackend's assistant", () => {
     const log = await (await load()).assistLabelLog(["e1", "a7~e2"]);
     expect(jmap.one).toHaveBeenCalledWith("AssistLabel/log", { emailIds: ["e1"], limit: 100 }, using);
     expect(log[0]).toMatchObject({ keyword: "rechnungen", undone: false });
+  });
+});
+
+describe("labels", () => {
+  it("read the automatic parts and counts, with the server's defaults where an older one says nothing", () => {
+    expect(toAssistLabel({ id: "g1", name: "Invoices", keyword: "INVOICES", color: "#F59E0B" })).toEqual({
+      id: "g1",
+      name: "Invoices",
+      description: "",
+      keyword: "invoices",
+      color: "#f59e0b",
+      rules: null,
+      detector: null,
+      learnSenders: true,
+      classifier: true,
+      totalEmails: 0,
+      unreadEmails: 0,
+      examples: 0,
+    });
+    const label = toAssistLabel({
+      id: "g2",
+      name: "Shop",
+      keyword: "shop",
+      color: "red",
+      rules: {
+        match: "any",
+        conditions: [
+          { field: "from", value: "shop.example" },
+          { field: "header", value: "x" },
+        ],
+      },
+      detector: "shipping",
+      learnSenders: false,
+      classifier: false,
+      totalEmails: 12,
+      unreadEmails: 3.2,
+      examples: 17,
+    });
+    expect(label).toMatchObject({
+      color: null,
+      rules: { match: "any", conditions: [{ field: "from", value: "shop.example" }] },
+      detector: "shipping",
+      learnSenders: false,
+      classifier: false,
+      totalEmails: 12,
+      unreadEmails: 3,
+      examples: 17,
+    });
+    expect(toAssistLabel({ id: "g3", detector: "horoscope", rules: { conditions: [] } })).toMatchObject({
+      detector: null,
+      rules: null,
+    });
+  });
+
+  it("send only what changed, conditions trimmed and empty ones left out", () => {
+    expect(labelCreate({ name: " Kids ", description: "", color: null })).toEqual({
+      name: "Kids",
+      description: "",
+      color: null,
+    });
+    expect(
+      labelUpdate({
+        rules: {
+          match: "all",
+          conditions: [
+            { field: "subject", value: " school " },
+            { field: "text", value: " " },
+            { field: "hasAttachment", value: "x" },
+          ],
+        },
+        classifier: false,
+      }),
+    ).toEqual({
+      rules: {
+        match: "all",
+        conditions: [
+          { field: "subject", value: "school" },
+          { field: "hasAttachment", value: "true" },
+        ],
+      },
+      classifier: false,
+    });
+    expect(labelUpdate({ rules: null, detector: null })).toEqual({ rules: null, detector: null });
+  });
+
+  it("say who set a label, the model when an older server doesn't say", () => {
+    expect(toLabelLogEntry({ id: "l1", emailId: "e1", labelId: "g1" }).source).toBe("ai");
+    expect(toLabelLogEntry({ id: "l1", emailId: "e1", labelId: "g1", source: "sender" }).source).toBe("sender");
+    expect(toLabelLogEntry({ id: "l1", emailId: "e1", labelId: "g1", source: "magic" }).source).toBe("ai");
+  });
+
+  it("take the verdicts and at most two new labels of Label again", () => {
+    const result = toLabelSuggestions(
+      {
+        providerId: "q1",
+        providerName: "Mistral (Server)",
+        model: "m",
+        verdicts: [
+          { labelId: "g1", fits: true, reason: "An invoice.", isSet: false },
+          { labelId: "g2", fits: "yes", isSet: true },
+          { fits: true },
+        ],
+        newLabels: [
+          { name: "Kids", description: "School", color: "#10B981", reason: "About school." },
+          { name: " ", description: "nameless" },
+          { name: "Travel", color: "blue" },
+          { name: "Third" },
+        ],
+      },
+      "e1",
+    );
+    expect(result.emailId).toBe("e1");
+    expect(result.verdicts).toEqual([
+      { labelId: "g1", fits: true, reason: "An invoice.", isSet: false },
+      { labelId: "g2", fits: false, reason: "", isSet: true },
+    ]);
+    expect(result.newLabels).toEqual([
+      { name: "Kids", description: "School", color: "#10b981", reason: "About school." },
+      { name: "Travel", description: "", color: null, reason: "" },
+    ]);
+    expect(result.providerName).toBe("Mistral (Server)");
+  });
+
+  it("are set by themselves without AI unless switched off", () => {
+    expect(toLabelSettings(undefined)).toEqual({ nonAiLabels: true });
+    expect(toLabelSettings({ autoLabels: true, nonAiLabels: false })).toEqual({ nonAiLabels: false });
   });
 });

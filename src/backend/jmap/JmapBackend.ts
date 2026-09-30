@@ -12,6 +12,7 @@ import { deviceTimeZone } from "@/lib/calendarDates";
 import { newestFirst } from "@/lib/maskedAddresses";
 import { textToHtml } from "@/lib/format";
 import { cleanSignatureHtml } from "@/lib/signatures";
+import { cleanFilename } from "@/lib/filename";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { createLimiter } from "@/lib/concurrency";
@@ -29,6 +30,8 @@ import type {
   AssistLabel,
   AssistLabelInput,
   AssistLabelLogEntry,
+  LabelSettings,
+  LabelSuggestions,
   AssistModels,
   AssistOptions,
   AssistProvider,
@@ -195,6 +198,8 @@ import {
   toChatgptPoll,
   toEvents,
   toLabelLogEntry,
+  toLabelSettings,
+  toLabelSuggestions,
   toSpamCheck,
   toEstimate,
   toUsage,
@@ -907,6 +912,9 @@ export class JmapBackend implements Backend {
     const view = query.view;
     if (view.kind === "folder") {
       conditions.push({ inMailbox: unscopeId(view.folderId, this.accountId).id });
+    } else if (view.kind === "label") {
+      // Across the folders: a label is a keyword, wherever its mail lies.
+      conditions.push({ hasKeyword: view.keyword });
     } else {
       const role = view.role === "unread" || view.role === "flagged" ? "inbox" : view.role;
       const folder = this.folderWithRole(role);
@@ -917,6 +925,7 @@ export class JmapBackend implements Backend {
     if (query.filter === "unread") conditions.push({ notKeyword: "$seen" });
     if (query.filter === "flagged") conditions.push({ hasKeyword: "$flagged" });
     if (query.filter === "attachments") conditions.push({ hasAttachment: true });
+    for (const keyword of query.labels ?? []) conditions.push({ hasKeyword: keyword });
     if (query.search?.trim()) conditions.push({ text: query.search.trim() });
     // Trash and junk stay out of every view but their own.
     const view_is_folder = view.kind === "folder";
@@ -1553,7 +1562,7 @@ export class JmapBackend implements Backend {
 
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
     const saved = await this.storeDraft(draft);
-    return { draftKey: saved.draftKey, savedAt: new Date().toISOString() };
+    return { draftKey: saved.draftKey, savedAt: new Date().toISOString(), emailId: saved.emailId };
   }
 
   /** Writes the newest version of a draft and removes every older one with the same key. */
@@ -1983,18 +1992,26 @@ export class JmapBackend implements Backend {
     return supports(SIEVE);
   }
 
-  private async rulesScript(): Promise<JmapSieveScript | null> {
+  private async sieveScripts(): Promise<JmapSieveScript[]> {
     const response = await one<GetResponse<JmapSieveScript>>("SieveScript/get", { ids: null }, [CORE, SIEVE]);
-    return response.list.find((script) => script.name === RULES_SCRIPT) ?? null;
+    return response.list;
   }
 
-  async mailRules(): Promise<{ script: string | null; active: boolean }> {
+  private async rulesScript(): Promise<JmapSieveScript | null> {
+    return (await this.sieveScripts()).find((script) => script.name === RULES_SCRIPT) ?? null;
+  }
+
+  async mailRules(): Promise<{ script: string | null; active: boolean; otherActive: string | null }> {
     await this.start();
     if (!supports(SIEVE)) throw new BackendError("not_supported", "This server has no mail rules.");
-    const found = await this.rulesScript();
-    if (!found) return { script: null, active: false };
+    const scripts = await this.sieveScripts();
+    const found = scripts.find((script) => script.name === RULES_SCRIPT) ?? null;
+    // Saving activates "UwUMail", and the server runs one script: say which one that would stop.
+    const other = scripts.find((script) => script.isActive && script.name !== RULES_SCRIPT);
+    const otherActive = other ? (other.name ?? "") : null;
+    if (!found) return { script: null, active: false, otherActive };
     const blob = await downloadBlob(found.blobId, `${RULES_SCRIPT}.sieve`);
-    return { script: await blob.text(), active: found.isActive };
+    return { script: await blob.text(), active: found.isActive, otherActive };
   }
 
   private async uploadScript(script: string): Promise<string> {
@@ -2434,7 +2451,9 @@ export class JmapBackend implements Backend {
           ? this.summarizeArgs(request.request)
           : request.method === "Assist/spamCheck"
             ? { emailId: this.ownEmailId(request.emailId), language: request.language ?? null }
-            : { emailId: this.ownEmailId(request.emailId), includeImages: request.includeImages };
+            : request.method === "Assist/extractEvents"
+              ? { emailId: this.ownEmailId(request.emailId), includeImages: request.includeImages }
+              : { emailId: this.ownEmailId(request.emailId), language: request.language ?? null };
     try {
       const answer = await this.assistCall("Assist/estimate", {
         method: request.method,
@@ -2522,6 +2541,33 @@ export class JmapBackend implements Backend {
     this.emit({ type: "assist:changed" });
     this.emit({ type: "mail:changed", accountId: this.accountId });
     return response.labeled ?? {};
+  }
+
+  async suggestLabels(emailId: string, language?: string): Promise<LabelSuggestions> {
+    const answer = await this.assistCall("AssistLabel/suggest", {
+      emailId: this.ownEmailId(emailId),
+      language: language ?? null,
+    });
+    return toLabelSuggestions(answer, emailId);
+  }
+
+  /** The labels without AI are a switch of the assistant's settings (`AssistSettings.nonAiLabels`). */
+  async labelSettings(): Promise<LabelSettings> {
+    const response = await this.assistCall<{ list?: Record<string, unknown>[] }>("AssistSettings/get", {
+      ids: [ASSIST_SETTINGS_ID],
+    });
+    return toLabelSettings(response.list?.[0]);
+  }
+
+  async updateLabelSettings(patch: Partial<LabelSettings>): Promise<void> {
+    const response = await this.assistCall<{
+      notUpdated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+    }>("AssistSettings/set", {
+      update: { [ASSIST_SETTINGS_ID]: patch.nonAiLabels === undefined ? {} : { nonAiLabels: patch.nonAiLabels } },
+    });
+    const problem = response.notUpdated?.[ASSIST_SETTINGS_ID];
+    if (problem) throw assistSetError(problem);
+    this.emit({ type: "assist:changed" });
   }
 
   /**
@@ -2623,7 +2669,7 @@ export class JmapBackend implements Backend {
     const part = email?.attachments?.find((candidate) => `${emailId}:${candidate.blobId}` === attachmentId);
     // (`emailId` is the id as the interface knows it, so the comparison holds for shared mail too.)
     if (!part) throw new BackendError("not_found", "That attachment is gone.");
-    const filename = part.name ?? "attachment";
+    const filename = cleanFilename(part.name ?? "attachment");
     const blob = await this.attachmentBlob(attachmentId, filename);
     const { isDangerous } = await import("@/lib/attachments");
     return {

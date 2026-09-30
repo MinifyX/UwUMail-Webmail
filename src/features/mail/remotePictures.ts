@@ -33,6 +33,7 @@ const SOURCE_SET = "data-uwu-srcset";
 /** The address to ask the server about, as the mail has it, and the density it shows at. */
 const ADDRESS = "data-uwu-url";
 const DENSITY = "data-uwu-density";
+const OWN_ATTRIBUTES = [PENDING, FAILED, SOURCE, SOURCE_SET, ADDRESS, DENSITY];
 
 /** Fired on a picture right after it got its real address. */
 export const SOURCE_EVENT = "uwu-picture-source";
@@ -66,11 +67,11 @@ export function deferRemotePictures(html: string, proxy: ImageProxy | null | und
   const template = document.createElement("template");
   template.innerHTML = html;
   const elements = Array.from(template.content.querySelectorAll("*"));
-  // Our own markers mean something to the reader; a mail doesn't get to set them.
+  // This step's own markers mean something to the reader; a mail doesn't get to set them. (The
+  // sanitizer drops every data-uwu-* of the mail already; the reader's Safe Link and date marks,
+  // set after it, stay.)
   for (const element of elements) {
-    for (const name of element.getAttributeNames()) {
-      if (name.toLowerCase().startsWith("data-uwu-")) element.removeAttribute(name);
-    }
+    for (const name of OWN_ATTRIBUTES) element.removeAttribute(name);
   }
   const through = (url: string) => (proxy ? proxyAddress(url, proxy) : url);
   for (const image of Array.from(template.content.querySelectorAll("img"))) {
