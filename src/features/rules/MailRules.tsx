@@ -11,6 +11,7 @@ import { useFolders } from "@/lib/queries";
 import { toast } from "@/state/toasts";
 import { useUi } from "@/state/ui";
 import { folderDisplayPath } from "./folderPath";
+import { useAssistLabels } from "../assist/useAssist";
 import { RuleEditor } from "./RuleEditor";
 import { useMailRules, useMailRulesAccounts } from "./useMailRules";
 
@@ -201,11 +202,18 @@ function AccountRules({ accountId }: { accountId: string }) {
 function RuleSummary({ rule }: { rule: MailRule }) {
   const { t } = useT();
   const { data: folders = [] } = useFolders();
+  const { data: labels = [] } = useAssistLabels();
+  const labelName = (keyword: string, fallback = keyword) =>
+    labels.find((label) => label.keyword === keyword)?.name ?? fallback;
   const conditions =
     rule.conditions.length === 0
       ? t("rules.everyMessage")
       : rule.conditions
-          .map((c) => `${t(`rules.field.${c.field}`)} ${t(`rules.op.${c.op}`)} „${c.value}“`)
+          .map((c) =>
+            c.field === "label"
+              ? t(`rules.summary.label.${c.op === "isNot" ? "isNot" : "is"}`, { name: labelName(c.value) })
+              : `${t(`rules.field.${c.field}`)} ${t(`rules.op.${c.op}`)} „${c.value}“`,
+          )
           .join(rule.match === "any" ? ` ${t("rules.or")} ` : ` ${t("rules.and")} `);
   const actions = rule.actions
     .map((action) => {
@@ -217,6 +225,7 @@ function RuleSummary({ rule }: { rule: MailRule }) {
         return t("rules.summary.move", { folder: name });
       }
       if (action.type === "forward") return t("rules.summary.forward", { address: action.address });
+      if (action.type === "label") return t("rules.summary.setLabel", { name: labelName(action.keyword, action.name) });
       return t(`rules.action.${action.type}`);
     })
     .join(", ");
