@@ -30,6 +30,7 @@ import type {
   AssistComposeRequest,
   AssistEstimateRequest,
   AssistLabelInput,
+  LabelSettings,
   AssistProviderInput,
   AssistSettingsPatch,
   AssistStreamHandlers,
@@ -1240,7 +1241,32 @@ export class DemoBackend implements Backend {
 
   async assistLabels() {
     await wait(60);
-    return this.assist.listLabels();
+    // Counted like the server counts a label: the own mail with it, trash and junk left out.
+    const counted = this.messages.filter(
+      (message) => !this.isShared(message) && !["trash", "junk"].includes(this.roleOf(message) ?? ""),
+    );
+    return this.assist.listLabels().map((label) => {
+      const withIt = counted.filter((message) => message.keywords?.includes(label.keyword));
+      return {
+        ...label,
+        totalEmails: withIt.length,
+        unreadEmails: withIt.filter((message) => !message.flags.seen).length,
+      };
+    });
+  }
+
+  async suggestLabels(emailId: string) {
+    return this.assist.suggest(emailId);
+  }
+
+  async labelSettings() {
+    await wait(40);
+    return this.assist.getLabelSettings();
+  }
+
+  async updateLabelSettings(patch: Partial<LabelSettings>) {
+    await wait(60);
+    this.assist.updateLabelSettings(patch);
   }
 
   async createAssistLabel(input: AssistLabelInput) {
@@ -1367,6 +1393,9 @@ export class DemoBackend implements Backend {
     // The views across the mailbox are the account's own mail.
     if (this.isShared(message)) return false;
     const role = this.roleOf(message);
+    if (view.kind === "label") {
+      return message.keywords?.includes(view.keyword) === true && role !== "trash" && role !== "junk";
+    }
     switch (view.role) {
       case "inbox":
         return role === "inbox";
@@ -1385,6 +1414,7 @@ export class DemoBackend implements Backend {
     if (query.filter === "unread" && message.flags.seen) return false;
     if (query.filter === "flagged" && !message.flags.flagged) return false;
     if (query.filter === "attachments" && message.attachments.length === 0) return false;
+    if (query.labels?.some((keyword) => !message.keywords?.includes(keyword))) return false;
     const search = query.search?.trim().toLowerCase();
     if (!search) return true;
     return [message.subject, message.from.name ?? "", message.from.email, message.bodyText ?? ""]

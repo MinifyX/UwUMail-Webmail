@@ -127,7 +127,9 @@ export interface Address {
 /** Where the message list is looking. */
 export type MailboxView =
   | { kind: "unified"; role: "inbox" | "unread" | "flagged" | "drafts" | "sent" }
-  | { kind: "folder"; accountId: string; folderId: string };
+  | { kind: "folder"; accountId: string; folderId: string }
+  /** Every mail with one label (its keyword), across the folders, without trash and junk. */
+  | { kind: "label"; keyword: string };
 
 export type ListFilter = "all" | "unread" | "flagged" | "attachments";
 
@@ -135,6 +137,8 @@ export interface ThreadQuery {
   view: MailboxView;
   filter: ListFilter;
   search?: string;
+  /** Only mail with every one of these label keywords (the chips above the list, `label:` in the search). */
+  labels?: string[];
   conversations: boolean;
   /** Only mail from these mailboxes, e.g. the business ones; every mailbox when left out. */
   accountIds?: string[];
@@ -1146,14 +1150,16 @@ export interface AssistEventsResult {
 }
 
 /** The methods whose cost `Assist/estimate` can tell before asking the model. */
-export type AssistEstimateMethod = "Assist/compose" | "Assist/summarize" | "Assist/spamCheck" | "Assist/extractEvents";
+export type AssistEstimateMethod =
+  "Assist/compose" | "Assist/summarize" | "Assist/spamCheck" | "Assist/extractEvents" | "AssistLabel/suggest";
 
 /** What would be asked: the same arguments the real call gets. */
 export type AssistEstimateRequest =
   | { method: "Assist/compose"; request: AssistComposeRequest }
   | { method: "Assist/summarize"; request: AssistSummarizeRequest }
   | { method: "Assist/spamCheck"; emailId: string; language?: string | null }
-  | { method: "Assist/extractEvents"; emailId: string; includeImages: boolean };
+  | { method: "Assist/extractEvents"; emailId: string; includeImages: boolean }
+  | { method: "AssistLabel/suggest"; emailId: string; language?: string | null };
 
 /**
  * One model call a request would make: the main one, and the extra ones the server really makes
@@ -1214,6 +1220,31 @@ export interface AssistEstimate {
   cost: AssistEstimateCost | null;
 }
 
+/** A built-in recognizer a label can use without any AI: it sets the label on mail of that kind. */
+export type LabelDetector = "invoice" | "appointment" | "newsletter" | "shipping";
+export const LABEL_DETECTORS: readonly LabelDetector[] = ["invoice", "appointment", "newsletter", "shipping"];
+
+/** What a label's own condition looks at; `hasAttachment` takes "true" or "false". */
+export type LabelRuleField = "from" | "subject" | "text" | "hasAttachment";
+export const LABEL_RULE_FIELDS: readonly LabelRuleField[] = ["from", "subject", "text", "hasAttachment"];
+
+export interface LabelRuleCondition {
+  field: LabelRuleField;
+  /** An address, a domain or a part of one for `from`; words for `subject` and `text`. */
+  value: string;
+}
+
+/** "has attachment" takes only "true" (has one) or "false" (has none); anything else means "true". */
+export function attachmentValue(value: string): "true" | "false" {
+  return value.trim() === "false" ? "false" : "true";
+}
+
+/** Conditions that put a label on arriving mail by themselves, without any AI. */
+export interface LabelRules {
+  match: "all" | "any";
+  conditions: LabelRuleCondition[];
+}
+
 /** The person's own word for a kind of mail; set on mail as the keyword `keyword`. */
 export interface AssistLabel {
   id: string;
@@ -1223,28 +1254,89 @@ export interface AssistLabel {
   keyword: string;
   /** `#rrggbb`, or null for the default. */
   color: string | null;
+  /** Own conditions for arriving mail; null without. */
+  rules: LabelRules | null;
+  /** A built-in recognizer that sets it; null for none. */
+  detector: LabelDetector | null;
+  /** A sender whose mail got it by hand twice gets it by itself. */
+  learnSenders: boolean;
+  /** The local classifier may set it once it learned enough from mail labelled by hand. */
+  classifier: boolean;
+  /** Mail with it, and how much of that is unread (server-set, like a folder's counts). */
+  totalEmails: number;
+  unreadEmails: number;
+  /** Mail labelled or unlabelled by hand the classifier learned from. */
+  examples: number;
 }
 
+/** What may be set on a label; the automatic parts are left as they are when not named. */
 export interface AssistLabelInput {
   name: string;
   description: string;
   color: string | null;
+  rules?: LabelRules | null;
+  detector?: LabelDetector | null;
+  learnSenders?: boolean;
+  classifier?: boolean;
 }
 
-/** A label the model put on a mail, and why. */
+/** Who put a label on a mail: the model, the label's conditions, a learned sender, a detector or the classifier. */
+export type LabelSource = "ai" | "rule" | "sender" | "detector" | "classifier";
+
+/** A label put on a mail by itself, and why. */
 export interface AssistLabelLogEntry {
   id: string;
   emailId: string;
   labelId: string;
   name: string;
   keyword: string;
+  /** "ai" from servers before labels without AI. */
+  source: LabelSource;
+  /** One sentence: the model's own words for "ai", otherwise English made from `code` and `params`. */
   reason: string;
+  /** What the reason says, for putting it in the person's language (`rule`, `sender`, `invoice`, …); null when unknown. */
+  code: string | null;
+  /** The details `code` names. */
+  params: Record<string, unknown>;
   createdAt: string;
   /** Taken off again, with undo or by removing the keyword. */
   undone: boolean;
-  /** Who chose it, where the server says (newer servers). */
+  /** Who chose it, where the server says (newer servers); null for the automatic ones without AI. */
   providerName: string | null;
   model: string | null;
+}
+
+/**
+ * Labels set by themselves without AI (conditions, senders, detectors, classifier): the server's
+ * `AssistSettings.nonAiLabels`. The AI part is `AssistSettings.autoLabels`.
+ */
+export interface LabelSettings {
+  nonAiLabels: boolean;
+}
+
+/** The model's judgement of one label for one mail. */
+export interface LabelVerdict {
+  labelId: string;
+  fits: boolean;
+  reason: string;
+  /** The mail carries it already. */
+  isSet: boolean;
+}
+
+/** A label the model would make for a mail none of the person's labels fit. */
+export interface NewLabelSuggestion {
+  name: string;
+  description: string;
+  color: string | null;
+  reason: string;
+}
+
+/** "Label again": what the model thinks of every label for a mail; the mail itself stays as it is. */
+export interface LabelSuggestions extends AssistAnswer {
+  emailId: string;
+  verdicts: LabelVerdict[];
+  /** At most two, only when no label fits well. */
+  newLabels: NewLabelSuggestion[];
 }
 
 export interface AssistUsageDay {

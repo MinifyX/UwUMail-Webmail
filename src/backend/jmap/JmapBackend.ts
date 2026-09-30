@@ -29,6 +29,8 @@ import type {
   AssistLabel,
   AssistLabelInput,
   AssistLabelLogEntry,
+  LabelSettings,
+  LabelSuggestions,
   AssistModels,
   AssistOptions,
   AssistProvider,
@@ -195,6 +197,8 @@ import {
   toChatgptPoll,
   toEvents,
   toLabelLogEntry,
+  toLabelSettings,
+  toLabelSuggestions,
   toSpamCheck,
   toEstimate,
   toUsage,
@@ -907,6 +911,9 @@ export class JmapBackend implements Backend {
     const view = query.view;
     if (view.kind === "folder") {
       conditions.push({ inMailbox: unscopeId(view.folderId, this.accountId).id });
+    } else if (view.kind === "label") {
+      // Across the folders: a label is a keyword, wherever its mail lies.
+      conditions.push({ hasKeyword: view.keyword });
     } else {
       const role = view.role === "unread" || view.role === "flagged" ? "inbox" : view.role;
       const folder = this.folderWithRole(role);
@@ -917,6 +924,7 @@ export class JmapBackend implements Backend {
     if (query.filter === "unread") conditions.push({ notKeyword: "$seen" });
     if (query.filter === "flagged") conditions.push({ hasKeyword: "$flagged" });
     if (query.filter === "attachments") conditions.push({ hasAttachment: true });
+    for (const keyword of query.labels ?? []) conditions.push({ hasKeyword: keyword });
     if (query.search?.trim()) conditions.push({ text: query.search.trim() });
     // Trash and junk stay out of every view but their own.
     const view_is_folder = view.kind === "folder";
@@ -2434,7 +2442,9 @@ export class JmapBackend implements Backend {
           ? this.summarizeArgs(request.request)
           : request.method === "Assist/spamCheck"
             ? { emailId: this.ownEmailId(request.emailId), language: request.language ?? null }
-            : { emailId: this.ownEmailId(request.emailId), includeImages: request.includeImages };
+            : request.method === "Assist/extractEvents"
+              ? { emailId: this.ownEmailId(request.emailId), includeImages: request.includeImages }
+              : { emailId: this.ownEmailId(request.emailId), language: request.language ?? null };
     try {
       const answer = await this.assistCall("Assist/estimate", {
         method: request.method,
@@ -2522,6 +2532,33 @@ export class JmapBackend implements Backend {
     this.emit({ type: "assist:changed" });
     this.emit({ type: "mail:changed", accountId: this.accountId });
     return response.labeled ?? {};
+  }
+
+  async suggestLabels(emailId: string, language?: string): Promise<LabelSuggestions> {
+    const answer = await this.assistCall("AssistLabel/suggest", {
+      emailId: this.ownEmailId(emailId),
+      language: language ?? null,
+    });
+    return toLabelSuggestions(answer, emailId);
+  }
+
+  /** The labels without AI are a switch of the assistant's settings (`AssistSettings.nonAiLabels`). */
+  async labelSettings(): Promise<LabelSettings> {
+    const response = await this.assistCall<{ list?: Record<string, unknown>[] }>("AssistSettings/get", {
+      ids: [ASSIST_SETTINGS_ID],
+    });
+    return toLabelSettings(response.list?.[0]);
+  }
+
+  async updateLabelSettings(patch: Partial<LabelSettings>): Promise<void> {
+    const response = await this.assistCall<{
+      notUpdated?: Record<string, { type: string; description?: string; properties?: string[] }>;
+    }>("AssistSettings/set", {
+      update: { [ASSIST_SETTINGS_ID]: patch.nonAiLabels === undefined ? {} : { nonAiLabels: patch.nonAiLabels } },
+    });
+    const problem = response.notUpdated?.[ASSIST_SETTINGS_ID];
+    if (problem) throw assistSetError(problem);
+    this.emit({ type: "assist:changed" });
   }
 
   /**

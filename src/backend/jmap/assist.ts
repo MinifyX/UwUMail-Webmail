@@ -10,6 +10,7 @@
 
 import { AssistError, BackendError } from "../backend";
 import {
+  attachmentValue,
   ASSIST_FEATURES,
   type AssistAnswer,
   type AssistChoice,
@@ -40,6 +41,17 @@ import {
   type AssistVerdict,
   type ChatgptLogin,
   type ChatgptPoll,
+  LABEL_DETECTORS,
+  LABEL_RULE_FIELDS,
+  type LabelDetector,
+  type LabelRuleCondition,
+  type LabelRuleField,
+  type LabelRules,
+  type LabelSettings,
+  type LabelSource,
+  type LabelSuggestions,
+  type LabelVerdict,
+  type NewLabelSuggestion,
 } from "../types";
 import { CORE, JmapMethodError } from "./client";
 
@@ -252,19 +264,71 @@ export function assistSettingsUpdate(patch: AssistSettingsPatch): Raw {
   return update;
 }
 
+const asColor = (value: unknown): string | null => {
+  const color = asString(value);
+  return color && /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : null;
+};
+
+function toLabelCondition(value: unknown): LabelRuleCondition | null {
+  const raw = asObject(value);
+  if (!raw || !LABEL_RULE_FIELDS.includes(raw.field as LabelRuleField)) return null;
+  const field = raw.field as LabelRuleField;
+  const text = asString(raw.value) ?? "";
+  return { field, value: field === "hasAttachment" ? attachmentValue(text) : text };
+}
+
+/** A label's own conditions; none (null) when there are no usable ones. */
+export function toLabelRules(value: unknown): LabelRules | null {
+  const raw = asObject(value);
+  if (!raw) return null;
+  const conditions = (Array.isArray(raw.conditions) ? raw.conditions : [])
+    .map(toLabelCondition)
+    .filter((condition): condition is LabelRuleCondition => condition !== null);
+  if (conditions.length === 0) return null;
+  return { match: raw.match === "any" ? "any" : "all", conditions };
+}
+
 export function toAssistLabel(raw: Raw): AssistLabel {
-  const color = asString(raw.color);
+  const detector = asString(raw.detector);
   return {
     id: String(raw.id),
     name: asString(raw.name) ?? "",
     description: asString(raw.description) ?? "",
     keyword: (asString(raw.keyword) ?? "").toLowerCase(),
-    color: color && /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : null,
+    color: asColor(raw.color),
+    rules: toLabelRules(raw.rules),
+    detector: LABEL_DETECTORS.includes(detector as LabelDetector) ? (detector as LabelDetector) : null,
+    // Both default to on, like the server's.
+    learnSenders: raw.learnSenders !== false,
+    classifier: raw.classifier !== false,
+    totalEmails: asCount(raw.totalEmails),
+    unreadEmails: asCount(raw.unreadEmails),
+    examples: asCount(raw.examples),
   };
 }
 
+/** Conditions as they are stored: trimmed values, empty ones left out, none as null. */
+function rulesOut(rules: LabelRules | null): Raw | null {
+  if (!rules) return null;
+  const conditions = rules.conditions
+    .map((condition) => ({
+      field: condition.field,
+      value: condition.field === "hasAttachment" ? attachmentValue(condition.value) : condition.value.trim(),
+    }))
+    .filter((condition) => condition.field === "hasAttachment" || condition.value !== "");
+  return conditions.length > 0 ? { match: rules.match, conditions } : null;
+}
+
+function automaticOut(input: Partial<AssistLabelInput>, out: Raw) {
+  if (input.rules !== undefined) out.rules = rulesOut(input.rules);
+  if (input.detector !== undefined) out.detector = input.detector;
+  if (input.learnSenders !== undefined) out.learnSenders = input.learnSenders;
+  if (input.classifier !== undefined) out.classifier = input.classifier;
+  return out;
+}
+
 export function labelCreate(input: AssistLabelInput): Raw {
-  return { name: input.name.trim(), description: input.description.trim(), color: input.color };
+  return automaticOut(input, { name: input.name.trim(), description: input.description.trim(), color: input.color });
 }
 
 export function labelUpdate(patch: Partial<AssistLabelInput>): Raw {
@@ -272,21 +336,71 @@ export function labelUpdate(patch: Partial<AssistLabelInput>): Raw {
   if (patch.name !== undefined) out.name = patch.name.trim();
   if (patch.description !== undefined) out.description = patch.description.trim();
   if (patch.color !== undefined) out.color = patch.color;
-  return out;
+  return automaticOut(patch, out);
 }
 
+const SOURCES: readonly LabelSource[] = ["ai", "rule", "sender", "detector", "classifier"];
+
 export function toLabelLogEntry(raw: Raw): AssistLabelLogEntry {
+  const source = asString(raw.source);
   return {
     id: String(raw.id),
     emailId: String(raw.emailId),
     labelId: String(raw.labelId),
     name: asString(raw.name) ?? "",
     keyword: (asString(raw.keyword) ?? "").toLowerCase(),
+    // Servers before labels without AI only knew the model.
+    source: SOURCES.includes(source as LabelSource) ? (source as LabelSource) : "ai",
     reason: asString(raw.reason) ?? "",
+    code: asString(raw.code),
+    params: asObject(raw.params) ?? {},
     createdAt: asString(raw.createdAt) ?? new Date(0).toISOString(),
     undone: raw.undone === true,
     providerName: asString(raw.providerName),
     model: asString(raw.model),
+  };
+}
+
+export function toLabelSettings(raw: Raw | undefined): LabelSettings {
+  // `AssistSettings.nonAiLabels`: on unless the server says otherwise.
+  return { nonAiLabels: raw?.nonAiLabels !== false };
+}
+
+function toVerdict(value: unknown): LabelVerdict | null {
+  const raw = asObject(value);
+  if (!raw || typeof raw.labelId !== "string") return null;
+  return {
+    labelId: raw.labelId,
+    fits: raw.fits === true,
+    reason: asString(raw.reason) ?? "",
+    isSet: raw.isSet === true,
+  };
+}
+
+function toNewLabel(value: unknown): NewLabelSuggestion | null {
+  const raw = asObject(value);
+  const name = asString(raw?.name)?.trim();
+  if (!raw || !name) return null;
+  return {
+    name,
+    description: asString(raw.description)?.trim() ?? "",
+    color: asColor(raw.color),
+    reason: asString(raw.reason) ?? "",
+  };
+}
+
+/** The answer of `AssistLabel/suggest`; new labels at most two, as the server promises. */
+export function toLabelSuggestions(raw: Raw, emailId: string): LabelSuggestions {
+  return {
+    ...answerOf(raw),
+    emailId,
+    verdicts: (Array.isArray(raw.verdicts) ? raw.verdicts : [])
+      .map(toVerdict)
+      .filter((verdict): verdict is LabelVerdict => verdict !== null),
+    newLabels: (Array.isArray(raw.newLabels) ? raw.newLabels : [])
+      .map(toNewLabel)
+      .filter((label): label is NewLabelSuggestion => label !== null)
+      .slice(0, 2),
   };
 }
 

@@ -34,7 +34,13 @@ import {
   type AssistVerdict,
   type ChatgptLogin,
   type ChatgptPoll,
+  type LabelDetector,
+  type LabelSettings,
+  type LabelSource,
+  type LabelSuggestions,
+  type LabelVerdict,
   type Message,
+  type NewLabelSuggestion,
 } from "./types";
 
 type Lang = "de" | "en";
@@ -174,6 +180,7 @@ const ESTIMATE_FEATURES: Record<AssistEstimateRequest["method"], AssistFeature> 
   "Assist/summarize": "summarize",
   "Assist/spamCheck": "spamCheck",
   "Assist/extractEvents": "extractEvents",
+  "AssistLabel/suggest": "autoLabels",
 };
 
 const WEEKDAYS: Record<string, number> = {
@@ -231,30 +238,45 @@ export class DemoAssist {
     private readonly changed: (mail: boolean) => void,
   ) {
     const de = lang === "de";
-    const names = de
+    const names: [string, string, string, LabelDetector, number][] = de
       ? [
-          ["Rechnungen", "Rechnungen, Quittungen und Zahlungsbestätigungen", "#f59e0b"],
-          ["Newsletter", "Newsletter, Angebote und Werbung von Läden und Diensten", "#8b5cf6"],
-          ["Bestellungen & Versand", "Bestellbestätigungen, Versand- und Lieferinfos", "#0ea5e9"],
+          ["Rechnungen", "Rechnungen, Quittungen und Zahlungsbestätigungen", "#f59e0b", "invoice", 6],
+          ["Newsletter", "Newsletter, Angebote und Werbung von Läden und Diensten", "#8b5cf6", "newsletter", 21],
+          ["Bestellungen & Versand", "Bestellbestätigungen, Versand- und Lieferinfos", "#0ea5e9", "shipping", 9],
         ]
       : [
-          ["Invoices", "Invoices, receipts and payment confirmations", "#f59e0b"],
-          ["Newsletters", "Newsletters, offers and ads from shops and services", "#8b5cf6"],
-          ["Orders & shipping", "Order confirmations, shipping and delivery updates", "#0ea5e9"],
+          ["Invoices", "Invoices, receipts and payment confirmations", "#f59e0b", "invoice", 6],
+          ["Newsletters", "Newsletters, offers and ads from shops and services", "#8b5cf6", "newsletter", 21],
+          ["Orders & shipping", "Order confirmations, shipping and delivery updates", "#0ea5e9", "shipping", 9],
         ];
     this.labels = [];
-    for (const [name, description, color] of names) {
+    for (const [name, description, color, detector, examples] of names) {
       this.labels.push({
         id: `g${this.nextId++}`,
-        name: name!,
-        description: description!,
-        color: color!,
+        name,
+        description,
+        color,
         keyword: demoKeyword(
-          name!,
+          name,
           this.labels.map((label) => label.keyword),
         ),
+        rules: null,
+        detector,
+        learnSenders: true,
+        classifier: true,
+        totalEmails: 0,
+        unreadEmails: 0,
+        examples,
       });
     }
+    // The invoices also come by their own condition: anything from the demo's shop with "Rechnung"/"invoice".
+    this.labels[0]!.rules = {
+      match: "all",
+      conditions: [
+        { field: "from", value: "shop.example" },
+        { field: "subject", value: de ? "Rechnung" : "invoice" },
+      ],
+    };
     this.seedLabels();
     this.seedUsage();
   }
@@ -293,8 +315,11 @@ export class DemoAssist {
           message,
           newsletter!,
           de
-            ? "Ein Rundschreiben eines Ladens mit Angeboten, kein persönliches Anschreiben."
-            : "A shop's mailing with offers, not a personal message.",
+            ? "Die Mail hat einen Abmeldelink und kommt über eine Verteilerliste."
+            : "The mail has an unsubscribe link and comes through a mailing list.",
+          "detector",
+          "newsletter",
+          { header: "List-Id" },
         );
       } else if (/bestellung|your order/.test(subject)) {
         this.label(
@@ -308,8 +333,15 @@ export class DemoAssist {
     }
   }
 
-  private label(message: Message, label: AssistLabel, reason: string) {
-    const who = this.effective("autoLabels");
+  private label(
+    message: Message,
+    label: AssistLabel,
+    reason: string,
+    source: LabelSource = "ai",
+    code: string = source,
+    params: Record<string, unknown> = {},
+  ) {
+    const who = source === "ai" ? this.effective("autoLabels") : null;
     message.keywords = [...new Set([...(message.keywords ?? []), label.keyword])].sort();
     this.log.unshift({
       id: `l${this.nextId++}`,
@@ -317,11 +349,14 @@ export class DemoAssist {
       labelId: label.id,
       name: label.name,
       keyword: label.keyword,
+      source,
       reason,
+      code,
+      params,
       createdAt: new Date(new Date(message.date).getTime() + 2 * MINUTE).toISOString(),
       undone: false,
-      providerName: who?.providerName ?? SERVER_PROVIDER.name,
-      model: who?.model ?? SERVER_PROVIDER.fastModel,
+      providerName: source === "ai" ? (who?.providerName ?? SERVER_PROVIDER.name) : null,
+      model: source === "ai" ? (who?.model ?? SERVER_PROVIDER.fastModel) : null,
     });
   }
 
@@ -868,6 +903,13 @@ export class DemoAssist {
         input = this.text(this.message(request.emailId));
         outputTokens = 320;
         break;
+      case "AssistLabel/suggest":
+        input = [
+          this.text(this.message(request.emailId)),
+          ...this.labels.map((label) => `${label.name}: ${label.description}`),
+        ].join("\n");
+        outputTokens = 60 + this.labels.length * 45;
+        break;
     }
     const main: AssistEstimateCall = {
       purpose: "main",
@@ -892,7 +934,11 @@ export class DemoAssist {
         });
       }
     }
-    if (request.method === "Assist/spamCheck" || request.method === "Assist/extractEvents") {
+    if (
+      request.method === "Assist/spamCheck" ||
+      request.method === "Assist/extractEvents" ||
+      request.method === "AssistLabel/suggest"
+    ) {
       // An answer that isn't valid JSON is asked for once more, now and then.
       calls.push({ ...main, purpose: "retry", weight: 0.05 });
     }
@@ -1017,6 +1063,13 @@ export class DemoAssist {
         input.name.trim(),
         this.labels.map((entry) => entry.keyword),
       ),
+      rules: input.rules ?? null,
+      detector: input.detector ?? null,
+      learnSenders: input.learnSenders ?? true,
+      classifier: input.classifier ?? true,
+      totalEmails: 0,
+      unreadEmails: 0,
+      examples: 0,
     };
     this.labels.push(label);
     this.changed(false);
@@ -1030,6 +1083,10 @@ export class DemoAssist {
     if (patch.name !== undefined) label.name = patch.name.trim();
     if (patch.description !== undefined) label.description = patch.description.trim();
     if (patch.color !== undefined) label.color = patch.color;
+    if (patch.rules !== undefined) label.rules = patch.rules && structuredClone(patch.rules);
+    if (patch.detector !== undefined) label.detector = patch.detector;
+    if (patch.learnSenders !== undefined) label.learnSenders = patch.learnSenders;
+    if (patch.classifier !== undefined) label.classifier = patch.classifier;
     for (const entry of this.log) if (entry.labelId === id) entry.name = label.name;
     this.changed(false);
   }
@@ -1066,8 +1123,15 @@ export class DemoAssist {
 
   /** Keywords set or taken off by hand: a label the model set and the person took off counts as undone. */
   keywordsChanged(emailIds: string[], keywords: Record<string, boolean>) {
+    // Every label set or taken off by hand is something more the classifier learns from.
+    for (const label of this.labels) {
+      if (label.keyword in keywords) label.examples += emailIds.length;
+    }
     const removed = new Set(Object.keys(keywords).filter((keyword) => !keywords[keyword]));
-    if (removed.size === 0) return;
+    if (removed.size === 0) {
+      this.changed(false);
+      return;
+    }
     for (const entry of this.log) {
       if (emailIds.includes(entry.emailId) && removed.has(entry.keyword)) entry.undone = true;
     }
@@ -1082,11 +1146,6 @@ export class DemoAssist {
       const message = this.messages().find((item) => item.id === id);
       if (!message) continue;
       const text = `${message.subject} ${this.text(message)}`.toLowerCase();
-      const words = (label: AssistLabel) =>
-        `${label.name} ${label.description}`
-          .toLowerCase()
-          .split(/[^\p{L}\p{N}]+/u)
-          .filter((word) => word.length > 4);
       const fits = this.labels.filter((label) => words(label).some((word) => text.includes(word)));
       for (const label of fits) {
         if (message.keywords?.includes(label.keyword)) continue;
@@ -1104,4 +1163,99 @@ export class DemoAssist {
     this.changed(true);
     return labeled;
   }
+
+  private labelSettingsState: LabelSettings = { nonAiLabels: true };
+
+  getLabelSettings(): LabelSettings {
+    return { ...this.labelSettingsState };
+  }
+
+  updateLabelSettings(patch: Partial<LabelSettings>) {
+    if (patch.nonAiLabels !== undefined) this.labelSettingsState.nonAiLabels = patch.nonAiLabels;
+    this.changed(false);
+  }
+
+  /** "Label again": every label judged by the words of its name and description in the mail. */
+  async suggest(emailId: string): Promise<LabelSuggestions> {
+    if (!this.effective("autoLabels")) throw new AssistError("assistUnavailable", "No provider may label mail.");
+    const message = this.message(emailId);
+    await thinking(700);
+    const de = this.lang === "de";
+    const text = `${message.subject} ${message.from.email} ${this.text(message)}`.toLowerCase();
+    const verdicts: LabelVerdict[] = this.labels.map((label) => {
+      const hit = words(label).find((word) => text.includes(word));
+      const isSet = message.keywords?.includes(label.keyword) === true;
+      return {
+        labelId: label.id,
+        fits: hit !== undefined,
+        isSet,
+        reason: hit
+          ? de
+            ? `Die Mail spricht von „${hit}“, das passt zu „${label.description || label.name}“.`
+            : `The mail talks about "${hit}", which fits "${label.description || label.name}".`
+          : de
+            ? `Nichts in der Mail passt zu „${label.description || label.name}“.`
+            : `Nothing in the mail matches "${label.description || label.name}".`,
+      };
+    });
+    const newLabels: NewLabelSuggestion[] = [];
+    if (!verdicts.some((verdict) => verdict.fits)) {
+      const taken = new Set(this.labels.map((label) => label.name.toLowerCase()));
+      const ideas: NewLabelSuggestion[] = /termin|meeting|appointment|kalender|calendar|einladung|invit/.test(text)
+        ? [
+            de
+              ? {
+                  name: "Termine",
+                  description: "Einladungen, Terminbestätigungen und Erinnerungen",
+                  color: "#e11d74",
+                  reason: "Die Mail dreht sich um einen Termin.",
+                }
+              : {
+                  name: "Appointments",
+                  description: "Invitations, confirmations and reminders of appointments",
+                  color: "#e11d74",
+                  reason: "The mail is about an appointment.",
+                },
+          ]
+        : [
+            de
+              ? {
+                  name: "Persönlich",
+                  description: "Mails von Freunden, Familie und Bekannten",
+                  color: "#10b981",
+                  reason: "Die Mail ist ein persönliches Anschreiben, keins deiner Labels passt.",
+                }
+              : {
+                  name: "Personal",
+                  description: "Mail from friends, family and people you know",
+                  color: "#10b981",
+                  reason: "The mail is a personal message; none of your labels fit.",
+                },
+            de
+              ? {
+                  name: "Zu erledigen",
+                  description: "Mails, die eine Antwort oder eine Aufgabe von mir brauchen",
+                  color: "#ef4444",
+                  reason: "Die Mail bittet um eine Antwort.",
+                }
+              : {
+                  name: "To do",
+                  description: "Mail that needs an answer or a task from me",
+                  color: "#ef4444",
+                  reason: "The mail asks for an answer.",
+                },
+          ];
+      newLabels.push(...ideas.filter((idea) => !taken.has(idea.name.toLowerCase())).slice(0, 2));
+    }
+    const answer = this.answer("autoLabels", text, JSON.stringify({ verdicts, newLabels }));
+    return { ...answer, emailId, verdicts, newLabels };
+  }
+}
+
+/** The telling words of a label: those of its name and description longer than four letters. */
+function words(label: AssistLabel): string[] {
+  return `${label.name} ${label.description}`
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((word) => word.length > 4);
 }

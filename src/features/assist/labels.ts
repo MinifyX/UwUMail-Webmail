@@ -7,6 +7,17 @@
 import type { CSSProperties } from "react";
 import type { AssistLabel, AssistLabelInput, AssistLabelLogEntry } from "@/backend/types";
 
+/** What a label has before the server says more: no own conditions, learning on, nothing counted. */
+export const LABEL_DEFAULTS: Omit<AssistLabel, "id" | "name" | "description" | "keyword" | "color"> = {
+  rules: null,
+  detector: null,
+  learnSenders: true,
+  classifier: true,
+  totalEmails: 0,
+  unreadEmails: 0,
+  examples: 0,
+};
+
 /** The server's limits for a label. */
 export const LABEL_LIMITS = { name: 40, description: 300 } as const;
 
@@ -110,6 +121,14 @@ export function labelPatch(label: AssistLabel, input: AssistLabelInput): Partial
   if (input.name.trim() !== label.name) patch.name = input.name.trim();
   if (input.description.trim() !== label.description) patch.description = input.description.trim();
   if (input.color !== label.color) patch.color = input.color;
+  if (input.rules !== undefined && JSON.stringify(input.rules) !== JSON.stringify(label.rules)) {
+    patch.rules = input.rules;
+  }
+  if (input.detector !== undefined && input.detector !== label.detector) patch.detector = input.detector;
+  if (input.learnSenders !== undefined && input.learnSenders !== label.learnSenders) {
+    patch.learnSenders = input.learnSenders;
+  }
+  if (input.classifier !== undefined && input.classifier !== label.classifier) patch.classifier = input.classifier;
   return patch;
 }
 

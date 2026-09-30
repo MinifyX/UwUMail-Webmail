@@ -10,6 +10,8 @@ import type {
   AssistLabel,
   AssistLabelInput,
   AssistLabelLogEntry,
+  LabelSettings,
+  LabelSuggestions,
   AssistModels,
   AssistOptions,
   AssistProvider,
@@ -382,6 +384,14 @@ export interface Backend {
   undoAssistLabels(logIds: string[]): Promise<void>;
   /** Asks the model now for mail that came before auto-labels were on; label ids per mail. */
   applyAssistLabels(emailIds: string[]): Promise<Record<string, string[]>>;
+  /**
+   * "Label again": the model judges every label for this mail and may suggest new ones. Changes
+   * nothing; applying is `setFlags` with the keywords (and `createAssistLabel` for a new one).
+   */
+  suggestLabels(emailId: string, language?: string): Promise<LabelSuggestions>;
+  /** Whether labels are set by themselves without AI (conditions, senders, detectors, classifier). */
+  labelSettings(): Promise<LabelSettings>;
+  updateLabelSettings(patch: Partial<LabelSettings>): Promise<void>;
   /** The newest mails of the own inbox (for labelling mail that came before auto-labels). */
   recentInboxIds(limit: number): Promise<string[]>;
 
