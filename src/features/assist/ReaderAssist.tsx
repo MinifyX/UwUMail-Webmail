@@ -1,9 +1,13 @@
-import { FileText, ShieldQuestion, Sparkles, type LucideIcon } from "lucide-react";
-import type { Message } from "@/backend/types";
+import { CalendarSearch, FileText, ShieldQuestion, Sparkles, type LucideIcon } from "lucide-react";
+import type { ReactElement } from "react";
+import type { AssistEstimateRequest, Message } from "@/backend/types";
 import { IconButton } from "@/components/ui/Button";
 import type { MenuItem } from "@/components/ui/Menu";
 import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
+import { useCalendarsAvailable } from "../calendar/useCalendarData";
+import { findEventsWithAssistant, includesImages } from "../dates/useMailEvents";
+import { EstimateTip } from "./Estimate";
 import { mailKey, threadKey, useAssistReader } from "./readerState";
 import { SpamCheckCard } from "./SpamCheckCard";
 import { SummaryCard } from "./SummaryCard";
@@ -12,10 +16,32 @@ import { useAssistOptions } from "./useAssist";
 /** What the assistant can do in the reader for this mail: only the own account's mail has it. */
 export function useReaderAssist(own: boolean) {
   const { data: options } = useAssistOptions();
+  const extract = own && options?.features.extractEvents === true;
+  // Found appointments go into a calendar, so only where there is one.
+  const { data: calendars = false } = useCalendarsAvailable();
   return {
     summarize: own && options?.features.summarize === true,
     spamCheck: own && options?.features.spamCheck === true,
+    findEvents: extract && calendars,
   };
+}
+
+/** A menu item's button with the tooltip of about what it costs. */
+const estimated =
+  (request: AssistEstimateRequest) =>
+  (button: ReactElement): ReactElement => <EstimateTip request={request}>{button}</EstimateTip>;
+
+function summarizeRequest(key: { emailId: string } | { threadId: string }, language: string): AssistEstimateRequest {
+  return { method: "Assist/summarize", request: { ...key, language } };
+}
+
+function spamRequest(emailId: string, language: string): AssistEstimateRequest {
+  return { method: "Assist/spamCheck", emailId, language };
+}
+
+/** Reading a mail for appointments; its pictures as far as they load without asking. */
+function eventsRequest(message: Message): AssistEstimateRequest {
+  return { method: "Assist/extractEvents", emailId: message.id, includeImages: includesImages(message, false) };
 }
 
 function ItemLabel({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
@@ -29,7 +55,7 @@ function ItemLabel({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
 
 /** "Summarize" and "Check for spam" for one mail, for its "more" menu. */
 export function useMessageAssistItems(message: Message, own: boolean, fromMe: boolean): MenuItem[] {
-  const { t } = useT();
+  const { t, i18n } = useT();
   const can = useReaderAssist(own);
   const showSummary = useAssistReader((s) => s.showSummary);
   const showSpamCheck = useAssistReader((s) => s.showSpamCheck);
@@ -42,6 +68,17 @@ export function useMessageAssistItems(message: Message, own: boolean, fromMe: bo
             group,
             label: <ItemLabel icon={FileText} text={t("assist.summary.summarizeMail")} />,
             onSelect: () => showSummary(mailKey(message.id)),
+            wrap: estimated(summarizeRequest({ emailId: message.id }, i18n.language)),
+          },
+        ]
+      : []),
+    ...(can.findEvents
+      ? [
+          {
+            group,
+            label: <ItemLabel icon={CalendarSearch} text={t("dates.find")} />,
+            onSelect: () => findEventsWithAssistant(message.id),
+            wrap: estimated(eventsRequest(message)),
           },
         ]
       : []),
@@ -51,6 +88,7 @@ export function useMessageAssistItems(message: Message, own: boolean, fromMe: bo
             group,
             label: <ItemLabel icon={ShieldQuestion} text={t("assist.spam.check")} />,
             onSelect: () => showSpamCheck(message.id),
+            wrap: estimated(spamRequest(message.id, i18n.language)),
           },
         ]
       : []),
@@ -68,12 +106,16 @@ interface ThreadAssistButtonProps {
 
 /** ✨ in the reader's toolbar: summarize the conversation, or check its newest mail for spam. */
 export function ThreadAssistButton({ threadId, messages, own, mine, align }: ThreadAssistButtonProps) {
-  const { t } = useT();
+  const { t, i18n } = useT();
+  const language = i18n.language;
   const can = useReaderAssist(own);
   const showSummary = useAssistReader((s) => s.showSummary);
   const showSpamCheck = useAssistReader((s) => s.showSpamCheck);
-  const received = messages.filter((message) => !message.flags.draft && !mine.has(message.from.email.toLowerCase()));
+  const sent = messages.filter((message) => !message.flags.draft);
+  const received = sent.filter((message) => !mine.has(message.from.email.toLowerCase()));
   const newest = received[received.length - 1];
+  // Appointments are looked for in the newest mail that came, or else in the newest one at all.
+  const forEvents = newest ?? sent[sent.length - 1];
   const items: MenuItem[] = [
     ...(can.summarize
       ? messages.length > 1
@@ -81,12 +123,14 @@ export function ThreadAssistButton({ threadId, messages, own, mine, align }: Thr
             {
               label: <ItemLabel icon={Sparkles} text={t("assist.summary.summarizeThread")} />,
               onSelect: () => showSummary(threadKey(threadId)),
+              wrap: estimated(summarizeRequest({ threadId }, language)),
             },
             ...(newest
               ? [
                   {
                     label: <ItemLabel icon={FileText} text={t("assist.summary.summarizeLatest")} />,
                     onSelect: () => showSummary(mailKey(newest.id)),
+                    wrap: estimated(summarizeRequest({ emailId: newest.id }, language)),
                   },
                 ]
               : []),
@@ -95,14 +139,25 @@ export function ThreadAssistButton({ threadId, messages, own, mine, align }: Thr
             {
               label: <ItemLabel icon={Sparkles} text={t("assist.summary.summarizeMail")} />,
               onSelect: () => showSummary(mailKey(messages[0]!.id)),
+              wrap: estimated(summarizeRequest({ emailId: messages[0]!.id }, language)),
             },
           ]
+      : []),
+    ...(can.findEvents && forEvents
+      ? [
+          {
+            label: <ItemLabel icon={CalendarSearch} text={t("dates.find")} />,
+            onSelect: () => findEventsWithAssistant(forEvents.id),
+            wrap: estimated(eventsRequest(forEvents)),
+          },
+        ]
       : []),
     ...(can.spamCheck && newest
       ? [
           {
             label: <ItemLabel icon={ShieldQuestion} text={t("assist.spam.check")} />,
             onSelect: () => showSpamCheck(newest.id),
+            wrap: estimated(spamRequest(newest.id, language)),
           },
         ]
       : []),

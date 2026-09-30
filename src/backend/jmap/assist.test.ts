@@ -16,8 +16,10 @@ import {
   toChatgptLogin,
   MAX_ASSIST_EVENTS,
   toSpamCheck,
+  toEstimate,
   type EventStreamEvent,
 } from "./assist";
+import { JmapMethodError } from "./client";
 
 function collect(chunks: string[]): EventStreamEvent[] {
   const events: EventStreamEvent[] = [];
@@ -362,6 +364,27 @@ vi.mock("./client", async (original) => {
   };
 });
 
+describe("an estimate", () => {
+  it("adds up what the server leaves out and takes a missing limit as none", () => {
+    expect(
+      toEstimate(
+        { inputTokens: 1000.4, outputTokens: 200, tokensLeftToday: -5, requestsLeftToday: "x" },
+        "Assist/summarize",
+      ),
+    ).toEqual({
+      method: "Assist/summarize",
+      inputTokens: 1000,
+      outputTokens: 200,
+      totalTokens: 1200,
+      providerId: "",
+      providerName: "",
+      model: null,
+      tokensLeftToday: 0,
+      requestsLeftToday: null,
+    });
+  });
+});
+
 describe("JmapBackend's assistant", () => {
   const load = async () => new (await import("./JmapBackend")).JmapBackend();
   const using = ["urn:ietf:params:jmap:core", ASSIST];
@@ -503,6 +526,67 @@ describe("JmapBackend's assistant", () => {
     await backend.undoAssistLabels(["l1"]);
     expect(jmap.one).toHaveBeenCalledWith("AssistLabel/undo", { ids: ["l1"] }, using);
     expect(events).toEqual(expect.arrayContaining(["assist:changed", "mail:changed"]));
+  });
+
+  it("asks what a call would cost with exactly that call's arguments", async () => {
+    jmap.one.mockResolvedValueOnce({
+      accountId: "a1",
+      method: "Assist/compose",
+      inputTokens: 900,
+      outputTokens: 300,
+      totalTokens: 1200,
+      providerId: "q1",
+      providerName: "Mistral (Server)",
+      model: "mistral-medium-latest",
+      tokensLeftToday: 48000,
+      requestsLeftToday: null,
+    });
+    const backend = await load();
+    const estimate = await backend.assistEstimate({
+      method: "Assist/compose",
+      request: { mode: "rewrite", preset: "shorter", text: "Hallo", replyToEmailId: "a7~e9" },
+    });
+    expect(jmap.one).toHaveBeenCalledWith(
+      "Assist/estimate",
+      {
+        method: "Assist/compose",
+        arguments: {
+          mode: "rewrite",
+          instruction: null,
+          preset: "shorter",
+          targetLanguage: null,
+          text: "Hallo",
+          subject: null,
+          // Mail of a shared account is no context, as in the real call.
+          replyToEmailId: null,
+          wantSubject: false,
+          language: null,
+        },
+      },
+      using,
+    );
+    expect(estimate).toMatchObject({ totalTokens: 1200, tokensLeftToday: 48000, requestsLeftToday: null });
+
+    jmap.one.mockResolvedValueOnce({ inputTokens: 10, outputTokens: 5 });
+    await backend.assistEstimate({ method: "Assist/extractEvents", emailId: "e4", includeImages: true });
+    expect(jmap.one).toHaveBeenLastCalledWith(
+      "Assist/estimate",
+      { method: "Assist/extractEvents", arguments: { emailId: "e4", includeImages: true } },
+      using,
+    );
+    await expect(backend.assistEstimate({ method: "Assist/spamCheck", emailId: "a7~e1" })).rejects.toMatchObject({
+      type: "forbidden",
+    });
+  });
+
+  it("has no estimate from a server that doesn't know the method", async () => {
+    jmap.one.mockRejectedValueOnce(new JmapMethodError("not_supported", "unknown", "unknownMethod"));
+    const backend = await load();
+    expect(await backend.assistEstimate({ method: "Assist/summarize", request: { threadId: "t1" } })).toBeNull();
+    jmap.one.mockRejectedValueOnce(new JmapMethodError("forbidden", "quota", "overQuota"));
+    await expect(backend.assistEstimate({ method: "Assist/spamCheck", emailId: "e1" })).rejects.toMatchObject({
+      type: "overQuota",
+    });
   });
 
   it("asks for the log of the own mail only", async () => {

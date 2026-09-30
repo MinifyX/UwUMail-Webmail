@@ -744,7 +744,9 @@ export class DemoAssist {
       case "Assist/compose": {
         const { request: ask } = request;
         const replyTo = ask.replyToEmailId ? this.messages().find((m) => m.id === ask.replyToEmailId) : undefined;
-        input = [ask.instruction, ask.text, ask.subject, replyTo ? this.text(replyTo) : null].filter(Boolean).join("\n");
+        input = [ask.instruction, ask.text, ask.subject, replyTo ? this.text(replyTo) : null]
+          .filter(Boolean)
+          .join("\n");
         outputTokens = ask.mode === "write" ? 400 : Math.max(60, Math.round(tokens(ask.text ?? "") * 1.2));
         break;
       }

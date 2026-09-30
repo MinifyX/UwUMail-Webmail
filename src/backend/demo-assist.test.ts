@@ -152,6 +152,26 @@ describe("the demo's assistant", () => {
     expect(changes).toContain(true);
   });
 
+  it("estimates without counting, and counts down what is left once used", async () => {
+    const { assist, messages } = setup("en");
+    const mail = messages.find((message) => message.subject.startsWith("Game night")) ?? messages[0]!;
+    const request = { method: "Assist/summarize", request: { emailId: mail.id } } as const;
+    const before = assist.estimate(request);
+    expect(before.totalTokens).toBe(before.inputTokens + before.outputTokens);
+    expect(before.inputTokens).toBeGreaterThan(350);
+    expect(before.providerName).toBe("Mistral (Server)");
+    expect(assist.estimate(request).tokensLeftToday).toBe(before.tokensLeftToday);
+    const summary = assist.summarize({ emailId: mail.id });
+    await vi.runAllTimersAsync();
+    await summary;
+    const after = assist.estimate(request);
+    expect(after.tokensLeftToday!).toBeLessThan(before.tokensLeftToday!);
+    expect(after.requestsLeftToday).toBe(before.requestsLeftToday! - 1);
+    expect(() => assist.estimate({ method: "Assist/spamCheck", emailId: "gone" })).toThrow(
+      expect.objectContaining({ type: "notFound" }),
+    );
+  });
+
   it("refuses a second label of the same name", () => {
     const { assist } = setup();
     expect(() => assist.createLabel({ name: "newsletter", description: "", color: null })).toThrow(

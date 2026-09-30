@@ -1,17 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  cloneElement,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type FocusEvent,
-  type HTMLAttributes,
-  type KeyboardEvent,
-  type MouseEvent,
-  type PointerEvent,
-  type ReactElement,
-} from "react";
+import { cloneElement, useEffect, useId, useRef, useState, type HTMLAttributes, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { backend } from "@/backend/backend";
 import type { AssistEstimate, AssistEstimateRequest } from "@/backend/types";
@@ -100,15 +88,13 @@ function focusVisible(target: Element): boolean {
   }
 }
 
-type TriggerProps = HTMLAttributes<HTMLElement>;
-
 interface EstimateTipProps {
   /** What the button would ask; null for none (then only `hint` shows). */
   request: AssistEstimateRequest | null;
   /** A line that shows above the estimate, e.g. what the button does. */
   hint?: string;
   /** The button; it keeps its own handlers. */
-  children: ReactElement<TriggerProps>;
+  children: ReactElement;
 }
 
 /**
@@ -132,79 +118,64 @@ export function EstimateTip({ request, hint, children }: EstimateTipProps) {
     [],
   );
 
-  const show = (target: Element) => setPlace(placeFor(target));
+  // The wrapper has no box of its own: the tooltip goes by the button inside it.
+  const show = (wrapper: Element) => setPlace(placeFor(wrapper.firstElementChild ?? wrapper));
   const hide = () => setPlace(null);
   const endPress = () => {
     if (press.current.timer) clearTimeout(press.current.timer);
     press.current.timer = null;
   };
-
-  const own = children.props;
-  const handlers: TriggerProps = {
-    onPointerEnter: (event: PointerEvent<HTMLElement>) => {
-      own.onPointerEnter?.(event);
-      if (event.pointerType !== "touch") show(event.currentTarget);
-    },
-    onPointerLeave: (event: PointerEvent<HTMLElement>) => {
-      own.onPointerLeave?.(event);
-      endPress();
-      if (event.pointerType !== "touch") hide();
-    },
-    onPointerDown: (event: PointerEvent<HTMLElement>) => {
-      own.onPointerDown?.(event);
-      press.current.fired = false;
-      if (event.pointerType !== "touch") return;
-      const target = event.currentTarget;
-      endPress();
-      press.current.timer = setTimeout(() => {
-        press.current.fired = true;
-        show(target);
-        if (hideTimer.current) clearTimeout(hideTimer.current);
-        hideTimer.current = setTimeout(hide, TOUCH_TIP_MS);
-      }, LONG_PRESS_MS);
-    },
-    onPointerUp: (event: PointerEvent<HTMLElement>) => {
-      own.onPointerUp?.(event);
-      endPress();
-    },
-    onPointerCancel: (event: PointerEvent<HTMLElement>) => {
-      own.onPointerCancel?.(event);
-      endPress();
-    },
-    onClickCapture: (event: MouseEvent<HTMLElement>) => {
-      own.onClickCapture?.(event);
-      // The finger rested to read the tooltip, not to press.
-      if (press.current.fired) {
-        press.current.fired = false;
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    },
-    onContextMenu: (event: MouseEvent<HTMLElement>) => {
-      own.onContextMenu?.(event);
-      if (press.current.timer || press.current.fired) event.preventDefault();
-    },
-    onFocus: (event: FocusEvent<HTMLElement>) => {
-      own.onFocus?.(event);
-      if (focusVisible(event.currentTarget)) show(event.currentTarget);
-    },
-    onBlur: (event: FocusEvent<HTMLElement>) => {
-      own.onBlur?.(event);
-      hide();
-    },
-    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
-      own.onKeyDown?.(event);
-      if (event.key === "Escape") hide();
-    },
-  };
   const visible = place !== null && lines.length > 0;
 
   return (
     <>
-      {cloneElement(children, {
-        ...handlers,
-        "aria-describedby": visible ? id : own["aria-describedby"],
-      } as TriggerProps)}
+      {/* The button's own events pass through this on their way up, a long press's click stops here. */}
+      <span
+        role="presentation"
+        className="contents"
+        onPointerEnter={(event) => {
+          if (event.pointerType !== "touch") show(event.currentTarget);
+        }}
+        onPointerLeave={(event) => {
+          endPress();
+          if (event.pointerType !== "touch") hide();
+        }}
+        onPointerDown={(event) => {
+          press.current.fired = false;
+          if (event.pointerType !== "touch") return;
+          const target = event.currentTarget;
+          endPress();
+          press.current.timer = setTimeout(() => {
+            press.current.fired = true;
+            show(target);
+            if (hideTimer.current) clearTimeout(hideTimer.current);
+            hideTimer.current = setTimeout(hide, TOUCH_TIP_MS);
+          }, LONG_PRESS_MS);
+        }}
+        onPointerUp={endPress}
+        onPointerCancel={endPress}
+        onClickCapture={(event) => {
+          // The finger rested to read the tooltip, not to press.
+          if (!press.current.fired) return;
+          press.current.fired = false;
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onContextMenu={(event) => {
+          if (press.current.timer || press.current.fired) event.preventDefault();
+        }}
+        onFocus={(event) => {
+          if (focusVisible(event.target)) show(event.currentTarget);
+        }}
+        onBlur={hide}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") hide();
+        }}
+      >
+        {visible
+          ? cloneElement(children as ReactElement<HTMLAttributes<HTMLElement>>, { "aria-describedby": id })
+          : children}
+      </span>
       {visible &&
         createPortal(
           <span
