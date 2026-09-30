@@ -1,6 +1,14 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { DEFAULT_TEXTS, deliveredTo, messageTarget, notificationsFor, openUrl, parsePayload } from "./shared";
+import {
+  DEFAULT_TEXTS,
+  deliveredTo,
+  messageTarget,
+  notificationName,
+  notificationsFor,
+  openUrl,
+  parsePayload,
+} from "./shared";
 
 describe("what the server pushes", () => {
   it("reads verifications and state changes, nothing else", () => {
@@ -51,5 +59,15 @@ describe("what the server pushes", () => {
     );
     expect([named!.title, named!.options.body]).toEqual(["Nyu", "Hi"]);
     expect([unnamed!.title, unnamed!.options.body]).toEqual([DEFAULT_TEXTS.newMail, DEFAULT_TEXTS.noSubject]);
+  });
+});
+
+describe("sender names in notifications", () => {
+  it("drop direction marks and line breaks and stay short", () => {
+    expect(notificationName("\u202eAnna\u202c\nMeier")).toBe("Anna Meier");
+    expect(notificationName("Family 👨\u200d👩\u200d👧")).toBe("Family 👨\u200d👩\u200d👧");
+    const long = notificationName("x".repeat(500));
+    expect([...long]).toHaveLength(80);
+    expect(long.endsWith("…")).toBe(true);
   });
 });

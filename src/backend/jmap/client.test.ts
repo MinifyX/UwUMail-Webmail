@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   imageSizesPath,
   loadJmapSession,
+  onOwnOrigin,
   pictureKind,
   pictureSource,
   reconnectDelay,
@@ -96,5 +97,14 @@ describe("push over the WebSocket", () => {
 
   it("waits longer after each lost connection, up to half a minute", () => {
     expect([0, 1, 2, 5, 10].map(reconnectDelay)).toEqual([1000, 2000, 4000, 30_000, 30_000]);
+  });
+});
+
+describe("URLs the server announces", () => {
+  it("keep their path on our own origin and never name another host", () => {
+    expect(onOwnOrigin("https://mail.example.com/jmap/api?x=1")).toBe("/jmap/api?x=1");
+    expect(onOwnOrigin("https://mail.example.com//other.example/jmap")).toBe("/other.example/jmap");
+    expect(onOwnOrigin("/\\\\other.example/jmap")).toBe("/jmap");
+    expect(onOwnOrigin("//other.example/jmap")).toBe("/jmap");
   });
 });
