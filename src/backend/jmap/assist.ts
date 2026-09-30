@@ -14,9 +14,12 @@ import {
   type AssistAnswer,
   type AssistChoice,
   type AssistCost,
+  type AssistCostParts,
   type AssistPrice,
   type AssistEffective,
   type AssistEstimate,
+  type AssistEstimateCall,
+  type AssistEstimateCost,
   type AssistEstimateMethod,
   type AssistEvent,
   type AssistFeature,
@@ -406,6 +409,7 @@ export function toUsage(raw: Raw): AssistUsage {
         requests: asCount(entry.requests),
         inputTokens: asCount(entry.inputTokens),
         outputTokens: asCount(entry.outputTokens),
+        reasoningTokens: asCount(entry.reasoningTokens),
         cost: toCost(entry.cost),
       })),
     today: today
@@ -430,10 +434,53 @@ const ESTIMATED: readonly AssistEstimateMethod[] = [
   "Assist/extractEvents",
 ];
 
+const asAmount = (value: unknown): number => Math.max(0, asNumber(value) ?? 0);
+
+function toEstimateCall(value: unknown): AssistEstimateCall | null {
+  const raw = asObject(value);
+  if (!raw) return null;
+  const weight = asNumber(raw.weight);
+  return {
+    purpose: asString(raw.purpose) ?? "other",
+    inputTokens: asCount(raw.inputTokens),
+    outputTokens: asCount(raw.outputTokens),
+    reasoningTokens: asCount(raw.reasoningTokens),
+    images: asCount(raw.images),
+    weight: weight === null ? 1 : Math.min(1, Math.max(0, weight)),
+  };
+}
+
+function toCostParts(value: unknown): AssistCostParts | null {
+  const raw = asObject(value);
+  if (!raw) return null;
+  return {
+    input: asAmount(raw.input),
+    output: asAmount(raw.output),
+    reasoning: asAmount(raw.reasoning),
+    images: asAmount(raw.images),
+    requests: asAmount(raw.requests),
+    other: asAmount(raw.other),
+  };
+}
+
+/** An estimated cost; its worst case comes without a currency and has the estimate's. */
+export function toEstimateCost(value: unknown): AssistEstimateCost | null {
+  const cost = toCost(value);
+  if (!cost) return null;
+  const raw = asObject(value)!;
+  const rawMax = asObject(raw.max);
+  const max = rawMax ? toCost({ currency: cost.currency, ...rawMax }) : null;
+  return { ...cost, max: max && max.currency === cost.currency ? max : null, parts: toCostParts(raw.parts) };
+}
+
 /** The answer of `Assist/estimate`; a limit that isn't a number is no limit. */
 export function toEstimate(raw: Raw, method: AssistEstimateMethod): AssistEstimate {
   const inputTokens = asCount(raw.inputTokens);
   const outputTokens = asCount(raw.outputTokens);
+  const reasoningTokens = asCount(raw.reasoningTokens);
+  const calls = (Array.isArray(raw.calls) ? raw.calls : [])
+    .map(toEstimateCall)
+    .filter((call): call is AssistEstimateCall => call !== null);
   const left = (value: unknown) => {
     const number = asNumber(value);
     return number === null ? null : Math.max(0, Math.floor(number));
@@ -442,13 +489,18 @@ export function toEstimate(raw: Raw, method: AssistEstimateMethod): AssistEstima
     method: ESTIMATED.includes(raw.method as AssistEstimateMethod) ? (raw.method as AssistEstimateMethod) : method,
     inputTokens,
     outputTokens,
-    totalTokens: asNumber(raw.totalTokens) === null ? inputTokens + outputTokens : asCount(raw.totalTokens),
+    reasoningTokens,
+    totalTokens:
+      asNumber(raw.totalTokens) === null ? inputTokens + outputTokens + reasoningTokens : asCount(raw.totalTokens),
+    imageCount: asCount(raw.imageCount),
+    calls,
+    calibrated: raw.calibrated === true,
     providerId: asString(raw.providerId) ?? "",
     providerName: asString(raw.providerName) ?? "",
     model: asString(raw.model),
     tokensLeftToday: left(raw.tokensLeftToday),
     requestsLeftToday: left(raw.requestsLeftToday),
-    cost: toCost(raw.cost),
+    cost: toEstimateCost(raw.cost),
   };
 }
 

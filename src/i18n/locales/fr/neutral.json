@@ -1610,7 +1610,8 @@
       "lastDays_one": "Dernier jour",
       "lastDays_many": "{{count}} derniers jours",
       "lastDays_other": "{{count}} derniers jours",
-      "nothing": "Rien de consommé sur cette période."
+      "nothing": "Rien de consommé sur cette période.",
+      "thinking": "dont {{formatted}} de réflexion"
     },
     "estimate": {
       "tokens_one": "≈ {{tokens}} jeton",
@@ -1619,12 +1620,34 @@
       "tokensLeft": "encore {{left}} aujourd'hui",
       "requestsLeft_one": "encore {{left}} requête aujourd'hui",
       "requestsLeft_many": "encore {{left}} requêtes aujourd'hui",
-      "requestsLeft_other": "encore {{left}} requêtes aujourd'hui"
+      "requestsLeft_other": "encore {{left}} requêtes aujourd'hui",
+      "pictures_one": "{{formatted}} image",
+      "pictures_many": "{{formatted}} images",
+      "pictures_other": "{{formatted}} images",
+      "breakdown": {
+        "input": "Entrée",
+        "pictures": "Images",
+        "answer": "Réponse",
+        "thinking": "Réflexion",
+        "extraCalls": "Appels supplémentaires",
+        "fees": "Frais"
+      },
+      "purpose": {
+        "pictures": "lecture des images",
+        "chunk": "résumé par parties",
+        "retry": "nouvel essai",
+        "refine": "affinage",
+        "other": "autres étapes"
+      },
+      "times": "{{count}} × {{what}}",
+      "sometimes": "{{what}} (parfois)",
+      "calibrated": "Ajusté d'après vos derniers appels"
     },
     "cost": {
       "free": "gratuit",
       "below": "< {{amount}}",
-      "about": "≈ {{amount}}"
+      "about": "≈ {{amount}}",
+      "withMax": "{{amount}} (max {{max}})"
     }
   },
   "dates": {

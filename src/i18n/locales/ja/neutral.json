@@ -1504,17 +1504,38 @@
       "limitUsed": "本日の上限の {{percent}}% を使用",
       "limitReached": "本日の上限に達しました。午前 0 時（UTC）にリセットされます。",
       "lastDays_other": "過去 {{count}} 日間",
-      "nothing": "この期間の使用はありません。"
+      "nothing": "この期間の使用はありません。",
+      "thinking": "うち思考 {{formatted}}"
     },
     "estimate": {
       "tokens_other": "約 {{tokens}} トークン",
       "tokensLeft": "本日残り {{left}}",
-      "requestsLeft_other": "本日残り {{left}} 回"
+      "requestsLeft_other": "本日残り {{left}} 回",
+      "pictures_other": "{{formatted}} 枚の画像",
+      "breakdown": {
+        "input": "入力",
+        "pictures": "画像",
+        "answer": "回答",
+        "thinking": "思考",
+        "extraCalls": "追加の呼び出し",
+        "fees": "手数料"
+      },
+      "purpose": {
+        "pictures": "画像の読み取り",
+        "chunk": "分割して要約",
+        "retry": "再試行",
+        "refine": "絞り込み",
+        "other": "その他の処理"
+      },
+      "times": "{{count}} × {{what}}",
+      "sometimes": "{{what}}（場合により）",
+      "calibrated": "最近の呼び出しをもとに補正済み"
     },
     "cost": {
       "free": "無料",
       "below": "{{amount}} 未満",
-      "about": "約 {{amount}}"
+      "about": "約 {{amount}}",
+      "withMax": "{{amount}}（最大 {{max}}）"
     }
   },
   "dates": {

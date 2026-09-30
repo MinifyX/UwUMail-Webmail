@@ -377,7 +377,11 @@ describe("an estimate", () => {
       method: "Assist/summarize",
       inputTokens: 1000,
       outputTokens: 200,
+      reasoningTokens: 0,
       totalTokens: 1200,
+      imageCount: 0,
+      calls: [],
+      calibrated: false,
       providerId: "",
       providerName: "",
       model: null,
@@ -385,6 +389,70 @@ describe("an estimate", () => {
       requestsLeftToday: null,
       cost: null,
     });
+  });
+});
+
+describe("a detailed estimate", () => {
+  it("reads the calls, thinking, pictures and the worst case of a newer server", () => {
+    const estimate = toEstimate(
+      {
+        inputTokens: 2000,
+        outputTokens: 300,
+        reasoningTokens: 700,
+        imageCount: 2,
+        calibrated: true,
+        calls: [
+          { purpose: "main", inputTokens: 1500, outputTokens: 250, reasoningTokens: 700, images: 0, weight: 1 },
+          { purpose: "pictures", inputTokens: 500, outputTokens: 50, images: 2 },
+          { purpose: "retry", inputTokens: 1500, outputTokens: 250, weight: 7 },
+          "nonsense",
+        ],
+        cost: {
+          amount: 0.02,
+          currency: "EUR",
+          usd: 0.023,
+          max: { amount: 0.05, usd: 0.058 },
+          parts: { input: 0.005, output: 0.004, reasoning: 0.009, images: 0.002, requests: -1 },
+        },
+      },
+      "Assist/extractEvents",
+    );
+    expect(estimate).toMatchObject({
+      reasoningTokens: 700,
+      totalTokens: 3000,
+      imageCount: 2,
+      calibrated: true,
+      cost: {
+        amount: 0.02,
+        currency: "EUR",
+        max: { amount: 0.05, currency: "EUR", usd: 0.058 },
+        parts: { input: 0.005, output: 0.004, reasoning: 0.009, images: 0.002, requests: 0, other: 0 },
+      },
+    });
+    expect(estimate.calls).toEqual([
+      { purpose: "main", inputTokens: 1500, outputTokens: 250, reasoningTokens: 700, images: 0, weight: 1 },
+      { purpose: "pictures", inputTokens: 500, outputTokens: 50, reasoningTokens: 0, images: 2, weight: 1 },
+      { purpose: "retry", inputTokens: 1500, outputTokens: 250, reasoningTokens: 0, images: 0, weight: 1 },
+    ]);
+  });
+
+  it("keeps today's shape for an older server", () => {
+    const estimate = toEstimate(
+      { inputTokens: 10, outputTokens: 5, cost: { amount: 0.01, currency: "EUR" } },
+      "Assist/compose",
+    );
+    expect(estimate).toMatchObject({ totalTokens: 15, calls: [], calibrated: false });
+    expect(estimate.cost).toEqual({ amount: 0.01, currency: "EUR", usd: null, max: null, parts: null });
+  });
+
+  it("reads thinking in usage rows, and none from an older server", () => {
+    const usage = toUsage({
+      days: [
+        { day: "2026-09-30", feature: "compose", requests: 1, inputTokens: 10, outputTokens: 5, reasoningTokens: 40 },
+        { day: "2026-09-29", feature: "compose", requests: 1 },
+      ],
+    });
+    expect(usage.days.map((day) => day.reasoningTokens)).toEqual([40, 0]);
   });
 });
 

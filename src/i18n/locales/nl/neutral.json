@@ -1558,19 +1558,41 @@
       "limitReached": "De daglimiet is bereikt. Die wordt om middernacht (UTC) weer gereset.",
       "lastDays_one": "Laatste dag",
       "lastDays_other": "Laatste {{count}} dagen",
-      "nothing": "In deze periode niets verbruikt."
+      "nothing": "In deze periode niets verbruikt.",
+      "thinking": "waarvan {{formatted}} nadenken"
     },
     "estimate": {
       "tokens_one": "≈ {{tokens}} token",
       "tokens_other": "≈ {{tokens}} tokens",
       "tokensLeft": "vandaag nog {{left}} over",
       "requestsLeft_one": "vandaag nog {{left}} verzoek over",
-      "requestsLeft_other": "vandaag nog {{left}} verzoeken over"
+      "requestsLeft_other": "vandaag nog {{left}} verzoeken over",
+      "pictures_one": "{{formatted}} afbeelding",
+      "pictures_other": "{{formatted}} afbeeldingen",
+      "breakdown": {
+        "input": "Invoer",
+        "pictures": "Afbeeldingen",
+        "answer": "Antwoord",
+        "thinking": "Nadenken",
+        "extraCalls": "Extra aanroepen",
+        "fees": "Kosten per verzoek"
+      },
+      "purpose": {
+        "pictures": "afbeeldingen lezen",
+        "chunk": "delen samenvatten",
+        "retry": "nieuwe poging",
+        "refine": "verfijnen",
+        "other": "meer stappen"
+      },
+      "times": "{{count}} × {{what}}",
+      "sometimes": "{{what}} (soms)",
+      "calibrated": "Bijgesteld op basis van je laatste aanroepen"
     },
     "cost": {
       "free": "gratis",
       "below": "< {{amount}}",
-      "about": "≈ {{amount}}"
+      "about": "≈ {{amount}}",
+      "withMax": "{{amount}} (max. {{max}})"
     }
   },
   "dates": {

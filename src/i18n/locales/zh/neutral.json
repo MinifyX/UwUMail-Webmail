@@ -1504,17 +1504,38 @@
       "limitUsed": "已用今日额度的 {{percent}}%",
       "limitReached": "今日额度已用完。额度将于午夜（UTC）重置。",
       "lastDays_other": "最近 {{count}} 天",
-      "nothing": "这段时间内没有使用。"
+      "nothing": "这段时间内没有使用。",
+      "thinking": "其中思考 {{formatted}}"
     },
     "estimate": {
       "tokens_other": "约 {{tokens}} 个 token",
       "tokensLeft": "今日剩余 {{left}}",
-      "requestsLeft_other": "今日剩余 {{left}} 次请求"
+      "requestsLeft_other": "今日剩余 {{left}} 次请求",
+      "pictures_other": "{{formatted}} 张图片",
+      "breakdown": {
+        "input": "输入",
+        "pictures": "图片",
+        "answer": "回答",
+        "thinking": "思考",
+        "extraCalls": "额外调用",
+        "fees": "费用"
+      },
+      "purpose": {
+        "pictures": "读取图片",
+        "chunk": "分段摘要",
+        "retry": "重试",
+        "refine": "细化",
+        "other": "其他步骤"
+      },
+      "times": "{{count}} × {{what}}",
+      "sometimes": "{{what}}（有时）",
+      "calibrated": "已根据你最近的调用校准"
     },
     "cost": {
       "free": "免费",
       "below": "低于 {{amount}}",
-      "about": "约 {{amount}}"
+      "about": "约 {{amount}}",
+      "withMax": "{{amount}}（最多 {{max}}）"
     }
   },
   "dates": {

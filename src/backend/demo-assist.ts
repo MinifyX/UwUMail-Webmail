@@ -12,6 +12,7 @@ import {
   type AssistComposeResult,
   type AssistEffective,
   type AssistEstimate,
+  type AssistEstimateCall,
   type AssistEstimateRequest,
   type AssistEvent,
   type AssistEventsResult,
@@ -163,6 +164,9 @@ async function thinking(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 const tokens = (text: string) => Math.max(1, Math.round(text.length / 4));
+
+/** The longest answer the demo's "model" gives, for the worst case of an estimate. */
+const DEMO_MAX_OUTPUT = 1024;
 
 /** Which feature answers a method whose cost is asked for. */
 const ESTIMATE_FEATURES: Record<AssistEstimateRequest["method"], AssistFeature> = {
@@ -865,18 +869,64 @@ export class DemoAssist {
         outputTokens = 320;
         break;
     }
-    const inputTokens = tokens(input) + 350;
+    const main: AssistEstimateCall = {
+      purpose: "main",
+      inputTokens: tokens(input) + 350,
+      outputTokens,
+      reasoningTokens: 0,
+      images: 0,
+      weight: 1,
+    };
+    const calls = [main];
+    if (request.method === "Assist/extractEvents" && request.includeImages) {
+      // The demo reads each picture (up to four) in a call of its own before looking for dates.
+      const pictures = this.message(request.emailId).attachments.filter((part) => part.mimeType.startsWith("image/"));
+      for (let index = 0; index < Math.min(4, pictures.length); index++) {
+        calls.push({
+          purpose: "pictures",
+          inputTokens: 1100,
+          outputTokens: 150,
+          reasoningTokens: 0,
+          images: 1,
+          weight: 1,
+        });
+      }
+    }
+    if (request.method === "Assist/spamCheck" || request.method === "Assist/extractEvents") {
+      // An answer that isn't valid JSON is asked for once more, now and then.
+      calls.push({ ...main, purpose: "retry", weight: 0.05 });
+    }
+    const sum = (pick: (call: AssistEstimateCall) => number) =>
+      Math.round(calls.reduce((total, call) => total + pick(call) * call.weight, 0));
+    const inputTokens = sum((call) => call.inputTokens);
+    const totalOutput = sum((call) => call.outputTokens);
+    const imageCount = calls.reduce((total, call) => total + call.images, 0);
     const provider = this.providers.find((entry) => entry.id === effective.providerId);
     const today = new Date().toISOString().slice(0, 10);
     const used = this.usage.filter((entry) => entry.day === today && entry.providerId === effective.providerId);
     const quota = provider?.scope === "server" ? provider.quota : null;
     const left = (limit: number | null | undefined, spent: number) =>
       limit === null || limit === undefined ? null : Math.max(0, limit - spent);
+    const cost = this.costOf(effective.providerId, effective.model, inputTokens, totalOutput, currency);
+    const worst = this.costOf(
+      effective.providerId,
+      effective.model,
+      calls.reduce((total, call) => total + call.inputTokens, 0),
+      calls.length * DEMO_MAX_OUTPUT,
+      currency,
+    );
+    const pictureInput = sum((call) => (call.purpose === "pictures" ? call.inputTokens : 0));
+    const inputCost = cost ? this.costOf(effective.providerId, effective.model, inputTokens, 0, currency) : null;
+    const pictureShare = inputCost && inputTokens > 0 ? (inputCost.amount * pictureInput) / inputTokens : 0;
     return {
       method: request.method,
       inputTokens,
-      outputTokens,
-      totalTokens: inputTokens + outputTokens,
+      outputTokens: totalOutput,
+      reasoningTokens: 0,
+      totalTokens: inputTokens + totalOutput,
+      imageCount,
+      calls,
+      calibrated: false,
       providerId: effective.providerId,
       providerName: effective.providerName,
       model: effective.model,
@@ -888,7 +938,18 @@ export class DemoAssist {
         quota?.requestsPerDay,
         used.reduce((sum, entry) => sum + entry.requests, 0),
       ),
-      cost: this.costOf(effective.providerId, effective.model, inputTokens, outputTokens, currency),
+      cost: cost && {
+        ...cost,
+        max: worst && { ...worst, amount: Math.max(worst.amount, cost.amount) },
+        parts: {
+          input: (inputCost?.amount ?? 0) - pictureShare,
+          output: cost.amount - (inputCost?.amount ?? 0),
+          reasoning: 0,
+          images: pictureShare,
+          requests: 0,
+          other: 0,
+        },
+      },
     };
   }
 

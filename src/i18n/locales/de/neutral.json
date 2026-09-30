@@ -1558,19 +1558,41 @@
       "limitReached": "Das Tageslimit ist erreicht. Es gilt wieder ab Mitternacht (UTC).",
       "lastDays_one": "Letzter Tag",
       "lastDays_other": "Letzte {{count}} Tage",
-      "nothing": "In dieser Zeit nichts verbraucht."
+      "nothing": "In dieser Zeit nichts verbraucht.",
+      "thinking": "davon {{formatted}} Nachdenken"
     },
     "estimate": {
       "tokens_one": "≈ {{tokens}} Token",
       "tokens_other": "≈ {{tokens}} Tokens",
       "tokensLeft": "heute noch {{left}} übrig",
       "requestsLeft_one": "heute noch {{left}} Anfrage übrig",
-      "requestsLeft_other": "heute noch {{left}} Anfragen übrig"
+      "requestsLeft_other": "heute noch {{left}} Anfragen übrig",
+      "pictures_one": "{{formatted}} Bild",
+      "pictures_other": "{{formatted}} Bilder",
+      "breakdown": {
+        "input": "Eingabe",
+        "pictures": "Bilder",
+        "answer": "Antwort",
+        "thinking": "Nachdenken",
+        "extraCalls": "Zusätzliche Aufrufe",
+        "fees": "Gebühren"
+      },
+      "purpose": {
+        "pictures": "Bilder lesen",
+        "chunk": "Teile zusammenfassen",
+        "retry": "neuer Versuch",
+        "refine": "Verfeinern",
+        "other": "weitere Schritte"
+      },
+      "times": "{{count}} × {{what}}",
+      "sometimes": "{{what}} (manchmal)",
+      "calibrated": "Abgeglichen mit deinen letzten Aufrufen"
     },
     "cost": {
       "free": "kostenlos",
       "below": "< {{amount}}",
-      "about": "≈ {{amount}}"
+      "about": "≈ {{amount}}",
+      "withMax": "{{amount}} (max. {{max}})"
     }
   },
   "dates": {
