@@ -29,7 +29,11 @@ export function useReaderAssist(own: boolean) {
 /** A menu item's button with the tooltip of about what it costs. */
 const estimated =
   (request: AssistEstimateRequest) =>
-  (button: ReactElement): ReactElement => <EstimateTip request={request}>{button}</EstimateTip>;
+  (button: ReactElement): ReactElement => (
+    <EstimateTip request={request} beside>
+      {button}
+    </EstimateTip>
+  );
 
 function summarizeRequest(key: { emailId: string } | { threadId: string }, language: string): AssistEstimateRequest {
   return { method: "Assist/summarize", request: { ...key, language } };

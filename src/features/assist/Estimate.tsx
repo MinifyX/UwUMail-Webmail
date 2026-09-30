@@ -75,8 +75,13 @@ export function useEstimateText(estimate: AssistEstimate | null): string | null 
 
 type Place = { left: number; top?: number; bottom?: number };
 
-function placeFor(target: Element): Place {
+function placeFor(target: Element, beside: boolean): Place {
   const rect = target.getBoundingClientRect();
+  // Menu items: next to the item, so the tooltip never covers the one below.
+  if (beside) {
+    if (rect.right + 288 <= window.innerWidth) return { left: rect.right + 8, top: rect.top };
+    if (rect.left >= 288) return { left: rect.left - 288, top: rect.top };
+  }
   const left = Math.max(8, Math.min(rect.left, window.innerWidth - 280));
   // Below the button, or above it where the screen ends (the composer's toolbar, a phone).
   return rect.bottom + 48 > window.innerHeight
@@ -99,13 +104,15 @@ interface EstimateTipProps {
   hint?: string;
   /** The button; it keeps its own handlers. */
   children: ReactElement;
+  /** Show the tooltip beside the button instead of below it (menu items), where there is room. */
+  beside?: boolean;
 }
 
 /**
  * A tooltip on an AI button with about what it costs: shown on hover, keyboard focus or a long
  * press, the estimate asked for only then. A long press never also presses the button.
  */
-export function EstimateTip({ request, hint, children }: EstimateTipProps) {
+export function EstimateTip({ request, hint, children, beside = false }: EstimateTipProps) {
   const id = useId();
   const [place, setPlace] = useState<Place | null>(null);
   const press = useRef<{ timer: ReturnType<typeof setTimeout> | null; fired: boolean }>({ timer: null, fired: false });
@@ -123,7 +130,7 @@ export function EstimateTip({ request, hint, children }: EstimateTipProps) {
   );
 
   // The wrapper has no box of its own: the tooltip goes by the button inside it.
-  const show = (wrapper: Element) => setPlace(placeFor(wrapper.firstElementChild ?? wrapper));
+  const show = (wrapper: Element) => setPlace(placeFor(wrapper.firstElementChild ?? wrapper, beside));
   const hide = () => setPlace(null);
   const endPress = () => {
     if (press.current.timer) clearTimeout(press.current.timer);

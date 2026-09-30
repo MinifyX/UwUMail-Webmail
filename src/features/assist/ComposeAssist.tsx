@@ -71,9 +71,11 @@ export function presetRequest(
 }
 
 /** A button with the tooltip of about what asking `request` costs. */
-function withEstimate(request: AssistComposeRequest | null) {
+function withEstimate(request: AssistComposeRequest | null, beside = false) {
   return (button: ReactElement): ReactElement => (
-    <EstimateTip request={request && { method: "Assist/compose", request }}>{button}</EstimateTip>
+    <EstimateTip request={request && { method: "Assist/compose", request }} beside={beside}>
+      {button}
+    </EstimateTip>
   );
 }
 
@@ -107,7 +109,7 @@ export function ComposeAssistButton({ onPick, context }: ComposeAssistButtonProp
             />
           ),
           onSelect: () => onPick({ kind: "rewrite", preset }),
-          ...(snapshot ? { wrap: withEstimate(presetRequest(preset, snapshot)) } : {}),
+          ...(snapshot ? { wrap: withEstimate(presetRequest(preset, snapshot), true) } : {}),
         })),
         {
           group: t("assist.compose.moreGroup"),
