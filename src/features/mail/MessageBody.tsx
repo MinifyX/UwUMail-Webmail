@@ -37,6 +37,8 @@ function unescapeHtml(text: string) {
  * later step it reaches (security-audit W-39).
  */
 const OWN_MARKER = /^data-uwu-/;
+const MATHML = "http://www.w3.org/1998/Math/MathML";
+const XLINK = "http://www.w3.org/1999/xlink";
 const purifier = DOMPurify();
 purifier.addHook("uponSanitizeAttribute", (_node, data) => {
   if (OWN_MARKER.test(data.attrName)) data.keepAttr = false;
@@ -45,6 +47,12 @@ purifier.addHook("uponSanitizeAttribute", (_node, data) => {
 // markers are gone, so only the reader sets this one.
 purifier.addHook("afterSanitizeAttributes", (node) => {
   if (node.nodeName === "A" || node.nodeName === "AREA") unwrapSafeLinkElement(node);
+  // Safari follows `href` on any MathML element, and the reader's link handler only catches
+  // a/area, so such a link would open in the frame without the link question (security-audit W-45).
+  if (node.namespaceURI === MATHML) {
+    node.removeAttribute("href");
+    node.removeAttributeNS(XLINK, "href");
+  }
 });
 
 /**

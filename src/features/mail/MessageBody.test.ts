@@ -60,6 +60,20 @@ describe("buildDocument", () => {
     expect(doc).not.toContain("overflow-wrap:anywhere");
   });
 
+  // Safari follows `href` on any MathML element; the reader's link handler catches only a/area (W-45).
+  it("keeps no link the reader can't catch: MathML carries none", () => {
+    const html = readableBody(
+      message({
+        bodyHtml:
+          '<p>E = <math><mi href="https://elsewhere.example/">mc</mi><mn xlink:href="https://other.example/">2</mn></math></p>',
+      }),
+    );
+    expect(html).not.toContain("elsewhere.example");
+    expect(html).not.toContain("other.example");
+    expect(html).toContain("<math");
+    expect(html).toContain("mc");
+  });
+
   it("blocks remote images until allowed", () => {
     const blocked = buildDocument(message({ bodyHtml: "<p>Hi</p>" }), false, "light");
     const allowed = buildDocument(message({ bodyHtml: "<p>Hi</p>" }), true, "light");
