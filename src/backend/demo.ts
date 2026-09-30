@@ -28,6 +28,7 @@ import type {
   BirthdayImportResult,
   BirthdayScan,
   AssistComposeRequest,
+  AssistEstimateRequest,
   AssistLabelInput,
   AssistProviderInput,
   AssistSettingsPatch,
@@ -1227,9 +1228,14 @@ export class DemoBackend implements Backend {
     return this.assist.extractEvents(emailId);
   }
 
-  async assistUsage(days = 30) {
+  async assistEstimate(request: AssistEstimateRequest, currency?: string) {
+    await wait(60);
+    return this.assist.estimate(request, currency);
+  }
+
+  async assistUsage(days = 30, currency?: string) {
     await wait(80);
-    return this.assist.usageReport(Math.min(90, Math.max(1, days)));
+    return this.assist.usageReport(Math.min(90, Math.max(1, days)), currency);
   }
 
   async assistLabels() {

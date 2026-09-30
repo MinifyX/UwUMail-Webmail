@@ -1,10 +1,13 @@
 import clsx from "clsx";
 import { CalendarPlus, ChevronDown, ImageIcon, MapPin, Sparkles, TriangleAlert, X } from "lucide-react";
 import { useId, useState } from "react";
-import { Button, IconButton } from "@/components/ui/Button";
+import { NyuThinking } from "@/components/nyu/NyuThinking";
+import { Button, IconButton, Spinner } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import type { DetectedEvent } from "@/lib/dates";
 import { toast } from "@/state/toasts";
+import { EstimateTip } from "../assist/Estimate";
+import { useAssistReader } from "../assist/readerState";
 import { Popover } from "../calendar/Popover";
 import { armedActivation } from "../mail/LinkWarning";
 import type { Anchor } from "../calendar/state";
@@ -64,7 +67,18 @@ export function EventsBar({ messageId, found, onAdd }: EventsBarProps) {
   const [expanded, setExpanded] = useState(false);
   const listId = useId();
   const events = found.events.filter((event) => isUpcoming(event));
-  if (dismissed || events.length === 0) return null;
+  // "Find appointment" was pressed: say how it goes even while there is nothing to offer.
+  const outcome =
+    found.requested && events.length === 0
+      ? found.refining
+        ? "searching"
+        : found.refineFailed
+          ? "failed"
+          : found.refined
+            ? "none"
+            : null
+      : null;
+  if (dismissed || (events.length === 0 && !outcome)) return null;
   const locale = i18n.language;
   const untitled = t("calendar.untitled");
   const single = events.length === 1 ? events[0]! : null;
@@ -77,17 +91,60 @@ export function EventsBar({ messageId, found, onAdd }: EventsBarProps) {
   };
 
   const refine = found.canRefine && !found.refined && (
-    <Button
-      size="sm"
-      variant="ghost"
-      icon={Sparkles}
-      busy={found.refining}
-      onClick={found.refine}
-      title={t("dates.refineHint")}
+    <EstimateTip
+      request={{ method: "Assist/extractEvents", emailId: messageId, includeImages: found.includeImages }}
+      hint={t("dates.refineHint")}
     >
-      {found.refineFailed ? t("dates.refineAgain") : t("dates.refine")}
-    </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        icon={Sparkles}
+        busy={found.refining}
+        busyIndicator={<NyuThinking size="sm" fallback={<Spinner />} />}
+        onClick={found.refine}
+      >
+        {found.refineFailed ? t("dates.refineAgain") : t("dates.refine")}
+      </Button>
+    </EstimateTip>
   );
+
+  if (outcome) {
+    return (
+      <section
+        aria-label={t("dates.barLabel")}
+        className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-[13px]"
+      >
+        <Sparkles
+          className={clsx("size-4 shrink-0 text-pink", outcome === "searching" && "animate-pulse")}
+          aria-hidden
+        />
+        <p
+          role="status"
+          aria-busy={outcome === "searching"}
+          className={clsx("min-w-0 flex-1", outcome === "failed" ? "text-danger" : "text-muted")}
+        >
+          {outcome === "searching"
+            ? t("dates.finding")
+            : outcome === "failed"
+              ? t("dates.refineFailed")
+              : t("dates.findNone")}
+        </p>
+        <span className="ml-auto flex items-center gap-1.5">
+          {outcome === "failed" && (
+            <Button size="sm" variant="ghost" icon={Sparkles} onClick={found.refine}>
+              {t("dates.refineAgain")}
+            </Button>
+          )}
+          <IconButton
+            icon={X}
+            size="sm"
+            label={t("dates.findClose")}
+            onClick={() => useAssistReader.getState().stopFindEvents(messageId)}
+          />
+        </span>
+      </section>
+    );
+  }
 
   return (
     <section

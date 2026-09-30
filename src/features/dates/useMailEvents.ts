@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { backend } from "@/backend/backend";
 import type { Message } from "@/backend/types";
 import { useT } from "@/i18n";
@@ -14,9 +14,11 @@ import {
   type MailContext,
 } from "@/lib/dates";
 import { useSettings } from "@/state/settings";
+import { useAssistReader } from "../assist/readerState";
 import { carriesInvitation } from "../calendar/Invitation";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
 import { readableBody } from "../mail/MessageBody";
+import { useDismissedDates } from "./dismissed";
 import { whenLabel } from "./format";
 
 export interface MailEventsOptions {
@@ -41,6 +43,10 @@ export interface MailEvents {
   textEvents: DetectedEvent[];
   /** The assistant can read this mail for appointments. */
   canRefine: boolean;
+  /** The person asked the assistant themselves ("Find appointment"), so its outcome is shown even without finds. */
+  requested: boolean;
+  /** Whether the assistant gets the text of the mail's pictures too. */
+  includeImages: boolean;
   refining: boolean;
   refined: boolean;
   refineFailed: boolean;
@@ -59,6 +65,24 @@ function hasOwnPictures(message: Message): boolean {
     /<img\b[^>]*\ssrc\s*=\s*["']?\s*(?:cid|data):/i.test(message.bodyHtml ?? "") ||
     message.attachments.some((attachment) => attachment.mimeType.toLowerCase().startsWith("image/"))
   );
+}
+
+/**
+ * Whether reading the mail for appointments takes its pictures' text along: its own pictures, and
+ * remote ones once they may load; never while remote ones are held back.
+ */
+export function includesImages(message: Message, allowRemote: boolean): boolean {
+  const remote = allowRemote && message.hasRemoteContent;
+  return (remote || hasOwnPictures(message)) && (!message.hasRemoteContent || allowRemote);
+}
+
+/**
+ * "Find appointment": the assistant reads the mail now, whatever the automatic setting says, and
+ * the bar shows what it found (or that it found nothing), even where it was put away before.
+ */
+export function findEventsWithAssistant(emailId: string) {
+  useDismissedDates.getState().restore(emailId);
+  useAssistReader.getState().findEvents(emailId);
 }
 
 /**
@@ -102,20 +126,23 @@ export function useMailEvents(
     [imageText.data, context],
   );
 
+  // Asked for by click: in the bar, or "Find appointment" even where nothing was found by rules.
+  const requested = useAssistReader((s) => s.eventSearches[message.id] === true);
+  const findable = own && calendars && !message.flags.draft;
   const features = useQuery({
     queryKey: ["assistFeatures"],
     queryFn: () => backend().assistFeatures(),
-    enabled: on && own,
+    enabled: own && (on || (requested && findable)),
     staleTime: Infinity,
     retry: false,
   });
-  const canRefine = on && own && features.data?.extractEvents === true;
-  const [asked, setAsked] = useState<string | null>(null);
-  const includeImages = pictures && (!message.hasRemoteContent || allowRemote);
+  const extractable = features.data?.extractEvents === true;
+  const canRefine = on && own && extractable;
+  const includeImages = includesImages(message, allowRemote);
   const assistant = useQuery({
     queryKey: ["extractEvents", message.id, includeImages],
     queryFn: () => backend().extractEvents(message.id, includeImages),
-    enabled: canRefine && (refineAlways || asked === message.id),
+    enabled: (canRefine && refineAlways) || (requested && findable && extractable),
     staleTime: Infinity,
     retry: false,
   });
@@ -154,11 +181,13 @@ export function useMailEvents(
     marks,
     textEvents,
     canRefine,
+    requested: requested && findable && extractable,
+    includeImages,
     refining: assistant.isFetching,
     refined: assistant.isSuccess,
     refineFailed: assistant.isError,
     refine: () => {
-      setAsked(message.id);
+      useAssistReader.getState().findEvents(message.id);
       if (assistant.isError) void assistant.refetch();
     },
   };

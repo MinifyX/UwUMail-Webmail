@@ -231,6 +231,8 @@
     "theme": "テーマ",
     "motion": "アニメーション",
     "motionDesc": "「システム」を選ぶと、{{brand}} は OS の「視差効果を減らす」設定に従います。",
+    "nyuAnimations": "Nyu のアニメーション",
+    "nyuAnimationsDesc": "メールの送信・アーカイブ・表示時や、アシスタントが考えている間に短いシーンを表示します。「控えめ」では、視差効果を減らす設定と同じく静止画で表示します。",
     "tone": "トーン",
     "language": "言語",
     "conversations": "メールをスレッドにまとめる",
@@ -323,6 +325,11 @@
   "motion": {
     "system": "システム",
     "on": "オン",
+    "off": "オフ"
+  },
+  "nyuAnimations": {
+    "on": "オン",
+    "reduced": "控えめ",
     "off": "オフ"
   },
   "language": {
@@ -1387,7 +1394,14 @@
       "effectiveNone": "利用できるモデルがありません",
       "eventsTitle": "予定",
       "refineEvents": "メールを開くたびに予定を探す",
-      "refineEventsDesc": "開いたメールをすべてモデルが読んで日時を探します。これは 1 日の上限にカウントされます。オフの場合は、依頼したときだけ探します。"
+      "refineEventsDesc": "開いたメールをすべてモデルが読んで日時を探します。これは 1 日の上限にカウントされます。オフの場合は、依頼したときだけ探します。",
+      "costsTitle": "費用",
+      "currency": "通貨",
+      "currencyHint": "AI の費用はこの通貨で表示され、ECB の参考レートで換算されます。",
+      "currencies": {
+        "EUR": "ユーロ（€）",
+        "USD": "米ドル（$）"
+      }
     },
     "providers": {
       "title": "プロバイダー",
@@ -1446,8 +1460,14 @@
         "urlMissing": "このプロバイダーにはアドレスが必要です。",
         "urlScheme": "アドレスは http:// または https:// で始めてください。",
         "urlLogin": "アドレスにユーザー名とパスワードを含めないでください。",
-        "keyMissing": "このプロバイダーには API キーが必要です。"
-      }
+        "keyMissing": "このプロバイダーには API キーが必要です。",
+        "priceInvalid": "0〜10,000 の価格を入力してください（例：0.40）。"
+      },
+      "inputPrice": "入力価格（100 万トークンあたり USD）",
+      "outputPrice": "出力価格（100 万トークンあたり USD）",
+      "priceHint": "空欄の場合はモデルの既知の価格を使います。",
+      "priceAuto": "自動：{{price}}",
+      "priceUnknown": "不明"
     },
     "chatgpt": {
       "warningTitle": "試験的・非公式",
@@ -1480,6 +1500,16 @@
       "limitReached": "本日の上限に達しました。午前 0 時（UTC）にリセットされます。",
       "lastDays_other": "過去 {{count}} 日間",
       "nothing": "この期間の使用はありません。"
+    },
+    "estimate": {
+      "tokens_other": "約 {{tokens}} トークン",
+      "tokensLeft": "本日残り {{left}}",
+      "requestsLeft_other": "本日残り {{left}} 回"
+    },
+    "cost": {
+      "free": "無料",
+      "below": "{{amount}} 未満",
+      "about": "約 {{amount}}"
     }
   },
   "dates": {
@@ -1495,6 +1525,10 @@
     "refineAgain": "もう一度 AI に聞く",
     "refineHint": "AI アシスタントがこのメールを読み、予定をより正確に見つけます。AI の利用枠を消費します。",
     "refineFailed": "AI が今は読み取れませんでした。",
+    "find": "予定を探す",
+    "finding": "AI が予定を探しています…",
+    "findNone": "AI はこのメールに予定を見つけられませんでした。",
+    "findClose": "閉じる",
     "fromAssistant": "AI",
     "fromPicture": "画像から",
     "ambiguous": "または {{other}}？",

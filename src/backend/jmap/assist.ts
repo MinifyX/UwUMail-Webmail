@@ -13,7 +13,11 @@ import {
   ASSIST_FEATURES,
   type AssistAnswer,
   type AssistChoice,
+  type AssistCost,
+  type AssistPrice,
   type AssistEffective,
+  type AssistEstimate,
+  type AssistEstimateMethod,
   type AssistEvent,
   type AssistFeature,
   type AssistFeatures,
@@ -90,6 +94,31 @@ export function streamUrlFrom(capabilities: Record<string, unknown>): string | n
   return asString(asObject(capabilities[ASSIST])?.streamUrl);
 }
 
+/** A price per million tokens: a number that isn't negative, or null. */
+const asPrice = (value: unknown): number | null => {
+  const number = asNumber(value);
+  return number !== null && number >= 0 ? number : null;
+};
+
+function toPrice(value: unknown): AssistPrice | null {
+  const raw = asObject(value);
+  const input = asPrice(raw?.inputPerMillion);
+  const output = asPrice(raw?.outputPerMillion);
+  if (!raw || input === null || output === null) return null;
+  const source = raw.source === "manual" || raw.source === "free" ? raw.source : "auto";
+  return { inputPerMillion: input, outputPerMillion: output, source };
+}
+
+/** A `cost`; anything unreadable (or a server from before costs) is no cost. */
+export function toCost(value: unknown): AssistCost | null {
+  const raw = asObject(value);
+  const amount = asNumber(raw?.amount);
+  const currency = asString(raw?.currency);
+  if (amount === null || amount < 0 || !currency || !/^[A-Z]{3}$/.test(currency)) return null;
+  const usd = asNumber(raw?.usd);
+  return { amount, currency, usd: usd !== null && usd >= 0 ? usd : null };
+}
+
 export function toAssistProvider(raw: Raw): AssistProvider {
   const kind = KINDS.includes(raw.kind as AssistProviderKind) ? (raw.kind as AssistProviderKind) : "openaiCompatible";
   const quota = asObject(raw.quota);
@@ -111,6 +140,9 @@ export function toAssistProvider(raw: Raw): AssistProvider {
       : null,
     experimental: raw.experimental === true || kind === "chatgpt",
     connected: raw.connected === true,
+    inputPricePerMillion: asPrice(raw.inputPricePerMillion),
+    outputPricePerMillion: asPrice(raw.outputPricePerMillion),
+    price: toPrice(raw.price),
   };
 }
 
@@ -132,6 +164,8 @@ function providerPatch(input: AssistProviderInput, creating: boolean): Raw {
   if (input.apiKey !== undefined && (input.apiKey !== "" || !creating)) out.apiKey = input.apiKey.trim();
   if (input.model !== undefined) out.model = input.model?.trim() || null;
   if (input.fastModel !== undefined) out.fastModel = input.fastModel?.trim() || null;
+  if (input.inputPricePerMillion !== undefined) out.inputPricePerMillion = input.inputPricePerMillion;
+  if (input.outputPricePerMillion !== undefined) out.outputPricePerMillion = input.outputPricePerMillion;
   return out;
 }
 
@@ -372,6 +406,7 @@ export function toUsage(raw: Raw): AssistUsage {
         requests: asCount(entry.requests),
         inputTokens: asCount(entry.inputTokens),
         outputTokens: asCount(entry.outputTokens),
+        cost: toCost(entry.cost),
       })),
     today: today
       .map((entry) => asObject(entry))
@@ -383,7 +418,37 @@ export function toUsage(raw: Raw): AssistUsage {
         tokens: asCount(entry.tokens),
         requestsPerDay: asNumber(entry.requestsPerDay),
         tokensPerDay: asNumber(entry.tokensPerDay),
+        cost: toCost(entry.cost),
       })),
+  };
+}
+
+const ESTIMATED: readonly AssistEstimateMethod[] = [
+  "Assist/compose",
+  "Assist/summarize",
+  "Assist/spamCheck",
+  "Assist/extractEvents",
+];
+
+/** The answer of `Assist/estimate`; a limit that isn't a number is no limit. */
+export function toEstimate(raw: Raw, method: AssistEstimateMethod): AssistEstimate {
+  const inputTokens = asCount(raw.inputTokens);
+  const outputTokens = asCount(raw.outputTokens);
+  const left = (value: unknown) => {
+    const number = asNumber(value);
+    return number === null ? null : Math.max(0, Math.floor(number));
+  };
+  return {
+    method: ESTIMATED.includes(raw.method as AssistEstimateMethod) ? (raw.method as AssistEstimateMethod) : method,
+    inputTokens,
+    outputTokens,
+    totalTokens: asNumber(raw.totalTokens) === null ? inputTokens + outputTokens : asCount(raw.totalTokens),
+    providerId: asString(raw.providerId) ?? "",
+    providerName: asString(raw.providerName) ?? "",
+    model: asString(raw.model),
+    tokensLeftToday: left(raw.tokensLeftToday),
+    requestsLeftToday: left(raw.requestsLeftToday),
+    cost: toCost(raw.cost),
   };
 }
 

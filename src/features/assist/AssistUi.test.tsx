@@ -347,6 +347,33 @@ describe("the assistant's UI", () => {
     );
   });
 
+  it("takes prices set by hand, in either decimal mark, and only sensible ones", async () => {
+    renderWith(<ProviderSettings options={OPTIONS} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Add provider" }));
+    fireEvent.change(screen.getByLabelText("API key"), { target: { value: "sk-test-1234" } }); // gitleaks:allow
+    const input = screen.getByLabelText("Input price (USD per million tokens)");
+    expect(input.getAttribute("placeholder")).toBe("unknown");
+    fireEvent.change(input, { target: { value: "abc" } });
+    fireEvent.change(screen.getByLabelText("Output price (USD per million tokens)"), { target: { value: "2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    expect(await screen.findByText("A price from 0 to 10,000, e.g. 0.40.")).toBeTruthy();
+    expect(fake.createAssistProvider).not.toHaveBeenCalled();
+    fireEvent.change(input, { target: { value: "0,40" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    await waitFor(() =>
+      expect(fake.createAssistProvider).toHaveBeenCalledWith(
+        expect.objectContaining({ inputPricePerMillion: 0.4, outputPricePerMillion: 2 }),
+      ),
+    );
+  });
+
+  it("asks no price for what costs nothing per token", async () => {
+    renderWith(<ProviderSettings options={OPTIONS} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Add provider" }));
+    fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "ollama" } });
+    expect(screen.queryByLabelText("Input price (USD per million tokens)")).toBeNull();
+  });
+
   it("warns that a Claude subscription can't be used", async () => {
     renderWith(<ProviderSettings options={OPTIONS} />);
     fireEvent.click(await screen.findByRole("button", { name: "Add provider" }));

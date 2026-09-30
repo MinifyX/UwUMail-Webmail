@@ -29,6 +29,7 @@ import { useUi } from "@/state/ui";
 import {
   emptyProviderForm,
   insecureUrl,
+  isFreeKind,
   PROVIDER_NAME_MAX,
   providerCreateInput,
   providerFormFrom,
@@ -325,7 +326,7 @@ function ProviderEditor({
   options: AssistOptions;
   onDone: (made?: AssistProvider) => void;
 }) {
-  const { t } = useT();
+  const { t, i18n } = useT();
   const [form, setForm] = useState<ProviderForm>(() =>
     provider ? providerFormFrom(provider) : emptyProviderForm("openai"),
   );
@@ -340,11 +341,14 @@ function ProviderEditor({
     setFailure(null);
   };
 
-  const problemText = (field: "name" | "baseUrl" | "apiKey"): string | undefined => {
+  const problemText = (field: "name" | "baseUrl" | "apiKey" | "inputPrice" | "outputPrice"): string | undefined => {
     const problem = touched ? problems[field] : undefined;
     if (problem) return t(`assist.providers.problem.${problem}`, { max: PROVIDER_NAME_MAX });
-    return fromServer[field];
+    return fromServer[field === "inputPrice" || field === "outputPrice" ? `${field}PerMillion` : field];
   };
+  // What the server knows the model costs, as the placeholder of an empty price.
+  const known = provider?.price && provider.price.source !== "manual" ? provider.price : null;
+  const priceNumber = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 4 });
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -514,6 +518,37 @@ function ProviderEditor({
           )}
         </Field>
       </div>
+      {!isFreeKind(form.kind) && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {(["inputPrice", "outputPrice"] as const).map((field) => (
+            <Field
+              key={field}
+              label={t(`assist.providers.${field}`)}
+              hint={t("assist.providers.priceHint")}
+              error={problemText(field)}
+            >
+              {(id) => (
+                <TextInput
+                  id={id}
+                  inputMode="decimal"
+                  autoComplete="off"
+                  value={form[field]}
+                  placeholder={
+                    known
+                      ? t("assist.providers.priceAuto", {
+                          price: priceNumber.format(
+                            field === "inputPrice" ? known.inputPerMillion : known.outputPerMillion,
+                          ),
+                        })
+                      : t("assist.providers.priceUnknown")
+                  }
+                  onChange={(event) => change({ [field]: event.target.value })}
+                />
+              )}
+            </Field>
+          ))}
+        </div>
+      )}
       {failure !== null && Object.keys(fromServer).length === 0 && (
         <p role="alert" className="rounded-xl bg-danger-tint px-3 py-2 text-[13px] text-danger">
           {assistErrorText(failure)}

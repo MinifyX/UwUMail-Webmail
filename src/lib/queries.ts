@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { backend, BackendError } from "@/backend/backend";
+import { playNyu, type CameoName } from "@/components/nyu/cameo";
 import type {
   FlagChange,
   Folder,
@@ -40,6 +41,7 @@ export const queryKeys = {
   assistLabels: ["assistLabels"] as const,
   assistLabelLog: ["assistLabelLog"] as const,
   assistUsage: ["assistUsage"] as const,
+  assistEstimate: ["assistEstimate"] as const,
 };
 
 /** What went wrong, for a toast: a refusal of a shared folder's owner in the reader's words. */
@@ -261,8 +263,10 @@ export async function trashMail(client: QueryClient, messages: Message[], leave?
     if (forever) {
       const count = await backend().deleteForever(ids);
       toast(translate("toast.deletedForever", { count }), "success");
+      playNyu("deleted");
     } else {
       announceMove(await backend().trash(ids), translate("toast.trashed"), refresh);
+      playNyu("trashed");
     }
     return true;
   } catch (error) {
@@ -290,9 +294,10 @@ export function useMessageActions() {
   };
 
   /** Moves mail and offers to put it back (also with "z"). */
-  const moveWithUndo = async (move: () => Promise<MovedMessage[]>, success: string) => {
+  const moveWithUndo = async (move: () => Promise<MovedMessage[]>, success: string, cameo?: CameoName) => {
     try {
       announceMove(await move(), success, invalidate);
+      if (cameo) playNyu(cameo);
     } catch (error) {
       toast(errorText(error), "error");
     } finally {
@@ -302,7 +307,7 @@ export function useMessageActions() {
 
   return {
     setFlags: (ids: string[], change: FlagChange) => run(() => backend().setFlags(ids, change)),
-    archive: (ids: string[]) => moveWithUndo(() => backend().archive(ids), t("toast.archived")),
+    archive: (ids: string[]) => moveWithUndo(() => backend().archive(ids), t("toast.archived"), "archived"),
     /** Into the trash, or out of it for good after asking; see `trashMail`. */
     trash: (messages: Message[], leave?: () => void) => trashMail(client, messages, leave),
     move: (ids: string[], folder: { id: string; name: string }) =>
@@ -431,6 +436,7 @@ export function useBackendEvents() {
             queryKeys.assistLabels,
             queryKeys.assistLabelLog,
             queryKeys.assistUsage,
+            queryKeys.assistEstimate,
           ]) {
             void client.invalidateQueries({ queryKey: key });
           }

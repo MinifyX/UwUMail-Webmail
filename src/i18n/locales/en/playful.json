@@ -82,6 +82,7 @@
   },
   "settings": {
     "motionDesc": "Should Nyu blink, hop and fly around? With System, I follow your operating system.",
+    "nyuAnimationsDesc": "Shall I wave your mail goodbye, close the box when you archive and ponder while the AI works? Reduced: I hold still like in a photo.",
     "trustedSendersEmpty": "Nobody on my list yet (・・ )? Add senders right in the image notice of a message.",
     "signatureSaved": "Signature looks great ✧",
     "signaturePlaceholder": "Kind regards ✿",

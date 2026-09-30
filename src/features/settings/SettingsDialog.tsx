@@ -29,7 +29,7 @@ import { useIsPhone } from "@/lib/device";
 import { openLinkNow } from "@/state/links";
 import { isDomainEntry, sortEntries } from "@/lib/trustedSenders";
 import { useBrand } from "@/state/brand";
-import { useSettings, type LanguageSetting, type SwipeAction } from "@/state/settings";
+import { NYU_ANIMATIONS, useSettings, type LanguageSetting, type SwipeAction } from "@/state/settings";
 import { toast } from "@/state/toasts";
 import { AssistantSettings } from "../assist/settings/AssistantSettings";
 import { useAssistOptions } from "../assist/useAssist";
@@ -108,6 +108,16 @@ function Appearance() {
           ]}
         />
       </Row>
+      {mascot && (
+        <Row label={t("settings.nyuAnimations")} description={t("settings.nyuAnimationsDesc")}>
+          <Segmented
+            label={t("settings.nyuAnimations")}
+            value={settings.nyuAnimations}
+            onChange={(nyuAnimations) => settings.update({ nyuAnimations })}
+            options={NYU_ANIMATIONS.map((value) => ({ value, label: t(`nyuAnimations.${value}`) }))}
+          />
+        </Row>
+      )}
       {mascot && (
         <Row
           label={t("settings.tone")}

@@ -13,12 +13,14 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent, type ReactElement, type ReactNode } from "react";
+import { NyuThinking } from "@/components/nyu/NyuThinking";
 import { backend } from "@/backend/backend";
 import { ASSIST_PRESETS, type AssistComposeRequest, type AssistPreset } from "@/backend/types";
 import { Button, IconButton } from "@/components/ui/Button";
 import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
+import { EstimateTip } from "./Estimate";
 import {
   assistErrorDetail,
   assistErrorText,
@@ -45,10 +47,50 @@ export interface ComposeAssistContext {
 /** Languages offered for translating, as tags; their names come from the browser. */
 const TARGET_LANGUAGES = ["en", "de", "fr", "nl", "es", "it", "pt", "pl", "tr", "uk", "ja", "zh"];
 
+/** The language a translation goes into unless the person picks another. */
+export const defaultTargetLanguage = (language: string) => (language === "en" ? "de" : "en");
+
+/** A preset applied to the draft as it is: what the panel will ask, for the cost of asking it. */
+export function presetRequest(
+  preset: AssistPreset,
+  context: ComposeAssistContext,
+  targetLanguage = defaultTargetLanguage(context.language),
+): AssistComposeRequest | null {
+  if (context.source.text.trim() === "") return null;
+  return {
+    mode: "rewrite",
+    instruction: null,
+    preset,
+    targetLanguage: preset === "translate" ? targetLanguage : null,
+    text: context.source.text,
+    subject: context.subject || null,
+    replyToEmailId: context.replyToEmailId,
+    wantSubject: false,
+    language: context.language,
+  };
+}
+
+/** A button with the tooltip of about what asking `request` costs. */
+function withEstimate(request: AssistComposeRequest | null, beside = false) {
+  return (button: ReactElement): ReactElement => (
+    <EstimateTip request={request && { method: "Assist/compose", request }} beside={beside}>
+      {button}
+    </EstimateTip>
+  );
+}
+
+interface ComposeAssistButtonProps {
+  onPick: (start: ComposeAssistStart) => void;
+  /** What the draft would give the assistant now, for the presets' estimates. */
+  context?: () => ComposeAssistContext;
+}
+
 /** The ✨ button in the composer's toolbar with what the assistant can do there. */
-export function ComposeAssistButton({ onPick }: { onPick: (start: ComposeAssistStart) => void }) {
+export function ComposeAssistButton({ onPick, context }: ComposeAssistButtonProps) {
   const { t } = useT();
   const rewrite = t("assist.compose.rewriteGroup");
+  // Taken when the menu opens: the draft can't change while it is open.
+  const [snapshot, setSnapshot] = useState<ComposeAssistContext | null>(null);
   return (
     <Menu
       side="above"
@@ -67,6 +109,7 @@ export function ComposeAssistButton({ onPick }: { onPick: (start: ComposeAssistS
             />
           ),
           onSelect: () => onPick({ kind: "rewrite", preset }),
+          ...(snapshot ? { wrap: withEstimate(presetRequest(preset, snapshot), true) } : {}),
         })),
         {
           group: t("assist.compose.moreGroup"),
@@ -81,7 +124,10 @@ export function ComposeAssistButton({ onPick }: { onPick: (start: ComposeAssistS
           label={t("assist.compose.button")}
           // The cursor and the marked text in the draft stay where they are.
           onMouseDown={(event) => event.preventDefault()}
-          onClick={menu.toggle}
+          onClick={() => {
+            if (!menu.open) setSnapshot(context?.() ?? null);
+            menu.toggle();
+          }}
           aria-haspopup={menu["aria-haspopup"]}
           aria-expanded={menu["aria-expanded"]}
           aria-controls={menu["aria-controls"]}
@@ -144,7 +190,7 @@ export function ComposeAssistPanel({
   const needsInput = ask.mode !== "rewrite" || ask.preset === "translate";
   const [asking, setAsking] = useState(needsInput);
   const [instruction, setInstruction] = useState("");
-  const [targetLanguage, setTargetLanguage] = useState(() => (context.language === "en" ? "de" : "en"));
+  const [targetLanguage, setTargetLanguage] = useState(() => defaultTargetLanguage(context.language));
   const [wantSubject, setWantSubject] = useState(subjectEmpty);
   const [subjectTaken, setSubjectTaken] = useState(false);
   const [lastRequest, setLastRequest] = useState<AssistComposeRequest | null>(null);
@@ -328,20 +374,22 @@ export function ComposeAssistPanel({
                   {t("assist.compose.wantSubject")}
                 </label>
               )}
-              <Button
-                type="submit"
-                size="sm"
-                variant="primary"
-                icon={Sparkles}
-                className="ml-auto"
-                disabled={ask.preset !== "translate" && !instruction.trim()}
-              >
-                {ask.mode === "write"
-                  ? t("assist.compose.go")
-                  : ask.preset === "translate"
-                    ? t("assist.compose.translate")
-                    : t("assist.compose.apply")}
-              </Button>
+              {withEstimate(ask.preset === "translate" || instruction.trim() ? request() : null)(
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="primary"
+                  icon={Sparkles}
+                  className="ml-auto"
+                  disabled={ask.preset !== "translate" && !instruction.trim()}
+                >
+                  {ask.mode === "write"
+                    ? t("assist.compose.go")
+                    : ask.preset === "translate"
+                      ? t("assist.compose.translate")
+                      : t("assist.compose.apply")}
+                </Button>,
+              )}
             </div>
           </form>
         )}
@@ -415,11 +463,12 @@ export function ComposeAssistPanel({
                       </Button>
                     </>
                   )}
-                  {lastRequest && (
-                    <Button size="sm" variant="ghost" icon={RotateCcw} onClick={() => send(lastRequest)}>
-                      {t("assist.retry")}
-                    </Button>
-                  )}
+                  {lastRequest &&
+                    withEstimate(lastRequest)(
+                      <Button size="sm" variant="ghost" icon={RotateCcw} onClick={() => send(lastRequest)}>
+                        {t("assist.retry")}
+                      </Button>,
+                    )}
                   {hasText && (
                     <Button size="sm" variant="ghost" icon={PencilLine} onClick={adjustFurther}>
                       {t("assist.compose.adjustFurther")}
@@ -450,20 +499,23 @@ function Note({ tone, children }: { tone: "warning" | "danger"; children: ReactN
   );
 }
 
-/** The model is thinking: three soft dots. */
+/** The model is thinking: Nyu ponders, or three soft dots while Nyu's animations are off. */
 export function Thinking() {
   const { t } = useT();
+  const dots = (
+    <span className="inline-flex gap-1" aria-hidden>
+      {[0, 1, 2].map((dot) => (
+        <span
+          key={dot}
+          className="size-1.5 animate-pulse rounded-full bg-pink"
+          style={{ animationDelay: `${dot * 180}ms` }}
+        />
+      ))}
+    </span>
+  );
   return (
     <span className="inline-flex items-center gap-2 text-[13px] text-muted">
-      <span className="inline-flex gap-1" aria-hidden>
-        {[0, 1, 2].map((dot) => (
-          <span
-            key={dot}
-            className="size-1.5 animate-pulse rounded-full bg-pink"
-            style={{ animationDelay: `${dot * 180}ms` }}
-          />
-        ))}
-      </span>
+      <NyuThinking fallback={dots} className="-my-1.5" />
       {t("assist.thinking")}
     </span>
   );

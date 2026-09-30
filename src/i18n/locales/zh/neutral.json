@@ -231,6 +231,8 @@
     "theme": "主题",
     "motion": "动画",
     "motionDesc": "选择“系统”时，{{brand}} 会遵循操作系统的“减少动态效果”设置。",
+    "nyuAnimations": "Nyu 动画",
+    "nyuAnimationsDesc": "发送、归档或打开邮件时，以及助手思考时，显示简短的小场景。“减少”会像“减少动态效果”一样以静态图片显示。",
     "tone": "语气",
     "language": "语言",
     "conversations": "将邮件按会话分组",
@@ -323,6 +325,11 @@
   "motion": {
     "system": "系统",
     "on": "开",
+    "off": "关"
+  },
+  "nyuAnimations": {
+    "on": "开",
+    "reduced": "减少",
     "off": "关"
   },
   "language": {
@@ -1387,7 +1394,14 @@
       "effectiveNone": "没有可用的模型",
       "eventsTitle": "日程",
       "refineEvents": "每次打开邮件时查找日程",
-      "refineEventsDesc": "模型会读取你打开的每封邮件以查找日期，这会计入你的每日额度。关闭时：仅在你要求时查找。"
+      "refineEventsDesc": "模型会读取你打开的每封邮件以查找日期，这会计入你的每日额度。关闭时：仅在你要求时查找。",
+      "costsTitle": "费用",
+      "currency": "货币",
+      "currencyHint": "AI 费用以此货币显示，按欧洲央行参考汇率换算。",
+      "currencies": {
+        "EUR": "欧元（€）",
+        "USD": "美元（$）"
+      }
     },
     "providers": {
       "title": "提供商",
@@ -1446,8 +1460,14 @@
         "urlMissing": "此提供商需要填写地址。",
         "urlScheme": "地址必须以 http:// 或 https:// 开头。",
         "urlLogin": "请不要在地址中包含用户名和密码。",
-        "keyMissing": "此提供商需要 API 密钥。"
-      }
+        "keyMissing": "此提供商需要 API 密钥。",
+        "priceInvalid": "请输入 0 到 10,000 之间的价格，例如 0.40。"
+      },
+      "inputPrice": "输入价格（每百万 token，美元）",
+      "outputPrice": "输出价格（每百万 token，美元）",
+      "priceHint": "留空则使用该模型的已知价格。",
+      "priceAuto": "自动：{{price}}",
+      "priceUnknown": "未知"
     },
     "chatgpt": {
       "warningTitle": "实验性且非官方",
@@ -1480,6 +1500,16 @@
       "limitReached": "今日额度已用完。额度将于午夜（UTC）重置。",
       "lastDays_other": "最近 {{count}} 天",
       "nothing": "这段时间内没有使用。"
+    },
+    "estimate": {
+      "tokens_other": "约 {{tokens}} 个 token",
+      "tokensLeft": "今日剩余 {{left}}",
+      "requestsLeft_other": "今日剩余 {{left}} 次请求"
+    },
+    "cost": {
+      "free": "免费",
+      "below": "低于 {{amount}}",
+      "about": "约 {{amount}}"
     }
   },
   "dates": {
@@ -1495,6 +1525,10 @@
     "refineAgain": "再问一次 AI",
     "refineHint": "AI 助手会读取此邮件并更准确地识别日程。会消耗你的 AI 额度。",
     "refineFailed": "AI 暂时无法读取。",
+    "find": "查找日程",
+    "finding": "AI 正在查找日程…",
+    "findNone": "AI 未在此邮件中找到日程。",
+    "findClose": "关闭",
     "fromAssistant": "AI",
     "fromPicture": "来自图片",
     "ambiguous": "还是 {{other}}？",

@@ -407,20 +407,25 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       ? range
       : null;
 
-  const openAssist = (start: ComposeAssistStart) => {
+  /** What the draft gives the assistant now: the marked text, or the own part of it. */
+  const assistContext = (range = liveRange(lastRange.current)): ComposeAssistContext => {
     const html = editor.current?.innerHTML ?? body.current;
-    const range = liveRange(lastRange.current);
     const marked = range && !range.collapsed ? range.toString().trim() : "";
+    return {
+      source: marked ? { scope: "selection", text: marked } : { scope: "own", text: ownText(html) },
+      subject: draft.subject,
+      replyToEmailId: inReplyTo ?? null,
+      language: i18n.language,
+    };
+  };
+
+  const openAssist = (start: ComposeAssistStart) => {
+    const range = liveRange(lastRange.current);
     setAssist((current) => ({
       key: (current?.key ?? 0) + 1,
       start,
       range: range?.cloneRange() ?? null,
-      context: {
-        source: marked ? { scope: "selection", text: marked } : { scope: "own", text: ownText(html) },
-        subject: draft.subject,
-        replyToEmailId: inReplyTo ?? null,
-        language: i18n.language,
-      },
+      context: assistContext(range),
     }));
   };
 
@@ -826,7 +831,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             />
           )}
         />
-        {assistAvailable && <ComposeAssistButton onPick={openAssist} />}
+        {assistAvailable && <ComposeAssistButton onPick={openAssist} context={() => assistContext()} />}
         <input
           ref={fileInput}
           type="file"

@@ -1,5 +1,6 @@
 import { backend, BackendError } from "@/backend/backend";
 import type { SendReceipt } from "@/backend/types";
+import { playNyu } from "@/components/nyu/cameo";
 import { i18n, translate } from "@/i18n";
 import { toast } from "@/state/toasts";
 import { openDraftContent } from "./openDraft";
@@ -32,6 +33,8 @@ export const undoWindowSends = new Set<string>();
 
 /** Tells what became of a mail just handed to the server: going in a few seconds, later, or gone. */
 export function announceSent(receipt: SendReceipt, later: boolean) {
+  // Off it goes: Nyu waves the letter goodbye right away, also while it can still be taken back.
+  playNyu("sent");
   const id = receipt.submissionId;
   const undo = id ? { label: translate("toast.undo"), run: () => void undoSend(id) } : undefined;
   if (later && receipt.pending) {

@@ -245,6 +245,8 @@
     "theme": "Thème",
     "motion": "Animations",
     "motionDesc": "Avec Système, {{brand}} suit le réglage de réduction des animations de votre système d'exploitation.",
+    "nyuAnimations": "Animations de Nyu",
+    "nyuAnimationsDesc": "De courtes scènes quand vous envoyez, archivez ou ouvrez un e-mail, et pendant que l'assistant réfléchit. Réduites les montre en images fixes, comme la réduction des animations.",
     "tone": "Ton",
     "language": "Langue",
     "conversations": "Regrouper les messages en conversations",
@@ -339,6 +341,11 @@
   "motion": {
     "system": "Système",
     "on": "Activées",
+    "off": "Désactivées"
+  },
+  "nyuAnimations": {
+    "on": "Activées",
+    "reduced": "Réduites",
     "off": "Désactivées"
   },
   "language": {
@@ -1483,7 +1490,14 @@
       "effectiveNone": "Aucun modèle disponible",
       "eventsTitle": "Rendez-vous",
       "refineEvents": "Chercher des rendez-vous à l'ouverture de chaque e-mail",
-      "refineEventsDesc": "Le modèle parcourt chaque e-mail que vous ouvrez à la recherche de dates, ce qui compte dans votre limite quotidienne. Désactivé : seulement quand vous le demandez."
+      "refineEventsDesc": "Le modèle parcourt chaque e-mail que vous ouvrez à la recherche de dates, ce qui compte dans votre limite quotidienne. Désactivé : seulement quand vous le demandez.",
+      "costsTitle": "Coûts",
+      "currency": "Devise",
+      "currencyHint": "Les coûts de l'IA s'affichent dans cette devise, convertis avec les taux de référence de la BCE.",
+      "currencies": {
+        "EUR": "Euro (€)",
+        "USD": "Dollar américain ($)"
+      }
     },
     "providers": {
       "title": "Fournisseurs",
@@ -1548,8 +1562,14 @@
         "urlMissing": "L'adresse est nécessaire pour ce fournisseur.",
         "urlScheme": "L'adresse doit commencer par http:// ou https://.",
         "urlLogin": "Ne mettez ni nom d'utilisateur ni mot de passe dans l'adresse.",
-        "keyMissing": "Ce fournisseur a besoin d'une clé API."
-      }
+        "keyMissing": "Ce fournisseur a besoin d'une clé API.",
+        "priceInvalid": "Un prix de 0 à 10 000, par ex. 0,40."
+      },
+      "inputPrice": "Prix d'entrée (USD par million de jetons)",
+      "outputPrice": "Prix de sortie (USD par million de jetons)",
+      "priceHint": "Vide : le prix connu du modèle.",
+      "priceAuto": "automatique : {{price}}",
+      "priceUnknown": "inconnu"
     },
     "chatgpt": {
       "warningTitle": "Expérimental et non officiel",
@@ -1586,6 +1606,20 @@
       "lastDays_many": "{{count}} derniers jours",
       "lastDays_other": "{{count}} derniers jours",
       "nothing": "Rien de consommé sur cette période."
+    },
+    "estimate": {
+      "tokens_one": "≈ {{tokens}} jeton",
+      "tokens_many": "≈ {{tokens}} jetons",
+      "tokens_other": "≈ {{tokens}} jetons",
+      "tokensLeft": "encore {{left}} aujourd'hui",
+      "requestsLeft_one": "encore {{left}} requête aujourd'hui",
+      "requestsLeft_many": "encore {{left}} requêtes aujourd'hui",
+      "requestsLeft_other": "encore {{left}} requêtes aujourd'hui"
+    },
+    "cost": {
+      "free": "gratuit",
+      "below": "< {{amount}}",
+      "about": "≈ {{amount}}"
     }
   },
   "dates": {
@@ -1603,6 +1637,10 @@
     "refineAgain": "Redemander à l'IA",
     "refineHint": "L'assistant IA lit cet e-mail et repère les rendez-vous plus précisément. Compte dans votre quota d'IA.",
     "refineFailed": "L'IA n'a pas pu le lire pour l'instant.",
+    "find": "Chercher un rendez-vous",
+    "finding": "L'IA cherche des rendez-vous …",
+    "findNone": "L'IA n'a trouvé aucun rendez-vous dans cet e-mail.",
+    "findClose": "Fermer",
     "fromAssistant": "IA",
     "fromPicture": "d'une image",
     "ambiguous": "Ou {{other}} ?",

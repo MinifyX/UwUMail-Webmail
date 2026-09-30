@@ -80,6 +80,7 @@
   },
   "settings": {
     "motionDesc": "要让 Nyu 眨眼、蹦跳、飞来飞去吗？选择“系统”时，我会跟随你的操作系统。",
+    "nyuAnimationsDesc": "要我挥手送别你的邮件、归档时合上箱子、在 AI 工作时认真思考吗？选择“减少”时，我会像拍照一样一动不动。",
     "trustedSendersEmpty": "我的列表上还没有人 (・・ )? 直接在邮件的图片提示中添加发件人吧。",
     "signatureSaved": "签名看起来棒极了 ✧",
     "signaturePlaceholder": "此致敬礼 ✿",

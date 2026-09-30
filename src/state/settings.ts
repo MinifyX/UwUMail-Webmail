@@ -8,6 +8,9 @@ export type Tone = "playful" | "neutral";
 export type ThemeSetting = "system" | "light" | "dark";
 /** Animations: follow the system's reduced-motion setting, or override it. */
 export type MotionSetting = "system" | "on" | "off";
+/** Nyu's little scenes (sending, archiving, occasions, the AI thinking): see components/nyu/level. */
+export const NYU_ANIMATIONS = ["on", "reduced", "off"] as const;
+export type NyuAnimations = (typeof NYU_ANIMATIONS)[number];
 /** "system" follows the browser's languages; the others are the languages the webmail speaks. */
 export const LANGUAGE_SETTINGS = ["system", "de", "en", "fr", "nl", "ja", "zh"] as const;
 export type LanguageSetting = (typeof LANGUAGE_SETTINGS)[number];
@@ -19,12 +22,17 @@ export type SwipeAction = "read" | "archive" | "spam" | "trash" | "flag" | "none
 /** Seconds a sent mail waits before it goes out, so it can still be taken back. 0 sends at once. */
 export const UNDO_SEND_CHOICES = [0, 5, 10, 20, 30] as const;
 export type UndoSendSeconds = (typeof UNDO_SEND_CHOICES)[number];
+/** The money AI costs are shown in where the person may choose (English): euros or dollars. */
+export const CURRENCY_CHOICES = ["EUR", "USD"] as const;
+export type CurrencyChoice = (typeof CURRENCY_CHOICES)[number];
 
 export interface Settings {
   listDensity: ListDensity;
   tone: Tone;
   theme: ThemeSetting;
   motion: MotionSetting;
+  /** Capped at "reduced" while motion is reduced (setting or operating system). Follows the account as `nyu.animations`. */
+  nyuAnimations: NyuAnimations;
   language: LanguageSetting;
   conversations: boolean;
   remoteImages: RemoteImages;
@@ -61,6 +69,8 @@ export interface Settings {
   assistRefineEvents: boolean;
   /** Dates in mails are offered for the calendar, see lib/dates. Follows the account as `mail.detectEvents`. */
   detectEvents: boolean;
+  /** AI costs in English: euros or dollars (other languages have their own currency). This browser only. */
+  assistCurrency: CurrencyChoice;
 }
 
 interface SettingsActions {
@@ -80,6 +90,7 @@ export const DEFAULT_SETTINGS: Settings = {
   tone: "playful",
   theme: "system",
   motion: "system",
+  nyuAnimations: "on",
   language: "system",
   conversations: true,
   remoteImages: "ask",
@@ -99,6 +110,7 @@ export const DEFAULT_SETTINGS: Settings = {
   pushShowContent: true,
   assistRefineEvents: false,
   detectEvents: true,
+  assistCurrency: "EUR",
 };
 
 /**
@@ -192,6 +204,12 @@ export const useSettings = create<Settings & SettingsActions>()(
         const state = { ...current, ...(persisted as Partial<Settings>) };
         if (!(LANGUAGE_SETTINGS as readonly unknown[]).includes(state.language)) {
           state.language = DEFAULT_SETTINGS.language;
+        }
+        if (!(CURRENCY_CHOICES as readonly unknown[]).includes(state.assistCurrency)) {
+          state.assistCurrency = DEFAULT_SETTINGS.assistCurrency;
+        }
+        if (!(NYU_ANIMATIONS as readonly unknown[]).includes(state.nyuAnimations)) {
+          state.nyuAnimations = DEFAULT_SETTINGS.nyuAnimations;
         }
         return state;
       },

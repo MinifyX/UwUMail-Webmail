@@ -22,6 +22,8 @@ import type {
   AddressBookInfo,
   AssistComposeRequest,
   AssistComposeResult,
+  AssistEstimate,
+  AssistEstimateRequest,
   AssistEventsResult,
   AssistFeatures,
   AssistLabel,
@@ -194,6 +196,7 @@ import {
   toEvents,
   toLabelLogEntry,
   toSpamCheck,
+  toEstimate,
   toUsage,
 } from "./assist";
 import {
@@ -2358,8 +2361,9 @@ export class JmapBackend implements Backend {
     this.emit({ type: "assist:changed" });
   }
 
-  async assistCompose(request: AssistComposeRequest, handlers?: AssistStreamHandlers): Promise<AssistComposeResult> {
-    const args: Record<string, unknown> = {
+  /** The arguments of `Assist/compose`, for the call and for its estimate. */
+  private composeArgs(request: AssistComposeRequest): Record<string, unknown> {
+    return {
       mode: request.mode,
       instruction: request.instruction ?? null,
       preset: request.preset ?? null,
@@ -2370,7 +2374,19 @@ export class JmapBackend implements Backend {
       wantSubject: request.wantSubject === true,
       language: request.language ?? null,
     };
-    const answer = await this.assistText("Assist/compose", args, handlers);
+  }
+
+  /** The arguments of `Assist/summarize`. */
+  private summarizeArgs(request: AssistSummarizeRequest): Record<string, unknown> {
+    return {
+      emailId: request.emailId ? this.ownEmailId(request.emailId) : null,
+      threadId: request.threadId ? this.ownEmailId(request.threadId) : null,
+      language: request.language ?? null,
+    };
+  }
+
+  async assistCompose(request: AssistComposeRequest, handlers?: AssistStreamHandlers): Promise<AssistComposeResult> {
+    const answer = await this.assistText("Assist/compose", this.composeArgs(request), handlers);
     return {
       ...answerOf(answer),
       text: typeof answer.text === "string" ? answer.text : "",
@@ -2385,12 +2401,7 @@ export class JmapBackend implements Backend {
   }
 
   async assistSummarize(request: AssistSummarizeRequest, handlers?: AssistStreamHandlers): Promise<AssistSummary> {
-    const args = {
-      emailId: request.emailId ? this.ownEmailId(request.emailId) : null,
-      threadId: request.threadId ? this.ownEmailId(request.threadId) : null,
-      language: request.language ?? null,
-    };
-    const answer = await this.assistText("Assist/summarize", args, handlers);
+    const answer = await this.assistText("Assist/summarize", this.summarizeArgs(request), handlers);
     return {
       ...answerOf(answer),
       emailId: request.emailId ?? null,
@@ -2415,8 +2426,36 @@ export class JmapBackend implements Backend {
     return { events: toEvents(answer), answer: answerOf(answer) };
   }
 
-  async assistUsage(days = 30): Promise<AssistUsage> {
-    return toUsage(await this.assistCall("Assist/usage", { days: Math.min(90, Math.max(1, Math.round(days))) }));
+  async assistEstimate(request: AssistEstimateRequest, currency?: string): Promise<AssistEstimate | null> {
+    const args =
+      request.method === "Assist/compose"
+        ? this.composeArgs(request.request)
+        : request.method === "Assist/summarize"
+          ? this.summarizeArgs(request.request)
+          : request.method === "Assist/spamCheck"
+            ? { emailId: this.ownEmailId(request.emailId), language: request.language ?? null }
+            : { emailId: this.ownEmailId(request.emailId), includeImages: request.includeImages };
+    try {
+      const answer = await this.assistCall("Assist/estimate", {
+        method: request.method,
+        arguments: args,
+        ...(currency ? { currency } : {}),
+      });
+      return toEstimate(answer, request.method);
+    } catch (error) {
+      // A server from before estimates: there is simply nothing to show.
+      if (error instanceof AssistError && error.type === "unknownMethod") return null;
+      throw error;
+    }
+  }
+
+  async assistUsage(days = 30, currency?: string): Promise<AssistUsage> {
+    return toUsage(
+      await this.assistCall("Assist/usage", {
+        days: Math.min(90, Math.max(1, Math.round(days))),
+        ...(currency ? { currency } : {}),
+      }),
+    );
   }
 
   async assistLabels(): Promise<AssistLabel[]> {

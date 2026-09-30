@@ -307,10 +307,27 @@ describe("the usage", () => {
   it("fills every day of the window, oldest first", () => {
     const days = dailyTotals(usage, 3, new Date("2026-09-29T22:00:00Z"));
     expect(days).toEqual([
-      { day: "2026-09-27", requests: 2, tokens: 20 },
-      { day: "2026-09-28", requests: 0, tokens: 0 },
-      { day: "2026-09-29", requests: 4, tokens: 220 },
+      { day: "2026-09-27", requests: 2, tokens: 20, cost: null },
+      { day: "2026-09-28", requests: 0, tokens: 0, cost: null },
+      { day: "2026-09-29", requests: 4, tokens: 220, cost: null },
     ]);
+  });
+
+  it("adds up costs where the server gave them, and leaves out what had none", () => {
+    const row = usage.days[0]!;
+    const priced = {
+      ...usage,
+      days: [
+        { ...row, day: "2026-09-29", cost: { amount: 0.02, currency: "EUR", usd: 0.023 } },
+        { ...row, day: "2026-09-29", cost: { amount: 0.01, currency: "EUR", usd: 0.012 } },
+        { ...row, day: "2026-09-29", cost: null },
+      ],
+    };
+    const [day] = dailyTotals(priced, 1, new Date("2026-09-29T22:00:00Z"));
+    expect(day!.cost!.amount).toBeCloseTo(0.03);
+    expect(day!.cost!.usd).toBeCloseTo(0.035);
+    expect(featureTotals(priced)[0]!.cost!.currency).toBe("EUR");
+    expect(featureTotals(usage).every((total) => total.cost === null)).toBe(true);
   });
 
   it("sums per feature, most used first", () => {

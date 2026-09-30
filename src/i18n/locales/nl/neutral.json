@@ -238,6 +238,8 @@
     "theme": "Thema",
     "motion": "Animaties",
     "motionDesc": "Met Systeem volgt {{brand}} de instelling voor minder beweging van je besturingssysteem.",
+    "nyuAnimations": "Nyu-animaties",
+    "nyuAnimationsDesc": "Korte scènes als je mail verstuurt, archiveert of opent, en terwijl de assistent nadenkt. Beperkt toont ze als stilstaand beeld, net als minder beweging.",
     "tone": "Toon",
     "language": "Taal",
     "conversations": "Berichten groeperen in gesprekken",
@@ -331,6 +333,11 @@
   "motion": {
     "system": "Systeem",
     "on": "Aan",
+    "off": "Uit"
+  },
+  "nyuAnimations": {
+    "on": "Aan",
+    "reduced": "Beperkt",
     "off": "Uit"
   },
   "language": {
@@ -1436,7 +1443,14 @@
       "effectiveNone": "Geen model beschikbaar",
       "eventsTitle": "Afspraken",
       "refineEvents": "Naar afspraken zoeken zodra een mail opengaat",
-      "refineEventsDesc": "Het model leest elke mail die je opent op datums; dat telt mee voor je daglimiet. Uit: alleen als je erom vraagt."
+      "refineEventsDesc": "Het model leest elke mail die je opent op datums; dat telt mee voor je daglimiet. Uit: alleen als je erom vraagt.",
+      "costsTitle": "Kosten",
+      "currency": "Valuta",
+      "currencyHint": "AI-kosten worden in deze valuta getoond, omgerekend met de ECB-referentiekoersen.",
+      "currencies": {
+        "EUR": "Euro (€)",
+        "USD": "Amerikaanse dollar ($)"
+      }
     },
     "providers": {
       "title": "Aanbieders",
@@ -1498,8 +1512,14 @@
         "urlMissing": "Voor deze aanbieder is het adres nodig.",
         "urlScheme": "Het adres moet beginnen met http:// of https://.",
         "urlLogin": "Laat gebruikersnaam en wachtwoord weg uit het adres.",
-        "keyMissing": "Deze aanbieder heeft een API-sleutel nodig."
-      }
+        "keyMissing": "Deze aanbieder heeft een API-sleutel nodig.",
+        "priceInvalid": "Een prijs van 0 tot 10.000, bijv. 0,40."
+      },
+      "inputPrice": "Invoerprijs (USD per miljoen tokens)",
+      "outputPrice": "Uitvoerprijs (USD per miljoen tokens)",
+      "priceHint": "Leeg gebruikt de bekende prijs van het model.",
+      "priceAuto": "automatisch: {{price}}",
+      "priceUnknown": "onbekend"
     },
     "chatgpt": {
       "warningTitle": "Experimenteel en onofficieel",
@@ -1534,6 +1554,18 @@
       "lastDays_one": "Laatste dag",
       "lastDays_other": "Laatste {{count}} dagen",
       "nothing": "In deze periode niets verbruikt."
+    },
+    "estimate": {
+      "tokens_one": "≈ {{tokens}} token",
+      "tokens_other": "≈ {{tokens}} tokens",
+      "tokensLeft": "vandaag nog {{left}} over",
+      "requestsLeft_one": "vandaag nog {{left}} verzoek over",
+      "requestsLeft_other": "vandaag nog {{left}} verzoeken over"
+    },
+    "cost": {
+      "free": "gratis",
+      "below": "< {{amount}}",
+      "about": "≈ {{amount}}"
     }
   },
   "dates": {
@@ -1550,6 +1582,10 @@
     "refineAgain": "AI opnieuw vragen",
     "refineHint": "De AI-assistent leest deze mail en vindt de afspraken nauwkeuriger. Telt mee voor je AI-tegoed.",
     "refineFailed": "De AI kon de mail nu niet lezen.",
+    "find": "Afspraak zoeken",
+    "finding": "De AI zoekt naar afspraken…",
+    "findNone": "De AI vond geen afspraken in deze mail.",
+    "findClose": "Sluiten",
     "fromAssistant": "AI",
     "fromPicture": "uit afbeelding",
     "ambiguous": "Of {{other}}?",

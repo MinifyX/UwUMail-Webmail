@@ -3,6 +3,8 @@ import type {
   AddressBookInfo,
   AssistComposeRequest,
   AssistComposeResult,
+  AssistEstimate,
+  AssistEstimateRequest,
   AssistEventsResult,
   AssistFeatures,
   AssistLabel,
@@ -362,8 +364,13 @@ export interface Backend {
    * text in the mail's pictures is read too (where the server can).
    */
   extractEvents(emailId: string, includeImages: boolean): Promise<AssistEventsResult>;
+  /**
+   * About what a call would cost, without asking the model; null where the server can't tell
+   * (an older one without `Assist/estimate`).
+   */
+  assistEstimate(request: AssistEstimateRequest, currency?: string): Promise<AssistEstimate | null>;
   /** What the person used: per day (UTC) and feature, and today per provider with its limits. */
-  assistUsage(days?: number): Promise<AssistUsage>;
+  assistUsage(days?: number, currency?: string): Promise<AssistUsage>;
   assistLabels(): Promise<AssistLabel[]>;
   createAssistLabel(input: AssistLabelInput): Promise<AssistLabel>;
   updateAssistLabel(id: string, patch: Partial<AssistLabelInput>): Promise<void>;

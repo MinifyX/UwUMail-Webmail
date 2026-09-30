@@ -907,6 +907,26 @@ export interface AssistProvider {
   experimental: boolean;
   /** `chatgpt`: signed in; others: a key is stored or none is needed. */
   connected: boolean;
+  /** Own providers: the price set by hand, USD per million tokens; null follows the known prices. */
+  inputPricePerMillion?: number | null;
+  outputPricePerMillion?: number | null;
+  /** What the default model costs as the server knows it; null when it doesn't (or an older server). */
+  price?: AssistPrice | null;
+}
+
+/** A model's price in USD per million tokens, and where it comes from. */
+export interface AssistPrice {
+  inputPerMillion: number;
+  outputPerMillion: number;
+  source: "auto" | "manual" | "free";
+}
+
+/** What something costs, in the currency asked for and in USD. */
+export interface AssistCost {
+  amount: number;
+  /** ISO 4217, e.g. `EUR`. */
+  currency: string;
+  usd: number | null;
 }
 
 /** What may be set on an own provider. `apiKey` left out keeps the stored key, `""` removes it. */
@@ -918,6 +938,9 @@ export interface AssistProviderInput {
   apiKey?: string;
   model?: string | null;
   fastModel?: string | null;
+  /** USD per million tokens; null goes back to the known prices. */
+  inputPricePerMillion?: number | null;
+  outputPricePerMillion?: number | null;
 }
 
 export interface AssistModel {
@@ -1122,6 +1145,34 @@ export interface AssistEventsResult {
   answer?: AssistAnswer | null;
 }
 
+/** The methods whose cost `Assist/estimate` can tell before asking the model. */
+export type AssistEstimateMethod = "Assist/compose" | "Assist/summarize" | "Assist/spamCheck" | "Assist/extractEvents";
+
+/** What would be asked: the same arguments the real call gets. */
+export type AssistEstimateRequest =
+  | { method: "Assist/compose"; request: AssistComposeRequest }
+  | { method: "Assist/summarize"; request: AssistSummarizeRequest }
+  | { method: "Assist/spamCheck"; emailId: string; language?: string | null }
+  | { method: "Assist/extractEvents"; emailId: string; includeImages: boolean };
+
+/**
+ * About how many tokens a call would use and how much of the day's allowance is left; nothing is
+ * asked of the model and nothing counts. The left values are null where there is no limit.
+ */
+export interface AssistEstimate {
+  method: AssistEstimateMethod;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  providerId: string;
+  providerName: string;
+  model: string | null;
+  tokensLeftToday: number | null;
+  requestsLeftToday: number | null;
+  /** About what it costs; null where the price is unknown or hidden from the person (or an older server). */
+  cost: AssistCost | null;
+}
+
 /** The person's own word for a kind of mail; set on mail as the keyword `keyword`. */
 export interface AssistLabel {
   id: string;
@@ -1163,6 +1214,8 @@ export interface AssistUsageDay {
   requests: number;
   inputTokens: number;
   outputTokens: number;
+  /** Null (or missing, from an older server) where the price was unknown or is hidden. */
+  cost?: AssistCost | null;
 }
 
 export interface AssistUsageToday {
@@ -1172,6 +1225,7 @@ export interface AssistUsageToday {
   tokens: number;
   requestsPerDay: number | null;
   tokensPerDay: number | null;
+  cost?: AssistCost | null;
 }
 
 export interface AssistUsage {

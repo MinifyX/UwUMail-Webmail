@@ -152,6 +152,51 @@ describe("the demo's assistant", () => {
     expect(changes).toContain(true);
   });
 
+  it("estimates without counting, and counts down what is left once used", async () => {
+    const { assist, messages } = setup("en");
+    const mail = messages.find((message) => message.subject.startsWith("Game night")) ?? messages[0]!;
+    const request = { method: "Assist/summarize", request: { emailId: mail.id } } as const;
+    const before = assist.estimate(request);
+    expect(before.totalTokens).toBe(before.inputTokens + before.outputTokens);
+    expect(before.inputTokens).toBeGreaterThan(350);
+    expect(before.providerName).toBe("Mistral (Server)");
+    expect(assist.estimate(request).tokensLeftToday).toBe(before.tokensLeftToday);
+    const summary = assist.summarize({ emailId: mail.id });
+    await vi.runAllTimersAsync();
+    await summary;
+    const after = assist.estimate(request);
+    expect(after.tokensLeftToday!).toBeLessThan(before.tokensLeftToday!);
+    expect(after.requestsLeftToday).toBe(before.requestsLeftToday! - 1);
+    expect(() => assist.estimate({ method: "Assist/spamCheck", emailId: "gone" })).toThrow(
+      expect.objectContaining({ type: "notFound" }),
+    );
+  });
+
+  it("prices estimates and usage in the currency asked for, own prices and local models included", async () => {
+    const { assist, messages } = setup("en");
+    const request = { method: "Assist/spamCheck", emailId: messages[0]!.id } as const;
+    const euros = assist.estimate(request, "EUR").cost!;
+    const yen = assist.estimate(request, "JPY").cost!;
+    expect(euros.currency).toBe("EUR");
+    expect(yen.usd).toBeCloseTo(euros.usd!);
+    expect(yen.amount).toBeGreaterThan(euros.amount * 100);
+    const report = assist.usageReport(30, "USD");
+    expect(report.days.every((day) => day.cost?.currency === "USD")).toBe(true);
+
+    const own = assist.createProvider({ name: "Mine", kind: "openai", apiKey: "sk-demo-1234", model: "gpt-5" }); // gitleaks:allow
+    expect(own.price).toEqual({ inputPerMillion: 1.25, outputPerMillion: 10, source: "auto" });
+    assist.updateProvider(own.id, { inputPricePerMillion: 2 });
+    expect(assist.listProviders().find((entry) => entry.id === own.id)!.price).toMatchObject({
+      inputPerMillion: 2,
+      source: "manual",
+    });
+    expect(() => assist.updateProvider(own.id, { outputPricePerMillion: -1 })).toThrow(
+      expect.objectContaining({ type: "invalidProperties", properties: ["outputPricePerMillion"] }),
+    );
+    const local = assist.createProvider({ name: "Local", kind: "ollama", baseUrl: "http://192.0.2.10:11434" });
+    expect(local.price?.source).toBe("free");
+  });
+
   it("refuses a second label of the same name", () => {
     const { assist } = setup();
     expect(() => assist.createLabel({ name: "newsletter", description: "", color: null })).toThrow(

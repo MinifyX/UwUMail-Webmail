@@ -238,6 +238,8 @@
     "theme": "Design",
     "motion": "Animationen",
     "motionDesc": "Mit „Wie System“ richtet sich {{brand}} nach der Einstellung für reduzierte Bewegung in deinem Betriebssystem.",
+    "nyuAnimations": "Nyu-Animationen",
+    "nyuAnimationsDesc": "Kurze Szenen beim Senden, Archivieren und Öffnen von Mails und während der Assistent nachdenkt. „Reduziert“ zeigt sie als Standbild, genau wie reduzierte Bewegung.",
     "tone": "Ton",
     "language": "Sprache",
     "conversations": "Mails als Unterhaltungen gruppieren",
@@ -331,6 +333,11 @@
   "motion": {
     "system": "Wie System",
     "on": "An",
+    "off": "Aus"
+  },
+  "nyuAnimations": {
+    "on": "An",
+    "reduced": "Reduziert",
     "off": "Aus"
   },
   "language": {
@@ -1436,7 +1443,14 @@
       "effectiveNone": "Kein Modell verfügbar",
       "eventsTitle": "Termine",
       "refineEvents": "Beim Öffnen jeder Mail nach Terminen suchen",
-      "refineEventsDesc": "Das Modell liest jede Mail, die du öffnest, auf Termine – das zählt gegen dein Tageslimit. Aus: nur, wenn du danach fragst."
+      "refineEventsDesc": "Das Modell liest jede Mail, die du öffnest, auf Termine – das zählt gegen dein Tageslimit. Aus: nur, wenn du danach fragst.",
+      "costsTitle": "Kosten",
+      "currency": "Währung",
+      "currencyHint": "KI-Kosten werden in dieser Währung gezeigt, umgerechnet mit den EZB-Referenzkursen.",
+      "currencies": {
+        "EUR": "Euro (€)",
+        "USD": "US-Dollar ($)"
+      }
     },
     "providers": {
       "title": "Anbieter",
@@ -1498,8 +1512,14 @@
         "urlMissing": "Für diesen Anbieter wird die Adresse gebraucht.",
         "urlScheme": "Die Adresse muss mit http:// oder https:// beginnen.",
         "urlLogin": "Lass Benutzername und Passwort aus der Adresse weg.",
-        "keyMissing": "Dieser Anbieter braucht einen API-Schlüssel."
-      }
+        "keyMissing": "Dieser Anbieter braucht einen API-Schlüssel.",
+        "priceInvalid": "Ein Preis von 0 bis 10.000, z. B. 0,40."
+      },
+      "inputPrice": "Preis Eingabe (USD pro Million Tokens)",
+      "outputPrice": "Preis Ausgabe (USD pro Million Tokens)",
+      "priceHint": "Leer nimmt den bekannten Preis des Modells.",
+      "priceAuto": "automatisch: {{price}}",
+      "priceUnknown": "unbekannt"
     },
     "chatgpt": {
       "warningTitle": "Experimentell und inoffiziell",
@@ -1534,6 +1554,18 @@
       "lastDays_one": "Letzter Tag",
       "lastDays_other": "Letzte {{count}} Tage",
       "nothing": "In dieser Zeit nichts verbraucht."
+    },
+    "estimate": {
+      "tokens_one": "≈ {{tokens}} Token",
+      "tokens_other": "≈ {{tokens}} Tokens",
+      "tokensLeft": "heute noch {{left}} übrig",
+      "requestsLeft_one": "heute noch {{left}} Anfrage übrig",
+      "requestsLeft_other": "heute noch {{left}} Anfragen übrig"
+    },
+    "cost": {
+      "free": "kostenlos",
+      "below": "< {{amount}}",
+      "about": "≈ {{amount}}"
     }
   },
   "dates": {
@@ -1550,6 +1582,10 @@
     "refineAgain": "KI nochmal fragen",
     "refineHint": "Der KI-Assistent liest diese Mail und erkennt die Termine genauer. Zählt zu deinem KI-Kontingent.",
     "refineFailed": "Die KI konnte die Mail gerade nicht lesen.",
+    "find": "Termin suchen",
+    "finding": "Die KI sucht nach Terminen …",
+    "findNone": "Die KI hat in dieser Mail keine Termine gefunden.",
+    "findClose": "Schließen",
     "fromAssistant": "KI",
     "fromPicture": "aus Bild",
     "ambiguous": "Oder {{other}}?",
