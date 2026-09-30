@@ -231,6 +231,8 @@
     "theme": "主题",
     "motion": "动画",
     "motionDesc": "选择“系统”时，{{brand}} 会遵循操作系统的“减少动态效果”设置。",
+    "nyuAnimations": "Nyu 动画",
+    "nyuAnimationsDesc": "发送、归档或打开邮件时，以及助手思考时，显示简短的小场景。“减少”会像“减少动态效果”一样以静态图片显示。",
     "tone": "语气",
     "language": "语言",
     "conversations": "将邮件按会话分组",
@@ -323,6 +325,11 @@
   "motion": {
     "system": "系统",
     "on": "开",
+    "off": "关"
+  },
+  "nyuAnimations": {
+    "on": "开",
+    "reduced": "减少",
     "off": "关"
   },
   "language": {

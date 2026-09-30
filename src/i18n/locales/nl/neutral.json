@@ -238,6 +238,8 @@
     "theme": "Thema",
     "motion": "Animaties",
     "motionDesc": "Met Systeem volgt {{brand}} de instelling voor minder beweging van je besturingssysteem.",
+    "nyuAnimations": "Nyu-animaties",
+    "nyuAnimationsDesc": "Korte scènes als je mail verstuurt, archiveert of opent, en terwijl de assistent nadenkt. Beperkt toont ze als stilstaand beeld, net als minder beweging.",
     "tone": "Toon",
     "language": "Taal",
     "conversations": "Berichten groeperen in gesprekken",
@@ -331,6 +333,11 @@
   "motion": {
     "system": "Systeem",
     "on": "Aan",
+    "off": "Uit"
+  },
+  "nyuAnimations": {
+    "on": "Aan",
+    "reduced": "Beperkt",
     "off": "Uit"
   },
   "language": {

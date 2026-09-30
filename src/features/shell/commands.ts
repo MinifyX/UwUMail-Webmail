@@ -25,6 +25,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { backend } from "@/backend/backend";
+import { playNyu } from "@/components/nyu/cameo";
 import { i18n } from "@/i18n";
 import { leaveThread, queryKeys, trashMail } from "@/lib/queries";
 import { useSettings } from "@/state/settings";
@@ -126,6 +127,7 @@ export function buildCommands(
       run: withThread(async (thread) => {
         leaveThread(thread.thread.id);
         announceMove(await backend().archive(ids(thread)), t("toast.archived"), () => afterChange(client));
+        playNyu("archived");
         await afterChange(client);
       }),
     },

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useApplyNyuLevel } from "@/components/nyu/level";
+import { NyuStage } from "@/components/nyu/NyuStage";
 import { NyuScene } from "@/components/nyu/scenes";
 import { Button } from "@/components/ui/Button";
 import { Toaster } from "@/components/ui/Toaster";
@@ -97,6 +99,7 @@ function BootScreen({ boot }: { boot: Exclude<Boot, { state: "ready" }> }) {
 export function App() {
   const [boot, setBoot] = useState<Boot>({ state: "loading" });
   useApplyTheme();
+  useApplyNyuLevel();
   useApplyLanguage();
   // Name, logo and colour of the server; UwUMail until the session says otherwise, and in the demo.
   useApplyBrand();
@@ -164,6 +167,7 @@ export function App() {
       <LinkStatus />
       <DeleteForeverQuestion />
       <DangerousFileQuestion />
+      <NyuStage />
       <Toaster />
     </>
   );

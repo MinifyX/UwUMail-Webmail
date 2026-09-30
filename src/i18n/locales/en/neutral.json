@@ -238,6 +238,8 @@
     "theme": "Theme",
     "motion": "Animations",
     "motionDesc": "With System, {{brand}} follows the reduced motion setting of your operating system.",
+    "nyuAnimations": "Nyu animations",
+    "nyuAnimationsDesc": "Short scenes when you send, archive or open mail, and while the assistant thinks. Reduced shows them as still pictures, as reduced motion does.",
     "tone": "Tone",
     "language": "Language",
     "conversations": "Group messages into conversations",
@@ -331,6 +333,11 @@
   "motion": {
     "system": "System",
     "on": "On",
+    "off": "Off"
+  },
+  "nyuAnimations": {
+    "on": "On",
+    "reduced": "Reduced",
     "off": "Off"
   },
   "language": {
