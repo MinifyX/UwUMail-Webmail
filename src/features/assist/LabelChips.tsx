@@ -9,6 +9,7 @@ import { useT } from "@/i18n";
 import { formatLongDate } from "@/lib/format";
 import { useMessageActions } from "@/lib/queries";
 import { toast } from "@/state/toasts";
+import { labelReasonText } from "../labels/logic";
 import { chipStyle, labelsOff, labelsOn, setByAssistant } from "./labels";
 import { assistErrorText, providerLabel, useAssistLabels, useLabelLog } from "./useAssist";
 
@@ -189,7 +190,10 @@ function LabelChip({
       >
         <Chip label={label} />
         {entry && (
-          <Sparkles className="-ml-1.5 size-3 shrink-0 text-pink" aria-label={t("assist.labels.byAssistant")} />
+          <Sparkles
+            className="-ml-1.5 size-3 shrink-0 text-pink"
+            aria-label={entry.source === "ai" ? t("assist.labels.byAssistant") : t(`labels.source.${entry.source}`)}
+          />
         )}
       </button>
       {open && (
@@ -215,9 +219,9 @@ function LabelChip({
             <div className="flex flex-col gap-1 rounded-xl bg-pink-tint/40 px-3 py-2">
               <p className="flex items-center gap-1.5 text-[12px] font-bold text-pink-ink">
                 <Sparkles className="size-3.5" aria-hidden />
-                {t("assist.labels.byAssistant")}
+                {entry.source === "ai" ? t("assist.labels.byAssistant") : t(`labels.source.${entry.source}`)}
               </p>
-              {entry.reason && <p className="selectable text-[13px]">{entry.reason}</p>}
+              {entry.reason && <p className="selectable text-[13px]">{labelReasonText(entry, t, i18n.language)}</p>}
               <p className="text-[11.5px] text-muted">
                 {[
                   entry.providerName ? providerLabel({ providerName: entry.providerName, model: entry.model }) : null,

@@ -71,6 +71,8 @@ export interface Settings {
   detectEvents: boolean;
   /** AI costs in English: euros or dollars (other languages have their own currency). This browser only. */
   assistCurrency: CurrencyChoice;
+  /** The mail list in sections, one per label. This browser only. */
+  groupByLabel: boolean;
 }
 
 interface SettingsActions {
@@ -111,6 +113,7 @@ export const DEFAULT_SETTINGS: Settings = {
   assistRefineEvents: false,
   detectEvents: true,
   assistCurrency: "EUR",
+  groupByLabel: false,
 };
 
 /**

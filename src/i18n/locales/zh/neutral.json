@@ -317,7 +317,8 @@
     "profile": "头像",
     "assistant": "AI 助手",
     "detectEvents": "识别邮件中的日程",
-    "detectEventsDesc": "像“10月17日周五 19:30”或“10月6日至9日”这样的日期会加下划线，并建议添加到日历，图片中的文字也包括在内。这是按固定规则完成的，不使用 AI；只有你要求时，AI 助手才会读取邮件。"
+    "detectEventsDesc": "像“10月17日周五 19:30”或“10月6日至9日”这样的日期会加下划线，并建议添加到日历，图片中的文字也包括在内。这是按固定规则完成的，不使用 AI；只有你要求时，AI 助手才会读取邮件。",
+    "labels": "标签"
   },
   "theme": {
     "system": "系统",
@@ -378,7 +379,8 @@
     "contactsEdit": "编辑联系人",
     "contactsDelete": "删除联系人",
     "contactsNext": "下一个联系人",
-    "contactsPrevious": "上一个联系人"
+    "contactsPrevious": "上一个联系人",
+    "label": "加标签"
   },
   "palette": {
     "placeholder": "输入命令",
@@ -642,7 +644,8 @@
       "cc": "抄送",
       "toOrCc": "收件人或抄送",
       "subject": "主题",
-      "listId": "邮件列表"
+      "listId": "邮件列表",
+      "hasLabel": "标签"
     },
     "op": {
       "label": "比较方式",
@@ -658,12 +661,18 @@
       "trash": "移至废纸篓",
       "markRead": "标为已读",
       "flag": "加星标",
-      "forward": "转发"
+      "forward": "转发",
+      "label": "添加标签"
     },
     "summary": {
       "move": "移至 {{folder}}",
       "forward": "转发至 {{address}}",
-      "stop": "停止"
+      "stop": "停止",
+      "label": {
+        "is": "有标签 {{name}}",
+        "isNot": "无标签 {{name}}"
+      },
+      "setLabel": "标签 {{name}}"
     },
     "problem": {
       "noName": "请为规则命名。",
@@ -671,7 +680,8 @@
       "noActions": "请至少添加一个操作。",
       "noFolder": "请选择一个文件夹。",
       "badAddress": "请输入一个完整的地址，例如 name@example.com。",
-      "tooMany": "每条规则只能有一个文件夹和一个转发。"
+      "tooMany": "每条规则只能有一个文件夹和一个转发。",
+      "noLabel": "请选择一个标签。"
     },
     "foreignTitle": "这些规则已在别处被编辑",
     "foreignBody": "其他程序修改了规则脚本，因此 {{brand}} 以文本形式显示它。你可以在这里编辑，或将其替换为由 {{brand}} 管理的规则。",
@@ -680,7 +690,13 @@
     "check": "检查",
     "replace": "替换为 {{brand}} 规则",
     "replaceConfirm": "替换脚本",
-    "replaceBody": "上面的脚本将被删除，你将从空的规则列表开始。"
+    "replaceBody": "上面的脚本将被删除，你将从空的规则列表开始。",
+    "labelOp": {
+      "is": "已添加",
+      "isNot": "未添加"
+    },
+    "labelValue": "标签",
+    "chooseLabel": "选择标签"
   },
   "calendar": {
     "title": "日历",
@@ -1300,7 +1316,6 @@
     "labels": {
       "title": "标签",
       "description": "你自己为各类邮件起的名字。标签会显示在这里以及其他邮件应用中的邮件上（作为关键字）。模型只会从你的标签中挑选；它从不移动、删除或回复邮件。",
-      "descriptionManual": "你自己为各类邮件起的名字，在阅读视图中手动设置。它们也会显示在其他邮件应用中（作为关键字）。",
       "auto": "自动为新邮件添加标签",
       "autoDesc": "收到的邮件会被加上合适的标签。为此，模型会读取你标签的名称和说明，以及每封邮件的开头部分。",
       "autoNoLabels": "请先添加几个标签；之后收到的邮件就会被加上合适的标签。",
@@ -1566,5 +1581,155 @@
     "notesQuote": "“{{quote}}”",
     "notesFrom": "来自 {{sender}} 的邮件“{{subject}}”",
     "noSubject": "（无主题）"
+  },
+  "layout": {
+    "resizeFolders": "文件夹宽度",
+    "resizeList": "邮件列表宽度"
+  },
+  "labels": {
+    "view": {
+      "subtitle": "所有文件夹中带此标签的邮件"
+    },
+    "nav": {
+      "title": "标签",
+      "manage": "管理标签",
+      "unread_other": "{{name}}，{{count}} 封未读"
+    },
+    "filter": {
+      "title": "只看带标签 {{name}} 的邮件"
+    },
+    "group": {
+      "on": "按标签分组",
+      "off": "取消按标签分组",
+      "none": "无标签"
+    },
+    "quick": {
+      "title": "标签",
+      "button": "标签",
+      "more": "标签…",
+      "search": "查找或创建标签",
+      "for_other": "用于 {{count}} 个会话。按 Enter 或点击即可添加或移除标签。",
+      "create": "创建“{{name}}”",
+      "none": "还没有标签。输入名称即可创建。",
+      "added_other": "已为 {{count}} 个会话添加标签“{{name}}”",
+      "removed_other": "已从 {{count}} 个会话移除标签“{{name}}”",
+      "addName": "添加标签 {{name}}",
+      "removeName": "移除标签 {{name}}"
+    },
+    "suggest": {
+      "menu": "重新加标签",
+      "menuLatest": "为最新邮件重新加标签",
+      "title": "重新加标签",
+      "intro": "勾选的标签会加到邮件上，未勾选的会被移除。助手已勾选合适的标签。",
+      "fits": "合适",
+      "fitsNot": "不合适",
+      "isSet": "当前已添加",
+      "willAdd": "将添加",
+      "willRemove": "将移除",
+      "apply_other": "应用 {{count}} 项更改",
+      "keep": "保持不变",
+      "applied_other": "已更改 {{count}} 个标签",
+      "unchanged": "标签未更改",
+      "noLabels": "你还没有标签。",
+      "newTitle": "新标签建议",
+      "create": "创建并添加",
+      "createNamed": "创建“{{name}}”并添加到这封邮件",
+      "created": "已创建标签“{{name}}”并添加到邮件",
+      "createdShort": "已创建并添加",
+      "exists": "已经是你的标签",
+      "retry": "重试"
+    },
+    "source": {
+      "ai": "由助手添加",
+      "rule": "由标签的条件添加",
+      "sender": "因发件人而添加",
+      "detector": "由内置识别添加",
+      "classifier": "由学习型分类器添加"
+    },
+    "detector": {
+      "none": "无",
+      "invoice": "账单",
+      "appointment": "约会",
+      "newsletter": "新闻简报",
+      "shipping": "物流"
+    },
+    "condition": {
+      "from": "发件人（地址或域名）",
+      "subject": "主题包含",
+      "text": "正文包含",
+      "hasAttachment": "有附件",
+      "fromPlaceholder": "例如 shop.example",
+      "subjectPlaceholder": "例如 账单",
+      "textPlaceholder": "例如 订单号",
+      "attachmentYes": "是",
+      "attachmentNo": "否"
+    },
+    "settings": {
+      "title": "标签",
+      "description": "你用来区分邮件类型的词语。它们会显示在这里和其他邮件应用中（作为关键词）。你可以手动添加，也可以让它们自动添加。",
+      "autoTitle": "不用 AI",
+      "autoDescription": "标签可以不用任何 AI 就加到新邮件上：通过标签自己的条件、内置识别、你以前加过标签的发件人，以及一个向你学习的小型分类器。这一切都不会离开服务器。",
+      "auto": "不用 AI 自动为新邮件加标签",
+      "autoDesc": "使用下面每个标签的设置。",
+      "aiOn": "助手也会为新邮件加标签，并判断尚未添加的标签。",
+      "aiOff": "助手不会为新邮件加标签。",
+      "toAi": "AI 设置",
+      "manage": "管理标签",
+      "listTitle": "你的标签",
+      "mailCount_other": "{{count}} 封邮件",
+      "conditionCount_other": "{{count}} 个条件",
+      "learnsSenders": "学习发件人",
+      "learnsFrom_other": "已从 {{count}} 封邮件学习",
+      "automaticTitle": "自动添加",
+      "automaticHint": "这些都不需要 AI。",
+      "detector": "内置识别",
+      "detectorHint": "自动识别一类邮件，例如根据金额和账单号识别账单。",
+      "conditions": "条件",
+      "noConditions": "没有条件。",
+      "matchAll": "全部满足",
+      "matchAny": "满足任一",
+      "conditionField": "条件",
+      "conditionValue": "值",
+      "removeCondition": "删除条件",
+      "addCondition": "添加条件",
+      "conditionProblem": "请输入不超过 {{max}} 个字符的值。",
+      "learnSenders": "学习发件人",
+      "learnSendersDesc": "当你手动为某个发件人的邮件添加此标签两次后，该发件人的邮件会自动获得此标签。手动移除则会取消学习。",
+      "classifier": "从我的标签中学习",
+      "classifierDesc": "服务器上的小型分类器会从你手动添加或移除的标签中学习。它在有 {{min}} 个示例之后才会起作用，并且只在相当确定时才添加。",
+      "examples_other": "目前 {{count}} / {{min}} 个示例。",
+      "examplesReady_other": "已从 {{count}} 个示例学习：已启用。",
+      "listDescription": "名称、颜色，以及让每个标签自动添加到邮件上的方式。"
+    },
+    "log": {
+      "title": "最近自动添加的标签",
+      "description": "自动添加到邮件上的标签及其原因。",
+      "empty": "暂无。",
+      "undone": "已被移除"
+    },
+    "reason": {
+      "rule": "符合标签的条件：{{conditions}}",
+      "ruleAny": "符合标签的其中一个条件：{{conditions}}",
+      "sender": "你曾手动给来自 {{address}} 的邮件加过此标签（{{count}} 次）",
+      "invoiceAttachment": "看起来是发票：附件“{{attachment}}”",
+      "invoiceWord": "看起来是发票：“{{word}}”",
+      "invoiceWordAmount": "看起来是发票：“{{word}}”，{{amount}}",
+      "appointmentCalendar": "包含邀请或日历文件",
+      "appointmentWord": "看起来是预约：“{{word}}”",
+      "appointmentWordDate": "看起来是预约：“{{word}}”，{{when}}",
+      "newsletter": "新闻通讯：退订链接和邮件头 {{header}}",
+      "shipping": "看起来是发货通知",
+      "shippingCarrier": "来自 {{carrier}} 的发货通知",
+      "shippingTracking": "发货通知，运单号 {{tracking}}",
+      "shippingBoth": "来自 {{carrier}} 的发货通知，运单号 {{tracking}}",
+      "classifier": "分类器有 {{percent}} 的把握（从 {{examples}} 个示例中学习）",
+      "field": {
+        "from": "发件人 {{value}}",
+        "subject": "主题包含“{{value}}”",
+        "text": "正文包含“{{value}}”",
+        "attachmentYes": "有附件",
+        "attachmentNo": "没有附件"
+      }
+    }
   }
 }

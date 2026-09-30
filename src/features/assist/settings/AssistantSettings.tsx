@@ -16,14 +16,15 @@ import { toast } from "@/state/toasts";
 import { mayChooseCurrency } from "../cost";
 import { nextChoice, providersFor } from "../providerForm";
 import { assistErrorText, providerLabel, useAssistOptions, useAssistProviders, useAssistSettings } from "../useAssist";
-import { LabelSettings } from "./LabelSettings";
+import { AiLabelSettings } from "../../labels/LabelSettings";
 import { ModelInput, Note, Section } from "./common";
 import { ProviderSettings } from "./ProviderSettings";
 import { UsageSettings } from "./UsageSettings";
 
 /**
  * Settings → AI assistant: which provider and model each feature uses, the person's own
- * providers, the labels and whether they are set by themselves, and what was used. Everything
+ * providers, whether the model labels new mail (the labels have their own section), and what was
+ * used. Everything
  * here depends on what the server's admin allows.
  */
 export function AssistantSettings() {
@@ -50,7 +51,7 @@ export function AssistantSettings() {
       )}
       <ChoiceSettings options={options} />
       <ProviderSettings options={options} />
-      <LabelSettings options={options} />
+      <AiLabelSettings options={options} />
       {options.features.extractEvents && <EventSettings />}
       <CurrencySetting />
       <UsageSettings />

@@ -325,7 +325,8 @@
     "profile": "Profielfoto",
     "assistant": "AI-assistent",
     "detectEvents": "Afspraken in mails herkennen",
-    "detectEventsDesc": "Datums zoals „vr 17 okt. om 19:30” of „6–9 okt.” worden onderstreept en voor je agenda aangeboden, ook uit de tekst in afbeeldingen. Dat gebeurt met vaste regels, zonder AI; de AI-assistent leest een mail alleen als je daarom vraagt."
+    "detectEventsDesc": "Datums zoals „vr 17 okt. om 19:30” of „6–9 okt.” worden onderstreept en voor je agenda aangeboden, ook uit de tekst in afbeeldingen. Dat gebeurt met vaste regels, zonder AI; de AI-assistent leest een mail alleen als je daarom vraagt.",
+    "labels": "Labels"
   },
   "theme": {
     "system": "Systeem",
@@ -386,7 +387,8 @@
     "contactsEdit": "Contact bewerken",
     "contactsDelete": "Contact verwijderen",
     "contactsNext": "Volgend contact",
-    "contactsPrevious": "Vorig contact"
+    "contactsPrevious": "Vorig contact",
+    "label": "Labelen"
   },
   "palette": {
     "placeholder": "Typ een opdracht",
@@ -656,7 +658,8 @@
       "cc": "Cc",
       "toOrCc": "Aan of Cc",
       "subject": "Onderwerp",
-      "listId": "Mailinglijst"
+      "listId": "Mailinglijst",
+      "hasLabel": "Label"
     },
     "op": {
       "label": "Vergelijking",
@@ -672,12 +675,18 @@
       "trash": "Naar prullenbak verplaatsen",
       "markRead": "Markeren als gelezen",
       "flag": "Markeren",
-      "forward": "Doorsturen"
+      "forward": "Doorsturen",
+      "label": "Label zetten"
     },
     "summary": {
       "move": "naar {{folder}}",
       "forward": "doorsturen naar {{address}}",
-      "stop": "stopt"
+      "stop": "stopt",
+      "label": {
+        "is": "label {{name}} gezet",
+        "isNot": "label {{name}} niet gezet"
+      },
+      "setLabel": "label {{name}}"
     },
     "problem": {
       "noName": "Geef de regel een naam.",
@@ -685,7 +694,8 @@
       "noActions": "Voeg ten minste één actie toe.",
       "noFolder": "Kies een map.",
       "badAddress": "Voer één volledig adres in, zoals name@example.com.",
-      "tooMany": "Eén map en één doorsturing per regel."
+      "tooMany": "Eén map en één doorsturing per regel.",
+      "noLabel": "Kies een label."
     },
     "foreignTitle": "Deze regels zijn elders bewerkt",
     "foreignBody": "Een ander programma heeft het regelscript gewijzigd, daarom toont {{brand}} het als tekst. Je kunt het hier bewerken of vervangen door regels die je in {{brand}} beheert.",
@@ -694,7 +704,13 @@
     "check": "Controleren",
     "replace": "Vervangen door {{brand}}-regels",
     "replaceConfirm": "Het script vervangen",
-    "replaceBody": "Het script hierboven wordt verwijderd en je begint met een lege lijst regels."
+    "replaceBody": "Het script hierboven wordt verwijderd en je begint met een lege lijst regels.",
+    "labelOp": {
+      "is": "is gezet",
+      "isNot": "is niet gezet"
+    },
+    "labelValue": "Label",
+    "chooseLabel": "Label kiezen"
   },
   "calendar": {
     "title": "Agenda",
@@ -1344,7 +1360,6 @@
     "labels": {
       "title": "Labels",
       "description": "Je eigen woorden voor soorten mail. Labels verschijnen op mail hier en in andere mailapps (als trefwoorden). Het model kiest alleen uit jouw labels; het verplaatst, verwijdert of beantwoordt nooit mail.",
-      "descriptionManual": "Je eigen woorden voor soorten mail, met de hand ingesteld vanuit de leesweergave. Ze verschijnen ook in andere mailapps (als trefwoorden).",
       "auto": "Nieuwe mail automatisch labelen",
       "autoDesc": "Binnenkomende mail krijgt de labels die passen. Daarvoor leest het model de namen en beschrijvingen van je labels en het begin van elke mail.",
       "autoNoLabels": "Voeg eerst een paar labels toe; daarna krijgt binnenkomende mail de labels die passen.",
@@ -1624,5 +1639,166 @@
     "notesQuote": "„{{quote}}”",
     "notesFrom": "Uit de mail „{{subject}}” van {{sender}}",
     "noSubject": "(geen onderwerp)"
+  },
+  "layout": {
+    "resizeFolders": "Breedte van de mappen",
+    "resizeList": "Breedte van de maillijst"
+  },
+  "labels": {
+    "view": {
+      "subtitle": "Alle mail met dit label, uit alle mappen"
+    },
+    "nav": {
+      "title": "Labels",
+      "manage": "Labels beheren",
+      "unread_one": "{{name}}, {{count}} ongelezen",
+      "unread_other": "{{name}}, {{count}} ongelezen"
+    },
+    "filter": {
+      "title": "Alleen mail met het label {{name}}"
+    },
+    "group": {
+      "on": "Groeperen op label",
+      "off": "Niet meer groeperen op label",
+      "none": "Zonder label"
+    },
+    "quick": {
+      "title": "Labels",
+      "button": "Labels",
+      "more": "Labels …",
+      "search": "Label zoeken of aanmaken",
+      "for_one": "Voor {{count}} gesprek. Enter of een klik zet een label of haalt het weg.",
+      "for_other": "Voor {{count}} gesprekken. Enter of een klik zet een label of haalt het weg.",
+      "create": "“{{name}}” aanmaken",
+      "none": "Nog geen labels. Typ een naam om er een aan te maken.",
+      "added_one": "Label “{{name}}” gezet",
+      "added_other": "Label “{{name}}” gezet bij {{count}} gesprekken",
+      "removed_one": "Label “{{name}}” weggehaald",
+      "removed_other": "Label “{{name}}” weggehaald bij {{count}} gesprekken",
+      "addName": "Label {{name}} zetten",
+      "removeName": "Label {{name}} weghalen"
+    },
+    "suggest": {
+      "menu": "Opnieuw labelen",
+      "menuLatest": "Nieuwste mail opnieuw labelen",
+      "title": "Opnieuw labelen",
+      "intro": "Aangevinkte labels gaan op de mail, de andere gaan eraf. De assistent heeft aangevinkt wat past.",
+      "fits": "past",
+      "fitsNot": "past niet",
+      "isSet": "nu gezet",
+      "willAdd": "wordt gezet",
+      "willRemove": "wordt weggehaald",
+      "apply_one": "{{count}} wijziging toepassen",
+      "apply_other": "{{count}} wijzigingen toepassen",
+      "keep": "Zo laten",
+      "applied_one": "{{count}} label gewijzigd",
+      "applied_other": "{{count}} labels gewijzigd",
+      "unchanged": "Labels ongewijzigd",
+      "noLabels": "Je hebt nog geen labels.",
+      "newTitle": "Ideeën voor nieuwe labels",
+      "create": "Aanmaken en zetten",
+      "createNamed": "“{{name}}” aanmaken en op deze mail zetten",
+      "created": "Label “{{name}}” aangemaakt en gezet",
+      "createdShort": "Aangemaakt en gezet",
+      "exists": "Al een van je labels",
+      "retry": "Opnieuw proberen"
+    },
+    "source": {
+      "ai": "Gezet door de assistent",
+      "rule": "Gezet door de voorwaarden van het label",
+      "sender": "Gezet vanwege de afzender",
+      "detector": "Gezet door de ingebouwde herkenning",
+      "classifier": "Gezet door de lerende classificatie"
+    },
+    "detector": {
+      "none": "Geen",
+      "invoice": "Facturen",
+      "appointment": "Afspraken",
+      "newsletter": "Nieuwsbrieven",
+      "shipping": "Verzending"
+    },
+    "condition": {
+      "from": "Afzender (adres of domein)",
+      "subject": "Onderwerp bevat",
+      "text": "Tekst bevat",
+      "hasAttachment": "Heeft een bijlage",
+      "fromPlaceholder": "bijv. shop.example",
+      "subjectPlaceholder": "bijv. Factuur",
+      "textPlaceholder": "bijv. bestelnummer",
+      "attachmentYes": "Ja",
+      "attachmentNo": "Nee"
+    },
+    "settings": {
+      "title": "Labels",
+      "description": "Je eigen woorden voor soorten mail. Ze verschijnen hier en in andere mailapps (als trefwoorden). Je zet ze met de hand, of ze komen er vanzelf op.",
+      "autoTitle": "Zonder AI",
+      "autoDescription": "Labels kunnen zonder AI op nieuwe mail komen: via eigen voorwaarden, een ingebouwde herkenning, afzenders die je eerder labelde en een kleine classificatie die van je leert. Daarvoor verlaat niets de server.",
+      "auto": "Nieuwe mail vanzelf labelen, zonder AI",
+      "autoDesc": "Gebruikt wat bij elk label hieronder is ingesteld.",
+      "aiOn": "De assistent labelt nieuwe mail ook en beoordeelt de labels die nog niet gezet zijn.",
+      "aiOff": "De assistent labelt geen nieuwe mail.",
+      "toAi": "AI-instellingen",
+      "manage": "Labels beheren",
+      "listTitle": "Je labels",
+      "mailCount_one": "{{count}} mail",
+      "mailCount_other": "{{count}} mails",
+      "conditionCount_one": "{{count}} voorwaarde",
+      "conditionCount_other": "{{count}} voorwaarden",
+      "learnsSenders": "leert afzenders",
+      "learnsFrom_one": "geleerd van {{count}} mail",
+      "learnsFrom_other": "geleerd van {{count}} mails",
+      "automaticTitle": "Vanzelf zetten",
+      "automaticHint": "Dit werkt allemaal zonder AI.",
+      "detector": "Ingebouwde herkenning",
+      "detectorHint": "Herkent vanzelf een soort mail, bijv. facturen aan bedragen en factuurnummers.",
+      "conditions": "Voorwaarden",
+      "noConditions": "Geen voorwaarden.",
+      "matchAll": "Alle gelden",
+      "matchAny": "Eén geldt",
+      "conditionField": "Voorwaarde",
+      "conditionValue": "Waarde",
+      "removeCondition": "Voorwaarde verwijderen",
+      "addCondition": "Voorwaarde toevoegen",
+      "conditionProblem": "Vul een waarde van hoogstens {{max}} tekens in.",
+      "learnSenders": "Afzenders leren",
+      "learnSendersDesc": "Heb je mail van een afzender twee keer met de hand dit label gegeven, dan krijgt diens mail het vanzelf. Haal je het met de hand weg, dan wordt dat afgeleerd.",
+      "classifier": "Leren van mijn labels",
+      "classifierDesc": "Een kleine classificatie op de server leert van mail die je met de hand labelt of ontlabelt. Hij doet pas iets vanaf {{min}} voorbeelden, en alleen als hij vrij zeker is.",
+      "examples_one": "Tot nu toe {{count}} van {{min}} voorbeelden.",
+      "examples_other": "Tot nu toe {{count}} van {{min}} voorbeelden.",
+      "examplesReady_one": "Geleerd van {{count}} voorbeeld: actief.",
+      "examplesReady_other": "Geleerd van {{count}} voorbeelden: actief.",
+      "listDescription": "Naam, kleur en wat elk label vanzelf op mail zet."
+    },
+    "log": {
+      "title": "Onlangs vanzelf gezet",
+      "description": "Labels die automatisch op mail kwamen, en waarom.",
+      "empty": "Nog niets.",
+      "undone": "weer weggehaald"
+    },
+    "reason": {
+      "rule": "De voorwaarden van het label klopten: {{conditions}}",
+      "ruleAny": "Een voorwaarde van het label klopte: {{conditions}}",
+      "sender": "Je gaf mail van {{address}} dit label al met de hand ({{count}}×)",
+      "invoiceAttachment": "Lijkt op een factuur: bijlage ‘{{attachment}}’",
+      "invoiceWord": "Lijkt op een factuur: ‘{{word}}’",
+      "invoiceWordAmount": "Lijkt op een factuur: ‘{{word}}’, {{amount}}",
+      "appointmentCalendar": "Bevat een uitnodiging of een agendabestand",
+      "appointmentWord": "Lijkt op een afspraak: ‘{{word}}’",
+      "appointmentWordDate": "Lijkt op een afspraak: ‘{{word}}’, {{when}}",
+      "newsletter": "Een nieuwsbrief: afmeldlink en de header {{header}}",
+      "shipping": "Lijkt op een verzendbericht",
+      "shippingCarrier": "Verzendbericht van {{carrier}}",
+      "shippingTracking": "Verzendbericht, trackingnummer {{tracking}}",
+      "shippingBoth": "Verzendbericht van {{carrier}}, trackingnummer {{tracking}}",
+      "classifier": "De classifier is {{percent}} zeker (geleerd van {{examples}} voorbeelden)",
+      "field": {
+        "from": "afzender {{value}}",
+        "subject": "onderwerp bevat ‘{{value}}’",
+        "text": "tekst bevat ‘{{value}}’",
+        "attachmentYes": "heeft een bijlage",
+        "attachmentNo": "heeft geen bijlage"
+      }
+    }
   }
 }

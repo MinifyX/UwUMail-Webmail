@@ -333,7 +333,8 @@
     "profile": "Photo de profil",
     "assistant": "Assistant IA",
     "detectEvents": "Repérer les rendez-vous dans les e-mails",
-    "detectEventsDesc": "Les dates comme « ven. 17 oct. à 19h30 » ou « 6–9 oct. » sont soulignées et proposées pour votre agenda, y compris le texte des images. Cela se fait par des règles, sans IA ; l'assistant IA ne lit un e-mail que si vous le lui demandez."
+    "detectEventsDesc": "Les dates comme « ven. 17 oct. à 19h30 » ou « 6–9 oct. » sont soulignées et proposées pour votre agenda, y compris le texte des images. Cela se fait par des règles, sans IA ; l'assistant IA ne lit un e-mail que si vous le lui demandez.",
+    "labels": "Étiquettes"
   },
   "theme": {
     "system": "Système",
@@ -394,7 +395,8 @@
     "contactsEdit": "Modifier le contact",
     "contactsDelete": "Supprimer le contact",
     "contactsNext": "Contact suivant",
-    "contactsPrevious": "Contact précédent"
+    "contactsPrevious": "Contact précédent",
+    "label": "Étiqueter"
   },
   "palette": {
     "placeholder": "Tapez une commande",
@@ -670,7 +672,8 @@
       "cc": "Cc",
       "toOrCc": "À ou Cc",
       "subject": "Objet",
-      "listId": "Liste de diffusion"
+      "listId": "Liste de diffusion",
+      "hasLabel": "Étiquette"
     },
     "op": {
       "label": "Comparaison",
@@ -686,12 +689,18 @@
       "trash": "Déplacer dans la corbeille",
       "markRead": "Marquer comme lu",
       "flag": "Suivre",
-      "forward": "Transférer"
+      "forward": "Transférer",
+      "label": "Poser une étiquette"
     },
     "summary": {
       "move": "dans {{folder}}",
       "forward": "transférer à {{address}}",
-      "stop": "s'arrête"
+      "stop": "s'arrête",
+      "label": {
+        "is": "étiquette {{name}} posée",
+        "isNot": "étiquette {{name}} absente"
+      },
+      "setLabel": "étiquette {{name}}"
     },
     "problem": {
       "noName": "Donnez un nom à la règle.",
@@ -699,7 +708,8 @@
       "noActions": "Ajoutez au moins une action.",
       "noFolder": "Choisissez un dossier.",
       "badAddress": "Saisissez une adresse complète, comme name@example.com.",
-      "tooMany": "Un dossier et un transfert par règle."
+      "tooMany": "Un dossier et un transfert par règle.",
+      "noLabel": "Choisissez une étiquette."
     },
     "foreignTitle": "Ces règles ont été modifiées ailleurs",
     "foreignBody": "Un autre programme a modifié le script de règles, {{brand}} l'affiche donc sous forme de texte. Vous pouvez le modifier ici ou le remplacer par des règles gérées dans {{brand}}.",
@@ -708,7 +718,13 @@
     "check": "Vérifier",
     "replace": "Remplacer par des règles {{brand}}",
     "replaceConfirm": "Remplacer le script",
-    "replaceBody": "Le script ci-dessus sera supprimé et vous repartirez d'une liste de règles vide."
+    "replaceBody": "Le script ci-dessus sera supprimé et vous repartirez d'une liste de règles vide.",
+    "labelOp": {
+      "is": "est posée",
+      "isNot": "n'est pas posée"
+    },
+    "labelValue": "Étiquette",
+    "chooseLabel": "Choisir une étiquette"
   },
   "calendar": {
     "title": "Agenda",
@@ -1386,7 +1402,6 @@
     "labels": {
       "title": "Étiquettes",
       "description": "Vos propres mots pour classer les e-mails. Les étiquettes apparaissent sur les e-mails ici et dans d'autres apps de messagerie (sous forme de mots-clés). Le modèle choisit uniquement parmi vos étiquettes ; il ne déplace, ne supprime et ne répond jamais à aucun e-mail.",
-      "descriptionManual": "Vos propres mots pour classer les e-mails, attribués à la main depuis la lecture. Ils apparaissent aussi dans d'autres apps de messagerie (sous forme de mots-clés).",
       "auto": "Étiqueter automatiquement les nouveaux e-mails",
       "autoDesc": "Les e-mails entrants reçoivent les étiquettes qui leur correspondent. Pour cela, le modèle lit les noms et descriptions de vos étiquettes ainsi que le début de chaque e-mail.",
       "autoNoLabels": "Ajoutez d'abord quelques étiquettes ; les e-mails entrants recevront ensuite celles qui leur correspondent.",
@@ -1680,5 +1695,177 @@
     "notesQuote": "« {{quote}} »",
     "notesFrom": "De l'e-mail « {{subject}} » de {{sender}}",
     "noSubject": "(sans objet)"
+  },
+  "layout": {
+    "resizeFolders": "Largeur des dossiers",
+    "resizeList": "Largeur de la liste des e-mails"
+  },
+  "labels": {
+    "view": {
+      "subtitle": "Tous les e-mails avec cette étiquette, dans tous les dossiers"
+    },
+    "nav": {
+      "title": "Étiquettes",
+      "manage": "Gérer les étiquettes",
+      "unread_one": "{{name}}, {{count}} non lu",
+      "unread_other": "{{name}}, {{count}} non lus",
+      "unread_many": "{{name}}, {{count}} non lus"
+    },
+    "filter": {
+      "title": "Seulement les e-mails étiquetés {{name}}"
+    },
+    "group": {
+      "on": "Regrouper par étiquette",
+      "off": "Ne plus regrouper par étiquette",
+      "none": "Sans étiquette"
+    },
+    "quick": {
+      "title": "Étiquettes",
+      "button": "Étiquettes",
+      "more": "Étiquettes …",
+      "search": "Chercher ou créer une étiquette",
+      "for_one": "Pour {{count}} conversation. Entrée ou un clic pose l'étiquette ou la retire.",
+      "for_other": "Pour {{count}} conversations. Entrée ou un clic pose l'étiquette ou la retire.",
+      "for_many": "Pour {{count}} conversations. Entrée ou un clic pose l'étiquette ou la retire.",
+      "create": "Créer « {{name}} »",
+      "none": "Pas encore d'étiquettes. Tapez un nom pour en créer une.",
+      "added_one": "Étiquette « {{name}} » posée",
+      "added_other": "Étiquette « {{name}} » posée sur {{count}} conversations",
+      "added_many": "Étiquette « {{name}} » posée sur {{count}} conversations",
+      "removed_one": "Étiquette « {{name}} » retirée",
+      "removed_other": "Étiquette « {{name}} » retirée de {{count}} conversations",
+      "removed_many": "Étiquette « {{name}} » retirée de {{count}} conversations",
+      "addName": "Poser l'étiquette {{name}}",
+      "removeName": "Retirer l'étiquette {{name}}"
+    },
+    "suggest": {
+      "menu": "Réétiqueter",
+      "menuLatest": "Réétiqueter le dernier e-mail",
+      "title": "Réétiqueter",
+      "intro": "Les étiquettes cochées vont sur l'e-mail, les autres sont retirées. L'assistant a coché ce qui convient.",
+      "fits": "convient",
+      "fitsNot": "ne convient pas",
+      "isSet": "posée actuellement",
+      "willAdd": "sera posée",
+      "willRemove": "sera retirée",
+      "apply_one": "Appliquer {{count}} changement",
+      "apply_other": "Appliquer {{count}} changements",
+      "apply_many": "Appliquer {{count}} changements",
+      "keep": "Laisser tel quel",
+      "applied_one": "{{count}} étiquette modifiée",
+      "applied_other": "{{count}} étiquettes modifiées",
+      "applied_many": "{{count}} étiquettes modifiées",
+      "unchanged": "Étiquettes inchangées",
+      "noLabels": "Vous n'avez pas encore d'étiquettes.",
+      "newTitle": "Idées de nouvelles étiquettes",
+      "create": "Créer et poser",
+      "createNamed": "Créer « {{name}} » et la poser sur cet e-mail",
+      "created": "Étiquette « {{name}} » créée et posée",
+      "createdShort": "Créée et posée",
+      "exists": "Déjà une de vos étiquettes",
+      "retry": "Réessayer"
+    },
+    "source": {
+      "ai": "Posée par l'assistant",
+      "rule": "Posée par les conditions de l'étiquette",
+      "sender": "Posée à cause de l'expéditeur",
+      "detector": "Posée par la détection intégrée",
+      "classifier": "Posée par le classificateur qui apprend"
+    },
+    "detector": {
+      "none": "Aucune",
+      "invoice": "Factures",
+      "appointment": "Rendez-vous",
+      "newsletter": "Newsletters",
+      "shipping": "Livraisons"
+    },
+    "condition": {
+      "from": "Expéditeur (adresse ou domaine)",
+      "subject": "L'objet contient",
+      "text": "Le texte contient",
+      "hasAttachment": "A une pièce jointe",
+      "fromPlaceholder": "p. ex. shop.example",
+      "subjectPlaceholder": "p. ex. Facture",
+      "textPlaceholder": "p. ex. numéro de commande",
+      "attachmentYes": "Oui",
+      "attachmentNo": "Non"
+    },
+    "settings": {
+      "title": "Étiquettes",
+      "description": "Vos propres mots pour classer les e-mails. Elles apparaissent ici et dans d'autres apps de messagerie (sous forme de mots-clés). Vous les posez à la main, ou elles se posent toutes seules.",
+      "autoTitle": "Sans IA",
+      "autoDescription": "Les étiquettes peuvent se poser sur les nouveaux e-mails sans aucune IA : par leurs propres conditions, une détection intégrée, les expéditeurs que vous avez déjà étiquetés et un petit classificateur qui apprend de vous. Rien ne quitte le serveur pour cela.",
+      "auto": "Étiqueter les nouveaux e-mails tout seul, sans IA",
+      "autoDesc": "Utilise ce qui est réglé pour chaque étiquette ci-dessous.",
+      "aiOn": "L'assistant étiquette aussi les nouveaux e-mails et juge les étiquettes qui ne sont pas encore posées.",
+      "aiOff": "L'assistant n'étiquette pas les nouveaux e-mails.",
+      "toAi": "Réglages de l'IA",
+      "manage": "Gérer les étiquettes",
+      "listTitle": "Vos étiquettes",
+      "mailCount_one": "{{count}} e-mail",
+      "mailCount_other": "{{count}} e-mails",
+      "mailCount_many": "{{count}} e-mails",
+      "conditionCount_one": "{{count}} condition",
+      "conditionCount_other": "{{count}} conditions",
+      "conditionCount_many": "{{count}} conditions",
+      "learnsSenders": "apprend les expéditeurs",
+      "learnsFrom_one": "a appris de {{count}} e-mail",
+      "learnsFrom_other": "a appris de {{count}} e-mails",
+      "learnsFrom_many": "a appris de {{count}} e-mails",
+      "automaticTitle": "Pose automatique",
+      "automaticHint": "Tout cela fonctionne sans IA.",
+      "detector": "Détection intégrée",
+      "detectorHint": "Reconnaît toute seule un type d'e-mail, p. ex. les factures par leurs montants et numéros de facture.",
+      "conditions": "Conditions",
+      "noConditions": "Aucune condition.",
+      "matchAll": "Toutes s'appliquent",
+      "matchAny": "Une s'applique",
+      "conditionField": "Condition",
+      "conditionValue": "Valeur",
+      "removeCondition": "Retirer la condition",
+      "addCondition": "Ajouter une condition",
+      "conditionProblem": "Saisissez une valeur de {{max}} caractères au plus.",
+      "learnSenders": "Apprendre les expéditeurs",
+      "learnSendersDesc": "Dès que vous avez posé deux fois cette étiquette à la main sur les e-mails d'un expéditeur, ses e-mails la reçoivent tout seuls. La retirer à la main le désapprend.",
+      "classifier": "Apprendre de mes étiquettes",
+      "classifierDesc": "Un petit classificateur sur le serveur apprend des e-mails que vous étiquetez ou désétiquetez à la main. Il n'agit qu'à partir de {{min}} exemples, et seulement s'il est assez sûr.",
+      "examples_one": "Pour l'instant {{count}} exemple sur {{min}}.",
+      "examples_other": "Pour l'instant {{count}} exemples sur {{min}}.",
+      "examples_many": "Pour l'instant {{count}} exemples sur {{min}}.",
+      "examplesReady_one": "A appris de {{count}} exemple : actif.",
+      "examplesReady_other": "A appris de {{count}} exemples : actif.",
+      "examplesReady_many": "A appris de {{count}} exemples : actif.",
+      "listDescription": "Nom, couleur et ce qui pose chaque étiquette toute seule sur les e-mails."
+    },
+    "log": {
+      "title": "Posées automatiquement récemment",
+      "description": "Les étiquettes posées automatiquement sur des e-mails, et pourquoi.",
+      "empty": "Rien pour l'instant.",
+      "undone": "retirée depuis"
+    },
+    "reason": {
+      "rule": "Les conditions de l’étiquette sont remplies : {{conditions}}",
+      "ruleAny": "Une condition de l’étiquette est remplie : {{conditions}}",
+      "sender": "Vous avez déjà donné cette étiquette à la main aux messages de {{address}} ({{count}}×)",
+      "invoiceAttachment": "Ressemble à une facture : pièce jointe « {{attachment}} »",
+      "invoiceWord": "Ressemble à une facture : « {{word}} »",
+      "invoiceWordAmount": "Ressemble à une facture : « {{word}} », {{amount}}",
+      "appointmentCalendar": "Contient une invitation ou un fichier de calendrier",
+      "appointmentWord": "Ressemble à un rendez-vous : « {{word}} »",
+      "appointmentWordDate": "Ressemble à un rendez-vous : « {{word}} », {{when}}",
+      "newsletter": "Une newsletter : lien de désinscription et l’en-tête {{header}}",
+      "shipping": "Ressemble à un avis d’expédition",
+      "shippingCarrier": "Avis d’expédition de {{carrier}}",
+      "shippingTracking": "Avis d’expédition, numéro de suivi {{tracking}}",
+      "shippingBoth": "Avis d’expédition de {{carrier}}, numéro de suivi {{tracking}}",
+      "classifier": "Le classifieur est sûr à {{percent}} (appris sur {{examples}} exemples)",
+      "field": {
+        "from": "expéditeur {{value}}",
+        "subject": "l’objet contient « {{value}} »",
+        "text": "le texte contient « {{value}} »",
+        "attachmentYes": "a une pièce jointe",
+        "attachmentNo": "n’a pas de pièce jointe"
+      }
+    }
   }
 }

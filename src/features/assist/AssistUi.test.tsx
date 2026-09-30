@@ -19,9 +19,11 @@ import { i18n } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import { useToasts } from "@/state/toasts";
 import { ComposeAssistPanel, type ComposeAssistContext, type ComposeAssistStart } from "./ComposeAssist";
+import { LABEL_DEFAULTS } from "./labels";
 import { MessageLabels } from "./LabelChips";
+import { SuggestBody } from "../labels/LabelSuggest";
 import { useAssistReader } from "./readerState";
-import { LabelSettings } from "./settings/LabelSettings";
+import { LabelSettings } from "../labels/LabelSettings";
 import { ProviderSettings } from "./settings/ProviderSettings";
 import { SpamCheckCard } from "./SpamCheckCard";
 
@@ -72,7 +74,7 @@ const fake = {
   assistCompose: vi.fn((request: AssistComposeRequest, handlers: AssistStreamHandlers) => compose(request, handlers)),
   assistLabels: vi.fn(async () => labels.map((label) => ({ ...label }))),
   createAssistLabel: vi.fn(async (input: AssistLabelInput) => {
-    const made = { id: `g${labels.length + 1}`, keyword: input.name.toLowerCase(), ...input };
+    const made = { ...LABEL_DEFAULTS, id: `g${labels.length + 1}`, keyword: input.name.toLowerCase(), ...input };
     labels = [...labels, made];
     return made;
   }),
@@ -102,6 +104,16 @@ const fake = {
     },
   })),
   markSpam: vi.fn(async () => []),
+  suggestLabels: vi.fn(async (emailId: string) => ({
+    ...ANSWER,
+    emailId,
+    verdicts: [
+      { labelId: "g1", fits: true, reason: "It is an invoice.", isSet: false },
+      { labelId: "g2", fits: false, reason: "No offers in it.", isSet: true },
+      { labelId: "g3", fits: false, reason: "Not about a trip.", isSet: false },
+    ],
+    newLabels: [{ name: "Kids", description: "School and daycare", color: "#10b981", reason: "About school." }],
+  })),
 };
 
 vi.mock("@/backend/backend", async (original) => ({
@@ -260,7 +272,9 @@ describe("the assistant's UI", () => {
   });
 
   it("shows why the assistant set a label and undoes it", async () => {
-    labels = [{ id: "g1", name: "Invoices", keyword: "invoices", description: "Bills", color: "#f59e0b" }];
+    labels = [
+      { ...LABEL_DEFAULTS, id: "g1", name: "Invoices", keyword: "invoices", description: "Bills", color: "#f59e0b" },
+    ];
     log = [
       {
         id: "l1",
@@ -268,7 +282,10 @@ describe("the assistant's UI", () => {
         labelId: "g1",
         name: "Invoices",
         keyword: "invoices",
+        source: "ai",
         reason: "It is an invoice for September.",
+        code: "ai",
+        params: {},
         createdAt: "2026-09-28T10:02:00Z",
         undone: false,
         providerName: "Mistral (Server)",
@@ -286,11 +303,44 @@ describe("the assistant's UI", () => {
   });
 
   it("puts a label on by hand as a keyword", async () => {
-    labels = [{ id: "g1", name: "Travel", keyword: "travel", description: "", color: null }];
+    labels = [{ ...LABEL_DEFAULTS, id: "g1", name: "Travel", keyword: "travel", description: "", color: null }];
     renderWith(<MessageLabels message={message()} canEdit />);
     fireEvent.click(await screen.findByRole("button", { name: "Add a label" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Travel" }));
     await waitFor(() => expect(fake.setFlags).toHaveBeenCalledWith(["e1"], { keywords: { travel: true } }));
+  });
+
+  it("labels again: ticks what fits, takes off what no longer does, and makes a new label", async () => {
+    labels = [
+      { ...LABEL_DEFAULTS, id: "g1", name: "Invoices", keyword: "invoices", description: "", color: null },
+      { ...LABEL_DEFAULTS, id: "g2", name: "Newsletters", keyword: "newsletters", description: "", color: null },
+      { ...LABEL_DEFAULTS, id: "g3", name: "Travel", keyword: "travel", description: "", color: null },
+    ];
+    const onClose = vi.fn();
+    renderWith(<SuggestBody emailId="e1" onClose={onClose} />);
+    expect(await screen.findByText("It is an invoice.")).toBeTruthy();
+    expect(fake.suggestLabels).toHaveBeenCalledWith("e1", "en");
+    const box = (name: string) => screen.getByRole("checkbox", { name: new RegExp(name) }) as HTMLInputElement;
+    expect(box("Invoices").checked).toBe(true);
+    expect(box("Newsletters").checked).toBe(false);
+    expect(screen.getByText("will be removed")).toBeTruthy();
+    // The person keeps the travel label off and applies: one added, one taken off.
+    fireEvent.click(screen.getByRole("button", { name: "Apply 2 changes" }));
+    await waitFor(() =>
+      expect(fake.setFlags).toHaveBeenCalledWith(["e1"], { keywords: { invoices: true, newsletters: false } }),
+    );
+    expect(onClose).toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Create “Kids” and put it on this mail" }));
+    await waitFor(() =>
+      expect(fake.createAssistLabel).toHaveBeenCalledWith({
+        name: "Kids",
+        description: "School and daycare",
+        color: "#10b981",
+      }),
+    );
+    await waitFor(() => expect(fake.setFlags).toHaveBeenCalledWith(["e1"], { keywords: { kids: true } }));
+    expect(await screen.findByText("Created and applied")).toBeTruthy();
   });
 
   it("adds the suggested starter labels in one click", async () => {
@@ -308,7 +358,7 @@ describe("the assistant's UI", () => {
   });
 
   it("checks a new label before saving it", async () => {
-    labels = [{ id: "g1", name: "Travel", keyword: "travel", description: "", color: null }];
+    labels = [{ ...LABEL_DEFAULTS, id: "g1", name: "Travel", keyword: "travel", description: "", color: null }];
     renderWith(<LabelSettings options={OPTIONS} />);
     // The list is there (its keyword shows), not only the suggestions.
     await screen.findByText("travel");

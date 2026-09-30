@@ -53,6 +53,7 @@ export type SettingsSection =
   | "profile"
   | "rules"
   | "masked"
+  | "labels"
   | "assistant"
   | "security"
   | "accounts"
@@ -86,6 +87,12 @@ interface UiState {
   /** Where a Shift range ends: the row Shift+↑/↓ last reached. */
   selectionCursor: string | null;
   moving: MoveRequest | null;
+  /** Label keywords the list is narrowed to (the chips next to the filters). */
+  labelFilter: string[];
+  /** Conversations the quick label picker (L) works on. */
+  labelPicker: { threadIds: string[] } | null;
+  /** The mail "Label again" asks the assistant about. */
+  labelSuggest: { emailId: string } | null;
 
   setSection: (section: AppSection) => void;
   /** Also switches back to the mail. */
@@ -113,6 +120,12 @@ interface UiState {
   checkAllVisible: () => void;
   openMove: (request: MoveRequest) => void;
   closeMove: () => void;
+  toggleLabelFilter: (keyword: string) => void;
+  setLabelFilter: (keywords: string[]) => void;
+  openLabelPicker: (threadIds: string[]) => void;
+  closeLabelPicker: () => void;
+  openLabelSuggest: (emailId: string) => void;
+  closeLabelSuggest: () => void;
 }
 
 export const useUi = create<UiState>()((set, get) => ({
@@ -134,6 +147,9 @@ export const useUi = create<UiState>()((set, get) => ({
   selectionAnchor: null,
   selectionCursor: null,
   moving: null,
+  labelFilter: [],
+  labelPicker: null,
+  labelSuggest: null,
 
   setSection: (section) => set({ section, folderDrawerOpen: false, paletteOpen: false }),
   setView: (view) =>
@@ -142,6 +158,7 @@ export const useUi = create<UiState>()((set, get) => ({
       view,
       selectedThreadId: null,
       folderDrawerOpen: false,
+      labelFilter: [],
       checkedThreadIds: [],
       selectionAnchor: null,
       selectionCursor: null,
@@ -187,4 +204,19 @@ export const useUi = create<UiState>()((set, get) => ({
   checkAllVisible: () => set((state) => ({ checkedThreadIds: [...state.visibleThreadIds] })),
   openMove: (request) => set({ moving: request }),
   closeMove: () => set({ moving: null }),
+  toggleLabelFilter: (keyword) =>
+    set((state) => ({
+      labelFilter: state.labelFilter.includes(keyword)
+        ? state.labelFilter.filter((entry) => entry !== keyword)
+        : [...state.labelFilter, keyword],
+      selectedThreadId: null,
+      checkedThreadIds: [],
+      selectionAnchor: null,
+      selectionCursor: null,
+    })),
+  setLabelFilter: (keywords) => set({ labelFilter: keywords }),
+  openLabelPicker: (threadIds) => set(threadIds.length > 0 ? { labelPicker: { threadIds } } : {}),
+  closeLabelPicker: () => set({ labelPicker: null }),
+  openLabelSuggest: (emailId) => set({ labelSuggest: { emailId } }),
+  closeLabelSuggest: () => set({ labelSuggest: null }),
 }));

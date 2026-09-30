@@ -9,29 +9,29 @@ import {
   ShieldAlert,
   ShieldCheck,
   Star,
+  Tag,
+  Tags,
   Trash,
   Trash2,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import type { ListFilter } from "@/backend/types";
+import { Fragment, useEffect, useRef, useState } from "react";
+import type { ListFilter, ThreadSummary } from "@/backend/types";
 import type { SceneName } from "@/components/nyu/scenes";
 import { Button, IconButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pill } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
-import {
-  flattenThreads,
-  useAccounts,
-  useMessageActions,
-  useThreadActions,
-  useThreads,
-  useVisibleAccounts,
-} from "@/lib/queries";
+import { flattenThreads, useAccounts, useMessageActions, useThreadActions, useVisibleAccounts } from "@/lib/queries";
 import { openFolderDialog } from "@/state/folderDialog";
 import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
+import { chipStyle } from "../assist/labels";
+import { useAssistLabels } from "../assist/useAssist";
 import { openDraftThread } from "../compose/openDraft";
+import { LabelDot, ThreadLabelMenu } from "../labels/LabelMenus";
+import { groupByLabel } from "../labels/logic";
+import { useListThreads } from "../labels/useLabels";
 import { useSelectionActions } from "./selection";
 import { ThreadRow } from "./ThreadRow";
 import { useViewInfo } from "./view";
@@ -65,6 +65,12 @@ export function ThreadList({ variant, className }: ThreadListProps) {
   const { refresh } = useMessageActions();
   const threadActions = useThreadActions();
   const density = useSettings((s) => s.listDensity);
+  const grouped = useSettings((s) => s.groupByLabel);
+  const updateSettings = useSettings((s) => s.update);
+  const { data: labels = [] } = useAssistLabels();
+  const labelFilter = useUi((s) => s.labelFilter);
+  const toggleLabelFilter = useUi((s) => s.toggleLabelFilter);
+  const [menu, setMenu] = useState<{ at: { x: number; y: number }; threadIds: string[] } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const checked = useUi((s) => s.checkedThreadIds);
   const setChecked = useUi((s) => s.setCheckedThreadIds);
@@ -79,8 +85,11 @@ export function ThreadList({ variant, className }: ThreadListProps) {
     return () => clearTimeout(timer);
   }, [draft, setSearch]);
 
-  const query = useThreads(view, filter, search);
-  const threads = flattenThreads(query.data?.pages);
+  const query = useListThreads(view, filter, search);
+  const loaded = flattenThreads(query.data?.pages);
+  // In sections per label the list reads (and the keyboard walks) in the sections' order.
+  const sections = grouped && labels.length > 0 ? groupByLabel(loaded, labels) : null;
+  const threads = sections ? sections.flatMap((section) => section.threads) : loaded;
   const ids = threads.map((thread) => thread.id).join("|");
   useEffect(() => {
     setVisibleThreadIds(ids ? ids.split("|") : []);
@@ -103,13 +112,65 @@ export function ThreadList({ variant, className }: ThreadListProps) {
     setChecked([]);
     void action(ids);
   };
-  const empty = search
-    ? "search"
-    : shown.length > 0 && shown.every((account) => account.status.state === "offline")
-      ? "offline"
-      : info.isInbox && filter === "all"
-        ? "inbox"
-        : "other";
+  const chipLabels = labels.filter((label) => view.kind !== "label" || label.keyword !== view.keyword);
+  const empty =
+    search || labelFilter.length > 0
+      ? "search"
+      : shown.length > 0 && shown.every((account) => account.status.state === "offline")
+        ? "offline"
+        : info.isInbox && filter === "all"
+          ? "inbox"
+          : "other";
+
+  const openRowMenu = (thread: ThreadSummary, event: React.MouseEvent) => {
+    if (labels.length === 0 || !info.rights.flag) return;
+    event.preventDefault();
+    setMenu({
+      at: { x: event.clientX, y: event.clientY },
+      threadIds: checked.includes(thread.id) ? checked : [thread.id],
+    });
+  };
+
+  const renderRow = (thread: ThreadSummary) => (
+    <ThreadRow
+      key={thread.id}
+      thread={thread}
+      variant={variant}
+      density={density}
+      selected={thread.id === selectedThreadId}
+      accounts={accounts}
+      showAccount={showAccount}
+      actions={threadActions}
+      checked={checked.includes(thread.id)}
+      dragIds={checked.includes(thread.id) ? checked : [thread.id]}
+      inTrash={info.isTrash}
+      inJunk={info.isJunk}
+      rights={info.rights}
+      onContextMenu={(event) => openRowMenu(thread, event)}
+      onSelect={(event) => {
+        const anchor = useUi.getState().selectionAnchor ?? selectedThreadId;
+        if (event.ctrlKey || event.metaKey) {
+          setChecked(checked.includes(thread.id) ? checked.filter((id) => id !== thread.id) : [...checked, thread.id]);
+          setAnchor(thread.id);
+        } else if (event.shiftKey && anchor) {
+          const order = threads.map((item) => item.id);
+          const start = order.indexOf(anchor);
+          const end = order.indexOf(thread.id);
+          if (start >= 0) {
+            const range = order.slice(Math.min(start, end), Math.max(start, end) + 1);
+            setChecked([...new Set([...checked, ...range])]);
+            // Shift+↑/↓ carry on from here.
+            setAnchor(anchor, thread.id);
+          }
+        } else if (info.isDrafts) {
+          setAnchor(thread.id);
+          void openDraftThread(thread.id);
+        } else {
+          selectThread(thread.id);
+        }
+      }}
+    />
+  );
 
   return (
     <section className={clsx("flex h-full min-w-0 flex-col bg-surface", className)} aria-label={info.title}>
@@ -132,6 +193,15 @@ export function ThreadList({ variant, className }: ThreadListProps) {
             >
               {t("folders.emptyShort")}
             </Button>
+          )}
+          {labels.length > 0 && (
+            <IconButton
+              icon={Tags}
+              label={grouped ? t("labels.group.off") : t("labels.group.on")}
+              active={grouped}
+              aria-pressed={grouped}
+              onClick={() => updateSettings({ groupByLabel: !grouped })}
+            />
           )}
           <IconButton
             icon={RefreshCw}
@@ -225,6 +295,14 @@ export function ThreadList({ variant, className }: ThreadListProps) {
                 onClick={() => runOnChecked(selection.move)}
               />
             )}
+            {info.rights.flag && labels.length > 0 && (
+              <IconButton
+                icon={Tag}
+                size="sm"
+                label={t("labels.quick.button")}
+                onClick={() => useUi.getState().openLabelPicker(checked)}
+              />
+            )}
             {info.rights.spam && (
               <IconButton
                 icon={info.isJunk ? ShieldCheck : ShieldAlert}
@@ -241,6 +319,23 @@ export function ThreadList({ variant, className }: ThreadListProps) {
                 {t(`filter.${item}`)}
               </Pill>
             ))}
+            {chipLabels.length > 0 && <span className="mx-0.5 my-1.5 w-px shrink-0 bg-line" aria-hidden />}
+            {chipLabels.map((label) => {
+              const active = labelFilter.includes(label.keyword);
+              return (
+                <Pill
+                  key={label.id}
+                  active={active}
+                  title={t("labels.filter.title", { name: label.name })}
+                  onClick={() => toggleLabelFilter(label.keyword)}
+                  style={active ? chipStyle(label.color) : undefined}
+                  className={clsx(active && label.color && "border")}
+                >
+                  <LabelDot color={label.color} />
+                  {label.name}
+                </Pill>
+              );
+            })}
           </div>
         )}
       </header>
@@ -266,46 +361,19 @@ export function ThreadList({ variant, className }: ThreadListProps) {
           />
         ) : (
           <>
-            {threads.map((thread) => (
-              <ThreadRow
-                key={thread.id}
-                thread={thread}
-                variant={variant}
-                density={density}
-                selected={thread.id === selectedThreadId}
-                accounts={accounts}
-                showAccount={showAccount}
-                actions={threadActions}
-                checked={checked.includes(thread.id)}
-                dragIds={checked.includes(thread.id) ? checked : [thread.id]}
-                inTrash={info.isTrash}
-                inJunk={info.isJunk}
-                rights={info.rights}
-                onSelect={(event) => {
-                  const anchor = useUi.getState().selectionAnchor ?? selectedThreadId;
-                  if (event.ctrlKey || event.metaKey) {
-                    setChecked(
-                      checked.includes(thread.id) ? checked.filter((id) => id !== thread.id) : [...checked, thread.id],
-                    );
-                    setAnchor(thread.id);
-                  } else if (event.shiftKey && anchor) {
-                    const order = threads.map((item) => item.id);
-                    const start = order.indexOf(anchor);
-                    const end = order.indexOf(thread.id);
-                    if (start >= 0) {
-                      const range = order.slice(Math.min(start, end), Math.max(start, end) + 1);
-                      setChecked([...new Set([...checked, ...range])]);
-                      // Shift+↑/↓ carry on from here.
-                      setAnchor(anchor, thread.id);
-                    }
-                  } else if (info.isDrafts) {
-                    setAnchor(thread.id);
-                    void openDraftThread(thread.id);
-                  } else {
-                    selectThread(thread.id);
-                  }
-                }}
-              />
+            {(sections ?? [{ label: undefined, threads }]).map((section) => (
+              <Fragment key={section.label === undefined ? "all" : (section.label?.id ?? "none")}>
+                {section.label !== undefined && (
+                  <h2 className="sticky top-0 z-10 flex items-center gap-2 bg-surface/95 px-3 pt-3 pb-1.5 text-[12px] font-bold tracking-wide text-muted uppercase backdrop-blur-sm">
+                    {section.label ? <LabelDot color={section.label.color} /> : <Tag className="size-3" aria-hidden />}
+                    <span className="min-w-0 truncate normal-case">
+                      {section.label ? section.label.name : t("labels.group.none")}
+                    </span>
+                    <span className="font-semibold tabular-nums">{section.threads.length}</span>
+                  </h2>
+                )}
+                {section.threads.map((thread) => renderRow(thread))}
+              </Fragment>
             ))}
             {query.hasNextPage && (
               <div className="flex justify-center p-4">
@@ -317,6 +385,12 @@ export function ThreadList({ variant, className }: ThreadListProps) {
           </>
         )}
       </div>
+      <ThreadLabelMenu
+        at={menu?.at ?? null}
+        threadIds={menu?.threadIds ?? []}
+        threads={threads}
+        onClose={() => setMenu(null)}
+      />
     </section>
   );
 }
