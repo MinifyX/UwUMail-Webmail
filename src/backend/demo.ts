@@ -673,7 +673,7 @@ export class DemoBackend implements Backend {
     });
     this.drafts.set(draftKey, { messageId: id, draft: { ...draft, draftKey } });
     this.emit({ type: "mail:changed", accountId: account.id });
-    return { draftKey, savedAt: new Date().toISOString() };
+    return { draftKey, savedAt: new Date().toISOString(), emailId: id };
   }
 
   async deleteDraft(accountId: string, draftKey: string) {

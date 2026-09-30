@@ -313,6 +313,8 @@ export interface ScheduledSend {
 export interface DraftSaveResult {
   draftKey: string;
   savedAt: string;
+  /** The saved draft's id in the Drafts folder, to open it again (see `openDraft`). */
+  emailId?: string;
 }
 
 /** A draft from the Drafts folder, ready to continue writing. */

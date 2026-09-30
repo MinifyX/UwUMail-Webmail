@@ -4,6 +4,7 @@ import { useT } from "@/i18n";
 import { useBackLayer } from "@/lib/backStack";
 import { useUi } from "@/state/ui";
 import { loadLocalDraft } from "../compose/localDraft";
+import { reopenSavedDraft } from "../compose/openDraft";
 import { MailboxNav } from "../mail/MailboxNav";
 import { MobileList } from "./MobileList";
 import { MobileReader } from "./MobileReader";
@@ -86,6 +87,11 @@ export function MobileShell() {
     const saved = loadLocalDraft();
     const ui = useUi.getState();
     if (!saved || ui.compose) return;
+    if (saved.emailId) {
+      // Only its id was kept: the draft itself comes back from the Drafts folder.
+      void reopenSavedDraft(saved.emailId);
+      return;
+    }
     ui.openCompose({ mode: saved.mode, restore: saved });
     ui.setComposeMinimized(true);
   }, []);

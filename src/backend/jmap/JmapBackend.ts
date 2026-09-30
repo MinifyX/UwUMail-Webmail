@@ -1561,7 +1561,7 @@ export class JmapBackend implements Backend {
 
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
     const saved = await this.storeDraft(draft);
-    return { draftKey: saved.draftKey, savedAt: new Date().toISOString() };
+    return { draftKey: saved.draftKey, savedAt: new Date().toISOString(), emailId: saved.emailId };
   }
 
   /** Writes the newest version of a draft and removes every older one with the same key. */

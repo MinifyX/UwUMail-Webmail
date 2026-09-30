@@ -227,7 +227,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             .catch(() => {});
         draftKey.current = saved.draftKey;
         savedAccount.current = account;
-        if (!dirty.current) markLocalDraftSaved(saved.draftKey);
+        if (!dirty.current) markLocalDraftSaved(saved.draftKey, saved.emailId);
         setSaveState({ kind: "saved", at: saved.savedAt });
       } catch {
         // Kept on this device; the next change or closing tries again.
