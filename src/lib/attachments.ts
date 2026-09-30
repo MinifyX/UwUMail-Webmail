@@ -56,7 +56,7 @@ const EXTENSION_KINDS: Record<string, AttachmentKind> = {
 };
 
 /**
- * Same list as the engine (crates/uwumail-core/src/attachments.rs): files that run code when opened,
+ * Same list as the engine (crates/uwumail-smtp/src/spam/attachments.rs): files that run code when opened,
  * plus web pages, a common way to deliver fake login pages.
  */
 const DANGEROUS = new Set(
