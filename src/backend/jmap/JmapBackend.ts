@@ -1991,18 +1991,26 @@ export class JmapBackend implements Backend {
     return supports(SIEVE);
   }
 
-  private async rulesScript(): Promise<JmapSieveScript | null> {
+  private async sieveScripts(): Promise<JmapSieveScript[]> {
     const response = await one<GetResponse<JmapSieveScript>>("SieveScript/get", { ids: null }, [CORE, SIEVE]);
-    return response.list.find((script) => script.name === RULES_SCRIPT) ?? null;
+    return response.list;
   }
 
-  async mailRules(): Promise<{ script: string | null; active: boolean }> {
+  private async rulesScript(): Promise<JmapSieveScript | null> {
+    return (await this.sieveScripts()).find((script) => script.name === RULES_SCRIPT) ?? null;
+  }
+
+  async mailRules(): Promise<{ script: string | null; active: boolean; otherActive: string | null }> {
     await this.start();
     if (!supports(SIEVE)) throw new BackendError("not_supported", "This server has no mail rules.");
-    const found = await this.rulesScript();
-    if (!found) return { script: null, active: false };
+    const scripts = await this.sieveScripts();
+    const found = scripts.find((script) => script.name === RULES_SCRIPT) ?? null;
+    // Saving activates "UwUMail", and the server runs one script: say which one that would stop.
+    const other = scripts.find((script) => script.isActive && script.name !== RULES_SCRIPT);
+    const otherActive = other ? (other.name ?? "") : null;
+    if (!found) return { script: null, active: false, otherActive };
     const blob = await downloadBlob(found.blobId, `${RULES_SCRIPT}.sieve`);
-    return { script: await blob.text(), active: found.isActive };
+    return { script: await blob.text(), active: found.isActive, otherActive };
   }
 
   private async uploadScript(script: string): Promise<string> {

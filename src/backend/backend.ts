@@ -286,9 +286,13 @@ export interface Backend {
 
   /** Whether the server filters incoming mail with rules (JMAP Sieve); without an id, whether any mailbox does. */
   mailRulesAvailable(accountId?: string): Promise<boolean>;
-  /** The script named "UwUMail" (see lib/sieveRules), null when there is none yet, and whether it filters. */
-  mailRules(accountId?: string): Promise<{ script: string | null; active: boolean }>;
-  /** Stores the script as "UwUMail" and makes it the active one. */
+  /**
+   * The script named "UwUMail" (see lib/sieveRules), null when there is none yet, and whether it
+   * filters. `otherActive` names another script that filters the mail instead (written elsewhere),
+   * which saving the rules would switch off.
+   */
+  mailRules(accountId?: string): Promise<{ script: string | null; active: boolean; otherActive?: string | null }>;
+  /** Stores the script as "UwUMail" and makes it the active one (a server runs only one). */
   saveMailRules(script: string, accountId?: string): Promise<void>;
   /** The server's complaint about a script, or null when it would take it. */
   validateMailRules(script: string, accountId?: string): Promise<string | null>;
