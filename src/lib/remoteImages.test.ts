@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { proxyCss, proxyRemoteImages } from "./remoteImages";
+import { proxyCss, proxyRemoteImages, isForeignOrEmbedded, proxyCspSource } from "./remoteImages";
 
 const proxy = (url: string) => `/jmap/image/a1?url=${encodeURIComponent(url)}`;
 const through = (url: string) => proxy(url).replaceAll("&", "&amp;");
@@ -66,5 +66,30 @@ describe("proxyCss", () => {
     const quotes = 'url("'.repeat(50_000);
     expect(proxyCss(quotes, proxy)).toBe(quotes);
     expect(performance.now() - started).toBeLessThan(1000);
+  });
+});
+
+describe("the reader's picture source for the proxy", () => {
+  const origin = "https://mail.example.com";
+  it("is the proxy's path, not the whole origin", () => {
+    expect(proxyCspSource((url) => `/jmap/image/a1?url=${encodeURIComponent(url)}`, origin)).toBe(
+      "https://mail.example.com/jmap/image/a1",
+    );
+    expect(proxyCspSource((url) => `/remote/a1/${encodeURIComponent(url)}`, origin)).toBe(
+      "https://mail.example.com/remote/a1/",
+    );
+  });
+
+  it("is nothing when the proxy leaves addresses alone or answers with data", () => {
+    expect(proxyCspSource((url) => url, origin)).toBeNull();
+    expect(proxyCspSource(() => "data:image/gif;base64,R0lGOD", origin)).toBeNull();
+  });
+
+  it("keeps remote and embedded pictures, never our own origin", () => {
+    expect(isForeignOrEmbedded("https://cdn.example/a.png", origin)).toBe(true);
+    expect(isForeignOrEmbedded("cid:logo", origin)).toBe(true);
+    expect(isForeignOrEmbedded("/api/session", origin)).toBe(false);
+    expect(isForeignOrEmbedded("https://mail.example.com/api/session", origin)).toBe(false);
+    expect(isForeignOrEmbedded("\\\\mail.example.com/api", origin)).toBe(false);
   });
 });

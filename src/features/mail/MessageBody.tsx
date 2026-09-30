@@ -5,7 +5,7 @@ import { useT } from "@/i18n";
 import { markMail, type Mark } from "@/lib/dates";
 import { escapeHtml, textToHtml } from "@/lib/format";
 import { replaceContentIds } from "@/lib/inlineImages";
-import { proxyRemoteImages, type ImageProxy } from "@/lib/remoteImages";
+import { dropLocalPictures, proxyCspSource, proxyRemoteImages, type ImageProxy } from "@/lib/remoteImages";
 import { SAFE_LINK_MARKER, unwrapSafeLink, unwrapSafeLinkElement } from "@/lib/safeLinks";
 import type { MailAppearance } from "@/state/settings";
 import { hideLinkStatus, watchLinks } from "./linkEvents";
@@ -127,11 +127,18 @@ export function fixViewportHeightUnits(html: string): string {
  */
 function withRemoteImages(html: string, allowRemote: boolean, imageProxy: ImageProxy | null | undefined) {
   if (!allowRemote) return { html, remote: "" };
-  // Our own origin only: whatever was not sent through the server can't reach its sender. Named
-  // outright: Firefox reads 'self' in the frame's <meta> policy as about:srcdoc, which is no origin
-  // at all, so every picture the server fetched stayed blocked there.
-  if (imageProxy) return { html: proxyRemoteImages(html, imageProxy), remote: ` ${window.location.origin}` };
-  return { html, remote: " https: http:" };
+  const origin = window.location.origin;
+  // Nothing the mail names may load from the webmail's own server with the session: relative
+  // addresses and ones on this origin go first (security-audit W-40).
+  const foreign = dropLocalPictures(html, origin);
+  // The proxy's path on our own origin only: whatever was not sent through the server can't reach
+  // its sender, and no other page of this origin loads. Named outright: Firefox reads 'self' in the
+  // frame's <meta> policy as about:srcdoc, which is no origin at all.
+  if (imageProxy) {
+    const source = proxyCspSource(imageProxy, origin);
+    return { html: proxyRemoteImages(foreign, imageProxy), remote: source ? ` ${source}` : "" };
+  }
+  return { html: foreign, remote: " https: http:" };
 }
 
 /**
@@ -154,7 +161,8 @@ export function buildDocument(
   // Found dates are wrapped first, in the same markup they were found in.
   const marked =
     dateMarks.length > 0 ? markMail(readableBody(message), message.subject, dateMarks) : readableBody(message);
-  const sanitized = isHtml ? marked : "";
+  // Before pictures are deferred: what would load from our own origin is gone first (W-40).
+  const sanitized = isHtml ? (allowRemote ? dropLocalPictures(marked, window.location.origin) : marked) : "";
   const pictures = withRemoteImages(
     defer ? deferRemotePictures(sanitized, imageProxy) : sanitized,
     allowRemote,
