@@ -1370,7 +1370,13 @@
         "spam": "Très probablement de la publicité non sollicitée ou un envoi en masse.",
         "phishing": "Probablement une tentative d'obtenir votre mot de passe, votre argent ou vos données. Ne cliquez sur aucun lien et n'ouvrez aucune pièce jointe."
       },
-      "confidence": "Sûr à {{percent}} %",
+      "confidenceLabel": "À quel point le modèle est sûr",
+      "certainty": {
+        "unsure": "incertain",
+        "fairly": "plutôt sûr",
+        "sure": "sûr"
+      },
+      "modelVerdict": "Le modèle a dit « {{verdict}} », mais cela contredit les vérifications du serveur (expéditeur confirmé, filtre anti-spam calme, déjà plusieurs échanges).",
       "serverTitle": "Ce que le serveur a constaté",
       "auth": "Vérification de l'expéditeur",
       "authNone": "Non vérifié : l'e-mail ne provient pas d'un autre serveur.",

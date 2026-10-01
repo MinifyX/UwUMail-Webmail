@@ -1113,6 +1113,11 @@ export interface AssistSpamCheck extends AssistAnswer {
   verdict: AssistVerdict;
   /** 0 to 1. */
   confidence: number;
+  /**
+   * What the model said when the server lowered it ("spam" or "phishing" to "suspicious")
+   * because its own checks were clearly good; absent when the verdict is the model's own.
+   */
+  modelVerdict?: AssistVerdict;
   reasons: string[];
   signals: AssistSpamSignals;
 }
