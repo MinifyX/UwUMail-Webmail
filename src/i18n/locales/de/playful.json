@@ -234,6 +234,14 @@
     },
     "labels": {
       "startersTitle": "Magst du mit ein paar Labels anfangen? (｀・ω・´)"
+    },
+    "spam": {
+      "certainty": {
+        "unsure": "unsicher (・_・;)",
+        "fairly": "ziemlich sicher (・ω・)",
+        "sure": "ganz sicher ✿"
+      },
+      "modelVerdict": "Das Modell fand’s „{{verdict}}“, aber der Server sieht das anders: Absender bestätigt, Spamfilter ganz ruhig, ihr schreibt euch schon länger (｀・ω・´)"
     }
   }
 }

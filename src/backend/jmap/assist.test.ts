@@ -295,6 +295,13 @@ describe("objects of the extension", () => {
     expect(events[0]!.description).toHaveLength(2000);
   });
 
+  it("keeps the model's own verdict only when the server lowered it", () => {
+    expect(toSpamCheck({ verdict: "suspicious", modelVerdict: "spam" }, "e1").modelVerdict).toBe("spam");
+    expect(toSpamCheck({ verdict: "suspicious", modelVerdict: "phishing" }, "e1").modelVerdict).toBe("phishing");
+    expect(toSpamCheck({ verdict: "suspicious", modelVerdict: "scam" }, "e1")).not.toHaveProperty("modelVerdict");
+    expect(toSpamCheck({ verdict: "suspicious", modelVerdict: null }, "e1")).not.toHaveProperty("modelVerdict");
+  });
+
   it("keeps the verdict to the four words and the server's signals as they are", () => {
     const check = toSpamCheck(
       {
@@ -317,6 +324,7 @@ describe("objects of the extension", () => {
       "e42",
     );
     expect(check).toMatchObject({ emailId: "e42", verdict: "suspicious", confidence: 1, providerName: "Mistral" });
+    expect(check.modelVerdict).toBeUndefined();
     expect(check.signals.authentication).toEqual({
       spf: "fail",
       dkim: null,

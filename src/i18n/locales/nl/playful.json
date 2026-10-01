@@ -234,6 +234,14 @@
     },
     "labels": {
       "startersTitle": "Zin om met een paar labels te beginnen? (｀・ω・´)"
+    },
+    "spam": {
+      "certainty": {
+        "unsure": "niet zo zeker (・_・;)",
+        "fairly": "best zeker (・ω・)",
+        "sure": "heel zeker ✿"
+      },
+      "modelVerdict": "Het model dacht ‘{{verdict}}’, maar de server ziet dat anders: afzender bevestigd, spamfilter heel rustig, jullie mailen al langer (｀・ω・´)"
     }
   }
 }

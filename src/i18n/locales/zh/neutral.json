@@ -1290,7 +1290,13 @@
         "spam": "很可能是不需要的广告或群发邮件。",
         "phishing": "很可能是企图骗取你的密码、钱财或数据。不要点击链接，也不要打开附件。"
       },
-      "confidence": "把握度 {{percent}}%",
+      "confidenceLabel": "模型的把握程度",
+      "certainty": {
+        "unsure": "不确定",
+        "fairly": "比较确定",
+        "sure": "确定"
+      },
+      "modelVerdict": "模型判断为“{{verdict}}”，但这与服务器的检查结果相矛盾（发件人已验证、垃圾邮件过滤器无异常、以前有过往来）。",
       "serverTitle": "服务器的检查结果",
       "auth": "发件人验证",
       "authNone": "未验证：这封邮件不是来自其他服务器。",

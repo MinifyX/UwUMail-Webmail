@@ -1331,7 +1331,13 @@
         "spam": "Hoogstwaarschijnlijk ongewenste reclame of massamail.",
         "phishing": "Waarschijnlijk een poging om je wachtwoord, geld of gegevens te bemachtigen. Klik niet op links en open geen bijlagen."
       },
-      "confidence": "{{percent}}% zeker",
+      "confidenceLabel": "Hoe zeker het model is",
+      "certainty": {
+        "unsure": "onzeker",
+        "fairly": "vrij zeker",
+        "sure": "zeker"
+      },
+      "modelVerdict": "Het model zei ‘{{verdict}}’, maar dat strookt niet met de controles van de server (afzender bevestigd, spamfilter rustig, al vaker gemaild).",
       "serverTitle": "Wat de server heeft gevonden",
       "auth": "Afzendercontrole",
       "authNone": "Niet gecontroleerd: de mail kwam niet van een andere server.",
