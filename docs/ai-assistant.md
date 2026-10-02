@@ -19,6 +19,14 @@ the protocol.
 | Appointments      | Reader's AI menu: _Find appointment_; _Check with AI_ in the date bar                                                                                     | a click, or on every mail you open when you switch that on                           |
 | Labels            | New mail in the inbox                                                                                                                                     | in the background, only when you switch it on                                        |
 
+In the spam check the server's facts come first: authentication, the spam
+filter, your history with the sender and its phishing checks (lookalike
+domains, a display name showing another address, link text that differs from
+the target, …) add up to a score, and the score sets which verdicts the model
+may give. The card shows that score and every fact with its weight, under each
+reason the quote from the mail or the server check it rests on, and how many
+reasons were left out because nothing in the mail backs them.
+
 The features you start with a click are there as soon as a provider is; you
 don't have to switch them on. Every answer names the provider and model that
 gave it. While the model works, Nyu thinks (or a spinner turns, with Nyu's
