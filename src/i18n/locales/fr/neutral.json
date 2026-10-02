@@ -334,7 +334,13 @@
     "assistant": "Assistant IA",
     "detectEvents": "Repérer les rendez-vous dans les e-mails",
     "detectEventsDesc": "Les dates comme « ven. 17 oct. à 19h30 » ou « 6–9 oct. » sont soulignées et proposées pour votre agenda, y compris le texte des images. Cela se fait par des règles, sans IA ; l'assistant IA ne lit un e-mail que si vous le lui demandez.",
-    "labels": "Étiquettes"
+    "labels": "Étiquettes",
+    "font": "Police",
+    "fontDesc": "Pour tout le webmail et pour les e-mails. Uniquement dans ce navigateur.",
+    "senderFonts": "Polices des expéditeurs",
+    "senderFontsDesc": "Beaucoup d'e-mails HTML sont composés en Times ou dans une autre police à empattements. Les e-mails sans police propre reçoivent toujours la vôtre.",
+    "senderFontsReplace": "Remplacer les polices à empattements par la mienne",
+    "senderFontsKeep": "Comme l'expéditeur les a choisies"
   },
   "theme": {
     "system": "Système",
@@ -1876,5 +1882,9 @@
         "attachmentNo": "n’a pas de pièce jointe"
       }
     }
+  },
+  "font": {
+    "system": "Police du système",
+    "sample": "Coucou :3 – rendez-vous à 10:30 <3"
   }
 }

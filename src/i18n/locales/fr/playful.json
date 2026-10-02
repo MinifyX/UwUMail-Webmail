@@ -95,7 +95,8 @@
     "linkDomainsDesc": "Je laisse passer directement les liens vers ces sites, sauf s'ils sont déguisés.",
     "linkDomainsEmpty": "Aucun pour l'instant. Vous ajoutez des sites directement en ouvrant un lien ✧",
     "linkDomainsInactive": "Pour l'instant, je laisse passer chaque lien directement.",
-    "forgetLinkDomain": "Retirer {{domain}}"
+    "forgetLinkDomain": "Retirer {{domain}}",
+    "fontDesc": "Nyu préfère UwU Sans, mais c'est vous qui décidez. Pour tout le webmail et pour les e-mails, uniquement dans ce navigateur."
   },
   "attachment": {
     "loading": "Je déballe la pièce jointe…",

@@ -93,7 +93,8 @@
     "linkDomainsDesc": "Links naar deze sites laat ik direct door, tenzij ze vermomd zijn.",
     "linkDomainsEmpty": "Nog geen. Je voegt sites direct toe wanneer je een link opent ✧",
     "linkDomainsInactive": "Op dit moment laat ik elke link direct door.",
-    "forgetLinkDomain": "{{domain}} verwijderen"
+    "forgetLinkDomain": "{{domain}} verwijderen",
+    "fontDesc": "Nyu vindt UwU Sans het leukst, maar jij beslist. Voor de hele webmail en voor mails, alleen in deze browser."
   },
   "attachment": {
     "loading": "Bijlage uitpakken…",

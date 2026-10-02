@@ -326,7 +326,13 @@
     "assistant": "AI assistant",
     "detectEvents": "Find appointments in mail",
     "detectEventsDesc": "Dates like “Fri, Oct 17 at 7:30pm” or “Oct 6–9” are underlined and offered for your calendar, also from the text in pictures. This happens by rules, without any AI; the AI assistant only reads a mail when you ask it to.",
-    "labels": "Labels"
+    "labels": "Labels",
+    "font": "Font",
+    "fontDesc": "For the whole webmail and for mails. Only in this browser.",
+    "senderFonts": "Sender fonts",
+    "senderFontsDesc": "Many HTML mails are set in Times or another serif font. Mails without a font of their own always get yours.",
+    "senderFontsReplace": "Replace serif fonts with mine",
+    "senderFontsKeep": "As the sender set them"
   },
   "theme": {
     "system": "System",
@@ -1809,5 +1815,9 @@
         "attachmentNo": "has no attachment"
       }
     }
+  },
+  "font": {
+    "system": "System font",
+    "sample": "Hi :3 – meeting at 10:30 <3"
   }
 }

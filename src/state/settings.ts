@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { savePreferences, type Preferences } from "@/backend/server";
+import { isFontChoice, isSenderFonts, type FontChoice, type SenderFonts } from "@/lib/fonts";
 
 /** Mail list rows: roomy cards with three lines, or two lines with a small picture. */
 export type ListDensity = "relaxed" | "compact";
@@ -73,6 +74,10 @@ export interface Settings {
   assistCurrency: CurrencyChoice;
   /** The mail list in sections, one per label. This browser only. */
   groupByLabel: boolean;
+  /** The font of the webmail and of mails, see lib/fonts. This browser only. */
+  font: FontChoice;
+  /** Serif fonts in HTML mails become `font`, or stay as the sender wrote them. This browser only. */
+  senderFonts: SenderFonts;
 }
 
 interface SettingsActions {
@@ -114,6 +119,8 @@ export const DEFAULT_SETTINGS: Settings = {
   detectEvents: true,
   assistCurrency: "EUR",
   groupByLabel: false,
+  font: "uwu",
+  senderFonts: "replace",
 };
 
 /**
@@ -231,6 +238,8 @@ export const useSettings = create<Settings & SettingsActions>()(
         if (!(NYU_ANIMATIONS as readonly unknown[]).includes(state.nyuAnimations)) {
           state.nyuAnimations = DEFAULT_SETTINGS.nyuAnimations;
         }
+        if (!isFontChoice(state.font)) state.font = DEFAULT_SETTINGS.font;
+        if (!isSenderFonts(state.senderFonts)) state.senderFonts = DEFAULT_SETTINGS.senderFonts;
         return state;
       },
     },

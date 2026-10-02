@@ -326,7 +326,13 @@
     "assistant": "KI-Assistent",
     "detectEvents": "Termine in Mails erkennen",
     "detectEventsDesc": "Angaben wie „Fr., 17.10. um 19:30 Uhr“ oder „6.–9. Okt.“ werden unterstrichen und für deinen Kalender angeboten, auch aus dem Text in Bildern. Das passiert nach festen Regeln, ohne KI; der KI-Assistent liest eine Mail nur, wenn du ihn darum bittest.",
-    "labels": "Labels"
+    "labels": "Labels",
+    "font": "Schrift",
+    "fontDesc": "Für den ganzen Webmailer und für Mails. Gilt nur in diesem Browser.",
+    "senderFonts": "Schrift der Absender",
+    "senderFontsDesc": "Viele HTML-Mails sind in Times oder einer anderen Serifenschrift gesetzt. Mails ohne eigene Schrift bekommen immer deine.",
+    "senderFontsReplace": "Serifenschriften durch meine ersetzen",
+    "senderFontsKeep": "Wie vom Absender"
   },
   "theme": {
     "system": "System",
@@ -1809,5 +1815,9 @@
         "attachmentNo": "hat keinen Anhang"
       }
     }
+  },
+  "font": {
+    "system": "Systemschrift",
+    "sample": "Hallo :3 – Termin um 10:30 <3"
   }
 }

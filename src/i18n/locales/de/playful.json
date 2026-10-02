@@ -93,7 +93,8 @@
     "linkDomainsDesc": "Links zu diesen Seiten lass ich direkt durch, außer sie sind verkleidet.",
     "linkDomainsEmpty": "Noch keine. Du fügst Seiten direkt beim Öffnen eines Links hinzu ✧",
     "linkDomainsInactive": "Gerade lass ich alle Links ohne Nachfrage durch.",
-    "forgetLinkDomain": "{{domain}} entfernen"
+    "forgetLinkDomain": "{{domain}} entfernen",
+    "fontDesc": "Nyu mag UwU Sans am liebsten, aber du entscheidest. Gilt für den ganzen Webmailer und für Mails, nur in diesem Browser."
   },
   "attachment": {
     "loading": "Ich pack den Anhang aus…",

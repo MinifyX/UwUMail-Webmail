@@ -326,7 +326,13 @@
     "assistant": "AI-assistent",
     "detectEvents": "Afspraken in mails herkennen",
     "detectEventsDesc": "Datums zoals „vr 17 okt. om 19:30” of „6–9 okt.” worden onderstreept en voor je agenda aangeboden, ook uit de tekst in afbeeldingen. Dat gebeurt met vaste regels, zonder AI; de AI-assistent leest een mail alleen als je daarom vraagt.",
-    "labels": "Labels"
+    "labels": "Labels",
+    "font": "Lettertype",
+    "fontDesc": "Voor de hele webmail en voor mails. Alleen in deze browser.",
+    "senderFonts": "Lettertypen van afzenders",
+    "senderFontsDesc": "Veel HTML-mails zijn gezet in Times of een ander schreeflettertype. Mails zonder eigen lettertype krijgen altijd het jouwe.",
+    "senderFontsReplace": "Schreeflettertypen vervangen door het mijne",
+    "senderFontsKeep": "Zoals de afzender ze koos"
   },
   "theme": {
     "system": "Systeem",
@@ -1809,5 +1815,9 @@
         "attachmentNo": "heeft geen bijlage"
       }
     }
+  },
+  "font": {
+    "system": "Systeemlettertype",
+    "sample": "Hoi :3 – afspraak om 10:30 <3"
   }
 }

@@ -52,3 +52,30 @@ describe("settings kept in this browser", () => {
     expect("unknown" in state).toBe(false);
   });
 });
+
+describe("font settings", () => {
+  afterEach(() => {
+    useSettings.setState({ font: DEFAULT_SETTINGS.font, senderFonts: DEFAULT_SETTINGS.senderFonts });
+  });
+
+  it("start with UwU Sans and serif fonts replaced", () => {
+    expect(DEFAULT_SETTINGS.font).toBe("uwu");
+    expect(DEFAULT_SETTINGS.senderFonts).toBe("replace");
+  });
+
+  it("are kept in this browser and come back", async () => {
+    useSettings.getState().update({ font: "rubik", senderFonts: "keep" });
+    const saved = localStorage.getItem(KEY)!;
+    expect(JSON.parse(saved).state).toMatchObject({ font: "rubik", senderFonts: "keep" });
+    useSettings.setState({ font: "uwu", senderFonts: "replace" });
+    localStorage.setItem(KEY, saved);
+    await useSettings.persist.rehydrate();
+    expect(useSettings.getState()).toMatchObject({ font: "rubik", senderFonts: "keep" });
+  });
+
+  it("fall back to the defaults for values this version doesn't know", async () => {
+    localStorage.setItem(KEY, JSON.stringify({ state: { font: "comic", senderFonts: 3 }, version: 1 }));
+    await useSettings.persist.rehydrate();
+    expect(useSettings.getState()).toMatchObject({ font: "uwu", senderFonts: "replace" });
+  });
+});
