@@ -1,3 +1,4 @@
+import type { DomainSignatureChange, DomainSignatureOverview } from "@/lib/domainSignatures";
 import type {
   Account,
   AddressBookInfo,
@@ -185,6 +186,14 @@ export interface Backend {
    */
   saveSignature(signature: Signature): Promise<Signature>;
   deleteSignature(signatureId: string): Promise<void>;
+  /**
+   * Signatures per domain, for every domain and per address, with the domains' company signatures
+   * (lib/domainSignatures); null when the server has no such thing. The addresses' effective
+   * signatures still come from listSignatures.
+   */
+  domainSignatures(): Promise<DomainSignatureOverview | null>;
+  /** Sets or removes signatures, all at once or none; returns the overview after the change. */
+  saveDomainSignatures(change: DomainSignatureChange): Promise<DomainSignatureOverview>;
   syncNow(accountId?: string): Promise<void>;
 
   /** The own folders, then those of every person who shares folders with the account (see sharedAccounts). */

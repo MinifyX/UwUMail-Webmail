@@ -62,8 +62,14 @@ talks to it over JMAP.
 
 - **Held back by the server.** "Undo send" and "send later" are the server's: a
   mail waits there, not in the tab, and can be taken back until it goes.
-- **Signatures** live on the sending addresses; recipients are suggested from
-  the address books and the mail history.
+- **Signatures per domain.** Pick a domain and write one signature for all
+  your addresses there, or one for every domain; a single address can still
+  have its own. Placeholders (`{name}`, `{adresse}`, `{domain}`) are filled by
+  the server for each address. An admin's company template is offered to people
+  without a signature of their own, and where the admin made a company footer
+  mandatory the composer says the server will add it. On servers without
+  signatures per domain, signatures live on the sending addresses as before.
+- Recipients are suggested from the address books and the mail history.
 - **Masked addresses.** Where the server makes them, the settings list the
   account's masked addresses — random ones for single websites, the same the
   portal and password managers make — to copy, describe, switch off, delete and

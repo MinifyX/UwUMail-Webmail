@@ -25,6 +25,7 @@ export const queryKeys = {
   thread: ["thread"] as const,
   identities: ["identities"] as const,
   signatures: ["signatures"] as const,
+  domainSignatures: ["domainSignatures"] as const,
   calendars: ["calendars"] as const,
   calendarEvents: ["calendarEvents"] as const,
   addressBooks: ["addressBooks"] as const,
@@ -83,6 +84,11 @@ export function useIdentities() {
 
 export function useSignatures() {
   return useQuery({ queryKey: queryKeys.signatures, queryFn: () => backend().listSignatures() });
+}
+
+/** Signatures per domain; null when the server has none (lib/domainSignatures). */
+export function useDomainSignatures() {
+  return useQuery({ queryKey: queryKeys.domainSignatures, queryFn: () => backend().domainSignatures() });
 }
 
 /** Where this server keeps signatures: on the sending addresses, in the settings extension, or not at all. */
