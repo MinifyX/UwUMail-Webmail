@@ -826,15 +826,23 @@ export class DemoAssist {
     const score = Math.round(evidence.reduce((sum, item) => sum + item.weight, 0) * 10) / 10;
     const band: AssistSpamBand =
       score <= -2 ? "clean" : score < 1.5 ? "leaningClean" : score < 4 ? "unclear" : score < 7 ? "leaningSpam" : "spam";
-    const allowed: AssistVerdict[] =
-      band === "clean"
-        ? ["legitimate"]
-        : band === "leaningClean"
-          ? ["legitimate", "suspicious"]
-          : risky
-            ? ["suspicious", "spam", "phishing"]
-            : ["suspicious", "spam"];
-    const defaultVerdict: AssistVerdict = allowed.includes("suspicious") ? "suspicious" : "legitimate";
+    // The ranks the band allows, as the server has them; phishing only with a phishing finding.
+    const [low, high] = { clean: [0, 0], leaningClean: [0, 1], unclear: [0, 2], leaningSpam: [1, 2], spam: [2, 2] }[
+      band
+    ];
+    const rank = (verdict: AssistVerdict) => ({ legitimate: 0, suspicious: 1, spam: 2, phishing: 2 })[verdict];
+    const phishingPossible = evidence.some((item) => item.phishing);
+    const allowed = (["legitimate", "suspicious", "spam", "phishing"] as const).filter(
+      (verdict) => rank(verdict) >= low! && rank(verdict) <= high! && (verdict !== "phishing" || phishingPossible),
+    );
+    const defaultVerdict: AssistVerdict =
+      high === 0 || band === "leaningClean"
+        ? "legitimate"
+        : band === "unclear"
+          ? "suspicious"
+          : phishingPossible
+            ? "phishing"
+            : "spam";
     // Like the server: what the model says stays only when the facts allow it.
     const verdict = allowed.includes(said) ? said : defaultVerdict;
     const reasonDetails = reasons.map((text, index) => ({
