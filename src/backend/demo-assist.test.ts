@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AssistError } from "./backend";
 import { DemoAssist, demoKeyword } from "./demo-assist";
 import { buildMessages } from "./demo-data";
 import type { Message } from "./types";
@@ -28,17 +29,27 @@ describe("the demo's assistant", () => {
   it("starts with labels on the sample mail, each with a reason", () => {
     const { assist, messages } = setup();
     const labels = assist.listLabels();
-    expect(labels.map((label) => label.keyword)).toEqual(["rechnungen", "newsletter", "bestellungen-versand"]);
+    expect(labels.map((label) => label.keyword)).toEqual([
+      "rechnung",
+      "versand",
+      "termin",
+      "newsletter",
+      "konto-sicherheit",
+      "persoenlich",
+      "arbeit-geschaeftlich",
+      "werbung",
+    ]);
+    expect(labels.every((label) => label.base !== null && label.auto)).toBe(true);
     const order = messages.find((message) => message.subject.startsWith("Deine Bestellung"))!;
-    expect(order.keywords).toEqual(["bestellungen-versand"]);
+    expect(order.keywords).toEqual(["versand"]);
     const [entry] = assist.labelLog([order.id], 10);
-    expect(entry).toMatchObject({ emailId: order.id, name: "Bestellungen & Versand", undone: false });
+    expect(entry).toMatchObject({ emailId: order.id, name: "Versand", undone: false });
     expect(entry!.reason).not.toBe("");
   });
 
   it("labels again: judges every label, says what is set, and changes nothing", async () => {
     const { assist, messages } = setup("en");
-    const order = messages.find((message) => message.keywords?.includes("orders-shipping"))!;
+    const order = messages.find((message) => message.keywords?.includes("shipping"))!;
     const before = [...order.keywords!];
     const asking = assist.suggest(order.id);
     await vi.runAllTimersAsync();
@@ -46,7 +57,7 @@ describe("the demo's assistant", () => {
     expect(result.verdicts.map((verdict) => verdict.labelId)).toEqual(assist.listLabels().map((label) => label.id));
     expect(result.verdicts.every((verdict) => verdict.reason !== "")).toBe(true);
     expect(result.verdicts.find((verdict) => verdict.isSet)?.labelId).toBe(
-      assist.listLabels().find((label) => label.keyword === "orders-shipping")!.id,
+      assist.listLabels().find((label) => label.keyword === "shipping")!.id,
     );
     expect(order.keywords).toEqual(before);
     expect(result.newLabels.length).toBeLessThanOrEqual(2);
@@ -62,6 +73,39 @@ describe("the demo's assistant", () => {
     expect(result.verdicts).toEqual([]);
     expect(result.newLabels.length).toBeGreaterThan(0);
     expect(result.newLabels.length).toBeLessThanOrEqual(2);
+  });
+
+  it("keeps base definitions fixed, lets them come back, and doesn't count them toward the limit", () => {
+    const { assist } = setup("en");
+    const invoice = assist.listLabels().find((label) => label.base === "invoice")!;
+    expect(() => assist.updateLabel(invoice.id, { description: "Money" })).toThrow(AssistError);
+    assist.updateLabel(invoice.id, { name: "Bills", description: invoice.description, auto: false });
+    expect(assist.listLabels().find((label) => label.id === invoice.id)).toMatchObject({ name: "Bills", auto: false });
+    const shipping = assist.listLabels().find((label) => label.base === "shipping")!;
+    assist.deleteLabel(shipping.id);
+    const again = assist.restoreBaseLabel("shipping");
+    expect(again).toMatchObject({ base: "shipping", name: "Shipping", auto: true });
+    // In its place among the base labels, and answered when it is there.
+    expect(assist.listLabels()[1]!.id).toBe(again.id);
+    expect(assist.restoreBaseLabel("shipping").id).toBe(again.id);
+    for (let n = 0; n < 30; n += 1) assist.createLabel({ name: `Own ${n}`, description: "", color: null });
+    expect(() => assist.createLabel({ name: "One more", description: "", color: null })).toThrow(AssistError);
+  });
+
+  it("tells overlaps by name, by a base label's meaning, and by shared words", () => {
+    const { assist } = setup("de");
+    const travel = assist.createLabel({ name: "Reisen", description: "Flüge Hotels Bahntickets", color: null });
+    const kinds = (name: string, description = "", except?: string) =>
+      assist.checkOverlap(name, description, except).map((overlap) => [overlap.name, overlap.kind]);
+    expect(kinds("rechnung")).toEqual([["Rechnung", "name"]]);
+    // The base label's English name counts too.
+    expect(kinds("Invoice")).toEqual([["Rechnung", "name"]]);
+    expect(kinds("Handyrechnungen", "Mobilfunk")).toEqual([["Rechnung", "meaning"]]);
+    expect(assist.checkOverlap("Urlaub", "Flüge und Hotels")).toEqual([
+      { id: travel.id, name: "Reisen", base: null, kind: "words", words: ["flüge", "hotels"] },
+    ]);
+    expect(kinds("Reisen", "", travel.id)).toEqual([]);
+    expect(kinds("Garten", "Pflanzen und Samen")).toEqual([]);
   });
 
   it("keeps a label's automatic parts and counts hand-set labels as examples", () => {

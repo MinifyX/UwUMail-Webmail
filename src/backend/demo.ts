@@ -30,6 +30,7 @@ import type {
   AssistComposeRequest,
   AssistEstimateRequest,
   AssistLabelInput,
+  LabelBase,
   LabelSettings,
   AssistProviderInput,
   AssistSettingsPatch,
@@ -1282,6 +1283,16 @@ export class DemoBackend implements Backend {
   async deleteAssistLabel(id: string) {
     await wait(100);
     this.assist.deleteLabel(id);
+  }
+
+  async restoreBaseLabel(base: LabelBase, auto?: boolean) {
+    await wait(100);
+    return this.assist.restoreBaseLabel(base, auto);
+  }
+
+  async checkLabelOverlap(name: string, description: string, id?: string) {
+    await wait(40);
+    return this.assist.checkOverlap(name, description, id);
   }
 
   async assistLabelLog(emailIds: string[] | null, limit = 100) {

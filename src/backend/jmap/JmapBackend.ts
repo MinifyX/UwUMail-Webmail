@@ -30,6 +30,8 @@ import type {
   AssistLabel,
   AssistLabelInput,
   AssistLabelLogEntry,
+  LabelBase,
+  LabelOverlap,
   LabelSettings,
   LabelSuggestions,
   AssistModels,
@@ -184,8 +186,11 @@ import {
   assistOptionsFrom,
   assistSetError,
   assistSettingsUpdate,
+  baseLabelCreate,
   labelCreate,
   labelUpdate,
+  OVERLAP_LIMITS,
+  toLabelOverlaps,
   providerCreate,
   providerUpdate,
   streamAssist,
@@ -2513,6 +2518,30 @@ export class JmapBackend implements Backend {
     await this.labelSet({ destroy: [id] });
     // Its keyword went off every mail.
     this.emit({ type: "mail:changed", accountId: this.accountId });
+  }
+
+  async restoreBaseLabel(base: LabelBase, auto?: boolean): Promise<AssistLabel> {
+    const created = await this.labelSet({ create: { new: baseLabelCreate(base, auto) } });
+    if (typeof created.id !== "string") throw new BackendError("internal", "The server didn't make the label.");
+    return toAssistLabel({ base, auto: auto ?? true, ...created });
+  }
+
+  async checkLabelOverlap(name: string, description: string, id?: string): Promise<LabelOverlap[]> {
+    const trimmed = name.trim();
+    if (!trimmed || [...trimmed].length > OVERLAP_LIMITS.name || [...description].length > OVERLAP_LIMITS.description)
+      return [];
+    try {
+      const answer = await this.assistCall("AssistLabel/checkOverlap", {
+        name: trimmed,
+        description: description.trim(),
+        ...(id ? { id } : {}),
+      });
+      return toLabelOverlaps(answer);
+    } catch (error) {
+      // Servers before base labels don't know the check: no warning then.
+      if (error instanceof AssistError && error.type === "unknownMethod") return [];
+      throw error;
+    }
   }
 
   async assistLabelLog(emailIds: string[] | null, limit = 100): Promise<AssistLabelLogEntry[]> {
