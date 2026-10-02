@@ -179,7 +179,8 @@
         "tooSoon": "Choisissez une heure au moins quelques minutes plus tard.",
         "tooFar": "Votre serveur garde les e-mails au plus {{days}} jours."
       }
-    }
+    },
+    "companyFooter": "Le serveur ajoute le pied de page de votre organisation à l'envoi."
   },
   "toast": {
     "sent": "Message envoyé",
@@ -340,7 +341,24 @@
     "senderFonts": "Polices des expéditeurs",
     "senderFontsDesc": "Beaucoup d'e-mails HTML sont composés en Times ou dans une autre police à empattements. Les e-mails sans police propre reçoivent toujours la vôtre.",
     "senderFontsReplace": "Remplacer les polices à empattements par la mienne",
-    "senderFontsKeep": "Comme l'expéditeur les a choisies"
+    "senderFontsKeep": "Comme l'expéditeur les a choisies",
+    "signaturesPerDomainDesc": "Choisissez un domaine et rédigez une seule signature pour toutes vos adresses de ce domaine. Certaines adresses peuvent avoir la leur. Elle est conservée sur votre serveur de messagerie : le portail et vos autres applications utilisent la même.",
+    "signatureDomain": "Domaine",
+    "signatureDomainOption_one": "{{domain}} (1 adresse)",
+    "signatureDomainOption_many": "{{domain}} ({{count}} adresses)",
+    "signatureDomainOption_other": "{{domain}} ({{count}} adresses)",
+    "signatureAppliesTo": "S'applique à",
+    "signatureAllDomains": "Tous les domaines (y compris futurs)",
+    "signatureReplaces": "Remplace les signatures propres de {{domains}}.",
+    "signatureRemove": "Supprimer la signature",
+    "signatureFromTemplate": "Voici le modèle de votre organisation. Adaptez-le et enregistrez-le comme le vôtre.",
+    "signatureFromAllDomains": "Ce domaine utilise votre signature pour tous les domaines.",
+    "signatureCompanyFooter": "À l'envoi depuis ce domaine, le serveur ajoute automatiquement ce pied de page :",
+    "signatureExceptions": "Signature différente pour certaines adresses ({{count}})",
+    "signatureOwn": "Signature propre",
+    "signatureFollowsDomain": "Utilise la signature du domaine",
+    "signatureOverride": "Signature propre pour cette adresse",
+    "signatureBackToDomain": "Utiliser la signature du domaine"
   },
   "theme": {
     "system": "Système",

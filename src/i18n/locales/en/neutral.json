@@ -175,7 +175,8 @@
         "tooSoon": "Pick a time at least a few minutes from now.",
         "tooFar": "Your server holds mail for at most {{days}} days."
       }
-    }
+    },
+    "companyFooter": "The server adds your organisation's footer when sending."
   },
   "toast": {
     "sent": "Message sent",
@@ -332,7 +333,23 @@
     "senderFonts": "Sender fonts",
     "senderFontsDesc": "Many HTML mails are set in Times or another serif font. Mails without a font of their own always get yours.",
     "senderFontsReplace": "Replace serif fonts with mine",
-    "senderFontsKeep": "As the sender set them"
+    "senderFontsKeep": "As the sender set them",
+    "signaturesPerDomainDesc": "Pick a domain and write one signature for all your addresses there. Single addresses can have their own. It lives on your mail server, so the portal and your other mail apps use the same one.",
+    "signatureDomain": "Domain",
+    "signatureDomainOption_one": "{{domain}} (1 address)",
+    "signatureDomainOption_other": "{{domain}} ({{count}} addresses)",
+    "signatureAppliesTo": "Applies to",
+    "signatureAllDomains": "All domains (including future ones)",
+    "signatureReplaces": "Replaces the own signatures of {{domains}}.",
+    "signatureRemove": "Remove signature",
+    "signatureFromTemplate": "This is your organisation's template. Change it and save it as your own.",
+    "signatureFromAllDomains": "This domain uses your signature for all domains.",
+    "signatureCompanyFooter": "When you send from this domain, the server adds this footer automatically:",
+    "signatureExceptions": "Different signature for single addresses ({{count}})",
+    "signatureOwn": "Own signature",
+    "signatureFollowsDomain": "Uses the domain signature",
+    "signatureOverride": "Own signature for this address",
+    "signatureBackToDomain": "Use the domain signature"
   },
   "theme": {
     "system": "System",

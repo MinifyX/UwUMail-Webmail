@@ -175,7 +175,8 @@
         "tooSoon": "Wähle eine Zeit, die mindestens ein paar Minuten entfernt ist.",
         "tooFar": "Dein Server hält Mails höchstens {{days}} Tage zurück."
       }
-    }
+    },
+    "companyFooter": "Beim Senden hängt der Server die Fußzeile deiner Organisation an."
   },
   "toast": {
     "sent": "Mail gesendet",
@@ -332,7 +333,23 @@
     "senderFonts": "Schrift der Absender",
     "senderFontsDesc": "Viele HTML-Mails sind in Times oder einer anderen Serifenschrift gesetzt. Mails ohne eigene Schrift bekommen immer deine.",
     "senderFontsReplace": "Serifenschriften durch meine ersetzen",
-    "senderFontsKeep": "Wie vom Absender"
+    "senderFontsKeep": "Wie vom Absender",
+    "signaturesPerDomainDesc": "Wähle eine Domain und schreib eine Signatur für alle deine Adressen dort. Einzelne Adressen können eine eigene haben. Sie liegt auf deinem Mailserver, also nutzen das Portal und deine anderen Mail-Apps dieselbe.",
+    "signatureDomain": "Domain",
+    "signatureDomainOption_one": "{{domain}} (1 Adresse)",
+    "signatureDomainOption_other": "{{domain}} ({{count}} Adressen)",
+    "signatureAppliesTo": "Gilt für",
+    "signatureAllDomains": "Alle Domains (auch künftige)",
+    "signatureReplaces": "Ersetzt die eigenen Signaturen von {{domains}}.",
+    "signatureRemove": "Signatur entfernen",
+    "signatureFromTemplate": "Das ist die Vorlage deiner Organisation. Pass sie an und speichere sie als deine eigene.",
+    "signatureFromAllDomains": "Diese Domain nutzt deine Signatur für alle Domains.",
+    "signatureCompanyFooter": "Beim Senden von dieser Domain hängt der Server automatisch diese Fußzeile an:",
+    "signatureExceptions": "Abweichende Signatur für einzelne Adressen ({{count}})",
+    "signatureOwn": "Eigene Signatur",
+    "signatureFollowsDomain": "Nutzt die Domain-Signatur",
+    "signatureOverride": "Eigene Signatur für diese Adresse",
+    "signatureBackToDomain": "Domain-Signatur verwenden"
   },
   "theme": {
     "system": "System",

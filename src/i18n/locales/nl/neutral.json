@@ -175,7 +175,8 @@
         "tooSoon": "Kies een tijd die minstens een paar minuten later is.",
         "tooFar": "Je server houdt mail hoogstens {{days}} dagen vast."
       }
-    }
+    },
+    "companyFooter": "De server voegt bij verzenden de voettekst van je organisatie toe."
   },
   "toast": {
     "sent": "Bericht verzonden",
@@ -332,7 +333,23 @@
     "senderFonts": "Lettertypen van afzenders",
     "senderFontsDesc": "Veel HTML-mails zijn gezet in Times of een ander schreeflettertype. Mails zonder eigen lettertype krijgen altijd het jouwe.",
     "senderFontsReplace": "Schreeflettertypen vervangen door het mijne",
-    "senderFontsKeep": "Zoals de afzender ze koos"
+    "senderFontsKeep": "Zoals de afzender ze koos",
+    "signaturesPerDomainDesc": "Kies een domein en schrijf één handtekening voor al je adressen daar. Afzonderlijke adressen kunnen een eigen hebben. Hij staat op je mailserver, dus het portaal en je andere mail-apps gebruiken dezelfde.",
+    "signatureDomain": "Domein",
+    "signatureDomainOption_one": "{{domain}} (1 adres)",
+    "signatureDomainOption_other": "{{domain}} ({{count}} adressen)",
+    "signatureAppliesTo": "Geldt voor",
+    "signatureAllDomains": "Alle domeinen (ook toekomstige)",
+    "signatureReplaces": "Vervangt de eigen handtekeningen van {{domains}}.",
+    "signatureRemove": "Handtekening verwijderen",
+    "signatureFromTemplate": "Dit is het sjabloon van je organisatie. Pas het aan en sla het op als je eigen.",
+    "signatureFromAllDomains": "Dit domein gebruikt je handtekening voor alle domeinen.",
+    "signatureCompanyFooter": "Bij verzenden vanaf dit domein voegt de server automatisch deze voettekst toe:",
+    "signatureExceptions": "Afwijkende handtekening voor afzonderlijke adressen ({{count}})",
+    "signatureOwn": "Eigen handtekening",
+    "signatureFollowsDomain": "Gebruikt de domeinhandtekening",
+    "signatureOverride": "Eigen handtekening voor dit adres",
+    "signatureBackToDomain": "Domeinhandtekening gebruiken"
   },
   "theme": {
     "system": "Systeem",

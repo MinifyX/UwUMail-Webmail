@@ -12,6 +12,8 @@ import { deviceTimeZone } from "@/lib/calendarDates";
 import { newestFirst } from "@/lib/maskedAddresses";
 import { textToHtml } from "@/lib/format";
 import { cleanSignatureHtml } from "@/lib/signatures";
+import type { DomainSignatureChange, DomainSignatureOverview, SignatureText } from "@/lib/domainSignatures";
+import { SIGNATURES, overviewFrom } from "./domainSignatures";
 import { cleanFilename } from "@/lib/filename";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
@@ -746,6 +748,28 @@ export class JmapBackend implements Backend {
     const existing = signaturesFrom((await loadUserSettings()).values);
     await patchUserSettings(signaturePatch(saved, existing));
     return saved;
+  }
+
+  async domainSignatures(): Promise<DomainSignatureOverview | null> {
+    await this.start();
+    if (!supports(SIGNATURES)) return null;
+    return overviewFrom(await one<Record<string, unknown>>("SignatureSettings/get", {}, [CORE, SIGNATURES]));
+  }
+
+  async saveDomainSignatures(change: DomainSignatureChange): Promise<DomainSignatureOverview> {
+    await this.start();
+    if (!supports(SIGNATURES)) throw new BackendError("not_supported", "This server has no signatures per domain.");
+    const clean = (signature: SignatureText | null) =>
+      signature && { text: signature.text, html: signature.html.trim() ? cleanSignatureHtml(signature.html) : "" };
+    const mapped = (entries: Record<string, SignatureText | null> | undefined) =>
+      Object.fromEntries(Object.entries(entries ?? {}).map(([key, signature]) => [key, clean(signature)]));
+    await one("SignatureSettings/set", { domains: mapped(change.domains), identities: mapped(change.identities) }, [
+      CORE,
+      SIGNATURES,
+    ]);
+    // The addresses' effective signatures changed with it.
+    this.forgetIdentities();
+    return (await this.domainSignatures())!;
   }
 
   async deleteSignature(signatureId: string): Promise<void> {

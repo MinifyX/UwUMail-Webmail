@@ -171,7 +171,8 @@
         "tooSoon": "少なくとも数分後の時刻を選んでください。",
         "tooFar": "サーバーがメールを保留できるのは最長 {{days}} 日です。"
       }
-    }
+    },
+    "companyFooter": "送信時にサーバーが組織のフッターを追加します。"
   },
   "toast": {
     "sent": "メールを送信しました",
@@ -324,7 +325,22 @@
     "senderFonts": "差出人のフォント",
     "senderFontsDesc": "HTML メールの多くは Times などのセリフ体で書かれています。フォントを指定していないメールには、いつもあなたのフォントが使われます。",
     "senderFontsReplace": "セリフ体を自分のフォントに置き換える",
-    "senderFontsKeep": "差出人の指定どおり"
+    "senderFontsKeep": "差出人の指定どおり",
+    "signaturesPerDomainDesc": "ドメインを選び、そのドメインのすべてのアドレスに共通の署名を1つ書きます。個別のアドレスには別の署名も設定できます。署名はメールサーバーに保存されるため、ポータルや他のメールアプリでも同じものが使われます。",
+    "signatureDomain": "ドメイン",
+    "signatureDomainOption_other": "{{domain}}（{{count}}件のアドレス）",
+    "signatureAppliesTo": "適用先",
+    "signatureAllDomains": "すべてのドメイン（今後追加されるものも）",
+    "signatureReplaces": "{{domains}} の個別の署名を置き換えます。",
+    "signatureRemove": "署名を削除",
+    "signatureFromTemplate": "これは組織のテンプレートです。変更して自分の署名として保存できます。",
+    "signatureFromAllDomains": "このドメインは「すべてのドメイン」の署名を使用しています。",
+    "signatureCompanyFooter": "このドメインから送信すると、サーバーが次のフッターを自動的に追加します：",
+    "signatureExceptions": "個別のアドレス用の別の署名（{{count}}）",
+    "signatureOwn": "個別の署名",
+    "signatureFollowsDomain": "ドメインの署名を使用",
+    "signatureOverride": "このアドレス用の個別の署名",
+    "signatureBackToDomain": "ドメインの署名を使用"
   },
   "theme": {
     "system": "システム",

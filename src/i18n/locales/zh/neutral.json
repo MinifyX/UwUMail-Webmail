@@ -171,7 +171,8 @@
         "tooSoon": "请选择至少几分钟之后的时间。",
         "tooFar": "你的服务器最多保留邮件 {{days}} 天。"
       }
-    }
+    },
+    "companyFooter": "发送时服务器会添加你所在组织的页脚。"
   },
   "toast": {
     "sent": "邮件已发送",
@@ -324,7 +325,22 @@
     "senderFonts": "发件人的字体",
     "senderFontsDesc": "很多 HTML 邮件使用 Times 或其他衬线字体。没有指定字体的邮件始终使用你的字体。",
     "senderFontsReplace": "用我的字体替换衬线字体",
-    "senderFontsKeep": "保持发件人的设置"
+    "senderFontsKeep": "保持发件人的设置",
+    "signaturesPerDomainDesc": "选择一个域名，为你在该域名下的所有地址写一个签名。单个地址可以有自己的签名。签名保存在你的邮件服务器上，因此门户和你的其他邮件应用使用同一个。",
+    "signatureDomain": "域名",
+    "signatureDomainOption_other": "{{domain}}（{{count}} 个地址）",
+    "signatureAppliesTo": "适用于",
+    "signatureAllDomains": "所有域名（包括以后的）",
+    "signatureReplaces": "将替换 {{domains}} 的单独签名。",
+    "signatureRemove": "删除签名",
+    "signatureFromTemplate": "这是你所在组织的模板。修改后可保存为你自己的签名。",
+    "signatureFromAllDomains": "此域名使用你的“所有域名”签名。",
+    "signatureCompanyFooter": "从此域名发送时，服务器会自动添加以下页脚：",
+    "signatureExceptions": "单个地址的不同签名（{{count}}）",
+    "signatureOwn": "单独签名",
+    "signatureFollowsDomain": "使用域名签名",
+    "signatureOverride": "为此地址设置单独签名",
+    "signatureBackToDomain": "使用域名签名"
   },
   "theme": {
     "system": "系统",
