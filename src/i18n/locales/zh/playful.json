@@ -91,7 +91,8 @@
     "linkDomainsDesc": "指向这些网站的链接我会直接放行，除非它们经过伪装。",
     "linkDomainsEmpty": "暂无。你可以在打开链接时直接添加网站 ✧",
     "linkDomainsInactive": "目前我会直接放行所有链接。",
-    "forgetLinkDomain": "移除 {{domain}}"
+    "forgetLinkDomain": "移除 {{domain}}",
+    "fontDesc": "Nyu 最喜欢 UwU Sans，不过由你决定。用于整个网页邮箱和邮件，仅在此浏览器中生效。"
   },
   "attachment": {
     "loading": "正在拆开附件…",

@@ -93,7 +93,8 @@
     "linkDomainsDesc": "I let links to these sites straight through, unless they're in disguise.",
     "linkDomainsEmpty": "None yet. You add sites right when you open a link ✧",
     "linkDomainsInactive": "Right now I let every link straight through.",
-    "forgetLinkDomain": "Remove {{domain}}"
+    "forgetLinkDomain": "Remove {{domain}}",
+    "fontDesc": "Nyu likes UwU Sans best, but it's your call. For the whole webmail and for mails, only in this browser."
   },
   "attachment": {
     "loading": "Unpacking the attachment…",

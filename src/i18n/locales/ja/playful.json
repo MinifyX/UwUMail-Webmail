@@ -91,7 +91,8 @@
     "linkDomainsDesc": "これらのサイトへのリンクは、変装していない限りそのまま通します。",
     "linkDomainsEmpty": "まだありません。サイトはリンクを開くときに追加できます ✧",
     "linkDomainsInactive": "今はすべてのリンクをそのまま通しています。",
-    "forgetLinkDomain": "{{domain}} を削除"
+    "forgetLinkDomain": "{{domain}} を削除",
+    "fontDesc": "Nyu のお気に入りは UwU Sans。でも決めるのはあなたです。Webメール全体とメールに使われ、このブラウザーだけの設定です。"
   },
   "attachment": {
     "loading": "添付ファイルを開封しています…",

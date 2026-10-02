@@ -318,7 +318,13 @@
     "assistant": "AI 助手",
     "detectEvents": "识别邮件中的日程",
     "detectEventsDesc": "像“10月17日周五 19:30”或“10月6日至9日”这样的日期会加下划线，并建议添加到日历，图片中的文字也包括在内。这是按固定规则完成的，不使用 AI；只有你要求时，AI 助手才会读取邮件。",
-    "labels": "标签"
+    "labels": "标签",
+    "font": "字体",
+    "fontDesc": "用于整个网页邮箱和邮件。仅在此浏览器中生效。",
+    "senderFonts": "发件人的字体",
+    "senderFontsDesc": "很多 HTML 邮件使用 Times 或其他衬线字体。没有指定字体的邮件始终使用你的字体。",
+    "senderFontsReplace": "用我的字体替换衬线字体",
+    "senderFontsKeep": "保持发件人的设置"
   },
   "theme": {
     "system": "系统",
@@ -1740,5 +1746,9 @@
         "attachmentNo": "没有附件"
       }
     }
+  },
+  "font": {
+    "system": "系统字体",
+    "sample": "你好 :3 – 10:30 开会 <3"
   }
 }
