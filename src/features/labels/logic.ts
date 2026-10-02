@@ -7,6 +7,8 @@ import {
   attachmentValue,
   type AssistLabel,
   type AssistLabelLogEntry,
+  type LabelBase,
+  type LabelOverlap,
   type LabelRules,
   type LabelVerdict,
   type ThreadSummary,
@@ -214,6 +216,9 @@ export function labelReasonText(
     case "invoice": {
       const attachment = param(params, "attachment");
       if (attachment) return t("labels.reason.invoiceAttachment", { attachment });
+      const number = param(params, "number");
+      const total = param(params, "amount");
+      if (number && total) return t("labels.reason.invoiceNumber", { number, amount: total });
       const word = param(params, "word");
       if (!word) return reason;
       const amount = param(params, "amount");
@@ -240,6 +245,32 @@ export function labelReasonText(
       if (tracking) return t("labels.reason.shippingTracking", { tracking });
       return t("labels.reason.shipping");
     }
+    case "account": {
+      const word = param(params, "word");
+      if (word) return t("labels.reason.accountWord", { word });
+      return params.code === true ? t("labels.reason.accountCode") : reason;
+    }
+    case "personal":
+      if (typeof params.known !== "boolean") return reason;
+      return t(params.known ? "labels.reason.personalKnown" : "labels.reason.personalPrivate");
+    case "work":
+      if (params.colleague === true) return t("labels.reason.workColleague");
+      return params.known === true ? t("labels.reason.workContact") : reason;
+    case "advertising": {
+      const words = Array.isArray(params.words)
+        ? params.words.filter((word): word is string => typeof word === "string" && word.trim() !== "")
+        : [];
+      return words.length > 0 ? t("labels.reason.advertising", { words: words.join(", ") }) : reason;
+    }
+    case "similar": {
+      const similarity = params.similarity;
+      const count = param(params, "neighbours");
+      if (typeof similarity !== "number" || !count) return reason;
+      const percent = new Intl.NumberFormat(language, { style: "percent", maximumFractionDigits: 0 }).format(
+        Math.min(1, Math.max(0, similarity)),
+      );
+      return t("labels.reason.similar", { count, percent });
+    }
     case "classifier": {
       const probability = params.probability;
       const examples = param(params, "examples");
@@ -252,4 +283,37 @@ export function labelReasonText(
     default:
       return reason;
   }
+}
+
+/** The base labels the person deleted, in the server's order: they can be made again. */
+export function missingBases(labels: readonly Pick<AssistLabel, "base">[], all: readonly LabelBase[]): LabelBase[] {
+  // An older server knows no base labels: nothing is missing then.
+  if (!labels.some((label) => label.base)) return [];
+  const present = new Set(labels.map((label) => label.base));
+  return all.filter((base) => !present.has(base));
+}
+
+/**
+ * The overlap warning, one line per label: the same name, the meaning of a base label, or very
+ * similar words (which ones). A label named twice keeps only its first, strongest reason.
+ */
+export function overlapLines(overlaps: readonly LabelOverlap[], t: Translate): string[] {
+  const seen = new Set<string>();
+  const lines: string[] = [];
+  for (const overlap of overlaps) {
+    if (seen.has(overlap.id)) continue;
+    seen.add(overlap.id);
+    switch (overlap.kind) {
+      case "name":
+        lines.push(t("labels.overlap.name", { name: overlap.name }));
+        break;
+      case "meaning":
+        lines.push(t("labels.overlap.meaning", { name: overlap.name }));
+        break;
+      case "words":
+        lines.push(t("labels.overlap.words", { name: overlap.name, words: overlap.words.join(", ") || "…" }));
+        break;
+    }
+  }
+  return lines;
 }

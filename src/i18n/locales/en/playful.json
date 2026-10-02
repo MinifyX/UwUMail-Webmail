@@ -233,9 +233,6 @@
     "compose": {
       "applied": "Popped it into your draft ✿"
     },
-    "labels": {
-      "startersTitle": "Want a few labels to start with? (｀・ω・´)"
-    },
     "spam": {
       "certainty": {
         "unsure": "not so sure (・_・;)",
@@ -243,6 +240,11 @@
         "sure": "totally sure ✿"
       },
       "modelVerdict": "The model thought “{{verdict}}”, but the server disagrees: sender verified, spam filter calm, you two go way back (｀・ω・´)"
+    }
+  },
+  "labels": {
+    "overlap": {
+      "title": "Hmm, that looks familiar (・・?)"
     }
   }
 }

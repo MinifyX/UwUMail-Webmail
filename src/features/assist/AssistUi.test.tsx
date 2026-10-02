@@ -13,6 +13,8 @@ import type {
   AssistProviderInput,
   AssistSpamCheck,
   AssistStreamHandlers,
+  LabelBase,
+  LabelOverlap,
   Message,
 } from "@/backend/types";
 import { i18n } from "@/i18n";
@@ -41,6 +43,7 @@ const ANSWER = { providerId: "q1", providerName: "Mistral (Server)", model: "mis
 
 let labels: AssistLabel[] = [];
 let log: AssistLabelLogEntry[] = [];
+let overlaps: LabelOverlap[] = [];
 /** How the next compose answer comes: streamed pieces, then the result, or a failure. */
 let compose: (request: AssistComposeRequest, handlers: AssistStreamHandlers) => Promise<unknown>;
 
@@ -78,6 +81,15 @@ const fake = {
     labels = [...labels, made];
     return made;
   }),
+  updateAssistLabel: vi.fn(async (id: string, patch: Partial<AssistLabelInput>) => {
+    labels = labels.map((label) => (label.id === id ? { ...label, ...patch } : label));
+  }),
+  restoreBaseLabel: vi.fn(async (base: LabelBase) => {
+    const made = { ...LABEL_DEFAULTS, id: `g${labels.length + 1}`, name: base, keyword: base, description: "", base };
+    labels = [...labels, { ...made, color: null }];
+    return { ...made, color: null };
+  }),
+  checkLabelOverlap: vi.fn(async () => overlaps),
   assistLabelLog: vi.fn(async () => log),
   undoAssistLabels: vi.fn(async () => {}),
   setFlags: vi.fn(async () => {}),
@@ -177,6 +189,7 @@ describe("the assistant's UI", () => {
     vi.clearAllMocks();
     labels = [];
     log = [];
+    overlaps = [];
     compose = async (_request, handlers) => {
       handlers.onDelta?.("Hi Leni, ");
       handlers.onDelta?.("Friday works for me.");
@@ -343,18 +356,79 @@ describe("the assistant's UI", () => {
     expect(await screen.findByText("Created and applied")).toBeTruthy();
   });
 
-  it("adds the suggested starter labels in one click", async () => {
+  it("lists the base labels apart, switched one by one, with their fixed definition", async () => {
+    const base = (id: string, name: string, which: LabelBase, auto = true): AssistLabel => ({
+      ...LABEL_DEFAULTS,
+      id,
+      name,
+      keyword: name.toLowerCase(),
+      description: `${name} definition`,
+      color: null,
+      base: which,
+      auto,
+    });
+    labels = [
+      base("g1", "Invoice", "invoice"),
+      base("g2", "Personal", "personal", false),
+      { ...LABEL_DEFAULTS, id: "g3", name: "Travel", keyword: "travel", description: "Trips", color: null },
+    ];
     renderWith(<LabelSettings options={OPTIONS} />);
-    fireEvent.click(await screen.findByRole("button", { name: "Add 6 labels" }));
-    await waitFor(() => expect(fake.createAssistLabel).toHaveBeenCalledTimes(6));
-    expect(fake.createAssistLabel.mock.calls.map(([input]) => input.name)).toEqual([
-      "Invoices",
-      "Newsletters",
-      "Orders & shipping",
-      "Travel",
-      "Appointments",
-      "Personal",
-    ]);
+    expect(await screen.findByText("Base labels")).toBeTruthy();
+    expect(screen.getByText("Your own labels")).toBeTruthy();
+    // The definition is folded away until asked for.
+    expect(screen.queryByText("Invoice definition")).toBeNull();
+    fireEvent.click(screen.getAllByRole("button", { name: "Show definition" })[0]!);
+    expect(screen.getByText("Invoice definition")).toBeTruthy();
+    const personal = screen.getByRole("switch", { name: "Put “Personal” on by itself" });
+    expect(personal.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(screen.getByRole("switch", { name: "Put “Invoice” on by itself" }));
+    await waitFor(() => expect(fake.updateAssistLabel).toHaveBeenCalledWith("g1", { auto: false }));
+    // Six were deleted: each can come back.
+    fireEvent.click(screen.getByRole("button", { name: "Restore Shipping" }));
+    await waitFor(() => expect(fake.restoreBaseLabel).toHaveBeenCalledWith("shipping"));
+    expect(screen.getByRole("button", { name: "Restore Promotions" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Restore Invoice" })).toBeNull();
+  });
+
+  it("edits a base label's name but never its definition", async () => {
+    labels = [
+      {
+        ...LABEL_DEFAULTS,
+        id: "g1",
+        name: "Invoice",
+        keyword: "invoice",
+        description: "Fixed definition",
+        color: null,
+        base: "invoice",
+      },
+    ];
+    renderWith(<LabelSettings options={OPTIONS} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Invoice" }));
+    expect(screen.queryByLabelText("What belongs here")).toBeNull();
+    expect(screen.getByText("Fixed definition")).toBeTruthy();
+    expect(screen.queryByLabelText("Built-in detector")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Bills" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(fake.updateAssistLabel).toHaveBeenCalledWith("g1", { name: "Bills" }));
+    expect(fake.checkLabelOverlap).not.toHaveBeenCalled();
+  });
+
+  it("warns of overlapping labels while typing, but still saves", async () => {
+    overlaps = [
+      { id: "g1", name: "Invoice", base: "invoice", kind: "meaning", words: [] },
+      { id: "g2", name: "Phone", base: null, kind: "words", words: ["mobile", "contract"] },
+    ];
+    renderWith(<LabelSettings options={OPTIONS} />);
+    fireEvent.click(await screen.findByRole("button", { name: "New label" }));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Phone bills" } });
+    fireEvent.change(screen.getByLabelText("What belongs here"), { target: { value: "mobile contract" } });
+    expect(await screen.findByText("Means the same as the base label “Invoice”.")).toBeTruthy();
+    expect(screen.getByText("Very similar words to “Phone”: mobile, contract")).toBeTruthy();
+    // Asked once, after typing rested.
+    expect(fake.checkLabelOverlap).toHaveBeenCalledTimes(1);
+    expect(fake.checkLabelOverlap).toHaveBeenCalledWith("Phone bills", "mobile contract", undefined);
+    fireEvent.click(screen.getByRole("button", { name: "Create label" }));
+    await waitFor(() => expect(fake.createAssistLabel).toHaveBeenCalled());
   });
 
   it("checks a new label before saving it", async () => {

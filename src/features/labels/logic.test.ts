@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { AssistLabel, AssistLabelLogEntry, LabelVerdict, ThreadSummary } from "@/backend/types";
+import {
+  LABEL_BASES,
+  type AssistLabel,
+  type AssistLabelLogEntry,
+  type LabelVerdict,
+  type ThreadSummary,
+} from "@/backend/types";
 import { LABEL_DEFAULTS } from "../assist/labels";
 import {
   cleanRules,
@@ -10,7 +16,9 @@ import {
   labelReasonText,
   labelSearchTerm,
   listKeywords,
+  missingBases,
   NO_SUCH_LABEL,
+  overlapLines,
   parseLabelSearch,
   ruleProblems,
   suggestionChanges,
@@ -227,5 +235,69 @@ describe("why a label is on", () => {
     expect(why("classifier", "classifier", { probability: 0.994, examples: 23 })).toBe(
       'labels.reason.classifier{"percent":"99.4%","examples":"23"}',
     );
+  });
+
+  it("puts the new detectors and similar mails in the person's words", () => {
+    expect(why("detector", "invoice", { number: "RE-4711", amount: "39,99 €" })).toBe(
+      'labels.reason.invoiceNumber{"number":"RE-4711","amount":"39,99 €"}',
+    );
+    expect(why("detector", "account", { word: "Passwort", code: false })).toBe(
+      'labels.reason.accountWord{"word":"Passwort"}',
+    );
+    expect(why("detector", "account", { word: null, code: true })).toBe("labels.reason.accountCode");
+    expect(why("detector", "account", { word: null, code: false })).toBe("server words");
+    expect(why("detector", "personal", { known: true, freemail: false })).toBe("labels.reason.personalKnown");
+    expect(why("detector", "personal", { known: false, freemail: true })).toBe("labels.reason.personalPrivate");
+    expect(why("detector", "personal", {})).toBe("server words");
+    expect(why("detector", "work", { colleague: true, known: false })).toBe("labels.reason.workColleague");
+    expect(why("detector", "work", { colleague: false, known: true })).toBe("labels.reason.workContact");
+    expect(why("detector", "advertising", { words: ["sale", "-20 %", 3] })).toBe(
+      'labels.reason.advertising{"words":"sale, -20 %"}',
+    );
+    expect(why("detector", "advertising", { words: [] })).toBe("server words");
+    expect(why("similar", "similar", { neighbours: 4, similarity: 0.874 })).toBe(
+      'labels.reason.similar{"count":"4","percent":"87%"}',
+    );
+    expect(why("similar", "similar", { neighbours: 4 })).toBe("server words");
+  });
+});
+
+describe("base labels and overlaps", () => {
+  const t = (key: string, options?: Record<string, unknown>) => `${key}${options ? JSON.stringify(options) : ""}`;
+
+  it("knows which base labels were deleted, and none on an older server", () => {
+    const base = (which: AssistLabel["base"]) => ({ base: which });
+    expect(missingBases([base("invoice"), base(null), base("work")], LABEL_BASES)).toEqual([
+      "shipping",
+      "appointment",
+      "newsletter",
+      "account",
+      "personal",
+      "advertising",
+    ]);
+    expect(missingBases(LABEL_BASES.map(base), LABEL_BASES)).toEqual([]);
+    expect(missingBases([base(null)], LABEL_BASES)).toEqual([]);
+    expect(missingBases([], LABEL_BASES)).toEqual([]);
+  });
+
+  it("explains each overlap once, by its kind", () => {
+    expect(
+      overlapLines(
+        [
+          { id: "g1", name: "Rechnung", base: "invoice", kind: "name", words: [] },
+          { id: "g1", name: "Rechnung", base: "invoice", kind: "meaning", words: [] },
+          { id: "g2", name: "Werbung", base: "advertising", kind: "meaning", words: [] },
+          { id: "g3", name: "Handy", base: null, kind: "words", words: ["mobilfunk", "vertrag"] },
+          { id: "g4", name: "Leer", base: null, kind: "words", words: [] },
+        ],
+        t,
+      ),
+    ).toEqual([
+      'labels.overlap.name{"name":"Rechnung"}',
+      'labels.overlap.meaning{"name":"Werbung"}',
+      'labels.overlap.words{"name":"Handy","words":"mobilfunk, vertrag"}',
+      'labels.overlap.words{"name":"Leer","words":"…"}',
+    ]);
+    expect(overlapLines([], t)).toEqual([]);
   });
 });
