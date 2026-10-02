@@ -12,8 +12,12 @@ you press Save there.
    no library and no model: German and English day-month and month-day
    dates, numeric ones (`17.10.`, `10/12/2026`, ISO), ranges within and across
    months and years (`6.–9. Okt`, `Oct 6–9`, `30. Dez. – 2. Jan. 2027`), times
-   with and without an end (`19:30`, `14–16 Uhr`, `3-5pm`, a time on the next
-   line), zone abbreviations (`MESZ`, `PT`), and relative words counted from
+   with and without an end (`19:30`, `14–16 Uhr`, `3-5pm`, `zwischen 10:00 und
+12:00`, `von 10.00 bis 12.00`, `between 2 and 4pm`, a time on the next line
+   or after `Zeit:`/`Zeitfenster:`), spoken times (`halb drei`, `Viertel nach
+zehn`, `elf Uhr`; spoken hours up to seven are the afternoon unless
+   `morgens` follows), `nachmittags`/`abends`, the academic `c.t.` (a quarter
+   past) and `s.t.`, date ranges with `zwischen … und`, zone abbreviations (`MESZ`, `PT`), and relative words counted from
    the day the mail arrived (`morgen 14 Uhr`, `nächsten Dienstag`, `tonight at
 8`). A date without a year is the next time it comes after the mail (up to
    two months back still counts as this year); a weekday that doesn't fit the
@@ -28,8 +32,11 @@ you press Save there.
 3. **The AI assistant, only when asked** (`Assist/extractEvents`). "Check with
    AI" in the bar asks it for this one mail; the `assist.refineEvents` setting
    (off by default, in the assistant's settings) asks it for every mail that
-   opens. Its answer refines what the rules found — times, title, place win —
-   and adds what they missed; the same appointment shows once.
+   opens. Its answer refines what the rules found — title and place win, and
+   its times, except that times always beat a bare day whichever side found
+   them, and an end the rules read is kept when the assistant only assumed an
+   hour or knows fewer days — and adds what they missed; the same appointment
+   shows once. A picture's time fills in a day-only text hit the same way.
 
 What is text is read from the sanitized HTML as a reader sees it: hidden
 preheaders and other invisible text are left out; quoted replies (`>` lines,
@@ -40,8 +47,11 @@ go.
 
 To keep false alarms down, these are no appointments: order, invoice,
 customer, phone, version and similar numbers; prices; a document's own date
-("Rechnungsdatum", "Bestellung vom", "Stand"); the mail's own date as a
-newsletter prints it; dates more than two years out; recurring wording
+("Rechnungsdatum", "Bestellung vom", "Auftrag 123 vom", "Stand"); digits right
+before a date (a phone or account number); a billing period next to "Paid" or
+"Beleg"; a time without an end that had already come when the mail arrived
+(login, pickup and payment timestamps); the mail's own date as a newsletter
+prints it; "on Monday" without a time (mostly news); dates more than two years out; recurring wording
 ("jeden Freitag", "every Monday"); "Black Friday" and the like. What was over
 before the mail arrived is not underlined, and the bar only lists what is
 still ahead.
@@ -105,3 +115,10 @@ The parser reads at most 100 000 characters, with patterns that stay linear on
 hostile input (long runs of digits and dots are part of the tests); at most 20
 appointments per mail, the likeliest ones. Other languages than German and
 English are not understood beyond numeric and ISO dates.
+
+The rules are measured against a table of invented German and English
+snippets (`src/lib/dates/corpus.test.ts`, run in CI): what a reader would put
+into the calendar for each, and nothing for look-alikes (versions, prices,
+phone, order and tracking numbers, IBANs, opening hours). Titles skip amounts,
+field names ("Datum", "Betrag"), links and dated headings; places skip bare
+generic nouns ("im Dorf", "in Kraft").
