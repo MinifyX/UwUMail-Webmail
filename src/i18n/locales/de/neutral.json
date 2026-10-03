@@ -175,7 +175,8 @@
         "tooSoon": "Wähle eine Zeit, die mindestens ein paar Minuten entfernt ist.",
         "tooFar": "Dein Server hält Mails höchstens {{days}} Tage zurück."
       }
-    }
+    },
+    "companyFooter": "Beim Senden hängt der Server die Fußzeile deiner Organisation an."
   },
   "toast": {
     "sent": "Mail gesendet",
@@ -308,6 +309,7 @@
     "signatureDefaultNew": "Neue Mails",
     "signatureDefaultReplies": "Antworten",
     "signatureSaved": "Signatur gespeichert",
+    "signatureChangedElsewhere": "Die Signaturen wurden inzwischen woanders geändert. Sie sind neu geladen, bitte prüfe sie und speichere noch einmal.",
     "signatureUntitled": "Signatur",
     "senderPictures": "Absenderbilder",
     "senderPicturesDesc": "Zeigt Bilder von Leuten und Logos von Firmen statt Initialen, auch von anderen Servern. Ausgeschaltet siehst du trotzdem, was dieser Server selbst hat: die Fotos deiner Kontakte und die Bilder der Leute hier.",
@@ -332,7 +334,23 @@
     "senderFonts": "Schrift der Absender",
     "senderFontsDesc": "Viele HTML-Mails sind in Times oder einer anderen Serifenschrift gesetzt. Mails ohne eigene Schrift bekommen immer deine.",
     "senderFontsReplace": "Serifenschriften durch meine ersetzen",
-    "senderFontsKeep": "Wie vom Absender"
+    "senderFontsKeep": "Wie vom Absender",
+    "signaturesPerDomainDesc": "Wähle eine Domain und schreib eine Signatur für alle deine Adressen dort. Einzelne Adressen können eine eigene haben. Sie liegt auf deinem Mailserver, also nutzen das Portal und deine anderen Mail-Apps dieselbe.",
+    "signatureDomain": "Domain",
+    "signatureDomainOption_one": "{{domain}} (1 Adresse)",
+    "signatureDomainOption_other": "{{domain}} ({{count}} Adressen)",
+    "signatureAppliesTo": "Gilt für",
+    "signatureAllDomains": "Alle Domains (auch künftige)",
+    "signatureReplaces": "Ersetzt die eigenen Signaturen von {{domains}}.",
+    "signatureRemove": "Signatur entfernen",
+    "signatureFromTemplate": "Das ist die Vorlage deiner Organisation. Pass sie an und speichere sie als deine eigene.",
+    "signatureFromAllDomains": "Diese Domain nutzt deine Signatur für alle Domains.",
+    "signatureCompanyFooter": "Beim Senden von dieser Domain hängt der Server automatisch diese Fußzeile an:",
+    "signatureExceptions": "Abweichende Signatur für einzelne Adressen ({{count}})",
+    "signatureOwn": "Eigene Signatur",
+    "signatureFollowsDomain": "Nutzt die Domain-Signatur",
+    "signatureOverride": "Eigene Signatur für diese Adresse",
+    "signatureBackToDomain": "Domain-Signatur verwenden"
   },
   "theme": {
     "system": "System",
@@ -1343,7 +1361,7 @@
         "fairly": "ziemlich sicher",
         "sure": "sicher"
       },
-      "modelVerdict": "Das Modell meinte „{{verdict}}“, das widerspricht aber den Prüfungen des Servers (Absender bestätigt, Spamfilter unauffällig, schon öfter geschrieben).",
+      "modelVerdict": "Das Modell meinte „{{verdict}}“, das geben die Fakten aber nicht her. Das Urteil bleibt in dem Rahmen, den sie zulassen.",
       "serverTitle": "Was der Server festgestellt hat",
       "auth": "Absenderprüfung",
       "authNone": "Nicht geprüft: Die Mail kam nicht von einem anderen Server.",
@@ -1370,23 +1388,74 @@
       "contactsLabel": "Adressbuch",
       "inContacts": "In deinem Adressbuch",
       "notInContacts": "Nicht in deinem Adressbuch",
-      "firstSeen": "Erste Mail"
+      "firstSeen": "Erste Mail",
+      "factsTitle": "Was die Fakten sagen",
+      "factsScore": "{{score}} Punkte",
+      "band": {
+        "clean": "klar unbedenklich",
+        "leaningClean": "eher unbedenklich",
+        "unclear": "unklar",
+        "leaningSpam": "eher Spam",
+        "spam": "klar Spam"
+      },
+      "reasonQuote": "In der Mail: „{{quote}}“",
+      "reasonFact": "Beruht auf den Prüfungen des Servers",
+      "modelWordsTitle": "In den eigenen Worten des Modells",
+      "modelWordsHint": "Diese Gründe hat das Modell selbst formuliert und niemand hat sie geprüft. Verlass dich auf die Fakten des Servers.",
+      "dropped_one": "{{count}} Grund des Modells wurde weggelassen, weil nichts in der Mail ihn belegt.",
+      "dropped_other": "{{count}} Gründe des Modells wurden weggelassen, weil nichts in der Mail sie belegt.",
+      "evidence": {
+        "FILTER_WANTED": "Der Spamfilter fand nichts Bedenkliches",
+        "FILTER_OVER_LIMIT": "Über der Grenze des Spamfilters",
+        "FILTER_SOME_POINTS": "Einige Punkte vom Spamfilter",
+        "DMARC_PASS": "DMARC bestanden: kommt wirklich von dieser Domain",
+        "DMARC_FAIL": "DMARC nicht bestanden: Absender womöglich gefälscht",
+        "SPF_DKIM_PASS": "SPF oder DKIM bestanden",
+        "SPF_DKIM_FAIL": "SPF oder DKIM nicht bestanden",
+        "NO_AUTHENTICATION": "Gar keine Authentifizierung",
+        "WRITTEN_TO": "Du hast diesem Absender schon geschrieben",
+        "IN_CONTACTS": "In deinem Adressbuch",
+        "KNOWN_SENDER": "Hat dir schon öfter geschrieben",
+        "EARLIER_IN_JUNK": "Frühere Mails dieses Absenders landeten im Spam",
+        "FIRST_MAIL": "Erste Mail von diesem Absender",
+        "IN_JUNK": "Liegt im Spam-Ordner",
+        "PAYMENT_REQUEST": "Fordert Geld oder Zahlungsdaten",
+        "URGENCY": "Drängt zur Eile",
+        "LOOKALIKE_BRAND_FROM": "Absenderdomain ahmt eine bekannte Marke nach",
+        "BRAND_IN_FROM_DOMAIN": "Absenderdomain trägt einen Markennamen",
+        "LOOKALIKE_CONTACT_FROM": "Absenderdomain ahmt einen deiner Kontakte nach",
+        "FROM_NAME_SPOOFS_ADDRESS": "Anzeigename zeigt eine andere Adresse",
+        "FROM_NAME_SHOWS_DOMAIN": "Anzeigename zeigt eine andere Domain",
+        "BRAND_IN_FROM_NAME": "Markenname im Anzeigenamen, gesendet von woanders",
+        "REPLY_TO_OTHER_SITE": "Antworten gehen an eine andere Seite",
+        "LOOKALIKE_BRAND_LINK": "Link ahmt eine bekannte Marke nach",
+        "BRAND_LINK_TEXT": "Linktext nennt eine Marke, der Link führt woandershin",
+        "TRACKED_LINK_TEXT": "Linktext und Ziel unterscheiden sich (Tracking-Link)",
+        "PHISHING_LINK_TEXT": "Linktext zeigt eine andere Adresse als das Ziel",
+        "BRAND_IN_SUBJECT": "Markenname im Betreff mit einer Warnung",
+        "CREDENTIAL_REQUEST": "Fragt Zugangsdaten außerhalb der Seite der Marke ab",
+        "LOOKALIKE_LINK": "Link zu einer Doppelgänger-Domain",
+        "LINK_TO_IP": "Link zu einer nackten IP-Adresse",
+        "HTML_ATTACHMENT": "HTML-Anhang (oft eine gefälschte Anmeldeseite)",
+        "MALWARE_LINK": "Link zu einer bekannten Schadsoftware-Seite",
+        "SPAMHAUS_DBL_MALICIOUS": "Link zu einer als bösartig gelisteten Domain"
+      }
     },
     "labels": {
       "title": "Labels",
       "description": "Deine eigenen Wörter für Arten von Mails. Labels erscheinen hier und in anderen Mail-Apps (als Schlagwörter). Das Modell wählt nur aus deinen Labels; es verschiebt, löscht oder beantwortet nie eine Mail.",
       "auto": "Neue Mails automatisch labeln",
-      "autoDesc": "Eingehende Mails bekommen die passenden Labels. Dafür liest das Modell die Namen und Beschreibungen deiner Labels und den Anfang jeder Mail.",
+      "autoDesc": "Eingehende Mails bekommen das eine Label, das am besten passt, manchmal ein zweites, und keins, wenn das Modell unsicher ist. Dafür liest das Modell die Namen und Beschreibungen deiner Labels und den Anfang jeder Mail.",
       "autoNoLabels": "Leg zuerst ein paar Labels an; dann bekommen eingehende Mails die passenden.",
       "noProvider": "Gerade darf kein Modell Labels setzen, deshalb wird nichts gelabelt.",
       "new": "Neues Label",
       "newTitle": "Neues Label",
       "editTitle": "„{{name}}“ bearbeiten",
       "name": "Name",
-      "namePlaceholder": "z. B. Rechnungen",
+      "namePlaceholder": "z. B. Reisen",
       "descriptionField": "Was hierher gehört",
       "descriptionHint": "Danach entscheidet das Modell. Ein paar Wörter oder Beispiele reichen.",
-      "descriptionPlaceholder": "z. B. Rechnungen, Quittungen und Zahlungsbestätigungen",
+      "descriptionPlaceholder": "z. B. Flüge, Hotels und Bahntickets",
       "color": "Farbe",
       "noColor": "Keine Farbe",
       "create": "Label anlegen",
@@ -1402,12 +1471,6 @@
       "empty": "Noch keine Labels.",
       "full_one": "Du hast die Grenze von {{count}} Label erreicht.",
       "full_other": "Du hast die Grenze von {{count}} Labels erreicht.",
-      "startersTitle": "Mit ein paar Vorschlägen anfangen?",
-      "startersMore": "Weitere Vorschläge",
-      "addStarters_one": "{{count}} Label hinzufügen",
-      "addStarters_other": "{{count}} Labels hinzufügen",
-      "startersAdded_one": "{{count}} Label hinzugefügt",
-      "startersAdded_other": "{{count}} Labels hinzugefügt",
       "applyDesc_one": "Mails, die vor den Labels kamen, bleiben, wie sie sind. Lass das Modell jetzt deine neueste Mail im Posteingang ansehen.",
       "applyDesc_other": "Mails, die vor den Labels kamen, bleiben, wie sie sind. Lass das Modell jetzt deine {{count}} neuesten Mails im Posteingang ansehen.",
       "apply": "Neueste Mails labeln",
@@ -1432,32 +1495,6 @@
         "nameTaken": "Ein Label mit diesem Namen gibt es schon.",
         "descriptionTooLong": "Höchstens {{max}} Zeichen.",
         "control": "Zeilenumbrüche und Steuerzeichen gehen hier nicht."
-      }
-    },
-    "starter": {
-      "invoices": {
-        "name": "Rechnungen",
-        "description": "Rechnungen, Quittungen, Zahlungsbestätigungen und Mahnungen"
-      },
-      "newsletters": {
-        "name": "Newsletter",
-        "description": "Newsletter, Angebote und Werbung von Läden und Diensten"
-      },
-      "orders": {
-        "name": "Bestellungen & Versand",
-        "description": "Bestellbestätigungen, Versandmitteilungen und Lieferinfos"
-      },
-      "travel": {
-        "name": "Reisen",
-        "description": "Buchungen, Tickets, Bordkarten und Hotelbestätigungen"
-      },
-      "appointments": {
-        "name": "Termine",
-        "description": "Termine, Einladungen, Reservierungen und Terminerinnerungen"
-      },
-      "personal": {
-        "name": "Persönlich",
-        "description": "Mails von Freunden und Familie, von einem Menschen geschrieben und nicht massenhaft verschickt"
       }
     },
     "settings": {
@@ -1723,14 +1760,19 @@
       "rule": "Durch die Bedingungen des Labels gesetzt",
       "sender": "Wegen des Absenders gesetzt",
       "detector": "Von der eingebauten Erkennung gesetzt",
-      "classifier": "Vom lernenden Klassifikator gesetzt"
+      "classifier": "Vom lernenden Klassifikator gesetzt",
+      "similar": "Ähnlich wie deine Mails mit diesem Label"
     },
     "detector": {
       "none": "Keine",
       "invoice": "Rechnungen",
       "appointment": "Termine",
       "newsletter": "Newsletter",
-      "shipping": "Versand"
+      "shipping": "Versand",
+      "account": "Konto & Sicherheit",
+      "personal": "Persönliche Mails",
+      "work": "Arbeit & Geschäftliches",
+      "advertising": "Werbung"
     },
     "condition": {
       "from": "Absender (Adresse oder Domain)",
@@ -1750,11 +1792,11 @@
       "autoDescription": "Labels können ganz ohne KI an neue Mails kommen: über eigene Bedingungen, eine eingebaute Erkennung, Absender, die du schon gelabelt hast, und einen kleinen Klassifikator, der von dir lernt. Dafür verlässt nichts den Server.",
       "auto": "Neue Mails ohne KI selbst labeln",
       "autoDesc": "Nutzt, was bei jedem Label unten eingestellt ist.",
-      "aiOn": "Der Assistent labelt neue Mails zusätzlich und beurteilt die Labels, die noch nicht gesetzt wurden.",
+      "aiOn": "Der Assistent hilft bei neuen Mails mit, wo die Labels ohne KI unsicher sind. Eine Mail bekommt höchstens zwei Labels, und keins, wenn es unklar ist.",
       "aiOff": "Der Assistent labelt keine neuen Mails.",
       "toAi": "KI-Einstellungen",
       "manage": "Labels verwalten",
-      "listTitle": "Deine Labels",
+      "listTitle": "Deine eigenen Labels",
       "mailCount_one": "{{count}} Mail",
       "mailCount_other": "{{count}} Mails",
       "conditionCount_one": "{{count}} Bedingung",
@@ -1783,7 +1825,9 @@
       "examples_other": "Bisher {{count}} von {{min}} Beispielen.",
       "examplesReady_one": "Aus {{count}} Beispiel gelernt: aktiv.",
       "examplesReady_other": "Aus {{count}} Beispielen gelernt: aktiv.",
-      "listDescription": "Name, Farbe und was jedes Label von selbst an Mails setzt."
+      "listDescription": "Name, Farbe und was jedes Label von selbst an Mails setzt.",
+      "autoLabel": "Von selbst setzen",
+      "autoLabelDesc": "Aus: Das Label kommt nur an Mails, wenn du es von Hand setzt. Dann setzt es nichts mehr von selbst, weder seine Bedingungen noch die Erkennung, gelernte Absender, ähnliche Mails oder der Assistent."
     },
     "log": {
       "title": "Zuletzt von selbst gesetzt",
@@ -1813,7 +1857,53 @@
         "text": "Text enthält „{{value}}“",
         "attachmentYes": "hat einen Anhang",
         "attachmentNo": "hat keinen Anhang"
+      },
+      "similar": "Ähnlich wie {{count}} deiner Mails mit diesem Label ({{percent}} gleich)",
+      "invoiceNumber": "Sieht nach einer Rechnung aus: Rechnungsnummer {{number}}, {{amount}}",
+      "accountWord": "Zu deinem Konto: „{{word}}“",
+      "accountCode": "Zu deinem Konto: ein Einmalcode",
+      "personalKnown": "Sieht persönlich aus: von einem Menschen, den du kennst",
+      "personalPrivate": "Sieht persönlich aus: von einem Menschen mit privater Adresse",
+      "workColleague": "Sieht nach Arbeit aus: von jemandem aus deiner eigenen Domain",
+      "workContact": "Sieht nach Arbeit aus: von einem Geschäftskontakt, den du kennst",
+      "advertising": "Sieht nach Werbung aus: {{words}}"
+    },
+    "base": {
+      "title": "Basis-Labels",
+      "description": "Acht feste Labels mit je einer klaren Definition, damit Mails immer gleich gelabelt werden. Name und Farbe kannst du ändern, und bei jedem einzeln festlegen, ob es von selbst gesetzt wird.",
+      "showDefinition": "Definition zeigen",
+      "hideDefinition": "Definition ausblenden",
+      "auto": "„{{name}}“ von selbst setzen",
+      "autoOn": "wird von selbst gesetzt",
+      "autoOff": "nur von Hand",
+      "missingTitle": "Gelöschte Basis-Labels",
+      "missingDescription": "Hol ein Basis-Label mit seiner Definition zurück. Mails, an denen es vorher war, bekommen es nicht wieder.",
+      "restore": "{{name}} wiederherstellen",
+      "restored": "Basis-Label „{{name}}“ ist zurück",
+      "fixedDefinition": "Die Definition eines Basis-Labels ist fest: Nach ihr wird gelabelt, von Hand wie von selbst.",
+      "detectorBuiltIn": "Hat seine eigene Erkennung schon eingebaut.",
+      "previousDescription": "Deine frühere Beschreibung:",
+      "previousHint": "So hattest du das Label beschrieben, bevor das Basis-Label es übernommen hat. Das Modell bekommt diese Beschreibung weiter als Hinweis neben der Definition des Basis-Labels, entscheidend ist die Definition. Wenn du sie vergisst, wird sie nicht mehr mitgeschickt.",
+      "forgetPrevious": "Vergessen",
+      "previousForgotten": "Die frühere Beschreibung wird nicht mehr mitgeschickt.",
+      "usePrevious": "Als eigenes Label anlegen",
+      "names": {
+        "invoice": "Rechnung",
+        "shipping": "Versand",
+        "appointment": "Termin",
+        "newsletter": "Newsletter",
+        "account": "Konto & Sicherheit",
+        "personal": "Persönlich",
+        "work": "Arbeit/Geschäftlich",
+        "advertising": "Werbung"
       }
+    },
+    "overlap": {
+      "title": "Überschneidet sich mit deinen Labels",
+      "name": "„{{name}}“ heißt schon so.",
+      "meaning": "Meint dasselbe wie das Basis-Label „{{name}}“.",
+      "words": "Sehr ähnliche Wörter wie „{{name}}“: {{words}}",
+      "hint": "Speichern geht trotzdem, aber Mails bekommen dann vielleicht das falsche der beiden."
     }
   },
   "font": {

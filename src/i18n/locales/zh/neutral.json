@@ -171,7 +171,8 @@
         "tooSoon": "请选择至少几分钟之后的时间。",
         "tooFar": "你的服务器最多保留邮件 {{days}} 天。"
       }
-    }
+    },
+    "companyFooter": "发送时服务器会添加你所在组织的页脚。"
   },
   "toast": {
     "sent": "邮件已发送",
@@ -300,6 +301,7 @@
     "signatureDefaultNew": "新邮件",
     "signatureDefaultReplies": "回复",
     "signatureSaved": "签名已保存",
+    "signatureChangedElsewhere": "签名在此期间已在别处被修改。已重新加载，请检查后再次保存。",
     "signatureUntitled": "签名",
     "senderPictures": "发件人图片",
     "senderPicturesDesc": "显示个人照片和公司标志，而不是姓名首字母，也包括来自其他服务器的。关闭后，仍会显示本服务器自己拥有的图片：你的联系人照片和本服务器用户的图片。",
@@ -324,7 +326,22 @@
     "senderFonts": "发件人的字体",
     "senderFontsDesc": "很多 HTML 邮件使用 Times 或其他衬线字体。没有指定字体的邮件始终使用你的字体。",
     "senderFontsReplace": "用我的字体替换衬线字体",
-    "senderFontsKeep": "保持发件人的设置"
+    "senderFontsKeep": "保持发件人的设置",
+    "signaturesPerDomainDesc": "选择一个域名，为你在该域名下的所有地址写一个签名。单个地址可以有自己的签名。签名保存在你的邮件服务器上，因此门户和你的其他邮件应用使用同一个。",
+    "signatureDomain": "域名",
+    "signatureDomainOption_other": "{{domain}}（{{count}} 个地址）",
+    "signatureAppliesTo": "适用于",
+    "signatureAllDomains": "所有域名（包括以后的）",
+    "signatureReplaces": "将替换 {{domains}} 的单独签名。",
+    "signatureRemove": "删除签名",
+    "signatureFromTemplate": "这是你所在组织的模板。修改后可保存为你自己的签名。",
+    "signatureFromAllDomains": "此域名使用你的“所有域名”签名。",
+    "signatureCompanyFooter": "从此域名发送时，服务器会自动添加以下页脚：",
+    "signatureExceptions": "单个地址的不同签名（{{count}}）",
+    "signatureOwn": "单独签名",
+    "signatureFollowsDomain": "使用域名签名",
+    "signatureOverride": "为此地址设置单独签名",
+    "signatureBackToDomain": "使用域名签名"
   },
   "theme": {
     "system": "系统",
@@ -1302,7 +1319,7 @@
         "fairly": "比较确定",
         "sure": "确定"
       },
-      "modelVerdict": "模型判断为“{{verdict}}”，但这与服务器的检查结果相矛盾（发件人已验证、垃圾邮件过滤器无异常、以前有过往来）。",
+      "modelVerdict": "模型判断为“{{verdict}}”，但事实不支持这一点，所以结论保持在事实允许的范围内。",
       "serverTitle": "服务器的检查结果",
       "auth": "发件人验证",
       "authNone": "未验证：这封邮件不是来自其他服务器。",
@@ -1326,23 +1343,73 @@
       "contactsLabel": "通讯录",
       "inContacts": "在你的通讯录中",
       "notInContacts": "不在你的通讯录中",
-      "firstSeen": "第一封邮件"
+      "firstSeen": "第一封邮件",
+      "factsTitle": "事实说明了什么",
+      "factsScore": "{{score}} 分",
+      "band": {
+        "clean": "明显正常",
+        "leaningClean": "比较正常",
+        "unclear": "不明确",
+        "leaningSpam": "比较像垃圾邮件",
+        "spam": "明显是垃圾邮件"
+      },
+      "reasonQuote": "邮件中：“{{quote}}”",
+      "reasonFact": "基于服务器的检查",
+      "modelWordsTitle": "模型自己的说法",
+      "modelWordsHint": "这些理由由模型自己撰写，未经任何人核实。请以服务器的事实为准。",
+      "dropped_other": "模型的 {{count}} 条理由在邮件中找不到依据，已省略。",
+      "evidence": {
+        "FILTER_WANTED": "垃圾邮件过滤器没发现问题",
+        "FILTER_OVER_LIMIT": "超过垃圾邮件过滤器的上限",
+        "FILTER_SOME_POINTS": "垃圾邮件过滤器给了一些分",
+        "DMARC_PASS": "DMARC 通过：确实来自这个域名",
+        "DMARC_FAIL": "DMARC 未通过：发件人可能是伪造的",
+        "SPF_DKIM_PASS": "SPF 或 DKIM 通过",
+        "SPF_DKIM_FAIL": "SPF 或 DKIM 未通过",
+        "NO_AUTHENTICATION": "完全没有身份验证",
+        "WRITTEN_TO": "你以前给这个发件人写过信",
+        "IN_CONTACTS": "在你的通讯录里",
+        "KNOWN_SENDER": "以前给你写过信",
+        "EARLIER_IN_JUNK": "这个发件人以前的邮件进了垃圾箱",
+        "FIRST_MAIL": "这个发件人的第一封邮件",
+        "IN_JUNK": "在垃圾邮件文件夹里",
+        "PAYMENT_REQUEST": "索要钱款或支付信息",
+        "URGENCY": "催促你赶快行动",
+        "LOOKALIKE_BRAND_FROM": "发件域名模仿知名品牌",
+        "BRAND_IN_FROM_DOMAIN": "发件域名带有品牌名",
+        "LOOKALIKE_CONTACT_FROM": "发件域名模仿你的某个联系人",
+        "FROM_NAME_SPOOFS_ADDRESS": "显示名称写着另一个地址",
+        "FROM_NAME_SHOWS_DOMAIN": "显示名称写着另一个域名",
+        "BRAND_IN_FROM_NAME": "显示名称里有品牌名，却从别处发出",
+        "REPLY_TO_OTHER_SITE": "回复会发到另一个网站",
+        "LOOKALIKE_BRAND_LINK": "链接模仿知名品牌",
+        "BRAND_LINK_TEXT": "链接文字写着品牌，实际指向别处",
+        "TRACKED_LINK_TEXT": "链接文字和目标不同（跟踪链接）",
+        "PHISHING_LINK_TEXT": "链接文字显示的地址与目标不同",
+        "BRAND_IN_SUBJECT": "主题里有品牌名和警告",
+        "CREDENTIAL_REQUEST": "在品牌官网之外索要登录信息",
+        "LOOKALIKE_LINK": "指向仿冒域名的链接",
+        "LINK_TO_IP": "指向裸 IP 地址的链接",
+        "HTML_ATTACHMENT": "HTML 附件（常是假登录页）",
+        "MALWARE_LINK": "指向已知恶意软件网站的链接",
+        "SPAMHAUS_DBL_MALICIOUS": "指向被列为恶意的域名的链接"
+      }
     },
     "labels": {
       "title": "标签",
       "description": "你自己为各类邮件起的名字。标签会显示在这里以及其他邮件应用中的邮件上（作为关键字）。模型只会从你的标签中挑选；它从不移动、删除或回复邮件。",
       "auto": "自动为新邮件添加标签",
-      "autoDesc": "收到的邮件会被加上合适的标签。为此，模型会读取你标签的名称和说明，以及每封邮件的开头部分。",
+      "autoDesc": "收到的邮件会被加上最合适的一个标签，有时再加第二个；模型不确定时则不加。为此，模型会读取你标签的名称和说明，以及每封邮件的开头部分。",
       "autoNoLabels": "请先添加几个标签；之后收到的邮件就会被加上合适的标签。",
       "noProvider": "目前没有模型可以设置标签，因此不会添加任何标签。",
       "new": "新建标签",
       "newTitle": "新建标签",
       "editTitle": "编辑“{{name}}”",
       "name": "名称",
-      "namePlaceholder": "例如：发票",
+      "namePlaceholder": "例如：旅行",
       "descriptionField": "哪些邮件属于这里",
       "descriptionHint": "模型会根据这段说明来判断。几个词或例子就够了。",
-      "descriptionPlaceholder": "例如：发票、收据和付款确认",
+      "descriptionPlaceholder": "例如：机票、酒店和火车票",
       "color": "颜色",
       "noColor": "无颜色",
       "create": "创建标签",
@@ -1357,10 +1424,6 @@
       "noDescription": "无说明",
       "empty": "还没有标签。",
       "full_other": "你已达到 {{count}} 个标签的上限。",
-      "startersTitle": "要从几个建议开始吗？",
-      "startersMore": "更多建议",
-      "addStarters_other": "添加 {{count}} 个标签",
-      "startersAdded_other": "已添加 {{count}} 个标签",
       "applyDesc_other": "在启用标签之前收到的邮件保持不变。现在可以让模型查看收件箱中最新的 {{count}} 封邮件。",
       "apply": "为最近的邮件添加标签",
       "applied_other": "{{count}} 封邮件已添加标签",
@@ -1383,32 +1446,6 @@
         "nameTaken": "已有同名标签。",
         "descriptionTooLong": "最多 {{max}} 个字符。",
         "control": "这里不能使用换行符和控制字符。"
-      }
-    },
-    "starter": {
-      "invoices": {
-        "name": "发票",
-        "description": "发票、收据、付款确认和催款通知"
-      },
-      "newsletters": {
-        "name": "新闻邮件",
-        "description": "来自商店和服务的新闻邮件、优惠和广告"
-      },
-      "orders": {
-        "name": "订单与配送",
-        "description": "订单确认、发货通知和配送动态"
-      },
-      "travel": {
-        "name": "旅行",
-        "description": "预订、票据、登机牌和酒店确认"
-      },
-      "appointments": {
-        "name": "日程",
-        "description": "日程、邀请、预约和日期提醒"
-      },
-      "personal": {
-        "name": "个人",
-        "description": "亲友发来的邮件，由真人撰写，而非群发"
       }
     },
     "settings": {
@@ -1659,14 +1696,19 @@
       "rule": "由标签的条件添加",
       "sender": "因发件人而添加",
       "detector": "由内置识别添加",
-      "classifier": "由学习型分类器添加"
+      "classifier": "由学习型分类器添加",
+      "similar": "与你带有此标签的邮件相似"
     },
     "detector": {
       "none": "无",
       "invoice": "账单",
       "appointment": "约会",
       "newsletter": "新闻简报",
-      "shipping": "物流"
+      "shipping": "物流",
+      "account": "账户与安全",
+      "personal": "私人邮件",
+      "work": "工作",
+      "advertising": "广告"
     },
     "condition": {
       "from": "发件人（地址或域名）",
@@ -1686,11 +1728,11 @@
       "autoDescription": "标签可以不用任何 AI 就加到新邮件上：通过标签自己的条件、内置识别、你以前加过标签的发件人，以及一个向你学习的小型分类器。这一切都不会离开服务器。",
       "auto": "不用 AI 自动为新邮件加标签",
       "autoDesc": "使用下面每个标签的设置。",
-      "aiOn": "助手也会为新邮件加标签，并判断尚未添加的标签。",
+      "aiOn": "在不使用 AI 的标签拿不准时，助手也会帮忙处理新邮件。每封邮件最多两个标签，不明确时不加。",
       "aiOff": "助手不会为新邮件加标签。",
       "toAi": "AI 设置",
       "manage": "管理标签",
-      "listTitle": "你的标签",
+      "listTitle": "你自己的标签",
       "mailCount_other": "{{count}} 封邮件",
       "conditionCount_other": "{{count}} 个条件",
       "learnsSenders": "学习发件人",
@@ -1714,7 +1756,9 @@
       "classifierDesc": "服务器上的小型分类器会从你手动添加或移除的标签中学习。它在有 {{min}} 个示例之后才会起作用，并且只在相当确定时才添加。",
       "examples_other": "目前 {{count}} / {{min}} 个示例。",
       "examplesReady_other": "已从 {{count}} 个示例学习：已启用。",
-      "listDescription": "名称、颜色，以及让每个标签自动添加到邮件上的方式。"
+      "listDescription": "名称、颜色，以及让每个标签自动添加到邮件上的方式。",
+      "autoLabel": "自动添加",
+      "autoLabelDesc": "关闭后：只有你手动添加时这个标签才会出现在邮件上。条件、识别、学到的发件人、相似邮件和助手都不会再自动添加它。"
     },
     "log": {
       "title": "最近自动添加的标签",
@@ -1744,7 +1788,53 @@
         "text": "正文包含“{{value}}”",
         "attachmentYes": "有附件",
         "attachmentNo": "没有附件"
+      },
+      "similar": "与你带有此标签的 {{count}} 封邮件相似（相似度 {{percent}}）",
+      "invoiceNumber": "看起来是发票：发票号 {{number}}，{{amount}}",
+      "accountWord": "关于你的账户：“{{word}}”",
+      "accountCode": "关于你的账户：一次性验证码",
+      "personalKnown": "看起来是私人邮件：由你认识的人所写",
+      "personalPrivate": "看起来是私人邮件：由个人地址的人所写",
+      "workColleague": "看起来是工作邮件：由你自己域名的同事所写",
+      "workContact": "看起来是工作邮件：由你认识的业务联系人所写",
+      "advertising": "看起来是广告：{{words}}"
+    },
+    "base": {
+      "title": "基础标签",
+      "description": "八个固定标签，每个都有明确的定义，让邮件每次都得到同样的标签。你可以修改名称和颜色，并为每个标签单独决定是否自动添加。",
+      "showDefinition": "显示定义",
+      "hideDefinition": "隐藏定义",
+      "auto": "自动添加“{{name}}”",
+      "autoOn": "自动添加",
+      "autoOff": "仅手动",
+      "missingTitle": "已删除的基础标签",
+      "missingDescription": "连同定义一起恢复基础标签。之前带有它的邮件不会重新加上。",
+      "restore": "恢复{{name}}",
+      "restored": "基础标签“{{name}}”已恢复",
+      "fixedDefinition": "基础标签的定义是固定的：无论手动还是自动，都按它来加标签。",
+      "detectorBuiltIn": "已内置专属识别。",
+      "previousDescription": "你之前的描述：",
+      "previousHint": "在基础标签接管之前，你是这样描述这个标签的。模型仍会把它作为提示，与基础标签的定义一起收到，以定义为准。选择“忘记”后将不再发送。",
+      "forgetPrevious": "忘记",
+      "previousForgotten": "之前的描述将不再发送。",
+      "usePrevious": "创建为自己的标签",
+      "names": {
+        "invoice": "账单",
+        "shipping": "物流",
+        "appointment": "预约",
+        "newsletter": "新闻通讯",
+        "account": "账户与安全",
+        "personal": "个人",
+        "work": "工作",
+        "advertising": "广告"
       }
+    },
+    "overlap": {
+      "title": "与你的标签重叠",
+      "name": "“{{name}}”已经是这个名称。",
+      "meaning": "与基础标签“{{name}}”意思相同。",
+      "words": "与“{{name}}”的用词非常相似：{{words}}",
+      "hint": "仍然可以保存，但邮件可能会被加上两者中错误的那个。"
     }
   },
   "font": {

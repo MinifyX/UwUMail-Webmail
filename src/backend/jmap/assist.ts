@@ -27,6 +27,7 @@ import {
   type AssistFeatures,
   type AssistLabel,
   type AssistLabelInput,
+  type AssistLabelPatch,
   type AssistLabelLogEntry,
   type AssistModels,
   type AssistOptions,
@@ -35,15 +36,23 @@ import {
   type AssistProviderKind,
   type AssistSettings,
   type AssistSettingsPatch,
+  type AssistSpamBand,
   type AssistSpamCheck,
+  type AssistSpamEvidence,
+  type AssistSpamFacts,
+  type AssistSpamReason,
   type AssistStreamHandlers,
   type AssistUsage,
   type AssistVerdict,
   type ChatgptLogin,
   type ChatgptPoll,
+  LABEL_BASES,
   LABEL_DETECTORS,
   LABEL_RULE_FIELDS,
+  type LabelBase,
   type LabelDetector,
+  type LabelOverlap,
+  type LabelOverlapKind,
   type LabelRuleCondition,
   type LabelRuleField,
   type LabelRules,
@@ -101,6 +110,12 @@ export function assistOptionsFrom(accountCapabilities: Record<string, unknown> |
     maxLabels: asNumber(raw.maxLabels) ?? 30,
     maxInstructionChars: asNumber(raw.maxInstructionChars) ?? 2000,
     maxTextChars: asNumber(raw.maxTextChars) ?? 20000,
+    baseLabels: Array.isArray(raw.baseLabels)
+      ? raw.baseLabels.flatMap((base) => {
+          const known = asBase(base);
+          return known ? [known] : [];
+        })
+      : [],
   };
 }
 
@@ -288,6 +303,10 @@ export function toLabelRules(value: unknown): LabelRules | null {
   return { match: raw.match === "any" ? "any" : "all", conditions };
 }
 
+function asBase(value: unknown): LabelBase | null {
+  return LABEL_BASES.includes(value as LabelBase) ? (value as LabelBase) : null;
+}
+
 export function toAssistLabel(raw: Raw): AssistLabel {
   const detector = asString(raw.detector);
   return {
@@ -296,6 +315,9 @@ export function toAssistLabel(raw: Raw): AssistLabel {
     description: asString(raw.description) ?? "",
     keyword: (asString(raw.keyword) ?? "").toLowerCase(),
     color: asColor(raw.color),
+    // Older servers know neither: every label is the person's own and may be put on automatically.
+    base: asBase(raw.base),
+    auto: raw.auto !== false,
     rules: toLabelRules(raw.rules),
     detector: LABEL_DETECTORS.includes(detector as LabelDetector) ? (detector as LabelDetector) : null,
     // Both default to on, like the server's.
@@ -304,6 +326,7 @@ export function toAssistLabel(raw: Raw): AssistLabel {
     totalEmails: asCount(raw.totalEmails),
     unreadEmails: asCount(raw.unreadEmails),
     examples: asCount(raw.examples),
+    previousDescription: asString(raw.previousDescription)?.trim() || null,
   };
 }
 
@@ -328,18 +351,55 @@ function automaticOut(input: Partial<AssistLabelInput>, out: Raw) {
 }
 
 export function labelCreate(input: AssistLabelInput): Raw {
-  return automaticOut(input, { name: input.name.trim(), description: input.description.trim(), color: input.color });
+  const out = automaticOut(input, {
+    name: input.name.trim(),
+    description: input.description.trim(),
+    color: input.color,
+  });
+  // Only when off: on is the default, and older servers refuse a property they don't know.
+  if (input.auto === false) out.auto = false;
+  return out;
 }
 
-export function labelUpdate(patch: Partial<AssistLabelInput>): Raw {
+/** `AssistLabel/set` create for a deleted base label: nothing but the base (and `auto` when off). */
+export function baseLabelCreate(base: LabelBase, auto?: boolean): Raw {
+  return auto === false ? { base, auto: false } : { base };
+}
+
+const OVERLAP_KINDS: readonly LabelOverlapKind[] = ["name", "meaning", "words"];
+
+/** The answer of `AssistLabel/checkOverlap`; entries of a kind this app doesn't know are left out. */
+export function toLabelOverlaps(raw: Raw): LabelOverlap[] {
+  const list = Array.isArray(raw.overlaps) ? raw.overlaps : [];
+  return list.flatMap((value: unknown) => {
+    const entry = asObject(value);
+    if (!entry || !OVERLAP_KINDS.includes(entry.kind as LabelOverlapKind)) return [];
+    return [
+      {
+        id: String(entry.id),
+        name: asString(entry.name) ?? "",
+        base: asBase(entry.base),
+        kind: entry.kind as LabelOverlapKind,
+        words: Array.isArray(entry.words) ? entry.words.filter((word): word is string => typeof word === "string") : [],
+      },
+    ];
+  });
+}
+
+/** What `AssistLabel/checkOverlap` reads at most; longer text is not sent at all. */
+export const OVERLAP_LIMITS = { name: 100, description: 2000 } as const;
+
+export function labelUpdate(patch: AssistLabelPatch): Raw {
   const out: Raw = {};
   if (patch.name !== undefined) out.name = patch.name.trim();
   if (patch.description !== undefined) out.description = patch.description.trim();
   if (patch.color !== undefined) out.color = patch.color;
+  if (patch.auto !== undefined) out.auto = patch.auto;
+  if (patch.previousDescription === null) out.previousDescription = null;
   return automaticOut(patch, out);
 }
 
-const SOURCES: readonly LabelSource[] = ["ai", "rule", "sender", "detector", "classifier"];
+const SOURCES: readonly LabelSource[] = ["ai", "rule", "sender", "detector", "classifier", "similar"];
 
 export function toLabelLogEntry(raw: Raw): AssistLabelLogEntry {
   const source = asString(raw.source);
@@ -430,6 +490,11 @@ export function toSpamCheck(raw: Raw, emailId: string): AssistSpamCheck {
     confidence: Math.min(1, Math.max(0, confidence)),
     ...(modelVerdict ? { modelVerdict } : {}),
     reasons: asStrings(raw.reasons).slice(0, 6),
+    reasonDetails: (Array.isArray(raw.reasonDetails) ? raw.reasonDetails.slice(0, 6) : [])
+      .map(toSpamReason)
+      .filter((reason): reason is AssistSpamReason => reason !== null),
+    droppedReasons: asCount(raw.droppedReasons),
+    facts: toSpamFacts(raw.facts),
     signals: {
       authentication: {
         spf: asString(auth.spf),
@@ -451,6 +516,50 @@ export function toSpamCheck(raw: Raw, emailId: string): AssistSpamCheck {
       },
     },
   };
+}
+
+const BANDS: readonly AssistSpamBand[] = ["clean", "leaningClean", "unclear", "leaningSpam", "spam"];
+/** The most facts shown; the server sends a few dozen at most. */
+const MAX_SPAM_EVIDENCE = 40;
+
+function toSpamReason(value: unknown): AssistSpamReason | null {
+  const raw = asObject(value);
+  const text = raw ? asString(raw.text) : null;
+  if (!raw || !text) return null;
+  const fact = asString(raw.fact);
+  return {
+    text: clip(text, 500) ?? "",
+    quote: clip(asString(raw.quote), 300),
+    fact: fact !== null && /^F\d{1,3}$/.test(fact) ? fact : null,
+  };
+}
+
+function toSpamFacts(value: unknown): AssistSpamFacts | null {
+  const raw = asObject(value);
+  if (!raw) return null;
+  const band = BANDS.find((band) => band === raw.band);
+  const score = asNumber(raw.score);
+  if (!band || score === null) return null;
+  const evidence = (Array.isArray(raw.evidence) ? raw.evidence.slice(0, MAX_SPAM_EVIDENCE) : []).flatMap(
+    (entry): AssistSpamEvidence[] => {
+      const item = asObject(entry);
+      const code = item ? asString(item.code) : null;
+      const weight = item ? asNumber(item.weight) : null;
+      if (!item || !code || !/^[A-Z0-9_]{1,64}$/.test(code) || weight === null) return [];
+      return [
+        {
+          code,
+          tone: item.tone === "good" ? "good" : "bad",
+          weight,
+          detail: clip(asString(item.detail), 200),
+          phishing: item.phishing === true,
+        },
+      ];
+    },
+  );
+  const allowed = VERDICTS.filter((verdict) => asStrings(raw.allowed).includes(verdict));
+  const defaultVerdict = VERDICTS.find((verdict) => verdict === raw.defaultVerdict) ?? "suspicious";
+  return { score, band, evidence, allowed, defaultVerdict };
 }
 
 const LOCAL_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;

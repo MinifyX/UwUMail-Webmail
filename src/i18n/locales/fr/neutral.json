@@ -179,7 +179,8 @@
         "tooSoon": "Choisissez une heure au moins quelques minutes plus tard.",
         "tooFar": "Votre serveur garde les e-mails au plus {{days}} jours."
       }
-    }
+    },
+    "companyFooter": "Le serveur ajoute le pied de page de votre organisation à l'envoi."
   },
   "toast": {
     "sent": "Message envoyé",
@@ -316,6 +317,7 @@
     "signatureDefaultNew": "Nouveaux e-mails",
     "signatureDefaultReplies": "Réponses",
     "signatureSaved": "Signature enregistrée",
+    "signatureChangedElsewhere": "Les signatures ont été modifiées ailleurs entre-temps. Elles ont été rechargées ; vérifiez-les et enregistrez à nouveau.",
     "signatureUntitled": "Signature",
     "senderPictures": "Images des expéditeurs",
     "senderPicturesDesc": "Affiche les photos des personnes et les logos des entreprises au lieu des initiales, y compris depuis d'autres serveurs. Désactivé, vous voyez quand même ce que ce serveur a lui-même : les photos de vos contacts et les images des personnes d'ici.",
@@ -340,7 +342,24 @@
     "senderFonts": "Polices des expéditeurs",
     "senderFontsDesc": "Beaucoup d'e-mails HTML sont composés en Times ou dans une autre police à empattements. Les e-mails sans police propre reçoivent toujours la vôtre.",
     "senderFontsReplace": "Remplacer les polices à empattements par la mienne",
-    "senderFontsKeep": "Comme l'expéditeur les a choisies"
+    "senderFontsKeep": "Comme l'expéditeur les a choisies",
+    "signaturesPerDomainDesc": "Choisissez un domaine et rédigez une seule signature pour toutes vos adresses de ce domaine. Certaines adresses peuvent avoir la leur. Elle est conservée sur votre serveur de messagerie : le portail et vos autres applications utilisent la même.",
+    "signatureDomain": "Domaine",
+    "signatureDomainOption_one": "{{domain}} (1 adresse)",
+    "signatureDomainOption_many": "{{domain}} ({{count}} adresses)",
+    "signatureDomainOption_other": "{{domain}} ({{count}} adresses)",
+    "signatureAppliesTo": "S'applique à",
+    "signatureAllDomains": "Tous les domaines (y compris futurs)",
+    "signatureReplaces": "Remplace les signatures propres de {{domains}}.",
+    "signatureRemove": "Supprimer la signature",
+    "signatureFromTemplate": "Voici le modèle de votre organisation. Adaptez-le et enregistrez-le comme le vôtre.",
+    "signatureFromAllDomains": "Ce domaine utilise votre signature pour tous les domaines.",
+    "signatureCompanyFooter": "À l'envoi depuis ce domaine, le serveur ajoute automatiquement ce pied de page :",
+    "signatureExceptions": "Signature différente pour certaines adresses ({{count}})",
+    "signatureOwn": "Signature propre",
+    "signatureFollowsDomain": "Utilise la signature du domaine",
+    "signatureOverride": "Signature propre pour cette adresse",
+    "signatureBackToDomain": "Utiliser la signature du domaine"
   },
   "theme": {
     "system": "Système",
@@ -1382,7 +1401,7 @@
         "fairly": "plutôt sûr",
         "sure": "sûr"
       },
-      "modelVerdict": "Le modèle a dit « {{verdict}} », mais cela contredit les vérifications du serveur (expéditeur confirmé, filtre anti-spam calme, déjà plusieurs échanges).",
+      "modelVerdict": "Le modèle a dit « {{verdict}} », mais les faits ne le permettent pas : le verdict reste dans ce qu’ils autorisent.",
       "serverTitle": "Ce que le serveur a constaté",
       "auth": "Vérification de l'expéditeur",
       "authNone": "Non vérifié : l'e-mail ne provient pas d'un autre serveur.",
@@ -1412,23 +1431,75 @@
       "contactsLabel": "Carnet d'adresses",
       "inContacts": "Dans votre carnet d'adresses",
       "notInContacts": "Pas dans votre carnet d'adresses",
-      "firstSeen": "Premier e-mail"
+      "firstSeen": "Premier e-mail",
+      "factsTitle": "Ce que disent les faits",
+      "factsScore": "{{score}} points",
+      "band": {
+        "clean": "clairement sain",
+        "leaningClean": "plutôt sain",
+        "unclear": "incertain",
+        "leaningSpam": "plutôt spam",
+        "spam": "clairement spam"
+      },
+      "reasonQuote": "Dans le message : « {{quote}} »",
+      "reasonFact": "D’après les vérifications du serveur",
+      "modelWordsTitle": "Avec les propres mots du modèle",
+      "modelWordsHint": "Ces raisons ont été rédigées par le modèle lui-même et personne ne les a vérifiées. Fiez-vous aux faits du serveur.",
+      "dropped_one": "{{count}} raison du modèle a été écartée, car rien dans le message ne l’étaye.",
+      "dropped_many": "{{count}} raisons du modèle ont été écartées, car rien dans le message ne les étaye.",
+      "dropped_other": "{{count}} raisons du modèle ont été écartées, car rien dans le message ne les étaye.",
+      "evidence": {
+        "FILTER_WANTED": "Le filtre anti-spam n’a rien trouvé d’inquiétant",
+        "FILTER_OVER_LIMIT": "Au-delà de la limite du filtre anti-spam",
+        "FILTER_SOME_POINTS": "Quelques points du filtre anti-spam",
+        "DMARC_PASS": "DMARC réussi : vient vraiment de ce domaine",
+        "DMARC_FAIL": "DMARC échoué : l’expéditeur est peut-être falsifié",
+        "SPF_DKIM_PASS": "SPF ou DKIM réussi",
+        "SPF_DKIM_FAIL": "SPF ou DKIM échoué",
+        "NO_AUTHENTICATION": "Aucune authentification",
+        "WRITTEN_TO": "Tu as déjà écrit à cet expéditeur",
+        "IN_CONTACTS": "Dans ton carnet d’adresses",
+        "KNOWN_SENDER": "T’a déjà écrit",
+        "EARLIER_IN_JUNK": "Des messages précédents de cet expéditeur ont fini en spam",
+        "FIRST_MAIL": "Premier message de cet expéditeur",
+        "IN_JUNK": "Se trouve dans les spams",
+        "PAYMENT_REQUEST": "Demande de l’argent ou des données de paiement",
+        "URGENCY": "Pousse à se dépêcher",
+        "LOOKALIKE_BRAND_FROM": "Le domaine imite une marque connue",
+        "BRAND_IN_FROM_DOMAIN": "Le domaine porte un nom de marque",
+        "LOOKALIKE_CONTACT_FROM": "Le domaine imite un de tes contacts",
+        "FROM_NAME_SPOOFS_ADDRESS": "Le nom affiché montre une autre adresse",
+        "FROM_NAME_SHOWS_DOMAIN": "Le nom affiché montre un autre domaine",
+        "BRAND_IN_FROM_NAME": "Nom de marque dans le nom affiché, envoyé d’ailleurs",
+        "REPLY_TO_OTHER_SITE": "Les réponses vont vers un autre site",
+        "LOOKALIKE_BRAND_LINK": "Le lien imite une marque connue",
+        "BRAND_LINK_TEXT": "Le texte du lien cite une marque, le lien va ailleurs",
+        "TRACKED_LINK_TEXT": "Texte et cible du lien diffèrent (lien de suivi)",
+        "PHISHING_LINK_TEXT": "Le texte du lien montre une autre adresse que la cible",
+        "BRAND_IN_SUBJECT": "Nom de marque dans l’objet avec un avertissement",
+        "CREDENTIAL_REQUEST": "Demande des identifiants hors du site de la marque",
+        "LOOKALIKE_LINK": "Lien vers un domaine sosie",
+        "LINK_TO_IP": "Lien vers une adresse IP nue",
+        "HTML_ATTACHMENT": "Pièce jointe HTML (souvent une fausse page de connexion)",
+        "MALWARE_LINK": "Lien vers un site de logiciels malveillants connu",
+        "SPAMHAUS_DBL_MALICIOUS": "Lien vers un domaine répertorié comme malveillant"
+      }
     },
     "labels": {
       "title": "Étiquettes",
       "description": "Vos propres mots pour classer les e-mails. Les étiquettes apparaissent sur les e-mails ici et dans d'autres apps de messagerie (sous forme de mots-clés). Le modèle choisit uniquement parmi vos étiquettes ; il ne déplace, ne supprime et ne répond jamais à aucun e-mail.",
       "auto": "Étiqueter automatiquement les nouveaux e-mails",
-      "autoDesc": "Les e-mails entrants reçoivent les étiquettes qui leur correspondent. Pour cela, le modèle lit les noms et descriptions de vos étiquettes ainsi que le début de chaque e-mail.",
+      "autoDesc": "Les e-mails entrants reçoivent l'étiquette qui correspond le mieux, parfois une deuxième, et aucune quand le modèle n'est pas sûr. Pour cela, le modèle lit les noms et descriptions de vos étiquettes ainsi que le début de chaque e-mail.",
       "autoNoLabels": "Ajoutez d'abord quelques étiquettes ; les e-mails entrants recevront ensuite celles qui leur correspondent.",
       "noProvider": "Aucun modèle ne peut attribuer d'étiquettes pour le moment, donc rien n'est étiqueté.",
       "new": "Nouvelle étiquette",
       "newTitle": "Nouvelle étiquette",
       "editTitle": "Modifier « {{name}} »",
       "name": "Nom",
-      "namePlaceholder": "p. ex. Factures",
+      "namePlaceholder": "p. ex. Voyages",
       "descriptionField": "Ce qui va ici",
       "descriptionHint": "Le modèle s'en sert pour décider. Quelques mots ou exemples suffisent.",
-      "descriptionPlaceholder": "p. ex. Factures, reçus et confirmations de paiement",
+      "descriptionPlaceholder": "p. ex. Vols, hôtels et billets de train",
       "color": "Couleur",
       "noColor": "Aucune couleur",
       "create": "Créer l'étiquette",
@@ -1445,14 +1516,6 @@
       "full_one": "Vous avez atteint la limite de {{count}} étiquette.",
       "full_many": "Vous avez atteint la limite de {{count}} étiquettes.",
       "full_other": "Vous avez atteint la limite de {{count}} étiquettes.",
-      "startersTitle": "Commencer avec quelques suggestions ?",
-      "startersMore": "Plus de suggestions",
-      "addStarters_one": "Ajouter {{count}} étiquette",
-      "addStarters_many": "Ajouter {{count}} étiquettes",
-      "addStarters_other": "Ajouter {{count}} étiquettes",
-      "startersAdded_one": "{{count}} étiquette ajoutée",
-      "startersAdded_many": "{{count}} étiquettes ajoutées",
-      "startersAdded_other": "{{count}} étiquettes ajoutées",
       "applyDesc_one": "Les e-mails arrivés avant les étiquettes restent tels quels. Laissez le modèle examiner maintenant votre e-mail le plus récent de la boîte de réception.",
       "applyDesc_many": "Les e-mails arrivés avant les étiquettes restent tels quels. Laissez le modèle examiner maintenant vos {{count}} e-mails les plus récents de la boîte de réception.",
       "applyDesc_other": "Les e-mails arrivés avant les étiquettes restent tels quels. Laissez le modèle examiner maintenant vos {{count}} e-mails les plus récents de la boîte de réception.",
@@ -1479,32 +1542,6 @@
         "nameTaken": "Vous avez déjà une étiquette portant ce nom.",
         "descriptionTooLong": "{{max}} caractères au maximum.",
         "control": "Les sauts de ligne et les caractères de contrôle ne sont pas acceptés ici."
-      }
-    },
-    "starter": {
-      "invoices": {
-        "name": "Factures",
-        "description": "Factures, reçus, confirmations de paiement et relances"
-      },
-      "newsletters": {
-        "name": "Newsletters",
-        "description": "Newsletters, offres et publicités de boutiques et de services"
-      },
-      "orders": {
-        "name": "Commandes et livraisons",
-        "description": "Confirmations de commande, avis d'expédition et suivis de livraison"
-      },
-      "travel": {
-        "name": "Voyages",
-        "description": "Réservations, billets, cartes d'embarquement et confirmations d'hôtel"
-      },
-      "appointments": {
-        "name": "Rendez-vous",
-        "description": "Rendez-vous, invitations, réservations et rappels de dates"
-      },
-      "personal": {
-        "name": "Personnel",
-        "description": "E-mails d'amis et de famille écrits par une personne, pas envoyés en masse"
       }
     },
     "settings": {
@@ -1785,14 +1822,19 @@
       "rule": "Posée par les conditions de l'étiquette",
       "sender": "Posée à cause de l'expéditeur",
       "detector": "Posée par la détection intégrée",
-      "classifier": "Posée par le classificateur qui apprend"
+      "classifier": "Posée par le classificateur qui apprend",
+      "similar": "Comme vos e-mails avec cette étiquette"
     },
     "detector": {
       "none": "Aucune",
       "invoice": "Factures",
       "appointment": "Rendez-vous",
       "newsletter": "Newsletters",
-      "shipping": "Livraisons"
+      "shipping": "Livraisons",
+      "account": "Compte & sécurité",
+      "personal": "E-mails personnels",
+      "work": "Travail",
+      "advertising": "Publicité"
     },
     "condition": {
       "from": "Expéditeur (adresse ou domaine)",
@@ -1812,11 +1854,11 @@
       "autoDescription": "Les étiquettes peuvent se poser sur les nouveaux e-mails sans aucune IA : par leurs propres conditions, une détection intégrée, les expéditeurs que vous avez déjà étiquetés et un petit classificateur qui apprend de vous. Rien ne quitte le serveur pour cela.",
       "auto": "Étiqueter les nouveaux e-mails tout seul, sans IA",
       "autoDesc": "Utilise ce qui est réglé pour chaque étiquette ci-dessous.",
-      "aiOn": "L'assistant étiquette aussi les nouveaux e-mails et juge les étiquettes qui ne sont pas encore posées.",
+      "aiOn": "L'assistant aide aussi pour les nouveaux e-mails là où les étiquettes sans IA ne sont pas sûres. Un e-mail reçoit au plus deux étiquettes, et aucune en cas de doute.",
       "aiOff": "L'assistant n'étiquette pas les nouveaux e-mails.",
       "toAi": "Réglages de l'IA",
       "manage": "Gérer les étiquettes",
-      "listTitle": "Vos étiquettes",
+      "listTitle": "Vos propres étiquettes",
       "mailCount_one": "{{count}} e-mail",
       "mailCount_other": "{{count}} e-mails",
       "mailCount_many": "{{count}} e-mails",
@@ -1850,7 +1892,9 @@
       "examplesReady_one": "A appris de {{count}} exemple : actif.",
       "examplesReady_other": "A appris de {{count}} exemples : actif.",
       "examplesReady_many": "A appris de {{count}} exemples : actif.",
-      "listDescription": "Nom, couleur et ce qui pose chaque étiquette toute seule sur les e-mails."
+      "listDescription": "Nom, couleur et ce qui pose chaque étiquette toute seule sur les e-mails.",
+      "autoLabel": "Pose automatique",
+      "autoLabelDesc": "Désactivé : l'étiquette n'est posée que si vous la posez à la main. Plus rien ne la pose automatiquement, ni ses conditions, ni la détection, ni les expéditeurs appris, ni les e-mails similaires, ni l'assistant."
     },
     "log": {
       "title": "Posées automatiquement récemment",
@@ -1880,7 +1924,53 @@
         "text": "le texte contient « {{value}} »",
         "attachmentYes": "a une pièce jointe",
         "attachmentNo": "n’a pas de pièce jointe"
+      },
+      "similar": "Comme {{count}} de vos e-mails avec cette étiquette ({{percent}} de ressemblance)",
+      "invoiceNumber": "Ressemble à une facture : numéro de facture {{number}}, {{amount}}",
+      "accountWord": "Concerne votre compte : « {{word}} »",
+      "accountCode": "Concerne votre compte : un code à usage unique",
+      "personalKnown": "Semble personnel : écrit par une personne que vous connaissez",
+      "personalPrivate": "Semble personnel : écrit par une personne depuis une adresse privée",
+      "workColleague": "Semble professionnel : écrit par un collègue de votre propre domaine",
+      "workContact": "Semble professionnel : écrit par un contact professionnel que vous connaissez",
+      "advertising": "Ressemble à de la publicité : {{words}}"
+    },
+    "base": {
+      "title": "Étiquettes de base",
+      "description": "Huit étiquettes fixes, chacune avec une définition précise, pour que les e-mails reçoivent toujours la même étiquette. Vous pouvez changer leur nom et leur couleur, et choisir pour chacune si elle est posée automatiquement.",
+      "showDefinition": "Afficher la définition",
+      "hideDefinition": "Masquer la définition",
+      "auto": "Poser « {{name}} » automatiquement",
+      "autoOn": "posée automatiquement",
+      "autoOff": "seulement à la main",
+      "missingTitle": "Étiquettes de base supprimées",
+      "missingDescription": "Rétablissez une étiquette de base avec sa définition. Les e-mails qui l'avaient avant ne la récupèrent pas.",
+      "restore": "Rétablir {{name}}",
+      "restored": "L'étiquette de base « {{name}} » est de retour",
+      "fixedDefinition": "La définition d'une étiquette de base est fixe : l'étiquetage s'y tient, à la main comme automatiquement.",
+      "detectorBuiltIn": "Possède déjà sa propre détection intégrée.",
+      "previousDescription": "Votre ancienne description :",
+      "previousHint": "C’est ainsi que vous décriviez ce libellé avant que le libellé de base ne le reprenne. Le modèle la reçoit toujours comme indication, à côté de la définition du libellé de base, qui prime. Oubliez-la pour ne plus l’envoyer.",
+      "forgetPrevious": "Oublier",
+      "previousForgotten": "L’ancienne description n’est plus envoyée.",
+      "usePrevious": "En faire un libellé personnel",
+      "names": {
+        "invoice": "Facture",
+        "shipping": "Livraison",
+        "appointment": "Rendez-vous",
+        "newsletter": "Lettre d'info",
+        "account": "Compte & sécurité",
+        "personal": "Personnel",
+        "work": "Travail",
+        "advertising": "Publicité"
       }
+    },
+    "overlap": {
+      "title": "Recoupe vos étiquettes",
+      "name": "« {{name}} » porte déjà ce nom.",
+      "meaning": "Signifie la même chose que l'étiquette de base « {{name}} ».",
+      "words": "Mots très proches de « {{name}} » : {{words}}",
+      "hint": "Vous pouvez quand même enregistrer, mais les e-mails risquent alors de recevoir la mauvaise des deux."
     }
   },
   "font": {

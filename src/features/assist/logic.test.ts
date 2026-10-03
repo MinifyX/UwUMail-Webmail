@@ -5,9 +5,7 @@ import {
   labelProblems,
   labelsOff,
   labelsOn,
-  missingStarters,
   setByAssistant,
-  STARTER_LABELS,
   threadKeywords,
   LABEL_DEFAULTS,
 } from "./labels";
@@ -81,29 +79,6 @@ describe("labels on mail", () => {
   });
 });
 
-describe("the starter labels", () => {
-  const text = (id: string) => ({ name: `${id[0]!.toUpperCase()}${id.slice(1)}`, description: `About ${id}` });
-
-  it("are six, each with a colour", () => {
-    expect(STARTER_LABELS.map((starter) => starter.id)).toEqual([
-      "invoices",
-      "newsletters",
-      "orders",
-      "travel",
-      "appointments",
-      "personal",
-    ]);
-    expect(missingStarters([], text).every((input) => /^#[0-9a-f]{6}$/.test(input.color ?? ""))).toBe(true);
-  });
-
-  it("leave out what is there already, ignoring case", () => {
-    const names = missingStarters([label("g9", " TRAVEL ", "travel"), label("g8", "invoices", "invoices")], text).map(
-      (input) => input.name,
-    );
-    expect(names).toEqual(["Newsletters", "Orders", "Appointments", "Personal"]);
-  });
-});
-
 describe("the label form", () => {
   it("needs a name that is short enough and not taken", () => {
     expect(labelProblems({ name: " ", description: "", color: null }, LABELS)).toEqual({ name: "nameMissing" });
@@ -131,6 +106,15 @@ describe("the label form", () => {
       name: "Bills",
       color: null,
     });
+    expect(labelPatch(LABELS[0]!, { name: "Rechnungen", description: "", color: "#f59e0b", auto: false })).toEqual({
+      auto: false,
+    });
+  });
+
+  it("never sends or checks a base label's fixed definition", () => {
+    const base = { ...label("g7", "Rechnung", "rechnung"), base: "invoice" as const, description: "d".repeat(400) };
+    expect(labelProblems({ name: "Rechnung", description: base.description, color: null }, [base], "g7")).toEqual({});
+    expect(labelPatch(base, { name: "Belege", description: "changed", color: null })).toEqual({ name: "Belege" });
   });
 });
 

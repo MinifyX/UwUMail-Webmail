@@ -32,7 +32,15 @@ import { useT } from "@/i18n";
 import { escapeHtml, formatSize } from "@/lib/format";
 import { modKey } from "@/lib/platform";
 import { htmlToPlainText, isSafeLinkTarget, quotableHtml } from "@/lib/safeHtml";
-import { useAccounts, useIdentities, useMaxSendDelay, useMessageActions, useSignatures } from "@/lib/queries";
+import {
+  useAccounts,
+  useDomainSignatures,
+  useIdentities,
+  useMaxSendDelay,
+  useMessageActions,
+  useSignatures,
+} from "@/lib/queries";
+import { companyFooterFor } from "@/lib/domainSignatures";
 import { toast } from "@/state/toasts";
 import { useUi, type ComposeRequest } from "@/state/ui";
 import { initialDraft, replyFrom, type DraftState } from "./draft";
@@ -165,6 +173,9 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   // Until someone picks a sender, a reply comes from the address it was sent to (also once the addresses load).
   const fromEmail = draft.fromEmail ?? (request.source ? replyFrom(request.source, identities ?? []) : "");
   const senderEmail = emailOf(accountId, fromEmail);
+  // The server appends the domain's mandatory company footer on sending; the composer only says so.
+  const { data: domainSignatures } = useDomainSignatures();
+  const companyFooter = companyFooterFor(domainSignatures, senderEmail);
   useEffect(() => {
     if (signatureAdded.current || request.restore || !signatures || !identities || dirty.current) return;
     signatureAdded.current = true;
@@ -603,6 +614,12 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             {senders.map(senderOption)}
           </select>
         </div>
+      )}
+
+      {companyFooter && (
+        <p className="border-b border-hairline px-4 py-1.5 text-[12px] text-muted" data-testid="company-footer-note">
+          {t("compose.companyFooter")}
+        </p>
       )}
 
       <div className="relative">

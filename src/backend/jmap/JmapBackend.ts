@@ -12,6 +12,8 @@ import { deviceTimeZone } from "@/lib/calendarDates";
 import { newestFirst } from "@/lib/maskedAddresses";
 import { textToHtml } from "@/lib/format";
 import { cleanSignatureHtml } from "@/lib/signatures";
+import type { DomainSignatureChange, DomainSignatureOverview, SignatureText } from "@/lib/domainSignatures";
+import { SIGNATURES, overviewFrom } from "./domainSignatures";
 import { cleanFilename } from "@/lib/filename";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
@@ -29,7 +31,10 @@ import type {
   AssistFeatures,
   AssistLabel,
   AssistLabelInput,
+  AssistLabelPatch,
   AssistLabelLogEntry,
+  LabelBase,
+  LabelOverlap,
   LabelSettings,
   LabelSuggestions,
   AssistModels,
@@ -148,6 +153,7 @@ import {
   whenSessionChanges,
   one,
   imageSizesPath,
+  JmapMethodError,
   remoteImagePath,
   responseOf,
   pictureKind,
@@ -184,8 +190,11 @@ import {
   assistOptionsFrom,
   assistSetError,
   assistSettingsUpdate,
+  baseLabelCreate,
   labelCreate,
   labelUpdate,
+  OVERLAP_LIMITS,
+  toLabelOverlaps,
   providerCreate,
   providerUpdate,
   streamAssist,
@@ -746,6 +755,35 @@ export class JmapBackend implements Backend {
     const existing = signaturesFrom((await loadUserSettings()).values);
     await patchUserSettings(signaturePatch(saved, existing));
     return saved;
+  }
+
+  async domainSignatures(): Promise<DomainSignatureOverview | null> {
+    await this.start();
+    if (!supports(SIGNATURES)) return null;
+    return overviewFrom(await one<Record<string, unknown>>("SignatureSettings/get", {}, [CORE, SIGNATURES]));
+  }
+
+  async saveDomainSignatures(change: DomainSignatureChange): Promise<DomainSignatureOverview> {
+    await this.start();
+    if (!supports(SIGNATURES)) throw new BackendError("not_supported", "This server has no signatures per domain.");
+    const clean = (signature: SignatureText | null) =>
+      signature && { text: signature.text, html: signature.html.trim() ? cleanSignatureHtml(signature.html) : "" };
+    const mapped = (entries: Record<string, SignatureText | null> | undefined) =>
+      Object.fromEntries(Object.entries(entries ?? {}).map(([key, signature]) => [key, clean(signature)]));
+    const args: Record<string, unknown> = { domains: mapped(change.domains), identities: mapped(change.identities) };
+    // Two tabs or devices must not overwrite each other unseen (webmail review WF-3).
+    if (change.ifInState !== undefined) args.ifInState = change.ifInState;
+    try {
+      await one("SignatureSettings/set", args, [CORE, SIGNATURES]);
+    } catch (error) {
+      if (error instanceof JmapMethodError && error.type === "stateMismatch") {
+        throw new BackendError("state_mismatch", "The signatures were changed elsewhere.");
+      }
+      throw error;
+    }
+    // The addresses' effective signatures changed with it.
+    this.forgetIdentities();
+    return (await this.domainSignatures())!;
   }
 
   async deleteSignature(signatureId: string): Promise<void> {
@@ -2505,7 +2543,7 @@ export class JmapBackend implements Backend {
     return toAssistLabel({ ...create, ...created });
   }
 
-  async updateAssistLabel(id: string, patch: Partial<AssistLabelInput>): Promise<void> {
+  async updateAssistLabel(id: string, patch: AssistLabelPatch): Promise<void> {
     await this.labelSet({ update: { [id]: labelUpdate(patch) } });
   }
 
@@ -2513,6 +2551,30 @@ export class JmapBackend implements Backend {
     await this.labelSet({ destroy: [id] });
     // Its keyword went off every mail.
     this.emit({ type: "mail:changed", accountId: this.accountId });
+  }
+
+  async restoreBaseLabel(base: LabelBase, auto?: boolean): Promise<AssistLabel> {
+    const created = await this.labelSet({ create: { new: baseLabelCreate(base, auto) } });
+    if (typeof created.id !== "string") throw new BackendError("internal", "The server didn't make the label.");
+    return toAssistLabel({ base, auto: auto ?? true, ...created });
+  }
+
+  async checkLabelOverlap(name: string, description: string, id?: string): Promise<LabelOverlap[]> {
+    const trimmed = name.trim();
+    if (!trimmed || [...trimmed].length > OVERLAP_LIMITS.name || [...description].length > OVERLAP_LIMITS.description)
+      return [];
+    try {
+      const answer = await this.assistCall("AssistLabel/checkOverlap", {
+        name: trimmed,
+        description: description.trim(),
+        ...(id ? { id } : {}),
+      });
+      return toLabelOverlaps(answer);
+    } catch (error) {
+      // Servers before base labels don't know the check: no warning then.
+      if (error instanceof AssistError && error.type === "unknownMethod") return [];
+      throw error;
+    }
   }
 
   async assistLabelLog(emailIds: string[] | null, limit = 100): Promise<AssistLabelLogEntry[]> {

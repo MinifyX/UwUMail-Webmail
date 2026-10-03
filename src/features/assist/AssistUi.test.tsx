@@ -13,6 +13,8 @@ import type {
   AssistProviderInput,
   AssistSpamCheck,
   AssistStreamHandlers,
+  LabelBase,
+  LabelOverlap,
   Message,
 } from "@/backend/types";
 import { i18n } from "@/i18n";
@@ -35,12 +37,14 @@ const OPTIONS: AssistOptions = {
   maxLabels: 30,
   maxInstructionChars: 2000,
   maxTextChars: 20000,
+  baseLabels: [],
 };
 
 const ANSWER = { providerId: "q1", providerName: "Mistral (Server)", model: "mistral-small-latest", usage: null };
 
 let labels: AssistLabel[] = [];
 let log: AssistLabelLogEntry[] = [];
+let overlaps: LabelOverlap[] = [];
 /** How the next compose answer comes: streamed pieces, then the result, or a failure. */
 let compose: (request: AssistComposeRequest, handlers: AssistStreamHandlers) => Promise<unknown>;
 
@@ -78,6 +82,15 @@ const fake = {
     labels = [...labels, made];
     return made;
   }),
+  updateAssistLabel: vi.fn(async (id: string, patch: Partial<AssistLabelInput>) => {
+    labels = labels.map((label) => (label.id === id ? { ...label, ...patch } : label));
+  }),
+  restoreBaseLabel: vi.fn(async (base: LabelBase) => {
+    const made = { ...LABEL_DEFAULTS, id: `g${labels.length + 1}`, name: base, keyword: base, description: "", base };
+    labels = [...labels, { ...made, color: null }];
+    return { ...made, color: null };
+  }),
+  checkLabelOverlap: vi.fn(async () => overlaps),
   assistLabelLog: vi.fn(async () => log),
   undoAssistLabels: vi.fn(async () => {}),
   setFlags: vi.fn(async () => {}),
@@ -87,6 +100,25 @@ const fake = {
     verdict: "phishing",
     confidence: 0.9,
     reasons: ["Asks to confirm a password through a link"],
+    reasonDetails: [{ text: "Asks to confirm a password through a link", quote: "confirm your password", fact: null }],
+    droppedReasons: 1,
+    facts: {
+      score: 6.5,
+      band: "leaningSpam",
+      evidence: [
+        { code: "DMARC_FAIL", tone: "bad", weight: 2, detail: "bank.example", phishing: false },
+        {
+          code: "LOOKALIKE_BRAND_LINK",
+          tone: "bad",
+          weight: 3,
+          detail: "paypa1.example looks like PayPal",
+          phishing: true,
+        },
+        { code: "SOMETHING_NEW", tone: "good", weight: -0.5, detail: null, phishing: false },
+      ],
+      allowed: ["suspicious", "spam", "phishing"],
+      defaultVerdict: "suspicious",
+    },
     signals: {
       authentication: { spf: "fail", dkim: null, dmarc: "fail", fromDomain: "bank.example" },
       spamScore: 4.2,
@@ -177,6 +209,7 @@ describe("the assistant's UI", () => {
     vi.clearAllMocks();
     labels = [];
     log = [];
+    overlaps = [];
     compose = async (_request, handlers) => {
       handlers.onDelta?.("Hi Leni, ");
       handlers.onDelta?.("Friday works for me.");
@@ -343,18 +376,119 @@ describe("the assistant's UI", () => {
     expect(await screen.findByText("Created and applied")).toBeTruthy();
   });
 
-  it("adds the suggested starter labels in one click", async () => {
+  it("lists the base labels apart, switched one by one, with their fixed definition", async () => {
+    const base = (id: string, name: string, which: LabelBase, auto = true): AssistLabel => ({
+      ...LABEL_DEFAULTS,
+      id,
+      name,
+      keyword: name.toLowerCase(),
+      description: `${name} definition`,
+      color: null,
+      base: which,
+      auto,
+    });
+    labels = [
+      base("g1", "Invoice", "invoice"),
+      base("g2", "Personal", "personal", false),
+      { ...LABEL_DEFAULTS, id: "g3", name: "Travel", keyword: "travel", description: "Trips", color: null },
+    ];
     renderWith(<LabelSettings options={OPTIONS} />);
-    fireEvent.click(await screen.findByRole("button", { name: "Add 6 labels" }));
-    await waitFor(() => expect(fake.createAssistLabel).toHaveBeenCalledTimes(6));
-    expect(fake.createAssistLabel.mock.calls.map(([input]) => input.name)).toEqual([
-      "Invoices",
-      "Newsletters",
-      "Orders & shipping",
-      "Travel",
-      "Appointments",
-      "Personal",
-    ]);
+    expect(await screen.findByText("Base labels")).toBeTruthy();
+    expect(screen.getByText("Your own labels")).toBeTruthy();
+    // The definition is folded away until asked for.
+    expect(screen.queryByText("Invoice definition")).toBeNull();
+    fireEvent.click(screen.getAllByRole("button", { name: "Show definition" })[0]!);
+    expect(screen.getByText("Invoice definition")).toBeTruthy();
+    const personal = screen.getByRole("switch", { name: "Put “Personal” on by itself" });
+    expect(personal.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(screen.getByRole("switch", { name: "Put “Invoice” on by itself" }));
+    await waitFor(() => expect(fake.updateAssistLabel).toHaveBeenCalledWith("g1", { auto: false }));
+    // Six were deleted: each can come back.
+    fireEvent.click(screen.getByRole("button", { name: "Restore Shipping" }));
+    await waitFor(() => expect(fake.restoreBaseLabel).toHaveBeenCalledWith("shipping"));
+    expect(screen.getByRole("button", { name: "Restore Promotions" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Restore Invoice" })).toBeNull();
+  });
+
+  it("edits a base label's name but never its definition", async () => {
+    labels = [
+      {
+        ...LABEL_DEFAULTS,
+        id: "g1",
+        name: "Invoice",
+        keyword: "invoice",
+        description: "Fixed definition",
+        color: null,
+        base: "invoice",
+      },
+    ];
+    renderWith(<LabelSettings options={OPTIONS} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Invoice" }));
+    expect(screen.queryByLabelText("What belongs here")).toBeNull();
+    expect(screen.getByText("Fixed definition")).toBeTruthy();
+    expect(screen.queryByLabelText("Built-in detector")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Bills" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(fake.updateAssistLabel).toHaveBeenCalledWith("g1", { name: "Bills" }));
+    expect(fake.checkLabelOverlap).not.toHaveBeenCalled();
+  });
+
+  it("shows an adopted base label's earlier description and starts a new label with it", async () => {
+    labels = [
+      {
+        ...LABEL_DEFAULTS,
+        id: "g1",
+        name: "Newsletter",
+        keyword: "newsletter",
+        description: "Fixed definition",
+        color: null,
+        base: "newsletter",
+        previousDescription: "Club mail I signed up for",
+      },
+    ];
+    renderWith(<LabelSettings options={OPTIONS} />);
+    expect(await screen.findByText("Your earlier description:")).toBeTruthy();
+    expect(screen.getByText("Club mail I signed up for")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Use it for a new label" }));
+    expect((screen.getByLabelText("What belongs here") as HTMLTextAreaElement).value).toBe("Club mail I signed up for");
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Clubs" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create label" }));
+    await waitFor(() =>
+      expect(fake.createAssistLabel).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "Clubs", description: "Club mail I signed up for" }),
+      ),
+    );
+    // It can be forgotten, so the model no longer gets it as a hint (WF-1).
+    expect(screen.getByText(/The model still gets it as a hint/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Forget" }));
+    await waitFor(() => expect(fake.updateAssistLabel).toHaveBeenCalledWith("g1", { previousDescription: null }));
+    // Without room for another own label, the earlier description is only shown, and can still be forgotten.
+    cleanup();
+    labels = labels
+      .filter((label) => label.base)
+      .map((label) => ({ ...label, previousDescription: "Club mail I signed up for" }));
+    renderWith(<LabelSettings options={{ ...OPTIONS, maxLabels: 0 }} />);
+    expect(await screen.findByText("Club mail I signed up for")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Use it for a new label" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Forget" })).toBeTruthy();
+  });
+
+  it("warns of overlapping labels while typing, but still saves", async () => {
+    overlaps = [
+      { id: "g1", name: "Invoice", base: "invoice", kind: "meaning", words: [] },
+      { id: "g2", name: "Phone", base: null, kind: "words", words: ["mobile", "contract"] },
+    ];
+    renderWith(<LabelSettings options={OPTIONS} />);
+    fireEvent.click(await screen.findByRole("button", { name: "New label" }));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Phone bills" } });
+    fireEvent.change(screen.getByLabelText("What belongs here"), { target: { value: "mobile contract" } });
+    expect(await screen.findByText("Means the same as the base label “Invoice”.")).toBeTruthy();
+    expect(screen.getByText("Very similar words to “Phone”: mobile, contract")).toBeTruthy();
+    // Asked once, after typing rested.
+    expect(fake.checkLabelOverlap).toHaveBeenCalledTimes(1);
+    expect(fake.checkLabelOverlap).toHaveBeenCalledWith("Phone bills", "mobile contract", undefined);
+    fireEvent.click(screen.getByRole("button", { name: "Create label" }));
+    await waitFor(() => expect(fake.createAssistLabel).toHaveBeenCalled());
   });
 
   it("checks a new label before saving it", async () => {
@@ -442,7 +576,24 @@ describe("the assistant's UI", () => {
     expect(screen.getByText("sure")).toBeTruthy();
     expect(screen.queryByText(/%/)).toBeNull();
     expect(screen.queryByText(/The model said/)).toBeNull();
-    expect(screen.getByText("Asks to confirm a password through a link")).toBeTruthy();
+    // The reasons are the model's own words, in their own list apart from the facts.
+    const reasons = within(screen.getByRole("list", { name: "In the model's own words" }));
+    expect(reasons.getByText("Asks to confirm a password through a link")).toBeTruthy();
+    // Mail text is isolated, so its direction marks can't reorder the line (WF-2).
+    const quote = reasons.getByText("confirm your password");
+    expect(quote.tagName).toBe("BDI");
+    expect(quote.parentElement!.textContent).toBe("In the mail: “confirm your password”");
+    expect(screen.getByText("paypa1.example looks like PayPal").tagName).toBe("BDI");
+    expect(screen.getByText(/written by the model itself and not checked/)).toBeTruthy();
+    expect(screen.getByText(/1 reason of the model was left out/)).toBeTruthy();
+    // The facts, strongest first, with codes the app does not know yet shown as they are.
+    expect(screen.getByText(/rather spam/)).toBeTruthy();
+    const facts = within(screen.getByRole("list", { name: "What the facts say" })).getAllByRole("listitem");
+    expect(facts.map((item) => item.textContent)).toEqual([
+      "Link imitates a known brandpaypa1.example looks like PayPal+3.0",
+      "DMARC failed: the sender may be forged" + "bank.example" + "+2.0",
+      "SOMETHING_NEW-0.5",
+    ]);
     expect(screen.getByText("4.2 of 5.0 points")).toBeTruthy();
     expect(screen.getByText("First mail from this address")).toBeTruthy();
     expect(screen.getByText("Not in your address book")).toBeTruthy();
@@ -451,7 +602,7 @@ describe("the assistant's UI", () => {
     expect(useAssistReader.getState().spamChecks.e1).toBeUndefined();
   });
 
-  it("says how sure the model is in words and when the server lowered its verdict", async () => {
+  it("says how sure the model is in words and when the facts moved its verdict", async () => {
     const result = await fake.assistSpamCheck("e1");
     fake.assistSpamCheck.mockResolvedValueOnce({
       ...result,
@@ -466,6 +617,6 @@ describe("the assistant's UI", () => {
     expect(screen.getByRole("meter", { name: "How sure the model is" }).getAttribute("aria-valuetext")).toBe(
       "fairly sure",
     );
-    expect(screen.getByText(/The model said “Spam”, but that contradicts the server’s checks/)).toBeTruthy();
+    expect(screen.getByText(/The model said “Spam”, but the facts don’t allow that/)).toBeTruthy();
   });
 });

@@ -175,7 +175,8 @@
         "tooSoon": "Kies een tijd die minstens een paar minuten later is.",
         "tooFar": "Je server houdt mail hoogstens {{days}} dagen vast."
       }
-    }
+    },
+    "companyFooter": "De server voegt bij verzenden de voettekst van je organisatie toe."
   },
   "toast": {
     "sent": "Bericht verzonden",
@@ -308,6 +309,7 @@
     "signatureDefaultNew": "Nieuwe mail",
     "signatureDefaultReplies": "Antwoorden",
     "signatureSaved": "Handtekening opgeslagen",
+    "signatureChangedElsewhere": "De handtekeningen zijn intussen elders gewijzigd. Ze zijn opnieuw geladen; controleer ze en sla opnieuw op.",
     "signatureUntitled": "Handtekening",
     "senderPictures": "Afzenderafbeeldingen",
     "senderPicturesDesc": "Toont foto's van mensen en logo's van bedrijven in plaats van initialen, ook van andere servers. Uitgeschakeld zie je nog steeds wat deze server zelf heeft: de foto's van je contacten en de afbeeldingen van mensen hier.",
@@ -332,7 +334,23 @@
     "senderFonts": "Lettertypen van afzenders",
     "senderFontsDesc": "Veel HTML-mails zijn gezet in Times of een ander schreeflettertype. Mails zonder eigen lettertype krijgen altijd het jouwe.",
     "senderFontsReplace": "Schreeflettertypen vervangen door het mijne",
-    "senderFontsKeep": "Zoals de afzender ze koos"
+    "senderFontsKeep": "Zoals de afzender ze koos",
+    "signaturesPerDomainDesc": "Kies een domein en schrijf één handtekening voor al je adressen daar. Afzonderlijke adressen kunnen een eigen hebben. Hij staat op je mailserver, dus het portaal en je andere mail-apps gebruiken dezelfde.",
+    "signatureDomain": "Domein",
+    "signatureDomainOption_one": "{{domain}} (1 adres)",
+    "signatureDomainOption_other": "{{domain}} ({{count}} adressen)",
+    "signatureAppliesTo": "Geldt voor",
+    "signatureAllDomains": "Alle domeinen (ook toekomstige)",
+    "signatureReplaces": "Vervangt de eigen handtekeningen van {{domains}}.",
+    "signatureRemove": "Handtekening verwijderen",
+    "signatureFromTemplate": "Dit is het sjabloon van je organisatie. Pas het aan en sla het op als je eigen.",
+    "signatureFromAllDomains": "Dit domein gebruikt je handtekening voor alle domeinen.",
+    "signatureCompanyFooter": "Bij verzenden vanaf dit domein voegt de server automatisch deze voettekst toe:",
+    "signatureExceptions": "Afwijkende handtekening voor afzonderlijke adressen ({{count}})",
+    "signatureOwn": "Eigen handtekening",
+    "signatureFollowsDomain": "Gebruikt de domeinhandtekening",
+    "signatureOverride": "Eigen handtekening voor dit adres",
+    "signatureBackToDomain": "Domeinhandtekening gebruiken"
   },
   "theme": {
     "system": "Systeem",
@@ -1343,7 +1361,7 @@
         "fairly": "vrij zeker",
         "sure": "zeker"
       },
-      "modelVerdict": "Het model zei ‘{{verdict}}’, maar dat strookt niet met de controles van de server (afzender bevestigd, spamfilter rustig, al vaker gemaild).",
+      "modelVerdict": "Het model zei ‘{{verdict}}’, maar de feiten laten dat niet toe, dus het oordeel blijft binnen wat ze onderbouwen.",
       "serverTitle": "Wat de server heeft gevonden",
       "auth": "Afzendercontrole",
       "authNone": "Niet gecontroleerd: de mail kwam niet van een andere server.",
@@ -1370,23 +1388,74 @@
       "contactsLabel": "Adresboek",
       "inContacts": "In je adresboek",
       "notInContacts": "Niet in je adresboek",
-      "firstSeen": "Eerste mail"
+      "firstSeen": "Eerste mail",
+      "factsTitle": "Wat de feiten zeggen",
+      "factsScore": "{{score}} punten",
+      "band": {
+        "clean": "duidelijk in orde",
+        "leaningClean": "eerder in orde",
+        "unclear": "onduidelijk",
+        "leaningSpam": "eerder spam",
+        "spam": "duidelijk spam"
+      },
+      "reasonQuote": "In de mail: ‘{{quote}}’",
+      "reasonFact": "Gebaseerd op de controles van de server",
+      "modelWordsTitle": "In de eigen woorden van het model",
+      "modelWordsHint": "Deze redenen heeft het model zelf geformuleerd en niemand heeft ze gecontroleerd. Vertrouw op de feiten van de server.",
+      "dropped_one": "{{count}} reden van het model is weggelaten, omdat niets in de mail die onderbouwt.",
+      "dropped_other": "{{count}} redenen van het model zijn weggelaten, omdat niets in de mail die onderbouwt.",
+      "evidence": {
+        "FILTER_WANTED": "Het spamfilter vond niets zorgwekkends",
+        "FILTER_OVER_LIMIT": "Boven de grens van het spamfilter",
+        "FILTER_SOME_POINTS": "Een paar punten van het spamfilter",
+        "DMARC_PASS": "DMARC geslaagd: echt van dit domein",
+        "DMARC_FAIL": "DMARC mislukt: de afzender is mogelijk vervalst",
+        "SPF_DKIM_PASS": "SPF of DKIM geslaagd",
+        "SPF_DKIM_FAIL": "SPF of DKIM mislukt",
+        "NO_AUTHENTICATION": "Helemaal geen authenticatie",
+        "WRITTEN_TO": "Je hebt deze afzender al gemaild",
+        "IN_CONTACTS": "In je adresboek",
+        "KNOWN_SENDER": "Heeft je al eerder gemaild",
+        "EARLIER_IN_JUNK": "Eerdere mails van deze afzender belandden in spam",
+        "FIRST_MAIL": "Eerste mail van deze afzender",
+        "IN_JUNK": "Staat in de spammap",
+        "PAYMENT_REQUEST": "Vraagt om geld of betaalgegevens",
+        "URGENCY": "Zet aan tot haast",
+        "LOOKALIKE_BRAND_FROM": "Afzenderdomein imiteert een bekend merk",
+        "BRAND_IN_FROM_DOMAIN": "Afzenderdomein draagt een merknaam",
+        "LOOKALIKE_CONTACT_FROM": "Afzenderdomein imiteert een van je contacten",
+        "FROM_NAME_SPOOFS_ADDRESS": "Weergavenaam toont een ander adres",
+        "FROM_NAME_SHOWS_DOMAIN": "Weergavenaam toont een ander domein",
+        "BRAND_IN_FROM_NAME": "Merknaam in de weergavenaam, verstuurd van elders",
+        "REPLY_TO_OTHER_SITE": "Antwoorden gaan naar een andere site",
+        "LOOKALIKE_BRAND_LINK": "Link imiteert een bekend merk",
+        "BRAND_LINK_TEXT": "Linktekst noemt een merk, de link gaat elders heen",
+        "TRACKED_LINK_TEXT": "Linktekst en doel verschillen (trackinglink)",
+        "PHISHING_LINK_TEXT": "Linktekst toont een ander adres dan het doel",
+        "BRAND_IN_SUBJECT": "Merknaam in het onderwerp met een waarschuwing",
+        "CREDENTIAL_REQUEST": "Vraagt inloggegevens buiten de site van het merk",
+        "LOOKALIKE_LINK": "Link naar een dubbelgangerdomein",
+        "LINK_TO_IP": "Link naar een kaal IP-adres",
+        "HTML_ATTACHMENT": "HTML-bijlage (vaak een nep-inlogpagina)",
+        "MALWARE_LINK": "Link naar een bekende malwaresite",
+        "SPAMHAUS_DBL_MALICIOUS": "Link naar een als kwaadaardig vermeld domein"
+      }
     },
     "labels": {
       "title": "Labels",
       "description": "Je eigen woorden voor soorten mail. Labels verschijnen op mail hier en in andere mailapps (als trefwoorden). Het model kiest alleen uit jouw labels; het verplaatst, verwijdert of beantwoordt nooit mail.",
       "auto": "Nieuwe mail automatisch labelen",
-      "autoDesc": "Binnenkomende mail krijgt de labels die passen. Daarvoor leest het model de namen en beschrijvingen van je labels en het begin van elke mail.",
+      "autoDesc": "Binnenkomende mail krijgt het ene label dat het best past, soms een tweede, en geen als het model het niet zeker weet. Daarvoor leest het model de namen en beschrijvingen van je labels en het begin van elke mail.",
       "autoNoLabels": "Voeg eerst een paar labels toe; daarna krijgt binnenkomende mail de labels die passen.",
       "noProvider": "Op dit moment mag geen model labels instellen, dus er wordt niets gelabeld.",
       "new": "Nieuw label",
       "newTitle": "Nieuw label",
       "editTitle": "“{{name}}” bewerken",
       "name": "Naam",
-      "namePlaceholder": "bijv. Facturen",
+      "namePlaceholder": "bijv. Reizen",
       "descriptionField": "Wat hier hoort",
       "descriptionHint": "Het model leest dit om te beslissen. Een paar woorden of voorbeelden zijn genoeg.",
-      "descriptionPlaceholder": "bijv. Facturen, bonnetjes en betaalbevestigingen",
+      "descriptionPlaceholder": "bijv. Vluchten, hotels en treinkaartjes",
       "color": "Kleur",
       "noColor": "Geen kleur",
       "create": "Label aanmaken",
@@ -1402,12 +1471,6 @@
       "empty": "Nog geen labels.",
       "full_one": "Je hebt de limiet van {{count}} label bereikt.",
       "full_other": "Je hebt de limiet van {{count}} labels bereikt.",
-      "startersTitle": "Beginnen met een paar suggesties?",
-      "startersMore": "Meer suggesties",
-      "addStarters_one": "{{count}} label toevoegen",
-      "addStarters_other": "{{count}} labels toevoegen",
-      "startersAdded_one": "{{count}} label toegevoegd",
-      "startersAdded_other": "{{count}} labels toegevoegd",
       "applyDesc_one": "Mail die binnenkwam voordat de labels er waren, blijft zoals hij is. Laat het model nu naar je nieuwste mail in de inbox kijken.",
       "applyDesc_other": "Mail die binnenkwam voordat de labels er waren, blijft zoals hij is. Laat het model nu naar je {{count}} nieuwste mails in de inbox kijken.",
       "apply": "Recente mail labelen",
@@ -1432,32 +1495,6 @@
         "nameTaken": "Je hebt al een label met die naam.",
         "descriptionTooLong": "Maximaal {{max}} tekens.",
         "control": "Regeleinden en stuurtekens werken hier niet."
-      }
-    },
-    "starter": {
-      "invoices": {
-        "name": "Facturen",
-        "description": "Facturen, bonnetjes, betaalbevestigingen en herinneringen"
-      },
-      "newsletters": {
-        "name": "Nieuwsbrieven",
-        "description": "Nieuwsbrieven, aanbiedingen en reclame van winkels en diensten"
-      },
-      "orders": {
-        "name": "Bestellingen & verzending",
-        "description": "Orderbevestigingen, verzendberichten en leveringsupdates"
-      },
-      "travel": {
-        "name": "Reizen",
-        "description": "Boekingen, tickets, instapkaarten en hotelbevestigingen"
-      },
-      "appointments": {
-        "name": "Afspraken",
-        "description": "Afspraken, uitnodigingen, reserveringen en herinneringen aan datums"
-      },
-      "personal": {
-        "name": "Persoonlijk",
-        "description": "Mail van vrienden en familie, door een mens geschreven en niet massaal verstuurd"
       }
     },
     "settings": {
@@ -1723,14 +1760,19 @@
       "rule": "Gezet door de voorwaarden van het label",
       "sender": "Gezet vanwege de afzender",
       "detector": "Gezet door de ingebouwde herkenning",
-      "classifier": "Gezet door de lerende classificatie"
+      "classifier": "Gezet door de lerende classificatie",
+      "similar": "Zoals je mails met dit label"
     },
     "detector": {
       "none": "Geen",
       "invoice": "Facturen",
       "appointment": "Afspraken",
       "newsletter": "Nieuwsbrieven",
-      "shipping": "Verzending"
+      "shipping": "Verzending",
+      "account": "Account & beveiliging",
+      "personal": "Persoonlijke mail",
+      "work": "Werk & zakelijk",
+      "advertising": "Reclame"
     },
     "condition": {
       "from": "Afzender (adres of domein)",
@@ -1750,11 +1792,11 @@
       "autoDescription": "Labels kunnen zonder AI op nieuwe mail komen: via eigen voorwaarden, een ingebouwde herkenning, afzenders die je eerder labelde en een kleine classificatie die van je leert. Daarvoor verlaat niets de server.",
       "auto": "Nieuwe mail vanzelf labelen, zonder AI",
       "autoDesc": "Gebruikt wat bij elk label hieronder is ingesteld.",
-      "aiOn": "De assistent labelt nieuwe mail ook en beoordeelt de labels die nog niet gezet zijn.",
+      "aiOn": "De assistent helpt ook bij nieuwe mail waar de labels zonder AI het niet zeker weten. Een mail krijgt hoogstens twee labels, en geen als het onduidelijk is.",
       "aiOff": "De assistent labelt geen nieuwe mail.",
       "toAi": "AI-instellingen",
       "manage": "Labels beheren",
-      "listTitle": "Je labels",
+      "listTitle": "Je eigen labels",
       "mailCount_one": "{{count}} mail",
       "mailCount_other": "{{count}} mails",
       "conditionCount_one": "{{count}} voorwaarde",
@@ -1783,7 +1825,9 @@
       "examples_other": "Tot nu toe {{count}} van {{min}} voorbeelden.",
       "examplesReady_one": "Geleerd van {{count}} voorbeeld: actief.",
       "examplesReady_other": "Geleerd van {{count}} voorbeelden: actief.",
-      "listDescription": "Naam, kleur en wat elk label vanzelf op mail zet."
+      "listDescription": "Naam, kleur en wat elk label vanzelf op mail zet.",
+      "autoLabel": "Vanzelf zetten",
+      "autoLabelDesc": "Uit: het label komt alleen op mail als je het met de hand zet. Dan zet niets het nog vanzelf, niet de voorwaarden, de herkenning, geleerde afzenders, vergelijkbare mails of de assistent."
     },
     "log": {
       "title": "Onlangs vanzelf gezet",
@@ -1813,7 +1857,53 @@
         "text": "tekst bevat ‘{{value}}’",
         "attachmentYes": "heeft een bijlage",
         "attachmentNo": "heeft geen bijlage"
+      },
+      "similar": "Zoals {{count}} van je mails met dit label ({{percent}} gelijk)",
+      "invoiceNumber": "Lijkt op een factuur: factuurnummer {{number}}, {{amount}}",
+      "accountWord": "Over je account: ‘{{word}}’",
+      "accountCode": "Over je account: een eenmalige code",
+      "personalKnown": "Lijkt persoonlijk: geschreven door iemand die je kent",
+      "personalPrivate": "Lijkt persoonlijk: geschreven door iemand vanaf een privéadres",
+      "workColleague": "Lijkt op werk: geschreven door een collega uit je eigen domein",
+      "workContact": "Lijkt op werk: geschreven door een zakelijk contact dat je kent",
+      "advertising": "Lijkt op reclame: {{words}}"
+    },
+    "base": {
+      "title": "Basislabels",
+      "description": "Acht vaste labels, elk met een scherpe definitie, zodat mail elke keer hetzelfde label krijgt. Naam en kleur kun je aanpassen, en per label kies je of het vanzelf wordt gezet.",
+      "showDefinition": "Definitie tonen",
+      "hideDefinition": "Definitie verbergen",
+      "auto": "‘{{name}}’ vanzelf zetten",
+      "autoOn": "wordt vanzelf gezet",
+      "autoOff": "alleen met de hand",
+      "missingTitle": "Verwijderde basislabels",
+      "missingDescription": "Haal een basislabel met zijn definitie terug. Mail die het eerder had, krijgt het niet terug.",
+      "restore": "{{name}} terugzetten",
+      "restored": "Basislabel ‘{{name}}’ is terug",
+      "fixedDefinition": "De definitie van een basislabel ligt vast: daarnaar wordt gelabeld, met de hand en vanzelf.",
+      "detectorBuiltIn": "Heeft zijn eigen herkenning al ingebouwd.",
+      "previousDescription": "Je eerdere beschrijving:",
+      "previousHint": "Zo beschreef je het label voordat het basislabel het overnam. Het model krijgt deze beschrijving nog steeds als hint naast de definitie van het basislabel, en die definitie beslist. Vergeet haar om haar niet meer mee te sturen.",
+      "forgetPrevious": "Vergeten",
+      "previousForgotten": "De eerdere beschrijving wordt niet meer meegestuurd.",
+      "usePrevious": "Als eigen label aanmaken",
+      "names": {
+        "invoice": "Factuur",
+        "shipping": "Verzending",
+        "appointment": "Afspraak",
+        "newsletter": "Nieuwsbrief",
+        "account": "Account & beveiliging",
+        "personal": "Persoonlijk",
+        "work": "Werk & zakelijk",
+        "advertising": "Reclame"
       }
+    },
+    "overlap": {
+      "title": "Overlapt met je labels",
+      "name": "‘{{name}}’ heet al zo.",
+      "meaning": "Betekent hetzelfde als het basislabel ‘{{name}}’.",
+      "words": "Heel vergelijkbare woorden als ‘{{name}}’: {{words}}",
+      "hint": "Opslaan kan nog steeds, maar mail krijgt dan misschien de verkeerde van de twee."
     }
   },
   "font": {

@@ -886,6 +886,8 @@ export interface AssistOptions {
   maxLabels: number;
   maxInstructionChars: number;
   maxTextChars: number;
+  /** The base labels the server knows; empty on servers before 0.22. */
+  baseLabels: LabelBase[];
 }
 
 export type AssistProviderKind =
@@ -1114,12 +1116,55 @@ export interface AssistSpamCheck extends AssistAnswer {
   /** 0 to 1. */
   confidence: number;
   /**
-   * What the model said when the server lowered it ("spam" or "phishing" to "suspicious")
-   * because its own checks were clearly good; absent when the verdict is the model's own.
+   * What the model said when the server moved it back into the range the facts allow (see
+   * `facts.allowed`); absent when the verdict is the model's own.
    */
   modelVerdict?: AssistVerdict;
   reasons: string[];
+  /**
+   * The same reasons with what each rests on: a quote from the mail or one of the server's
+   * facts. Reasons the mail does not back are not in here (only counted in `droppedReasons`).
+   */
+  reasonDetails: AssistSpamReason[];
+  /** How many reasons of the model were left out because nothing in the mail backs them. */
+  droppedReasons: number;
+  /** What the server weighed before the model said anything; null from older servers. */
+  facts: AssistSpamFacts | null;
   signals: AssistSpamSignals;
+}
+
+/** A reason of the spam check and the evidence it cites. */
+export interface AssistSpamReason {
+  text: string;
+  /** Words from the mail the reason rests on, as they stand there. */
+  quote: string | null;
+  /** The server fact it rests on (`F3`), when it cites one. */
+  fact: string | null;
+}
+
+/** How far the facts point towards spam, from "clean" to "spam". */
+export type AssistSpamBand = "clean" | "leaningClean" | "unclear" | "leaningSpam" | "spam";
+
+/** One fact the server weighed, by a stable code (`DMARC_PASS`, `LOOKALIKE_BRAND_FROM`, …). */
+export interface AssistSpamEvidence {
+  code: string;
+  tone: "good" | "bad";
+  /** How much it moved the score; positive is towards spam. */
+  weight: number;
+  /** What exactly was seen (a domain, a count); technical, not translated. */
+  detail: string | null;
+  /** Part of the phishing checks. */
+  phishing: boolean;
+}
+
+/** The server's own weighing: the facts decide the range, the model only explains within it. */
+export interface AssistSpamFacts {
+  score: number;
+  band: AssistSpamBand;
+  evidence: AssistSpamEvidence[];
+  /** The verdicts the model could choose from. */
+  allowed: AssistVerdict[];
+  defaultVerdict: AssistVerdict;
 }
 
 /** Somebody an event names, with an address from the address book or the mail's headers. */
@@ -1228,8 +1273,36 @@ export interface AssistEstimate {
 }
 
 /** A built-in recognizer a label can use without any AI: it sets the label on mail of that kind. */
-export type LabelDetector = "invoice" | "appointment" | "newsletter" | "shipping";
-export const LABEL_DETECTORS: readonly LabelDetector[] = ["invoice", "appointment", "newsletter", "shipping"];
+export type LabelDetector =
+  "invoice" | "appointment" | "newsletter" | "shipping" | "account" | "personal" | "work" | "advertising";
+export const LABEL_DETECTORS: readonly LabelDetector[] = [
+  "invoice",
+  "appointment",
+  "newsletter",
+  "shipping",
+  "account",
+  "personal",
+  "work",
+  "advertising",
+];
+
+/**
+ * One of the eight fixed base labels every person has: its definition is the server's and can't be
+ * changed, its name, colour and automatic parts can.
+ */
+export type LabelBase =
+  "invoice" | "shipping" | "appointment" | "newsletter" | "account" | "personal" | "work" | "advertising";
+/** In the server's order. */
+export const LABEL_BASES: readonly LabelBase[] = [
+  "invoice",
+  "shipping",
+  "appointment",
+  "newsletter",
+  "account",
+  "personal",
+  "work",
+  "advertising",
+];
 
 /** What a label's own condition looks at; `hasAttachment` takes "true" or "false". */
 export type LabelRuleField = "from" | "subject" | "text" | "hasAttachment";
@@ -1256,9 +1329,13 @@ export interface LabelRules {
 export interface AssistLabel {
   id: string;
   name: string;
-  /** What belongs there: what the model reads. */
+  /** What belongs there: what the model reads. A base label's is its fixed definition. */
   description: string;
   keyword: string;
+  /** Which base label it is; null for the person's own. */
+  base: LabelBase | null;
+  /** Put on automatically (detectors, senders, similar mail, classifier, model); off: only by hand. */
+  auto: boolean;
   /** `#rrggbb`, or null for the default. */
   color: string | null;
   /** Own conditions for arriving mail; null without. */
@@ -1274,6 +1351,8 @@ export interface AssistLabel {
   unreadEmails: number;
   /** Mail labelled or unlabelled by hand the classifier learned from. */
   examples: number;
+  /** The person's own description a base label replaced when it was adopted (server-set). */
+  previousDescription: string | null;
 }
 
 /** What may be set on a label; the automatic parts are left as they are when not named. */
@@ -1285,10 +1364,30 @@ export interface AssistLabelInput {
   detector?: LabelDetector | null;
   learnSenders?: boolean;
   classifier?: boolean;
+  auto?: boolean;
 }
 
-/** Who put a label on a mail: the model, the label's conditions, a learned sender, a detector or the classifier. */
-export type LabelSource = "ai" | "rule" | "sender" | "detector" | "classifier";
+/** A change to a label: what changes, and `previousDescription: null` to forget an adopted base label's earlier description, so the model no longer gets it as a hint. */
+export type AssistLabelPatch = Partial<AssistLabelInput> & { previousDescription?: null };
+
+/** How a label overlaps another: the same name, the meaning of a base label, or largely the same words. */
+export type LabelOverlapKind = "name" | "meaning" | "words";
+
+/** A label a new or changed one would overlap with (`AssistLabel/checkOverlap`). */
+export interface LabelOverlap {
+  id: string;
+  name: string;
+  base: LabelBase | null;
+  kind: LabelOverlapKind;
+  /** The words both share (for "words"). */
+  words: string[];
+}
+
+/**
+ * Who put a label on a mail: the model, the label's conditions, a learned sender, a detector, the
+ * classifier, or its likeness to the person's mails with the label.
+ */
+export type LabelSource = "ai" | "rule" | "sender" | "detector" | "classifier" | "similar";
 
 /** A label put on a mail by itself, and why. */
 export interface AssistLabelLogEntry {

@@ -6,6 +6,8 @@ import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
 import { DemoAssist } from "./demo-assist";
 import { DemoMasked } from "./demo-masked";
+import { DemoSignatures } from "./demo-signatures";
+import type { DomainSignatureChange } from "@/lib/domainSignatures";
 import { rulesToSieve } from "@/lib/sieveRules";
 import { runUnsubscribe } from "@/lib/unsubscribe";
 import { resolveLanguage } from "@/i18n";
@@ -30,6 +32,8 @@ import type {
   AssistComposeRequest,
   AssistEstimateRequest,
   AssistLabelInput,
+  AssistLabelPatch,
+  LabelBase,
   LabelSettings,
   AssistProviderInput,
   AssistSettingsPatch,
@@ -161,20 +165,16 @@ export class DemoBackend implements Backend {
   /** Draft key → the demo message that holds the draft, and what the composer sent. */
   private drafts = new Map<string, { messageId: string; draft: OutgoingMessage }>();
   private blocked: BlockedSender[] = [];
-  private signatures: Signature[] = [
+  private signatures = new DemoSignatures([
     {
-      // Like the server's identity signatures: one per address, under the address's id.
+      // Like the server's identity signatures: the address's own one, under the address's id.
       id: DEMO_ACCOUNTS[0]!.id,
-      email: DEMO_ACCOUNTS[0]!.email,
-      name: lang() === "de" ? "Lang" : "Long",
       html:
         lang() === "de"
           ? "<p>Liebe Grüße<br><b>Mini</b> · UwUMail-Team</p>"
           : "<p>Kind regards<br><b>Mini</b> · UwUMail team</p>",
-      forNew: true,
-      forReplies: true,
     },
-  ];
+  ]);
   private identities: Identity[] = [
     {
       id: "id-studio",
@@ -250,7 +250,17 @@ export class DemoBackend implements Backend {
 
   async listSignatures() {
     await wait(60);
-    return structuredClone(this.signatures);
+    return this.signatures.signatures(await this.listIdentities());
+  }
+
+  async domainSignatures() {
+    await wait(60);
+    return this.signatures.overview(await this.listIdentities());
+  }
+
+  async saveDomainSignatures(change: DomainSignatureChange) {
+    await wait(100);
+    return this.signatures.change(await this.listIdentities(), change);
   }
 
   /** Kept in memory only, like everything in the demo: the one signature of its address. */
@@ -261,13 +271,13 @@ export class DemoBackend implements Backend {
     );
     if (!identity) throw new BackendError("not_found", "That sender address is gone.");
     const saved = { ...signature, id: identity.id, name: identity.name, forNew: true, forReplies: true };
-    this.signatures = [...this.signatures.filter((s) => s.id !== identity.id), saved];
+    this.signatures.setOwn(identity.id, signature.html);
     return structuredClone(saved);
   }
 
   async deleteSignature(signatureId: string) {
     await wait(80);
-    this.signatures = this.signatures.filter((s) => s.id !== signatureId);
+    this.signatures.removeOwn(signatureId);
   }
 
   async syncNow(accountId?: string) {
@@ -1274,7 +1284,7 @@ export class DemoBackend implements Backend {
     return this.assist.createLabel(input);
   }
 
-  async updateAssistLabel(id: string, patch: Partial<AssistLabelInput>) {
+  async updateAssistLabel(id: string, patch: AssistLabelPatch) {
     await wait(100);
     this.assist.updateLabel(id, patch);
   }
@@ -1282,6 +1292,16 @@ export class DemoBackend implements Backend {
   async deleteAssistLabel(id: string) {
     await wait(100);
     this.assist.deleteLabel(id);
+  }
+
+  async restoreBaseLabel(base: LabelBase, auto?: boolean) {
+    await wait(100);
+    return this.assist.restoreBaseLabel(base, auto);
+  }
+
+  async checkLabelOverlap(name: string, description: string, id?: string) {
+    await wait(40);
+    return this.assist.checkOverlap(name, description, id);
   }
 
   async assistLabelLog(emailIds: string[] | null, limit = 100) {

@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { backend } from "@/backend/backend";
-import type { AssistLabel, ListFilter, MailboxView } from "@/backend/types";
+import type { AssistLabel, LabelOverlap, ListFilter, MailboxView } from "@/backend/types";
 import { translate } from "@/i18n";
 import { errorText, queryKeys, useThreads } from "@/lib/queries";
 import { toast } from "@/state/toasts";
@@ -42,4 +43,36 @@ export function useLabelActions() {
     }
   };
   return { set };
+}
+
+/** How long typing rests before the overlap check asks the server. */
+export const OVERLAP_DELAY = 400;
+
+/**
+ * The labels one called `name` with `description` would overlap with (`id` is the label being
+ * edited), asked a moment after typing rests. Nothing while it's off or the name is empty; a
+ * failed check warns of nothing.
+ */
+export function useLabelOverlap(name: string, description: string, id: string | undefined, enabled: boolean) {
+  const query = enabled && name.trim() ? JSON.stringify([name.trim(), description.trim(), id ?? null]) : null;
+  const [result, setResult] = useState<{ query: string; overlaps: LabelOverlap[] } | null>(null);
+  useEffect(() => {
+    if (!query) return;
+    let live = true;
+    const [wantedName, wantedDescription, wantedId] = JSON.parse(query) as [string, string, string | null];
+    const timer = setTimeout(() => {
+      backend()
+        .checkLabelOverlap(wantedName, wantedDescription, wantedId ?? undefined)
+        .then(
+          (overlaps) => live && setResult({ query, overlaps }),
+          () => live && setResult({ query, overlaps: [] }),
+        );
+    }, OVERLAP_DELAY);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [query]);
+  // A result for older text doesn't show once the text changed.
+  return query && result?.query === query ? result.overlaps : [];
 }

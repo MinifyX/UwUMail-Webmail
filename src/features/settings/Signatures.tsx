@@ -1,22 +1,18 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Bold, ImagePlus, Italic, Link, Pencil, Plus, Trash } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Pencil, Plus, Trash } from "lucide-react";
+import { useEffect, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Signature } from "@/backend/types";
 import { Button, IconButton } from "@/components/ui/Button";
-import { Select, TextInput, Toggle } from "@/components/ui/Field";
+import { Select } from "@/components/ui/Field";
 import { useT } from "@/i18n";
-import { pictureAsDataUrl } from "@/lib/images";
-import { queryKeys, useIdentities, useSignatureStore, useSignatures } from "@/lib/queries";
-import { isSafeLinkTarget } from "@/lib/safeHtml";
-import { cleanSignatureHtml, SIGNATURE_MAX_BYTES, signatureValue, valueSize } from "@/lib/signatures";
+import { queryKeys, useDomainSignatures, useIdentities, useSignatureStore, useSignatures } from "@/lib/queries";
+import { DomainSignatures } from "./DomainSignatures";
+import { SignatureEditor } from "./SignatureEditor";
+import { cleanSignatureHtml } from "@/lib/signatures";
 import { toast } from "@/state/toasts";
 import { useUi } from "@/state/ui";
-import { insertDroppedHtml } from "@/features/compose/droppedHtml";
 import { Row } from "./Row";
-
-/** Room kept free next to a new picture, for the name, the other fields and the markup around it. */
-const PICTURE_HEADROOM = 2048;
 
 /**
  * Signatures per sender address. A current server keeps one on each address (its `Identity`), so
@@ -27,7 +23,10 @@ const PICTURE_HEADROOM = 2048;
 export function Signatures() {
   const { t } = useT();
   const { data: store } = useSignatureStore();
-  if (store === undefined) return null;
+  const domains = useDomainSignatures();
+  if (store === undefined || domains.isPending) return null;
+  // Servers with signatures per domain get those: one per domain instead of one per address.
+  if (domains.data) return <DomainSignatures />;
   if (store === null) {
     return (
       <Row label={t("settings.signatures")} description={t("settings.signaturesUnavailable")}>
@@ -165,186 +164,5 @@ function SignatureList({ perAddress }: { perAddress: boolean }) {
 function Badge({ children }: { children: string }) {
   return (
     <span className="rounded-full bg-pink-tint px-2 py-0.5 text-[11.5px] font-bold text-pink-ink">{children}</span>
-  );
-}
-
-function SignatureEditor({
-  signature,
-  simple,
-  onSave,
-  onCancel,
-}: {
-  signature: Signature;
-  /** One signature per address: no name, used for new mail and replies alike. */
-  simple: boolean;
-  onSave: (signature: Signature) => Promise<void>;
-  onCancel: () => void;
-}) {
-  const { t } = useT();
-  const [name, setName] = useState(signature.name);
-  const [forNew, setForNew] = useState(signature.forNew);
-  const [forReplies, setForReplies] = useState(signature.forReplies);
-  const [saving, setSaving] = useState(false);
-  const editor = useRef<HTMLDivElement | null>(null);
-  /** A drag that started in the editor itself: moving text, not markup from elsewhere. */
-  const draggingInside = useRef(false);
-  const picture = useRef<HTMLInputElement>(null);
-
-  const current = (): Signature => ({
-    ...signature,
-    name: name.trim() || t("settings.signatureUntitled"),
-    html: cleanSignatureHtml(editor.current?.innerHTML ?? ""),
-    forNew,
-    forReplies,
-  });
-
-  const format = (command: "bold" | "italic" | "createLink") => {
-    editor.current?.focus();
-    if (command === "createLink") {
-      const url = window.prompt(t("compose.linkPrompt"), "https://");
-      if (url && isSafeLinkTarget(url)) document.execCommand("createLink", false, url.trim());
-      return;
-    }
-    document.execCommand(command);
-  };
-
-  /** Puts a picture in as an embedded data URL, shrunk until the whole signature still fits. */
-  const insertPicture = async (file: File) => {
-    const room = SIGNATURE_MAX_BYTES - valueSize(signatureValue(current())) - PICTURE_HEADROOM;
-    try {
-      if (room <= 0) throw new Error("too big");
-      const url = await pictureAsDataUrl(file, 480, room);
-      editor.current?.focus();
-      document.execCommand("insertImage", false, url);
-    } catch (reason) {
-      const tooBig = reason instanceof Error && reason.message === "too big";
-      toast(t(tooBig ? "settings.signatureTooBig" : "settings.signatureImageFailed"), "error");
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line p-3">
-      {!simple && (
-        <TextInput
-          aria-label={t("settings.signatureName")}
-          placeholder={t("settings.signatureNamePlaceholder")}
-          value={name}
-          maxLength={100}
-          onChange={(event) => setName(event.target.value)}
-          className="h-10"
-        />
-      )}
-      <div className="overflow-hidden rounded-xl border border-line">
-        <div className="flex items-center gap-1 border-b border-hairline bg-canvas px-1.5 py-1">
-          <IconButton
-            icon={Bold}
-            size="sm"
-            label={t("compose.bold")}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => format("bold")}
-          />
-          <IconButton
-            icon={Italic}
-            size="sm"
-            label={t("compose.italic")}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => format("italic")}
-          />
-          <IconButton
-            icon={Link}
-            size="sm"
-            label={t("compose.link")}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => format("createLink")}
-          />
-          <IconButton
-            icon={ImagePlus}
-            size="sm"
-            label={t("settings.signatureImage")}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => picture.current?.click()}
-          />
-          <input
-            ref={picture}
-            type="file"
-            accept="image/png,image/jpeg,image/gif,image/webp"
-            hidden
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              event.target.value = "";
-              if (file) void insertPicture(file);
-            }}
-          />
-        </div>
-        <div
-          ref={(node) => {
-            editor.current = node;
-            if (node && node.innerHTML === "" && signature.html) node.innerHTML = cleanSignatureHtml(signature.html);
-          }}
-          contentEditable
-          role="textbox"
-          aria-multiline
-          aria-label={t("settings.signatures")}
-          data-placeholder={t("settings.signaturePlaceholder")}
-          onPaste={(event) => {
-            // A pasted picture file becomes a data URL like an inserted one; pasted markup is
-            // cleaned right away, so nothing remote loads in this page (see the composer).
-            const file = [...event.clipboardData.files].find((item) => item.type.startsWith("image/"));
-            const html = event.clipboardData.getData("text/html");
-            const text = event.clipboardData.getData("text/plain");
-            if (file && !html) {
-              event.preventDefault();
-              void insertPicture(file);
-              return;
-            }
-            if (!html && !text) return;
-            event.preventDefault();
-            const cleaned = html
-              ? cleanSignatureHtml(html)
-              : text
-                  .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!)
-                  .replace(/\r?\n/g, "<br>");
-            document.execCommand("insertHTML", false, cleaned);
-          }}
-          onDragStart={() => {
-            draggingInside.current = true;
-          }}
-          onDragEnd={() => {
-            draggingInside.current = false;
-          }}
-          onDrop={(event) => {
-            if (!draggingInside.current) insertDroppedHtml(event, cleanSignatureHtml);
-          }}
-          className="min-h-28 px-3 py-2 text-[14px] leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_img]:inline-block [&_img]:max-w-full [&_p]:min-h-[1.4em]"
-        />
-      </div>
-      {!simple && (
-        <>
-          <Toggle checked={forNew} onChange={setForNew} label={t("settings.signatureForNew")} />
-          <Toggle checked={forReplies} onChange={setForReplies} label={t("settings.signatureForReplies")} />
-        </>
-      )}
-      <div className="flex justify-end gap-2">
-        <Button variant="ghost" onClick={onCancel}>
-          {t("common.cancel")}
-        </Button>
-        <Button
-          variant="primary"
-          busy={saving}
-          onClick={async () => {
-            const next = current();
-            if (valueSize(signatureValue(next)) > SIGNATURE_MAX_BYTES) {
-              toast(t("settings.signatureTooBig"), "error");
-              return;
-            }
-            setSaving(true);
-            await onSave(next);
-            setSaving(false);
-          }}
-        >
-          {t("common.save")}
-        </Button>
-      </div>
-    </div>
   );
 }

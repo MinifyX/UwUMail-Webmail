@@ -62,8 +62,14 @@ talks to it over JMAP.
 
 - **Held back by the server.** "Undo send" and "send later" are the server's: a
   mail waits there, not in the tab, and can be taken back until it goes.
-- **Signatures** live on the sending addresses; recipients are suggested from
-  the address books and the mail history.
+- **Signatures per domain.** Pick a domain and write one signature for all
+  your addresses there, or one for every domain; a single address can still
+  have its own. Placeholders (`{name}`, `{adresse}`, `{domain}`) are filled by
+  the server for each address. An admin's company template is offered to people
+  without a signature of their own, and where the admin made a company footer
+  mandatory the composer says the server will add it. On servers without
+  signatures per domain, signatures live on the sending addresses as before.
+- Recipients are suggested from the address books and the mail history.
 - **Masked addresses.** Where the server makes them, the settings list the
   account's masked addresses — random ones for single websites, the same the
   portal and password managers make — to copy, describe, switch off, delete and
@@ -105,14 +111,40 @@ reads a mail for dates only when you ask:
 
 Details in [dates.md](dates.md).
 
+## Labels
+
+- **Base labels.** Every account has eight fixed labels: Invoice, Shipping,
+  Appointment, Newsletter, Account & security, Personal, Work & business and
+  Promotions (named in your language). Each has a sharp definition that doesn't
+  overlap with the others, shown under _Settings → Labels_ and read-only there;
+  the name and colour can be changed. A label you had before with the same
+  meaning (e.g. "Rechnungen") became the base label instead of a second one.
+  Base labels don't count toward the 30 own labels, and a deleted one can be
+  restored with its definition.
+- **Switched one by one.** Every label, base or own, has its own switch _Put on
+  by itself_. Off, it only goes on when you put it on by hand: no condition,
+  detector, learned sender, similar mail, classifier or model sets it.
+- **Own labels** sit below the base labels. While you name or describe one, the
+  webmail asks the server whether it overlaps a label you have (the same name,
+  the meaning of a base label like "Handyrechnungen" and Invoice, or largely
+  the same words) and warns you; saving still works.
+- **One label, rather none than a wrong one.** Mail gets at most a main label
+  and an optional second one, and none when nothing is sure enough. The log
+  under _Settings → Labels_ says what set each one, including "like your mails
+  with this label".
+- **Learns from you.** Putting a label on or taking it off by hand (the chips,
+  the label menu, _Label again_) is a keyword change on the server
+  (`Email/set`), which the server learns from.
+
 ## AI assistant
 
 Where the server's admin set up a model (or lets people bring their own), the
 composer writes from a short instruction or rewrites the draft — more formal,
 shorter, proofread, translated — the reader summarizes a mail or the whole
 conversation and gives a second opinion on spam next to the server's own
-findings, dates are found on a click, and, once switched on, incoming mail gets
-your own labels, each with the model's reason and one click to undo. Every AI
+findings, dates are found on a click, and, once switched on, the model helps
+labelling incoming mail where the labels without AI aren't sure, each label
+with its reason and one click to undo. Every AI
 button tells on hover what it will take in tokens, what it costs and what is
 left today. Setup, costs and privacy: [ai-assistant.md](ai-assistant.md).
 

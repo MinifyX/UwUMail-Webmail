@@ -228,16 +228,18 @@
     "compose": {
       "applied": "已经塞进你的草稿里啦 ✿"
     },
-    "labels": {
-      "startersTitle": "要不要先用几个标签开个头？ (｀・ω・´)"
-    },
     "spam": {
       "certainty": {
         "unsure": "不太确定 (・_・;)",
         "fairly": "挺确定的 (・ω・)",
         "sure": "非常确定 ✿"
       },
-      "modelVerdict": "模型觉得是“{{verdict}}”，但服务器不这么看：发件人已验证，垃圾邮件过滤器很安静，你们早就有来往啦 (｀・ω・´)"
+      "modelVerdict": "模型觉得是“{{verdict}}”，但事实不这么说，所以结论只停在事实允许的范围里 (｀・ω・´)"
+    }
+  },
+  "labels": {
+    "overlap": {
+      "title": "咦，这个好眼熟 (・・?)"
     }
   }
 }

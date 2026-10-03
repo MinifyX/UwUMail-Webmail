@@ -1,3 +1,4 @@
+import type { DomainSignatureChange, DomainSignatureOverview } from "@/lib/domainSignatures";
 import type {
   Account,
   AddressBookInfo,
@@ -9,7 +10,10 @@ import type {
   AssistFeatures,
   AssistLabel,
   AssistLabelInput,
+  AssistLabelPatch,
   AssistLabelLogEntry,
+  LabelBase,
+  LabelOverlap,
   LabelSettings,
   LabelSuggestions,
   AssistModels,
@@ -88,7 +92,9 @@ export type BackendErrorCode =
   /** The mail is already on its way and can't be taken back. */
   | "too_late"
   /** The folder's owner didn't allow this (a folder shared with the account). */
-  | "forbidden";
+  | "forbidden"
+  /** Changed elsewhere since it was read (`ifInState` didn't match): read it again first. */
+  | "state_mismatch";
 
 export type SignatureStore = "identity" | "settings" | null;
 
@@ -185,6 +191,14 @@ export interface Backend {
    */
   saveSignature(signature: Signature): Promise<Signature>;
   deleteSignature(signatureId: string): Promise<void>;
+  /**
+   * Signatures per domain, for every domain and per address, with the domains' company signatures
+   * (lib/domainSignatures); null when the server has no such thing. The addresses' effective
+   * signatures still come from listSignatures.
+   */
+  domainSignatures(): Promise<DomainSignatureOverview | null>;
+  /** Sets or removes signatures, all at once or none; returns the overview after the change. */
+  saveDomainSignatures(change: DomainSignatureChange): Promise<DomainSignatureOverview>;
   syncNow(accountId?: string): Promise<void>;
 
   /** The own folders, then those of every person who shares folders with the account (see sharedAccounts). */
@@ -379,9 +393,16 @@ export interface Backend {
   assistUsage(days?: number, currency?: string): Promise<AssistUsage>;
   assistLabels(): Promise<AssistLabel[]>;
   createAssistLabel(input: AssistLabelInput): Promise<AssistLabel>;
-  updateAssistLabel(id: string, patch: Partial<AssistLabelInput>): Promise<void>;
+  updateAssistLabel(id: string, patch: AssistLabelPatch): Promise<void>;
   /** Also takes its keyword off every mail. */
   deleteAssistLabel(id: string): Promise<void>;
+  /** Makes a deleted base label again (the existing one when it is there). */
+  restoreBaseLabel(base: LabelBase, auto?: boolean): Promise<AssistLabel>;
+  /**
+   * Which labels one called `name` with `description` would overlap with; `id` is the label being
+   * changed. Changes nothing; an older server without the check says none.
+   */
+  checkLabelOverlap(name: string, description: string, id?: string): Promise<LabelOverlap[]>;
   /** Labels the model set, newest first: for these mails, or the latest. */
   assistLabelLog(emailIds: string[] | null, limit?: number): Promise<AssistLabelLogEntry[]>;
   /** Takes labels the model set off again, by log entry. */
