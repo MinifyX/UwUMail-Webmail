@@ -10,6 +10,7 @@ import type {
   AssistFeatures,
   AssistLabel,
   AssistLabelInput,
+  AssistLabelPatch,
   AssistLabelLogEntry,
   LabelBase,
   LabelOverlap,
@@ -91,7 +92,9 @@ export type BackendErrorCode =
   /** The mail is already on its way and can't be taken back. */
   | "too_late"
   /** The folder's owner didn't allow this (a folder shared with the account). */
-  | "forbidden";
+  | "forbidden"
+  /** Changed elsewhere since it was read (`ifInState` didn't match): read it again first. */
+  | "state_mismatch";
 
 export type SignatureStore = "identity" | "settings" | null;
 
@@ -390,7 +393,7 @@ export interface Backend {
   assistUsage(days?: number, currency?: string): Promise<AssistUsage>;
   assistLabels(): Promise<AssistLabel[]>;
   createAssistLabel(input: AssistLabelInput): Promise<AssistLabel>;
-  updateAssistLabel(id: string, patch: Partial<AssistLabelInput>): Promise<void>;
+  updateAssistLabel(id: string, patch: AssistLabelPatch): Promise<void>;
   /** Also takes its keyword off every mail. */
   deleteAssistLabel(id: string): Promise<void>;
   /** Makes a deleted base label again (the existing one when it is there). */

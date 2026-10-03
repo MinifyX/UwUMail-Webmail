@@ -350,6 +350,16 @@ function LabelRow({
   const [busy, setBusy] = useState(false);
   const [definition, setDefinition] = useState(false);
   const [auto, setAuto] = useState<boolean | null>(null);
+  const [forgetting, setForgetting] = useState(false);
+  // The model gets the earlier description as a hint until it is forgotten (WF-1).
+  const forgetPrevious = () => {
+    setForgetting(true);
+    backend()
+      .updateAssistLabel(label.id, { previousDescription: null })
+      .then(() => toast(t("labels.base.previousForgotten"), "success"))
+      .catch((error: unknown) => toast(assistErrorText(error), "error"))
+      .finally(() => setForgetting(false));
+  };
   const switchAuto = (on: boolean) => {
     setAuto(on);
     backend()
@@ -407,11 +417,16 @@ function LabelRow({
                     <span className="selectable italic">{label.previousDescription}</span>
                   </p>
                   <p className="text-[11.5px] text-muted">{t("labels.base.previousHint")}</p>
-                  {onUsePrevious && (
-                    <Button size="sm" variant="ghost" icon={Plus} onClick={onUsePrevious}>
-                      {t("labels.base.usePrevious")}
+                  <div className="flex flex-wrap gap-1">
+                    {onUsePrevious && (
+                      <Button size="sm" variant="ghost" icon={Plus} onClick={onUsePrevious}>
+                        {t("labels.base.usePrevious")}
+                      </Button>
+                    )}
+                    <Button size="sm" variant="ghost" icon={X} busy={forgetting} onClick={forgetPrevious}>
+                      {t("labels.base.forgetPrevious")}
                     </Button>
-                  )}
+                  </div>
                 </div>
               )}
             </>

@@ -458,12 +458,19 @@ describe("the assistant's UI", () => {
         expect.objectContaining({ name: "Clubs", description: "Club mail I signed up for" }),
       ),
     );
-    // Without room for another own label, the earlier description is only shown.
+    // It can be forgotten, so the model no longer gets it as a hint (WF-1).
+    expect(screen.getByText(/The model still gets it as a hint/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Forget" }));
+    await waitFor(() => expect(fake.updateAssistLabel).toHaveBeenCalledWith("g1", { previousDescription: null }));
+    // Without room for another own label, the earlier description is only shown, and can still be forgotten.
     cleanup();
-    labels = labels.filter((label) => label.base);
+    labels = labels
+      .filter((label) => label.base)
+      .map((label) => ({ ...label, previousDescription: "Club mail I signed up for" }));
     renderWith(<LabelSettings options={{ ...OPTIONS, maxLabels: 0 }} />);
     expect(await screen.findByText("Club mail I signed up for")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Use it for a new label" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Forget" })).toBeTruthy();
   });
 
   it("warns of overlapping labels while typing, but still saves", async () => {
@@ -572,7 +579,11 @@ describe("the assistant's UI", () => {
     // The reasons are the model's own words, in their own list apart from the facts.
     const reasons = within(screen.getByRole("list", { name: "In the model's own words" }));
     expect(reasons.getByText("Asks to confirm a password through a link")).toBeTruthy();
-    expect(reasons.getByText("In the mail: “confirm your password”")).toBeTruthy();
+    // Mail text is isolated, so its direction marks can't reorder the line (WF-2).
+    const quote = reasons.getByText("confirm your password");
+    expect(quote.tagName).toBe("BDI");
+    expect(quote.parentElement!.textContent).toBe("In the mail: “confirm your password”");
+    expect(screen.getByText("paypa1.example looks like PayPal").tagName).toBe("BDI");
     expect(screen.getByText(/written by the model itself and not checked/)).toBeTruthy();
     expect(screen.getByText(/1 reason of the model was left out/)).toBeTruthy();
     // The facts, strongest first, with codes the app does not know yet shown as they are.

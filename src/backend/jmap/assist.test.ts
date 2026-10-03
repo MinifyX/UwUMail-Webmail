@@ -935,6 +935,8 @@ describe("labels", () => {
     });
     expect(labelUpdate({ rules: null, detector: null })).toEqual({ rules: null, detector: null });
     expect(labelUpdate({ auto: false })).toEqual({ auto: false });
+    expect(labelUpdate({ previousDescription: null })).toEqual({ previousDescription: null });
+    expect(labelUpdate({ name: "Bills" })).not.toHaveProperty("previousDescription");
     // On is the default: an older server never sees the property it doesn't know.
     expect(labelCreate({ name: "Kids", description: "", color: null, auto: true })).not.toHaveProperty("auto");
     expect(labelCreate({ name: "Kids", description: "", color: null, auto: false })).toMatchObject({ auto: false });

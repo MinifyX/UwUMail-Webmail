@@ -301,6 +301,7 @@
     "signatureDefaultNew": "新邮件",
     "signatureDefaultReplies": "回复",
     "signatureSaved": "签名已保存",
+    "signatureChangedElsewhere": "签名在此期间已在别处被修改。已重新加载，请检查后再次保存。",
     "signatureUntitled": "签名",
     "senderPictures": "发件人图片",
     "senderPicturesDesc": "显示个人照片和公司标志，而不是姓名首字母，也包括来自其他服务器的。关闭后，仍会显示本服务器自己拥有的图片：你的联系人照片和本服务器用户的图片。",
@@ -1813,7 +1814,9 @@
       "fixedDefinition": "基础标签的定义是固定的：无论手动还是自动，都按它来加标签。",
       "detectorBuiltIn": "已内置专属识别。",
       "previousDescription": "你之前的描述：",
-      "previousHint": "在基础标签接管之前，你是这样描述这个标签的。现在不再按此描述打标签。",
+      "previousHint": "在基础标签接管之前，你是这样描述这个标签的。模型仍会把它作为提示，与基础标签的定义一起收到，以定义为准。选择“忘记”后将不再发送。",
+      "forgetPrevious": "忘记",
+      "previousForgotten": "之前的描述将不再发送。",
       "usePrevious": "创建为自己的标签",
       "names": {
         "invoice": "账单",

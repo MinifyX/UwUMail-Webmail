@@ -31,6 +31,7 @@ import type {
   AssistFeatures,
   AssistLabel,
   AssistLabelInput,
+  AssistLabelPatch,
   AssistLabelLogEntry,
   LabelBase,
   LabelOverlap,
@@ -152,6 +153,7 @@ import {
   whenSessionChanges,
   one,
   imageSizesPath,
+  JmapMethodError,
   remoteImagePath,
   responseOf,
   pictureKind,
@@ -768,10 +770,17 @@ export class JmapBackend implements Backend {
       signature && { text: signature.text, html: signature.html.trim() ? cleanSignatureHtml(signature.html) : "" };
     const mapped = (entries: Record<string, SignatureText | null> | undefined) =>
       Object.fromEntries(Object.entries(entries ?? {}).map(([key, signature]) => [key, clean(signature)]));
-    await one("SignatureSettings/set", { domains: mapped(change.domains), identities: mapped(change.identities) }, [
-      CORE,
-      SIGNATURES,
-    ]);
+    const args: Record<string, unknown> = { domains: mapped(change.domains), identities: mapped(change.identities) };
+    // Two tabs or devices must not overwrite each other unseen (webmail review WF-3).
+    if (change.ifInState !== undefined) args.ifInState = change.ifInState;
+    try {
+      await one("SignatureSettings/set", args, [CORE, SIGNATURES]);
+    } catch (error) {
+      if (error instanceof JmapMethodError && error.type === "stateMismatch") {
+        throw new BackendError("state_mismatch", "The signatures were changed elsewhere.");
+      }
+      throw error;
+    }
     // The addresses' effective signatures changed with it.
     this.forgetIdentities();
     return (await this.domainSignatures())!;
@@ -2534,7 +2543,7 @@ export class JmapBackend implements Backend {
     return toAssistLabel({ ...create, ...created });
   }
 
-  async updateAssistLabel(id: string, patch: Partial<AssistLabelInput>): Promise<void> {
+  async updateAssistLabel(id: string, patch: AssistLabelPatch): Promise<void> {
     await this.labelSet({ update: { [id]: labelUpdate(patch) } });
   }
 

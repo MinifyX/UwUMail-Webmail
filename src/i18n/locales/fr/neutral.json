@@ -317,6 +317,7 @@
     "signatureDefaultNew": "Nouveaux e-mails",
     "signatureDefaultReplies": "Réponses",
     "signatureSaved": "Signature enregistrée",
+    "signatureChangedElsewhere": "Les signatures ont été modifiées ailleurs entre-temps. Elles ont été rechargées ; vérifiez-les et enregistrez à nouveau.",
     "signatureUntitled": "Signature",
     "senderPictures": "Images des expéditeurs",
     "senderPicturesDesc": "Affiche les photos des personnes et les logos des entreprises au lieu des initiales, y compris depuis d'autres serveurs. Désactivé, vous voyez quand même ce que ce serveur a lui-même : les photos de vos contacts et les images des personnes d'ici.",
@@ -1949,7 +1950,9 @@
       "fixedDefinition": "La définition d'une étiquette de base est fixe : l'étiquetage s'y tient, à la main comme automatiquement.",
       "detectorBuiltIn": "Possède déjà sa propre détection intégrée.",
       "previousDescription": "Votre ancienne description :",
-      "previousHint": "C’est ainsi que vous décriviez ce libellé avant que le libellé de base ne le reprenne. Il ne sert plus à étiqueter les e-mails.",
+      "previousHint": "C’est ainsi que vous décriviez ce libellé avant que le libellé de base ne le reprenne. Le modèle la reçoit toujours comme indication, à côté de la définition du libellé de base, qui prime. Oubliez-la pour ne plus l’envoyer.",
+      "forgetPrevious": "Oublier",
+      "previousForgotten": "L’ancienne description n’est plus envoyée.",
       "usePrevious": "En faire un libellé personnel",
       "names": {
         "invoice": "Facture",

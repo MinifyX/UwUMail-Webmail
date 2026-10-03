@@ -1367,6 +1367,9 @@ export interface AssistLabelInput {
   auto?: boolean;
 }
 
+/** A change to a label: what changes, and `previousDescription: null` to forget an adopted base label's earlier description, so the model no longer gets it as a hint. */
+export type AssistLabelPatch = Partial<AssistLabelInput> & { previousDescription?: null };
+
 /** How a label overlaps another: the same name, the meaning of a base label, or largely the same words. */
 export type LabelOverlapKind = "name" | "meaning" | "words";
 

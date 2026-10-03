@@ -309,6 +309,7 @@
     "signatureDefaultNew": "New mail",
     "signatureDefaultReplies": "Replies",
     "signatureSaved": "Signature saved",
+    "signatureChangedElsewhere": "The signatures were changed elsewhere in the meantime. They have been reloaded; please check them and save again.",
     "signatureUntitled": "Signature",
     "senderPictures": "Sender pictures",
     "senderPicturesDesc": "Shows people's pictures and companies' logos instead of initials, also from other servers. Switched off, you still see what this server has itself: your contacts' photos and the pictures of people here.",
@@ -1882,7 +1883,9 @@
       "fixedDefinition": "A base label's definition is fixed: labelling goes by it, by hand and by itself.",
       "detectorBuiltIn": "Has its own detector built in.",
       "previousDescription": "Your earlier description:",
-      "previousHint": "This is how you described the label before the base label took it over. Mail is no longer labelled by it.",
+      "previousHint": "This is how you described the label before the base label took it over. The model still gets it as a hint next to the base label's definition, and the definition decides. Forget it to stop sending it.",
+      "forgetPrevious": "Forget",
+      "previousForgotten": "The earlier description is no longer sent.",
       "usePrevious": "Use it for a new label",
       "names": {
         "invoice": "Invoice",

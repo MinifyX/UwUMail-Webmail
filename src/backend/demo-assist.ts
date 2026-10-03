@@ -19,6 +19,7 @@ import {
   type AssistFeature,
   type AssistLabel,
   type AssistLabelInput,
+  type AssistLabelPatch,
   type AssistLabelLogEntry,
   type AssistModels,
   type AssistOptions,
@@ -1172,7 +1173,7 @@ export class DemoAssist {
     return structuredClone(label);
   }
 
-  updateLabel(id: string, patch: Partial<AssistLabelInput>) {
+  updateLabel(id: string, patch: AssistLabelPatch) {
     const label = this.labels.find((entry) => entry.id === id);
     if (!label) throw new AssistError("notFound", "No such label.");
     this.checkLabel(patch, id);
@@ -1184,6 +1185,7 @@ export class DemoAssist {
     if (patch.learnSenders !== undefined) label.learnSenders = patch.learnSenders;
     if (patch.classifier !== undefined) label.classifier = patch.classifier;
     if (patch.auto !== undefined) label.auto = patch.auto;
+    if (patch.previousDescription === null) label.previousDescription = null;
     for (const entry of this.log) if (entry.labelId === id) entry.name = label.name;
     this.changed(false);
   }

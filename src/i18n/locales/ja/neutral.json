@@ -301,6 +301,7 @@
     "signatureDefaultNew": "新規メール",
     "signatureDefaultReplies": "返信",
     "signatureSaved": "署名を保存しました",
+    "signatureChangedElsewhere": "署名がその間に別の場所で変更されました。読み込み直したので、確認してからもう一度保存してください。",
     "signatureUntitled": "署名",
     "senderPictures": "送信者の画像",
     "senderPicturesDesc": "イニシャルの代わりに、人の写真や企業のロゴを表示します（他のサーバーのものも含む）。オフにしても、このサーバーが持っているもの（連絡先の写真やこのサーバーの人の画像）は表示されます。",
@@ -1813,7 +1814,9 @@
       "fixedDefinition": "基本ラベルの定義は固定です。手動でも自動でも、この定義に沿ってラベルが付きます。",
       "detectorBuiltIn": "専用の判定がすでに組み込まれています。",
       "previousDescription": "以前の説明:",
-      "previousHint": "基本ラベルに引き継がれる前、このラベルはこう説明されていました。現在この説明ではラベル付けされません。",
+      "previousHint": "基本ラベルに引き継がれる前、このラベルはこう説明されていました。この説明は今もヒントとして基本ラベルの定義と一緒にモデルへ送られます。判断の基準は定義です。送らないようにするには「忘れる」を選んでください。",
+      "forgetPrevious": "忘れる",
+      "previousForgotten": "以前の説明は送られなくなりました。",
       "usePrevious": "自分のラベルとして作成",
       "names": {
         "invoice": "請求書",

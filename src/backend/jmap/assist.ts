@@ -27,6 +27,7 @@ import {
   type AssistFeatures,
   type AssistLabel,
   type AssistLabelInput,
+  type AssistLabelPatch,
   type AssistLabelLogEntry,
   type AssistModels,
   type AssistOptions,
@@ -388,12 +389,13 @@ export function toLabelOverlaps(raw: Raw): LabelOverlap[] {
 /** What `AssistLabel/checkOverlap` reads at most; longer text is not sent at all. */
 export const OVERLAP_LIMITS = { name: 100, description: 2000 } as const;
 
-export function labelUpdate(patch: Partial<AssistLabelInput>): Raw {
+export function labelUpdate(patch: AssistLabelPatch): Raw {
   const out: Raw = {};
   if (patch.name !== undefined) out.name = patch.name.trim();
   if (patch.description !== undefined) out.description = patch.description.trim();
   if (patch.color !== undefined) out.color = patch.color;
   if (patch.auto !== undefined) out.auto = patch.auto;
+  if (patch.previousDescription === null) out.previousDescription = null;
   return automaticOut(patch, out);
 }
 

@@ -32,6 +32,7 @@ import type {
   AssistComposeRequest,
   AssistEstimateRequest,
   AssistLabelInput,
+  AssistLabelPatch,
   LabelBase,
   LabelSettings,
   AssistProviderInput,
@@ -1283,7 +1284,7 @@ export class DemoBackend implements Backend {
     return this.assist.createLabel(input);
   }
 
-  async updateAssistLabel(id: string, patch: Partial<AssistLabelInput>) {
+  async updateAssistLabel(id: string, patch: AssistLabelPatch) {
     await wait(100);
     this.assist.updateLabel(id, patch);
   }

@@ -309,6 +309,7 @@
     "signatureDefaultNew": "Neue Mails",
     "signatureDefaultReplies": "Antworten",
     "signatureSaved": "Signatur gespeichert",
+    "signatureChangedElsewhere": "Die Signaturen wurden inzwischen woanders geändert. Sie sind neu geladen, bitte prüfe sie und speichere noch einmal.",
     "signatureUntitled": "Signatur",
     "senderPictures": "Absenderbilder",
     "senderPicturesDesc": "Zeigt Bilder von Leuten und Logos von Firmen statt Initialen, auch von anderen Servern. Ausgeschaltet siehst du trotzdem, was dieser Server selbst hat: die Fotos deiner Kontakte und die Bilder der Leute hier.",
@@ -1882,7 +1883,9 @@
       "fixedDefinition": "Die Definition eines Basis-Labels ist fest: Nach ihr wird gelabelt, von Hand wie von selbst.",
       "detectorBuiltIn": "Hat seine eigene Erkennung schon eingebaut.",
       "previousDescription": "Deine frühere Beschreibung:",
-      "previousHint": "Bevor das Basis-Label übernommen wurde, hattest du das Label so beschrieben. Nach dieser Beschreibung wird nicht mehr gelabelt.",
+      "previousHint": "So hattest du das Label beschrieben, bevor das Basis-Label es übernommen hat. Das Modell bekommt diese Beschreibung weiter als Hinweis neben der Definition des Basis-Labels, entscheidend ist die Definition. Wenn du sie vergisst, wird sie nicht mehr mitgeschickt.",
+      "forgetPrevious": "Vergessen",
+      "previousForgotten": "Die frühere Beschreibung wird nicht mehr mitgeschickt.",
       "usePrevious": "Als eigenes Label anlegen",
       "names": {
         "invoice": "Rechnung",

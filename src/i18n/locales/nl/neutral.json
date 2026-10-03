@@ -309,6 +309,7 @@
     "signatureDefaultNew": "Nieuwe mail",
     "signatureDefaultReplies": "Antwoorden",
     "signatureSaved": "Handtekening opgeslagen",
+    "signatureChangedElsewhere": "De handtekeningen zijn intussen elders gewijzigd. Ze zijn opnieuw geladen; controleer ze en sla opnieuw op.",
     "signatureUntitled": "Handtekening",
     "senderPictures": "Afzenderafbeeldingen",
     "senderPicturesDesc": "Toont foto's van mensen en logo's van bedrijven in plaats van initialen, ook van andere servers. Uitgeschakeld zie je nog steeds wat deze server zelf heeft: de foto's van je contacten en de afbeeldingen van mensen hier.",
@@ -1882,7 +1883,9 @@
       "fixedDefinition": "De definitie van een basislabel ligt vast: daarnaar wordt gelabeld, met de hand en vanzelf.",
       "detectorBuiltIn": "Heeft zijn eigen herkenning al ingebouwd.",
       "previousDescription": "Je eerdere beschrijving:",
-      "previousHint": "Zo beschreef je het label voordat het basislabel het overnam. Er wordt niet meer op gelabeld.",
+      "previousHint": "Zo beschreef je het label voordat het basislabel het overnam. Het model krijgt deze beschrijving nog steeds als hint naast de definitie van het basislabel, en die definitie beslist. Vergeet haar om haar niet meer mee te sturen.",
+      "forgetPrevious": "Vergeten",
+      "previousForgotten": "De eerdere beschrijving wordt niet meer meegestuurd.",
       "usePrevious": "Als eigen label aanmaken",
       "names": {
         "invoice": "Factuur",
