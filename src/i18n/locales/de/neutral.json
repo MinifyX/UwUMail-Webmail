@@ -1399,6 +1399,8 @@
       },
       "reasonQuote": "In der Mail: „{{quote}}“",
       "reasonFact": "Beruht auf den Prüfungen des Servers",
+      "modelWordsTitle": "In den eigenen Worten des Modells",
+      "modelWordsHint": "Diese Gründe hat das Modell selbst formuliert und niemand hat sie geprüft. Verlass dich auf die Fakten des Servers.",
       "dropped_one": "{{count}} Grund des Modells wurde weggelassen, weil nichts in der Mail ihn belegt.",
       "dropped_other": "{{count}} Gründe des Modells wurden weggelassen, weil nichts in der Mail sie belegt.",
       "evidence": {
@@ -1879,6 +1881,9 @@
       "restored": "Basis-Label „{{name}}“ ist zurück",
       "fixedDefinition": "Die Definition eines Basis-Labels ist fest: Nach ihr wird gelabelt, von Hand wie von selbst.",
       "detectorBuiltIn": "Hat seine eigene Erkennung schon eingebaut.",
+      "previousDescription": "Deine frühere Beschreibung:",
+      "previousHint": "Bevor das Basis-Label übernommen wurde, hattest du das Label so beschrieben. Nach dieser Beschreibung wird nicht mehr gelabelt.",
+      "usePrevious": "Als eigenes Label anlegen",
       "names": {
         "invoice": "Rechnung",
         "shipping": "Versand",

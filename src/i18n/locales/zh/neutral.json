@@ -1354,6 +1354,8 @@
       },
       "reasonQuote": "邮件中：“{{quote}}”",
       "reasonFact": "基于服务器的检查",
+      "modelWordsTitle": "模型自己的说法",
+      "modelWordsHint": "这些理由由模型自己撰写，未经任何人核实。请以服务器的事实为准。",
       "dropped_other": "模型的 {{count}} 条理由在邮件中找不到依据，已省略。",
       "evidence": {
         "FILTER_WANTED": "垃圾邮件过滤器没发现问题",
@@ -1810,6 +1812,9 @@
       "restored": "基础标签“{{name}}”已恢复",
       "fixedDefinition": "基础标签的定义是固定的：无论手动还是自动，都按它来加标签。",
       "detectorBuiltIn": "已内置专属识别。",
+      "previousDescription": "你之前的描述：",
+      "previousHint": "在基础标签接管之前，你是这样描述这个标签的。现在不再按此描述打标签。",
+      "usePrevious": "创建为自己的标签",
       "names": {
         "invoice": "账单",
         "shipping": "物流",

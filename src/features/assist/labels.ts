@@ -18,6 +18,7 @@ export const LABEL_DEFAULTS: Omit<AssistLabel, "id" | "name" | "description" | "
   totalEmails: 0,
   unreadEmails: 0,
   examples: 0,
+  previousDescription: null,
 };
 
 /** The server's limits for a label. */

@@ -1442,6 +1442,8 @@
       },
       "reasonQuote": "Dans le message : « {{quote}} »",
       "reasonFact": "D’après les vérifications du serveur",
+      "modelWordsTitle": "Avec les propres mots du modèle",
+      "modelWordsHint": "Ces raisons ont été rédigées par le modèle lui-même et personne ne les a vérifiées. Fiez-vous aux faits du serveur.",
       "dropped_one": "{{count}} raison du modèle a été écartée, car rien dans le message ne l’étaye.",
       "dropped_many": "{{count}} raisons du modèle ont été écartées, car rien dans le message ne les étaye.",
       "dropped_other": "{{count}} raisons du modèle ont été écartées, car rien dans le message ne les étaye.",
@@ -1946,6 +1948,9 @@
       "restored": "L'étiquette de base « {{name}} » est de retour",
       "fixedDefinition": "La définition d'une étiquette de base est fixe : l'étiquetage s'y tient, à la main comme automatiquement.",
       "detectorBuiltIn": "Possède déjà sa propre détection intégrée.",
+      "previousDescription": "Votre ancienne description :",
+      "previousHint": "C’est ainsi que vous décriviez ce libellé avant que le libellé de base ne le reprenne. Il ne sert plus à étiqueter les e-mails.",
+      "usePrevious": "En faire un libellé personnel",
       "names": {
         "invoice": "Facture",
         "shipping": "Livraison",

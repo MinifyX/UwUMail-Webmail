@@ -1351,6 +1351,8 @@ export interface AssistLabel {
   unreadEmails: number;
   /** Mail labelled or unlabelled by hand the classifier learned from. */
   examples: number;
+  /** The person's own description a base label replaced when it was adopted (server-set). */
+  previousDescription: string | null;
 }
 
 /** What may be set on a label; the automatic parts are left as they are when not named. */

@@ -433,6 +433,39 @@ describe("the assistant's UI", () => {
     expect(fake.checkLabelOverlap).not.toHaveBeenCalled();
   });
 
+  it("shows an adopted base label's earlier description and starts a new label with it", async () => {
+    labels = [
+      {
+        ...LABEL_DEFAULTS,
+        id: "g1",
+        name: "Newsletter",
+        keyword: "newsletter",
+        description: "Fixed definition",
+        color: null,
+        base: "newsletter",
+        previousDescription: "Club mail I signed up for",
+      },
+    ];
+    renderWith(<LabelSettings options={OPTIONS} />);
+    expect(await screen.findByText("Your earlier description:")).toBeTruthy();
+    expect(screen.getByText("Club mail I signed up for")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Use it for a new label" }));
+    expect((screen.getByLabelText("What belongs here") as HTMLTextAreaElement).value).toBe("Club mail I signed up for");
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Clubs" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create label" }));
+    await waitFor(() =>
+      expect(fake.createAssistLabel).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "Clubs", description: "Club mail I signed up for" }),
+      ),
+    );
+    // Without room for another own label, the earlier description is only shown.
+    cleanup();
+    labels = labels.filter((label) => label.base);
+    renderWith(<LabelSettings options={{ ...OPTIONS, maxLabels: 0 }} />);
+    expect(await screen.findByText("Club mail I signed up for")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Use it for a new label" })).toBeNull();
+  });
+
   it("warns of overlapping labels while typing, but still saves", async () => {
     overlaps = [
       { id: "g1", name: "Invoice", base: "invoice", kind: "meaning", words: [] },
@@ -536,8 +569,11 @@ describe("the assistant's UI", () => {
     expect(screen.getByText("sure")).toBeTruthy();
     expect(screen.queryByText(/%/)).toBeNull();
     expect(screen.queryByText(/The model said/)).toBeNull();
-    expect(screen.getByText("Asks to confirm a password through a link")).toBeTruthy();
-    expect(screen.getByText("In the mail: “confirm your password”")).toBeTruthy();
+    // The reasons are the model's own words, in their own list apart from the facts.
+    const reasons = within(screen.getByRole("list", { name: "In the model's own words" }));
+    expect(reasons.getByText("Asks to confirm a password through a link")).toBeTruthy();
+    expect(reasons.getByText("In the mail: “confirm your password”")).toBeTruthy();
+    expect(screen.getByText(/written by the model itself and not checked/)).toBeTruthy();
     expect(screen.getByText(/1 reason of the model was left out/)).toBeTruthy();
     // The facts, strongest first, with codes the app does not know yet shown as they are.
     expect(screen.getByText(/rather spam/)).toBeTruthy();

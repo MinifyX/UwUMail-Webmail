@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import {
   BookUser,
+  Bot,
   ClipboardList,
   CircleCheck,
   CircleHelp,
@@ -212,28 +213,36 @@ function Verdict({ result }: { result: AssistSpamCheck }) {
         </p>
       )}
       {reasons.length > 0 && (
-        <ul className="selectable flex flex-col gap-1.5 text-[13.5px]">
-          {reasons.map((reason, index) => (
-            <li key={index} className="flex gap-2 leading-snug">
-              <span className={clsx("mt-[7px] size-1.5 shrink-0 rounded-full", look.bar)} aria-hidden />
-              <span className="min-w-0">
-                {reason.text}
-                {reason.quote ? (
-                  <span className="mt-0.5 flex items-start gap-1 text-[12px] text-muted">
-                    <Quote className="mt-0.5 size-3 shrink-0" aria-hidden />
-                    <span className="min-w-0 break-words italic">
-                      {t("assist.spam.reasonQuote", { quote: reason.quote })}
+        // The model's own words, kept apart from what the server found: they are not checked facts.
+        <div className="flex flex-col gap-1.5 rounded-xl border border-dashed border-line px-3 py-2">
+          <p className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide text-muted uppercase">
+            <Bot className="size-3.5" aria-hidden />
+            <span>{t("assist.spam.modelWordsTitle")}</span>
+          </p>
+          <p className="text-[11.5px] text-muted">{t("assist.spam.modelWordsHint")}</p>
+          <ul className="selectable flex flex-col gap-1.5 text-[13.5px]" aria-label={t("assist.spam.modelWordsTitle")}>
+            {reasons.map((reason, index) => (
+              <li key={index} className="flex gap-2 leading-snug">
+                <span className={clsx("mt-[7px] size-1.5 shrink-0 rounded-full", look.bar)} aria-hidden />
+                <span className="min-w-0">
+                  {reason.text}
+                  {reason.quote ? (
+                    <span className="mt-0.5 flex items-start gap-1 text-[12px] text-muted">
+                      <Quote className="mt-0.5 size-3 shrink-0" aria-hidden />
+                      <span className="min-w-0 break-words italic">
+                        {t("assist.spam.reasonQuote", { quote: reason.quote })}
+                      </span>
                     </span>
-                  </span>
-                ) : (
-                  reason.fact && (
-                    <span className="mt-0.5 block text-[12px] text-muted">{t("assist.spam.reasonFact")}</span>
-                  )
-                )}
-              </span>
-            </li>
-          ))}
-        </ul>
+                  ) : (
+                    reason.fact && (
+                      <span className="mt-0.5 block text-[12px] text-muted">{t("assist.spam.reasonFact")}</span>
+                    )
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       {result.droppedReasons > 0 && (
         <p className="text-[12px] text-muted">{t("assist.spam.dropped", { count: result.droppedReasons })}</p>

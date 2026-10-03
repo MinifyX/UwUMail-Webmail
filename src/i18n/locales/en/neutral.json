@@ -1399,6 +1399,8 @@
       },
       "reasonQuote": "In the mail: “{{quote}}”",
       "reasonFact": "Based on the server’s checks",
+      "modelWordsTitle": "In the model's own words",
+      "modelWordsHint": "These reasons were written by the model itself and not checked by anyone. Rely on the server's facts.",
       "dropped_one": "{{count}} reason of the model was left out because nothing in the mail backs it.",
       "dropped_other": "{{count}} reasons of the model were left out because nothing in the mail backs them.",
       "evidence": {
@@ -1879,6 +1881,9 @@
       "restored": "Base label “{{name}}” is back",
       "fixedDefinition": "A base label's definition is fixed: labelling goes by it, by hand and by itself.",
       "detectorBuiltIn": "Has its own detector built in.",
+      "previousDescription": "Your earlier description:",
+      "previousHint": "This is how you described the label before the base label took it over. Mail is no longer labelled by it.",
+      "usePrevious": "Use it for a new label",
       "names": {
         "invoice": "Invoice",
         "shipping": "Shipping",

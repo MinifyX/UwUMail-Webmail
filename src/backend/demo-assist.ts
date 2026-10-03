@@ -255,6 +255,11 @@ export class DemoAssist {
         { field: "subject", value: lang === "de" ? "Rechnung" : "invoice" },
       ],
     };
+    // The newsletters were the person's own label before the base label took it over, with their own words.
+    this.byBase("newsletter")!.previousDescription =
+      lang === "de"
+        ? "Newsletter und Rundmails von Vereinen, die ich abonniert habe"
+        : "Newsletters and circulars from clubs I signed up for";
     this.seedLabels();
     this.seedUsage();
   }
@@ -304,6 +309,7 @@ export class DemoAssist {
       totalEmails: 0,
       unreadEmails: 0,
       examples: 0,
+      previousDescription: null,
     };
   }
 
@@ -1159,6 +1165,7 @@ export class DemoAssist {
       totalEmails: 0,
       unreadEmails: 0,
       examples: 0,
+      previousDescription: null,
     };
     this.labels.push(label);
     this.changed(false);

@@ -13,7 +13,7 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AssistError, backend } from "@/backend/backend";
 import {
   attachmentValue,
@@ -199,6 +199,16 @@ export function LabelSettings({ options }: { options: AssistOptions }) {
   const { t } = useT();
   const { data: labels = [], isPending } = useAssistLabels();
   const [editing, setEditing] = useState<string | "new" | null>(null);
+  // What a new label starts with: an adopted base label's earlier description, or nothing.
+  const [seed, setSeed] = useState("");
+  const newEditor = useRef<HTMLDivElement>(null);
+  const startNew = (description: string) => {
+    setSeed(description);
+    setEditing("new");
+  };
+  useEffect(() => {
+    if (editing === "new" && seed) newEditor.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+  }, [editing, seed]);
   const setSettingsFormDirty = useUi((s) => s.setSettingsFormDirty);
   useEffect(() => {
     setSettingsFormDirty(editing !== null);
@@ -219,7 +229,14 @@ export function LabelSettings({ options }: { options: AssistOptions }) {
             <LabelEditor label={label} labels={labels} onDone={() => setEditing(null)} />
           </li>
         ) : (
-          <LabelRow key={label.id} label={label} onEdit={() => setEditing(label.id)} />
+          <LabelRow
+            key={label.id}
+            label={label}
+            onEdit={() => setEditing(label.id)}
+            onUsePrevious={
+              room && label.previousDescription ? () => startNew(label.previousDescription ?? "") : undefined
+            }
+          />
         ),
       )}
     </ul>
@@ -239,13 +256,26 @@ export function LabelSettings({ options }: { options: AssistOptions }) {
         action={
           room &&
           editing !== "new" && (
-            <Button size="sm" icon={Plus} onClick={() => setEditing("new")}>
+            <Button size="sm" icon={Plus} onClick={() => startNew("")}>
               {t("assist.labels.new")}
             </Button>
           )
         }
       >
-        {editing === "new" && <LabelEditor label={null} labels={labels} onDone={() => setEditing(null)} />}
+        {editing === "new" && (
+          <div ref={newEditor}>
+            <LabelEditor
+              key={seed}
+              label={null}
+              labels={labels}
+              description={seed}
+              onDone={() => {
+                setEditing(null);
+                setSeed("");
+              }}
+            />
+          </div>
+        )}
         {!isPending && own.length === 0 && editing !== "new" && (
           <p className="text-[13px] text-muted">{t("assist.labels.empty")}</p>
         )}
@@ -305,7 +335,16 @@ function automationSummary(label: AssistLabel, t: (key: string, options?: Record
   return parts.join(" · ");
 }
 
-function LabelRow({ label, onEdit }: { label: AssistLabel; onEdit: () => void }) {
+function LabelRow({
+  label,
+  onEdit,
+  onUsePrevious,
+}: {
+  label: AssistLabel;
+  onEdit: () => void;
+  /** Starts a new own label with the description the base label replaced; missing when there is no room. */
+  onUsePrevious?: () => void;
+}) {
   const { t } = useT();
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -361,6 +400,20 @@ function LabelRow({ label, onEdit }: { label: AssistLabel; onEdit: () => void })
                 {definition ? t("labels.base.hideDefinition") : t("labels.base.showDefinition")}
               </button>
               {definition && <p className="text-[12.5px] break-words text-muted">{label.description}</p>}
+              {label.previousDescription && (
+                <div className="mt-1.5 flex flex-col items-start gap-1 rounded-xl bg-canvas px-3 py-2 text-[12.5px]">
+                  <p className="break-words">
+                    <span className="font-semibold">{t("labels.base.previousDescription")}</span>{" "}
+                    <span className="selectable italic">{label.previousDescription}</span>
+                  </p>
+                  <p className="text-[11.5px] text-muted">{t("labels.base.previousHint")}</p>
+                  {onUsePrevious && (
+                    <Button size="sm" variant="ghost" icon={Plus} onClick={onUsePrevious}>
+                      {t("labels.base.usePrevious")}
+                    </Button>
+                  )}
+                </div>
+              )}
             </>
           ) : (
             <p className="text-[12.5px] break-words text-muted">
@@ -443,7 +496,7 @@ function AutoSwitch({
 
 type LabelForm = Required<AssistLabelInput>;
 
-function formOf(label: AssistLabel | null, count: number): LabelForm {
+function formOf(label: AssistLabel | null, count: number, description = ""): LabelForm {
   return label
     ? {
         name: label.name,
@@ -457,7 +510,7 @@ function formOf(label: AssistLabel | null, count: number): LabelForm {
       }
     : {
         name: "",
-        description: "",
+        description,
         color: LABEL_COLORS[count % LABEL_COLORS.length]!,
         rules: null,
         detector: null,
@@ -470,14 +523,17 @@ function formOf(label: AssistLabel | null, count: number): LabelForm {
 export function LabelEditor({
   label,
   labels,
+  description,
   onDone,
 }: {
   label: AssistLabel | null;
   labels: AssistLabel[];
+  /** What a new label's description starts with. */
+  description?: string;
   onDone: () => void;
 }) {
   const { t } = useT();
-  const [form, setForm] = useState<LabelForm>(() => formOf(label, labels.length));
+  const [form, setForm] = useState<LabelForm>(() => formOf(label, labels.length, description));
   const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);

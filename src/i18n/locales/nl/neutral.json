@@ -1399,6 +1399,8 @@
       },
       "reasonQuote": "In de mail: ‘{{quote}}’",
       "reasonFact": "Gebaseerd op de controles van de server",
+      "modelWordsTitle": "In de eigen woorden van het model",
+      "modelWordsHint": "Deze redenen heeft het model zelf geformuleerd en niemand heeft ze gecontroleerd. Vertrouw op de feiten van de server.",
       "dropped_one": "{{count}} reden van het model is weggelaten, omdat niets in de mail die onderbouwt.",
       "dropped_other": "{{count}} redenen van het model zijn weggelaten, omdat niets in de mail die onderbouwt.",
       "evidence": {
@@ -1879,6 +1881,9 @@
       "restored": "Basislabel ‘{{name}}’ is terug",
       "fixedDefinition": "De definitie van een basislabel ligt vast: daarnaar wordt gelabeld, met de hand en vanzelf.",
       "detectorBuiltIn": "Heeft zijn eigen herkenning al ingebouwd.",
+      "previousDescription": "Je eerdere beschrijving:",
+      "previousHint": "Zo beschreef je het label voordat het basislabel het overnam. Er wordt niet meer op gelabeld.",
+      "usePrevious": "Als eigen label aanmaken",
       "names": {
         "invoice": "Factuur",
         "shipping": "Verzending",

@@ -857,6 +857,7 @@ describe("labels", () => {
       totalEmails: 0,
       unreadEmails: 0,
       examples: 0,
+      previousDescription: null,
     });
     const label = toAssistLabel({
       id: "g2",
@@ -887,6 +888,11 @@ describe("labels", () => {
       unreadEmails: 3,
       examples: 17,
     });
+    expect(
+      toAssistLabel({ id: "g5", base: "newsletter", previousDescription: "  Club mail I signed up for  " }),
+    ).toMatchObject({ previousDescription: "Club mail I signed up for" });
+    expect(toAssistLabel({ id: "g6", previousDescription: "   " }).previousDescription).toBeNull();
+    expect(toAssistLabel({ id: "g7", previousDescription: 7 }).previousDescription).toBeNull();
     expect(toAssistLabel({ id: "g3", detector: "horoscope", rules: { conditions: [] } })).toMatchObject({
       detector: null,
       rules: null,

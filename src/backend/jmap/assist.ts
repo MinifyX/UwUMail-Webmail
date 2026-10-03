@@ -325,6 +325,7 @@ export function toAssistLabel(raw: Raw): AssistLabel {
     totalEmails: asCount(raw.totalEmails),
     unreadEmails: asCount(raw.unreadEmails),
     examples: asCount(raw.examples),
+    previousDescription: asString(raw.previousDescription)?.trim() || null,
   };
 }
 

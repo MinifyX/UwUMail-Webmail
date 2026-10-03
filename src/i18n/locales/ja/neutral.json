@@ -1354,6 +1354,8 @@
       },
       "reasonQuote": "メール内：「{{quote}}」",
       "reasonFact": "サーバーのチェックに基づく",
+      "modelWordsTitle": "モデル自身の言葉",
+      "modelWordsHint": "これらの理由はモデル自身が書いたもので、誰も確認していません。サーバーの事実を頼りにしてください。",
       "dropped_other": "メールに根拠がないため、モデルの理由を {{count}} 件省きました。",
       "evidence": {
         "FILTER_WANTED": "スパムフィルターは問題を見つけませんでした",
@@ -1810,6 +1812,9 @@
       "restored": "基本ラベル「{{name}}」を元に戻しました",
       "fixedDefinition": "基本ラベルの定義は固定です。手動でも自動でも、この定義に沿ってラベルが付きます。",
       "detectorBuiltIn": "専用の判定がすでに組み込まれています。",
+      "previousDescription": "以前の説明:",
+      "previousHint": "基本ラベルに引き継がれる前、このラベルはこう説明されていました。現在この説明ではラベル付けされません。",
+      "usePrevious": "自分のラベルとして作成",
       "names": {
         "invoice": "請求書",
         "shipping": "配送",
