@@ -120,6 +120,7 @@ describe("signatures per domain", () => {
     await waitFor(() => expect(fake.saveDomainSignatures).toHaveBeenCalled());
     expect(fake.saveDomainSignatures.mock.calls[0]![0]).toEqual({
       domains: { "example.org": { text: "Gruß, {name}", html: "<p>Gruß, {name}</p>" } },
+      ifInState: "3",
     });
   });
 
@@ -132,6 +133,7 @@ describe("signatures per domain", () => {
     await waitFor(() => expect(fake.saveDomainSignatures).toHaveBeenCalled());
     expect(fake.saveDomainSignatures.mock.calls[0]![0]).toEqual({
       domains: { "*": { text: "Für alle", html: "<p>Für alle</p>" }, "example.net": null },
+      ifInState: "3",
     });
   });
 
@@ -145,10 +147,28 @@ describe("signatures per domain", () => {
     await waitFor(() => expect(fake.saveDomainSignatures).toHaveBeenCalled());
     expect(fake.saveDomainSignatures.mock.calls[0]![0]).toEqual({
       identities: { i2: { text: "Nur Mini", html: "<p>Nur Mini</p>" } },
+      ifInState: "3",
     });
     fake.saveDomainSignatures.mockClear();
     fireEvent.click(screen.getAllByRole("button", { name: "Use the domain signature" }).at(-1)!);
-    await waitFor(() => expect(fake.saveDomainSignatures).toHaveBeenCalledWith({ identities: { i3: null } }));
+    await waitFor(() =>
+      expect(fake.saveDomainSignatures).toHaveBeenCalledWith({ identities: { i3: null }, ifInState: "3" }),
+    );
+  });
+
+  it("reloads and says so when another tab or device changed the signatures (WF-3)", async () => {
+    const { BackendError } = await import("@/backend/backend");
+    fake.saveDomainSignatures.mockRejectedValueOnce(new BackendError("state_mismatch", "changed"));
+    renderPage();
+    await screen.findByRole("combobox", { name: "Domain" });
+    const reads = fake.domainSignatures.mock.calls.length;
+    write("<p>Neu</p>");
+    fireEvent.click(screen.getAllByRole("button", { name: "Save" })[0]!);
+    await waitFor(() => expect(fake.domainSignatures.mock.calls.length).toBeGreaterThan(reads));
+    expect(fake.saveDomainSignatures.mock.calls[0]![0].ifInState).toBe("3");
+    expect(useToasts.getState().toasts.map((toast) => toast.message)).toEqual([
+      "The signatures were changed elsewhere in the meantime. They have been reloaded; please check them and save again.",
+    ]);
   });
 
   it("keeps the signatures per address on servers without domains", async () => {

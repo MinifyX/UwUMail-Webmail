@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Info } from "lucide-react";
 import { useMemo, useState } from "react";
-import { backend } from "@/backend/backend";
+import { BackendError, backend } from "@/backend/backend";
 import type { Signature } from "@/backend/types";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Field";
@@ -42,13 +42,20 @@ function useSave() {
   const client = useQueryClient();
   return async (change: DomainSignatureChange) => {
     try {
-      const overview = await backend().saveDomainSignatures(change);
+      // Made on the overview shown; refused when another tab or device changed it since (WF-3).
+      const shown = client.getQueryData<DomainSignatureOverview>(queryKeys.domainSignatures);
+      const overview = await backend().saveDomainSignatures(shown ? { ...change, ifInState: shown.state } : change);
       client.setQueryData(queryKeys.domainSignatures, overview);
       // The addresses' effective signatures, which the composer inserts, changed with it.
       await client.invalidateQueries({ queryKey: queryKeys.signatures });
       await client.invalidateQueries({ queryKey: queryKeys.identities });
       toast(t("settings.signatureSaved"), "success");
     } catch (reason) {
+      if (reason instanceof BackendError && reason.code === "state_mismatch") {
+        await client.invalidateQueries({ queryKey: queryKeys.domainSignatures });
+        toast(t("settings.signatureChangedElsewhere"), "error");
+        return;
+      }
       toast(reason instanceof Error ? reason.message : String(reason), "error");
     }
   };
