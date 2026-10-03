@@ -105,6 +105,12 @@ export function assistOptionsFrom(accountCapabilities: Record<string, unknown> |
     maxLabels: asNumber(raw.maxLabels) ?? 30,
     maxInstructionChars: asNumber(raw.maxInstructionChars) ?? 2000,
     maxTextChars: asNumber(raw.maxTextChars) ?? 20000,
+    baseLabels: Array.isArray(raw.baseLabels)
+      ? raw.baseLabels.flatMap((base) => {
+          const known = asBase(base);
+          return known ? [known] : [];
+        })
+      : [],
   };
 }
 

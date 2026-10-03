@@ -886,6 +886,8 @@ export interface AssistOptions {
   maxLabels: number;
   maxInstructionChars: number;
   maxTextChars: number;
+  /** The base labels the server knows; empty on servers before 0.22. */
+  baseLabels: LabelBase[];
 }
 
 export type AssistProviderKind =

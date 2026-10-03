@@ -202,7 +202,15 @@ describe("the capability", () => {
       maxLabels: 30,
       maxInstructionChars: 2000,
       maxTextChars: 20000,
+      baseLabels: [],
     });
+  });
+
+  it("reads the base labels the server knows, dropping unknown ones", () => {
+    expect(assistOptionsFrom({ [ASSIST]: { baseLabels: ["invoice", "gossip", "work"] } })?.baseLabels).toEqual([
+      "invoice",
+      "work",
+    ]);
   });
 });
 

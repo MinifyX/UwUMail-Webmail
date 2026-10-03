@@ -61,6 +61,7 @@ const OPTIONS: AssistOptions = {
   maxLabels: 30,
   maxInstructionChars: 2000,
   maxTextChars: 20000,
+  baseLabels: [...LABEL_BASES],
 };
 
 const SERVER_PROVIDER: AssistProvider = {

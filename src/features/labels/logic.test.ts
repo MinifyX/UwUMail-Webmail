@@ -280,6 +280,11 @@ describe("base labels and overlaps", () => {
     expect(missingBases([], LABEL_BASES)).toEqual([]);
   });
 
+  it("offers every base label again when all were deleted on a server that announces them", () => {
+    expect(missingBases([], LABEL_BASES, LABEL_BASES)).toEqual([...LABEL_BASES]);
+    expect(missingBases([{ base: null }], LABEL_BASES, ["invoice", "work"])).toEqual(["invoice", "work"]);
+  });
+
   it("explains each overlap once, by its kind", () => {
     expect(
       overlapLines(

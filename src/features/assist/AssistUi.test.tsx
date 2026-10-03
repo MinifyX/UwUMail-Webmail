@@ -37,6 +37,7 @@ const OPTIONS: AssistOptions = {
   maxLabels: 30,
   maxInstructionChars: 2000,
   maxTextChars: 20000,
+  baseLabels: [],
 };
 
 const ANSWER = { providerId: "q1", providerName: "Mistral (Server)", model: "mistral-small-latest", usage: null };

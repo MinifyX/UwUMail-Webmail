@@ -285,12 +285,20 @@ export function labelReasonText(
   }
 }
 
-/** The base labels the person deleted, in the server's order: they can be made again. */
-export function missingBases(labels: readonly Pick<AssistLabel, "base">[], all: readonly LabelBase[]): LabelBase[] {
-  // An older server knows no base labels: nothing is missing then.
-  if (!labels.some((label) => label.base)) return [];
+/**
+ * The base labels the person deleted, in the server's order: they can be made again. `known` are
+ * the ones the server announces; an older server announces none, but one whose labels carry a
+ * base knows them all.
+ */
+export function missingBases(
+  labels: readonly Pick<AssistLabel, "base">[],
+  all: readonly LabelBase[],
+  known: readonly LabelBase[] = [],
+): LabelBase[] {
+  const candidates =
+    known.length > 0 ? all.filter((base) => known.includes(base)) : labels.some((l) => l.base) ? all : [];
   const present = new Set(labels.map((label) => label.base));
-  return all.filter((base) => !present.has(base));
+  return candidates.filter((base) => !present.has(base));
 }
 
 /**

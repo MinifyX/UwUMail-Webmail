@@ -209,7 +209,7 @@ export function LabelSettings({ options }: { options: AssistOptions }) {
   const own = labels.filter((label) => !label.base);
   // Base labels don't count toward the limit.
   const room = own.length < options.maxLabels;
-  const missing = missingBases(labels, LABEL_BASES);
+  const missing = missingBases(labels, LABEL_BASES, options.baseLabels);
 
   const rows = (list: AssistLabel[]) => (
     <ul className="flex flex-col gap-1.5">
