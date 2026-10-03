@@ -230,7 +230,7 @@ function Verdict({ result }: { result: AssistSpamCheck }) {
                     <span className="mt-0.5 flex items-start gap-1 text-[12px] text-muted">
                       <Quote className="mt-0.5 size-3 shrink-0" aria-hidden />
                       <span className="min-w-0 break-words italic">
-                        {t("assist.spam.reasonQuote", { quote: reason.quote })}
+                        <QuotedIn text={t("assist.spam.reasonQuote", { quote: QUOTE_SLOT })} quote={reason.quote} />
                       </span>
                     </span>
                   ) : (
@@ -287,7 +287,10 @@ function Facts({ facts, language }: { facts: AssistSpamFacts; language: string }
                 <span className="min-w-0 flex-1">
                   <span className="block">{t(`assist.spam.evidence.${item.code}`, { defaultValue: item.code })}</span>
                   {item.detail && (
-                    <span className="selectable block font-mono text-[11px] break-all text-muted">{item.detail}</span>
+                    <span className="selectable block font-mono text-[11px] break-all text-muted">
+                      {/* Mail text: its direction marks stay inside (WF-2). */}
+                      <bdi>{item.detail}</bdi>
+                    </span>
                   )}
                 </span>
                 <span className={clsx("shrink-0 font-mono text-[11px] font-semibold", look.className)}>
@@ -421,5 +424,24 @@ function AuthResult({ name, value }: { name: string; value: string | null }) {
       <span className="font-semibold">{name}</span>
       <span className={look.className}>{value ?? t("assist.spam.authMissing")}</span>
     </span>
+  );
+}
+
+/** Stands for the quote in the translated sentence, so the quote itself can be isolated. */
+const QUOTE_SLOT = "\u{E000}";
+
+/**
+ * The translated "In the mail: “…”" with the quote in a `<bdi>`: it is mail text, and its direction
+ * marks must not reorder the sentence around it (security review 0.22 webmail WF-2).
+ */
+function QuotedIn({ text, quote }: { text: string; quote: string }) {
+  const at = text.indexOf(QUOTE_SLOT);
+  if (at < 0) return <bdi>{quote}</bdi>;
+  return (
+    <>
+      {text.slice(0, at)}
+      <bdi>{quote}</bdi>
+      {text.slice(at + QUOTE_SLOT.length)}
+    </>
   );
 }
