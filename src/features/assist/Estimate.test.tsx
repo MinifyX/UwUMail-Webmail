@@ -39,6 +39,7 @@ const fake = {
     maxLabels: 30,
     maxInstructionChars: 2000,
     maxTextChars: 20000,
+    baseLabels: [],
   })),
   calendarsAvailable: vi.fn(async () => true),
   assistEstimate: vi.fn(async (_request: AssistEstimateRequest) => estimate),

@@ -9,6 +9,8 @@ import type { AssistLabel, AssistLabelInput, AssistLabelLogEntry } from "@/backe
 
 /** What a label has before the server says more: no own conditions, learning on, nothing counted. */
 export const LABEL_DEFAULTS: Omit<AssistLabel, "id" | "name" | "description" | "keyword" | "color"> = {
+  base: null,
+  auto: true,
   rules: null,
   detector: null,
   learnSenders: true,
@@ -68,29 +70,6 @@ export function threadKeywords(messages: readonly { keywords?: string[] }[]): st
   return [...new Set(messages.flatMap((message) => message.keywords ?? []))].sort();
 }
 
-export type StarterLabel = "invoices" | "newsletters" | "orders" | "travel" | "appointments" | "personal";
-
-/** The suggested first labels: names and descriptions come from the translations. */
-export const STARTER_LABELS: readonly { id: StarterLabel; color: string }[] = [
-  { id: "invoices", color: "#f59e0b" },
-  { id: "newsletters", color: "#8b5cf6" },
-  { id: "orders", color: "#0ea5e9" },
-  { id: "travel", color: "#14b8a6" },
-  { id: "appointments", color: "#e11d74" },
-  { id: "personal", color: "#10b981" },
-];
-
-/** The starter labels that aren't there yet (by name, ignoring case), as ready inputs. */
-export function missingStarters(
-  labels: readonly AssistLabel[],
-  text: (id: StarterLabel) => { name: string; description: string },
-): AssistLabelInput[] {
-  const taken = new Set(labels.map((label) => label.name.trim().toLowerCase()));
-  return STARTER_LABELS.map(({ id, color }) => ({ ...text(id), color })).filter(
-    (input) => !taken.has(input.name.trim().toLowerCase()),
-  );
-}
-
 export type LabelProblem = "nameMissing" | "nameTooLong" | "nameTaken" | "descriptionTooLong" | "control";
 
 // Line breaks and control characters don't belong in a name.
@@ -111,7 +90,11 @@ export function labelProblems(
   else if (labels.some((label) => label.id !== except && label.name.trim().toLowerCase() === name.toLowerCase())) {
     problems.name = "nameTaken";
   }
-  if ([...input.description.trim()].length > LABEL_LIMITS.description) problems.description = "descriptionTooLong";
+  // A base label's description is its fixed definition, longer than an own label's may be.
+  const base = except !== undefined && labels.some((label) => label.id === except && label.base);
+  if (!base && [...input.description.trim()].length > LABEL_LIMITS.description) {
+    problems.description = "descriptionTooLong";
+  }
   return problems;
 }
 
@@ -119,8 +102,10 @@ export function labelProblems(
 export function labelPatch(label: AssistLabel, input: AssistLabelInput): Partial<AssistLabelInput> {
   const patch: Partial<AssistLabelInput> = {};
   if (input.name.trim() !== label.name) patch.name = input.name.trim();
-  if (input.description.trim() !== label.description) patch.description = input.description.trim();
+  // A base label's definition can't be changed; it is never sent.
+  if (!label.base && input.description.trim() !== label.description) patch.description = input.description.trim();
   if (input.color !== label.color) patch.color = input.color;
+  if (input.auto !== undefined && input.auto !== label.auto) patch.auto = input.auto;
   if (input.rules !== undefined && JSON.stringify(input.rules) !== JSON.stringify(label.rules)) {
     patch.rules = input.rules;
   }

@@ -233,9 +233,6 @@
     "compose": {
       "applied": "Hup, in je concept gestopt ✿"
     },
-    "labels": {
-      "startersTitle": "Zin om met een paar labels te beginnen? (｀・ω・´)"
-    },
     "spam": {
       "certainty": {
         "unsure": "niet zo zeker (・_・;)",
@@ -243,6 +240,11 @@
         "sure": "heel zeker ✿"
       },
       "modelVerdict": "Het model dacht ‘{{verdict}}’, maar de feiten zeggen iets anders, dus het blijft bij wat ze toelaten (｀・ω・´)"
+    }
+  },
+  "labels": {
+    "overlap": {
+      "title": "Hm, dat komt me bekend voor (・・?)"
     }
   }
 }

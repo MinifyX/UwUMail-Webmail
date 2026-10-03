@@ -228,9 +228,6 @@
     "compose": {
       "applied": "已经塞进你的草稿里啦 ✿"
     },
-    "labels": {
-      "startersTitle": "要不要先用几个标签开个头？ (｀・ω・´)"
-    },
     "spam": {
       "certainty": {
         "unsure": "不太确定 (・_・;)",
@@ -238,6 +235,11 @@
         "sure": "非常确定 ✿"
       },
       "modelVerdict": "模型觉得是“{{verdict}}”，但事实不这么说，所以结论只停在事实允许的范围里 (｀・ω・´)"
+    }
+  },
+  "labels": {
+    "overlap": {
+      "title": "咦，这个好眼熟 (・・?)"
     }
   }
 }

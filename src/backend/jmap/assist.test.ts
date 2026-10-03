@@ -19,10 +19,12 @@ import {
   toEstimate,
   toCost,
   toUsage,
+  baseLabelCreate,
   labelCreate,
   labelUpdate,
   toAssistLabel,
   toLabelLogEntry,
+  toLabelOverlaps,
   toLabelSettings,
   toLabelSuggestions,
   type EventStreamEvent,
@@ -200,7 +202,15 @@ describe("the capability", () => {
       maxLabels: 30,
       maxInstructionChars: 2000,
       maxTextChars: 20000,
+      baseLabels: [],
     });
+  });
+
+  it("reads the base labels the server knows, dropping unknown ones", () => {
+    expect(assistOptionsFrom({ [ASSIST]: { baseLabels: ["invoice", "gossip", "work"] } })?.baseLabels).toEqual([
+      "invoice",
+      "work",
+    ]);
   });
 });
 
@@ -792,6 +802,36 @@ describe("JmapBackend's assistant", () => {
     });
   });
 
+  it("checks overlaps with the server, skips text it wouldn't take, and says none on an older server", async () => {
+    const backend = await load();
+    jmap.one.mockResolvedValueOnce({ overlaps: [{ id: "g1", name: "Rechnung", base: "invoice", kind: "name" }] });
+    expect(await backend.checkLabelOverlap(" Rechnung ", " Belege ", "g9")).toEqual([
+      { id: "g1", name: "Rechnung", base: "invoice", kind: "name", words: [] },
+    ]);
+    expect(jmap.one).toHaveBeenCalledWith(
+      "AssistLabel/checkOverlap",
+      { name: "Rechnung", description: "Belege", id: "g9" },
+      using,
+    );
+    jmap.one.mockClear();
+    expect(await backend.checkLabelOverlap("x".repeat(101), "")).toEqual([]);
+    expect(await backend.checkLabelOverlap("   ", "")).toEqual([]);
+    expect(jmap.one).not.toHaveBeenCalled();
+    jmap.one.mockRejectedValueOnce(new JmapMethodError("not_supported", "unknown", "unknownMethod"));
+    expect(await backend.checkLabelOverlap("Reisen", "")).toEqual([]);
+  });
+
+  it("makes a deleted base label again with nothing but its base", async () => {
+    jmap.one.mockResolvedValueOnce({ created: { new: { id: "g4", name: "Rechnung", keyword: "rechnung" } } });
+    const label = await (await load()).restoreBaseLabel("invoice", false);
+    expect(jmap.one).toHaveBeenCalledWith(
+      "AssistLabel/set",
+      { create: { new: { base: "invoice", auto: false } } },
+      using,
+    );
+    expect(label).toMatchObject({ id: "g4", base: "invoice", auto: false, name: "Rechnung" });
+  });
+
   it("asks for the log of the own mail only", async () => {
     jmap.one.mockResolvedValueOnce({ list: [{ id: "l1", emailId: "e1", labelId: "g1", keyword: "Rechnungen" }] });
     const log = await (await load()).assistLabelLog(["e1", "a7~e2"]);
@@ -808,6 +848,8 @@ describe("labels", () => {
       description: "",
       keyword: "invoices",
       color: "#f59e0b",
+      base: null,
+      auto: true,
       rules: null,
       detector: null,
       learnSenders: true,
@@ -849,6 +891,12 @@ describe("labels", () => {
       detector: null,
       rules: null,
     });
+    expect(toAssistLabel({ id: "g4", base: "advertising", auto: false, detector: "work" })).toMatchObject({
+      base: "advertising",
+      auto: false,
+      detector: "work",
+    });
+    expect(toAssistLabel({ id: "g5", base: "horoscope", auto: "no" })).toMatchObject({ base: null, auto: true });
   });
 
   it("send only what changed, conditions trimmed and empty ones left out", () => {
@@ -880,12 +928,35 @@ describe("labels", () => {
       classifier: false,
     });
     expect(labelUpdate({ rules: null, detector: null })).toEqual({ rules: null, detector: null });
+    expect(labelUpdate({ auto: false })).toEqual({ auto: false });
+    // On is the default: an older server never sees the property it doesn't know.
+    expect(labelCreate({ name: "Kids", description: "", color: null, auto: true })).not.toHaveProperty("auto");
+    expect(labelCreate({ name: "Kids", description: "", color: null, auto: false })).toMatchObject({ auto: false });
+    expect(baseLabelCreate("invoice")).toEqual({ base: "invoice" });
+    expect(baseLabelCreate("work", false)).toEqual({ base: "work", auto: false });
+  });
+
+  it("read the overlaps, leaving out kinds this app doesn't know", () => {
+    expect(
+      toLabelOverlaps({
+        overlaps: [
+          { id: "g1", name: "Rechnung", base: "invoice", kind: "meaning", words: [] },
+          { id: "g2", name: "Handy", base: null, kind: "words", words: ["mobilfunk", 3] },
+          { id: "g3", name: "X", kind: "astrology" },
+        ],
+      }),
+    ).toEqual([
+      { id: "g1", name: "Rechnung", base: "invoice", kind: "meaning", words: [] },
+      { id: "g2", name: "Handy", base: null, kind: "words", words: ["mobilfunk"] },
+    ]);
+    expect(toLabelOverlaps({})).toEqual([]);
   });
 
   it("say who set a label, the model when an older server doesn't say", () => {
     expect(toLabelLogEntry({ id: "l1", emailId: "e1", labelId: "g1" }).source).toBe("ai");
     expect(toLabelLogEntry({ id: "l1", emailId: "e1", labelId: "g1", source: "sender" }).source).toBe("sender");
     expect(toLabelLogEntry({ id: "l1", emailId: "e1", labelId: "g1", source: "magic" }).source).toBe("ai");
+    expect(toLabelLogEntry({ id: "l1", emailId: "e1", labelId: "g1", source: "similar" }).source).toBe("similar");
   });
 
   it("take the verdicts and at most two new labels of Label again", () => {

@@ -1442,17 +1442,17 @@
       "title": "Labels",
       "description": "Je eigen woorden voor soorten mail. Labels verschijnen op mail hier en in andere mailapps (als trefwoorden). Het model kiest alleen uit jouw labels; het verplaatst, verwijdert of beantwoordt nooit mail.",
       "auto": "Nieuwe mail automatisch labelen",
-      "autoDesc": "Binnenkomende mail krijgt de labels die passen. Daarvoor leest het model de namen en beschrijvingen van je labels en het begin van elke mail.",
+      "autoDesc": "Binnenkomende mail krijgt het ene label dat het best past, soms een tweede, en geen als het model het niet zeker weet. Daarvoor leest het model de namen en beschrijvingen van je labels en het begin van elke mail.",
       "autoNoLabels": "Voeg eerst een paar labels toe; daarna krijgt binnenkomende mail de labels die passen.",
       "noProvider": "Op dit moment mag geen model labels instellen, dus er wordt niets gelabeld.",
       "new": "Nieuw label",
       "newTitle": "Nieuw label",
       "editTitle": "“{{name}}” bewerken",
       "name": "Naam",
-      "namePlaceholder": "bijv. Facturen",
+      "namePlaceholder": "bijv. Reizen",
       "descriptionField": "Wat hier hoort",
       "descriptionHint": "Het model leest dit om te beslissen. Een paar woorden of voorbeelden zijn genoeg.",
-      "descriptionPlaceholder": "bijv. Facturen, bonnetjes en betaalbevestigingen",
+      "descriptionPlaceholder": "bijv. Vluchten, hotels en treinkaartjes",
       "color": "Kleur",
       "noColor": "Geen kleur",
       "create": "Label aanmaken",
@@ -1468,12 +1468,6 @@
       "empty": "Nog geen labels.",
       "full_one": "Je hebt de limiet van {{count}} label bereikt.",
       "full_other": "Je hebt de limiet van {{count}} labels bereikt.",
-      "startersTitle": "Beginnen met een paar suggesties?",
-      "startersMore": "Meer suggesties",
-      "addStarters_one": "{{count}} label toevoegen",
-      "addStarters_other": "{{count}} labels toevoegen",
-      "startersAdded_one": "{{count}} label toegevoegd",
-      "startersAdded_other": "{{count}} labels toegevoegd",
       "applyDesc_one": "Mail die binnenkwam voordat de labels er waren, blijft zoals hij is. Laat het model nu naar je nieuwste mail in de inbox kijken.",
       "applyDesc_other": "Mail die binnenkwam voordat de labels er waren, blijft zoals hij is. Laat het model nu naar je {{count}} nieuwste mails in de inbox kijken.",
       "apply": "Recente mail labelen",
@@ -1498,32 +1492,6 @@
         "nameTaken": "Je hebt al een label met die naam.",
         "descriptionTooLong": "Maximaal {{max}} tekens.",
         "control": "Regeleinden en stuurtekens werken hier niet."
-      }
-    },
-    "starter": {
-      "invoices": {
-        "name": "Facturen",
-        "description": "Facturen, bonnetjes, betaalbevestigingen en herinneringen"
-      },
-      "newsletters": {
-        "name": "Nieuwsbrieven",
-        "description": "Nieuwsbrieven, aanbiedingen en reclame van winkels en diensten"
-      },
-      "orders": {
-        "name": "Bestellingen & verzending",
-        "description": "Orderbevestigingen, verzendberichten en leveringsupdates"
-      },
-      "travel": {
-        "name": "Reizen",
-        "description": "Boekingen, tickets, instapkaarten en hotelbevestigingen"
-      },
-      "appointments": {
-        "name": "Afspraken",
-        "description": "Afspraken, uitnodigingen, reserveringen en herinneringen aan datums"
-      },
-      "personal": {
-        "name": "Persoonlijk",
-        "description": "Mail van vrienden en familie, door een mens geschreven en niet massaal verstuurd"
       }
     },
     "settings": {
@@ -1789,14 +1757,19 @@
       "rule": "Gezet door de voorwaarden van het label",
       "sender": "Gezet vanwege de afzender",
       "detector": "Gezet door de ingebouwde herkenning",
-      "classifier": "Gezet door de lerende classificatie"
+      "classifier": "Gezet door de lerende classificatie",
+      "similar": "Zoals je mails met dit label"
     },
     "detector": {
       "none": "Geen",
       "invoice": "Facturen",
       "appointment": "Afspraken",
       "newsletter": "Nieuwsbrieven",
-      "shipping": "Verzending"
+      "shipping": "Verzending",
+      "account": "Account & beveiliging",
+      "personal": "Persoonlijke mail",
+      "work": "Werk & zakelijk",
+      "advertising": "Reclame"
     },
     "condition": {
       "from": "Afzender (adres of domein)",
@@ -1816,11 +1789,11 @@
       "autoDescription": "Labels kunnen zonder AI op nieuwe mail komen: via eigen voorwaarden, een ingebouwde herkenning, afzenders die je eerder labelde en een kleine classificatie die van je leert. Daarvoor verlaat niets de server.",
       "auto": "Nieuwe mail vanzelf labelen, zonder AI",
       "autoDesc": "Gebruikt wat bij elk label hieronder is ingesteld.",
-      "aiOn": "De assistent labelt nieuwe mail ook en beoordeelt de labels die nog niet gezet zijn.",
+      "aiOn": "De assistent helpt ook bij nieuwe mail waar de labels zonder AI het niet zeker weten. Een mail krijgt hoogstens twee labels, en geen als het onduidelijk is.",
       "aiOff": "De assistent labelt geen nieuwe mail.",
       "toAi": "AI-instellingen",
       "manage": "Labels beheren",
-      "listTitle": "Je labels",
+      "listTitle": "Je eigen labels",
       "mailCount_one": "{{count}} mail",
       "mailCount_other": "{{count}} mails",
       "conditionCount_one": "{{count}} voorwaarde",
@@ -1849,7 +1822,9 @@
       "examples_other": "Tot nu toe {{count}} van {{min}} voorbeelden.",
       "examplesReady_one": "Geleerd van {{count}} voorbeeld: actief.",
       "examplesReady_other": "Geleerd van {{count}} voorbeelden: actief.",
-      "listDescription": "Naam, kleur en wat elk label vanzelf op mail zet."
+      "listDescription": "Naam, kleur en wat elk label vanzelf op mail zet.",
+      "autoLabel": "Vanzelf zetten",
+      "autoLabelDesc": "Uit: het label komt alleen op mail als je het met de hand zet. Dan zet niets het nog vanzelf, niet de voorwaarden, de herkenning, geleerde afzenders, vergelijkbare mails of de assistent."
     },
     "log": {
       "title": "Onlangs vanzelf gezet",
@@ -1879,7 +1854,48 @@
         "text": "tekst bevat ‘{{value}}’",
         "attachmentYes": "heeft een bijlage",
         "attachmentNo": "heeft geen bijlage"
+      },
+      "similar": "Zoals {{count}} van je mails met dit label ({{percent}} gelijk)",
+      "invoiceNumber": "Lijkt op een factuur: factuurnummer {{number}}, {{amount}}",
+      "accountWord": "Over je account: ‘{{word}}’",
+      "accountCode": "Over je account: een eenmalige code",
+      "personalKnown": "Lijkt persoonlijk: geschreven door iemand die je kent",
+      "personalPrivate": "Lijkt persoonlijk: geschreven door iemand vanaf een privéadres",
+      "workColleague": "Lijkt op werk: geschreven door een collega uit je eigen domein",
+      "workContact": "Lijkt op werk: geschreven door een zakelijk contact dat je kent",
+      "advertising": "Lijkt op reclame: {{words}}"
+    },
+    "base": {
+      "title": "Basislabels",
+      "description": "Acht vaste labels, elk met een scherpe definitie, zodat mail elke keer hetzelfde label krijgt. Naam en kleur kun je aanpassen, en per label kies je of het vanzelf wordt gezet.",
+      "showDefinition": "Definitie tonen",
+      "hideDefinition": "Definitie verbergen",
+      "auto": "‘{{name}}’ vanzelf zetten",
+      "autoOn": "wordt vanzelf gezet",
+      "autoOff": "alleen met de hand",
+      "missingTitle": "Verwijderde basislabels",
+      "missingDescription": "Haal een basislabel met zijn definitie terug. Mail die het eerder had, krijgt het niet terug.",
+      "restore": "{{name}} terugzetten",
+      "restored": "Basislabel ‘{{name}}’ is terug",
+      "fixedDefinition": "De definitie van een basislabel ligt vast: daarnaar wordt gelabeld, met de hand en vanzelf.",
+      "detectorBuiltIn": "Heeft zijn eigen herkenning al ingebouwd.",
+      "names": {
+        "invoice": "Factuur",
+        "shipping": "Verzending",
+        "appointment": "Afspraak",
+        "newsletter": "Nieuwsbrief",
+        "account": "Account & beveiliging",
+        "personal": "Persoonlijk",
+        "work": "Werk & zakelijk",
+        "advertising": "Reclame"
       }
+    },
+    "overlap": {
+      "title": "Overlapt met je labels",
+      "name": "‘{{name}}’ heet al zo.",
+      "meaning": "Betekent hetzelfde als het basislabel ‘{{name}}’.",
+      "words": "Heel vergelijkbare woorden als ‘{{name}}’: {{words}}",
+      "hint": "Opslaan kan nog steeds, maar mail krijgt dan misschien de verkeerde van de twee."
     }
   },
   "font": {

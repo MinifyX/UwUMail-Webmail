@@ -51,6 +51,9 @@ for single accounts. The long version of every point is in
   phone syncs over CalDAV/CardDAV, plus a birthdays calendar with ages.
 - **Appointments in mail.** Dates in text and pictures are underlined and go into
   the calendar prefilled; _Find appointment_ asks the AI on a click.
+- **Labels, with or without AI.** Eight fixed base labels with sharp
+  definitions, each switched on or off by itself, your own labels next to them
+  with a warning when one overlaps, and at most two labels per mail.
 - **An AI assistant**, where the server has one: writing, summaries, spam second
   opinion, dates and labels, with the token count and cost before you click
   ([below](#ai-assistant)).

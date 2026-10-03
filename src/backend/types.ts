@@ -886,6 +886,8 @@ export interface AssistOptions {
   maxLabels: number;
   maxInstructionChars: number;
   maxTextChars: number;
+  /** The base labels the server knows; empty on servers before 0.22. */
+  baseLabels: LabelBase[];
 }
 
 export type AssistProviderKind =
@@ -1271,8 +1273,36 @@ export interface AssistEstimate {
 }
 
 /** A built-in recognizer a label can use without any AI: it sets the label on mail of that kind. */
-export type LabelDetector = "invoice" | "appointment" | "newsletter" | "shipping";
-export const LABEL_DETECTORS: readonly LabelDetector[] = ["invoice", "appointment", "newsletter", "shipping"];
+export type LabelDetector =
+  "invoice" | "appointment" | "newsletter" | "shipping" | "account" | "personal" | "work" | "advertising";
+export const LABEL_DETECTORS: readonly LabelDetector[] = [
+  "invoice",
+  "appointment",
+  "newsletter",
+  "shipping",
+  "account",
+  "personal",
+  "work",
+  "advertising",
+];
+
+/**
+ * One of the eight fixed base labels every person has: its definition is the server's and can't be
+ * changed, its name, colour and automatic parts can.
+ */
+export type LabelBase =
+  "invoice" | "shipping" | "appointment" | "newsletter" | "account" | "personal" | "work" | "advertising";
+/** In the server's order. */
+export const LABEL_BASES: readonly LabelBase[] = [
+  "invoice",
+  "shipping",
+  "appointment",
+  "newsletter",
+  "account",
+  "personal",
+  "work",
+  "advertising",
+];
 
 /** What a label's own condition looks at; `hasAttachment` takes "true" or "false". */
 export type LabelRuleField = "from" | "subject" | "text" | "hasAttachment";
@@ -1299,9 +1329,13 @@ export interface LabelRules {
 export interface AssistLabel {
   id: string;
   name: string;
-  /** What belongs there: what the model reads. */
+  /** What belongs there: what the model reads. A base label's is its fixed definition. */
   description: string;
   keyword: string;
+  /** Which base label it is; null for the person's own. */
+  base: LabelBase | null;
+  /** Put on automatically (detectors, senders, similar mail, classifier, model); off: only by hand. */
+  auto: boolean;
   /** `#rrggbb`, or null for the default. */
   color: string | null;
   /** Own conditions for arriving mail; null without. */
@@ -1328,10 +1362,27 @@ export interface AssistLabelInput {
   detector?: LabelDetector | null;
   learnSenders?: boolean;
   classifier?: boolean;
+  auto?: boolean;
 }
 
-/** Who put a label on a mail: the model, the label's conditions, a learned sender, a detector or the classifier. */
-export type LabelSource = "ai" | "rule" | "sender" | "detector" | "classifier";
+/** How a label overlaps another: the same name, the meaning of a base label, or largely the same words. */
+export type LabelOverlapKind = "name" | "meaning" | "words";
+
+/** A label a new or changed one would overlap with (`AssistLabel/checkOverlap`). */
+export interface LabelOverlap {
+  id: string;
+  name: string;
+  base: LabelBase | null;
+  kind: LabelOverlapKind;
+  /** The words both share (for "words"). */
+  words: string[];
+}
+
+/**
+ * Who put a label on a mail: the model, the label's conditions, a learned sender, a detector, the
+ * classifier, or its likeness to the person's mails with the label.
+ */
+export type LabelSource = "ai" | "rule" | "sender" | "detector" | "classifier" | "similar";
 
 /** A label put on a mail by itself, and why. */
 export interface AssistLabelLogEntry {

@@ -238,9 +238,6 @@
     "compose": {
       "applied": "Hop, c'est dans votre brouillon ✿"
     },
-    "labels": {
-      "startersTitle": "On commence avec quelques étiquettes ? (｀・ω・´)"
-    },
     "spam": {
       "certainty": {
         "unsure": "pas très sûr (・_・;)",
@@ -248,6 +245,11 @@
         "sure": "sûr de sûr ✿"
       },
       "modelVerdict": "Le modèle a cru à « {{verdict}} », mais les faits disent autre chose, donc on reste dans ce qu’ils permettent (｀・ω・´)"
+    }
+  },
+  "labels": {
+    "overlap": {
+      "title": "Tiens, ça me dit quelque chose (・・?)"
     }
   }
 }

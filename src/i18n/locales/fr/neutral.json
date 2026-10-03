@@ -1486,17 +1486,17 @@
       "title": "Étiquettes",
       "description": "Vos propres mots pour classer les e-mails. Les étiquettes apparaissent sur les e-mails ici et dans d'autres apps de messagerie (sous forme de mots-clés). Le modèle choisit uniquement parmi vos étiquettes ; il ne déplace, ne supprime et ne répond jamais à aucun e-mail.",
       "auto": "Étiqueter automatiquement les nouveaux e-mails",
-      "autoDesc": "Les e-mails entrants reçoivent les étiquettes qui leur correspondent. Pour cela, le modèle lit les noms et descriptions de vos étiquettes ainsi que le début de chaque e-mail.",
+      "autoDesc": "Les e-mails entrants reçoivent l'étiquette qui correspond le mieux, parfois une deuxième, et aucune quand le modèle n'est pas sûr. Pour cela, le modèle lit les noms et descriptions de vos étiquettes ainsi que le début de chaque e-mail.",
       "autoNoLabels": "Ajoutez d'abord quelques étiquettes ; les e-mails entrants recevront ensuite celles qui leur correspondent.",
       "noProvider": "Aucun modèle ne peut attribuer d'étiquettes pour le moment, donc rien n'est étiqueté.",
       "new": "Nouvelle étiquette",
       "newTitle": "Nouvelle étiquette",
       "editTitle": "Modifier « {{name}} »",
       "name": "Nom",
-      "namePlaceholder": "p. ex. Factures",
+      "namePlaceholder": "p. ex. Voyages",
       "descriptionField": "Ce qui va ici",
       "descriptionHint": "Le modèle s'en sert pour décider. Quelques mots ou exemples suffisent.",
-      "descriptionPlaceholder": "p. ex. Factures, reçus et confirmations de paiement",
+      "descriptionPlaceholder": "p. ex. Vols, hôtels et billets de train",
       "color": "Couleur",
       "noColor": "Aucune couleur",
       "create": "Créer l'étiquette",
@@ -1513,14 +1513,6 @@
       "full_one": "Vous avez atteint la limite de {{count}} étiquette.",
       "full_many": "Vous avez atteint la limite de {{count}} étiquettes.",
       "full_other": "Vous avez atteint la limite de {{count}} étiquettes.",
-      "startersTitle": "Commencer avec quelques suggestions ?",
-      "startersMore": "Plus de suggestions",
-      "addStarters_one": "Ajouter {{count}} étiquette",
-      "addStarters_many": "Ajouter {{count}} étiquettes",
-      "addStarters_other": "Ajouter {{count}} étiquettes",
-      "startersAdded_one": "{{count}} étiquette ajoutée",
-      "startersAdded_many": "{{count}} étiquettes ajoutées",
-      "startersAdded_other": "{{count}} étiquettes ajoutées",
       "applyDesc_one": "Les e-mails arrivés avant les étiquettes restent tels quels. Laissez le modèle examiner maintenant votre e-mail le plus récent de la boîte de réception.",
       "applyDesc_many": "Les e-mails arrivés avant les étiquettes restent tels quels. Laissez le modèle examiner maintenant vos {{count}} e-mails les plus récents de la boîte de réception.",
       "applyDesc_other": "Les e-mails arrivés avant les étiquettes restent tels quels. Laissez le modèle examiner maintenant vos {{count}} e-mails les plus récents de la boîte de réception.",
@@ -1547,32 +1539,6 @@
         "nameTaken": "Vous avez déjà une étiquette portant ce nom.",
         "descriptionTooLong": "{{max}} caractères au maximum.",
         "control": "Les sauts de ligne et les caractères de contrôle ne sont pas acceptés ici."
-      }
-    },
-    "starter": {
-      "invoices": {
-        "name": "Factures",
-        "description": "Factures, reçus, confirmations de paiement et relances"
-      },
-      "newsletters": {
-        "name": "Newsletters",
-        "description": "Newsletters, offres et publicités de boutiques et de services"
-      },
-      "orders": {
-        "name": "Commandes et livraisons",
-        "description": "Confirmations de commande, avis d'expédition et suivis de livraison"
-      },
-      "travel": {
-        "name": "Voyages",
-        "description": "Réservations, billets, cartes d'embarquement et confirmations d'hôtel"
-      },
-      "appointments": {
-        "name": "Rendez-vous",
-        "description": "Rendez-vous, invitations, réservations et rappels de dates"
-      },
-      "personal": {
-        "name": "Personnel",
-        "description": "E-mails d'amis et de famille écrits par une personne, pas envoyés en masse"
       }
     },
     "settings": {
@@ -1853,14 +1819,19 @@
       "rule": "Posée par les conditions de l'étiquette",
       "sender": "Posée à cause de l'expéditeur",
       "detector": "Posée par la détection intégrée",
-      "classifier": "Posée par le classificateur qui apprend"
+      "classifier": "Posée par le classificateur qui apprend",
+      "similar": "Comme vos e-mails avec cette étiquette"
     },
     "detector": {
       "none": "Aucune",
       "invoice": "Factures",
       "appointment": "Rendez-vous",
       "newsletter": "Newsletters",
-      "shipping": "Livraisons"
+      "shipping": "Livraisons",
+      "account": "Compte & sécurité",
+      "personal": "E-mails personnels",
+      "work": "Travail",
+      "advertising": "Publicité"
     },
     "condition": {
       "from": "Expéditeur (adresse ou domaine)",
@@ -1880,11 +1851,11 @@
       "autoDescription": "Les étiquettes peuvent se poser sur les nouveaux e-mails sans aucune IA : par leurs propres conditions, une détection intégrée, les expéditeurs que vous avez déjà étiquetés et un petit classificateur qui apprend de vous. Rien ne quitte le serveur pour cela.",
       "auto": "Étiqueter les nouveaux e-mails tout seul, sans IA",
       "autoDesc": "Utilise ce qui est réglé pour chaque étiquette ci-dessous.",
-      "aiOn": "L'assistant étiquette aussi les nouveaux e-mails et juge les étiquettes qui ne sont pas encore posées.",
+      "aiOn": "L'assistant aide aussi pour les nouveaux e-mails là où les étiquettes sans IA ne sont pas sûres. Un e-mail reçoit au plus deux étiquettes, et aucune en cas de doute.",
       "aiOff": "L'assistant n'étiquette pas les nouveaux e-mails.",
       "toAi": "Réglages de l'IA",
       "manage": "Gérer les étiquettes",
-      "listTitle": "Vos étiquettes",
+      "listTitle": "Vos propres étiquettes",
       "mailCount_one": "{{count}} e-mail",
       "mailCount_other": "{{count}} e-mails",
       "mailCount_many": "{{count}} e-mails",
@@ -1918,7 +1889,9 @@
       "examplesReady_one": "A appris de {{count}} exemple : actif.",
       "examplesReady_other": "A appris de {{count}} exemples : actif.",
       "examplesReady_many": "A appris de {{count}} exemples : actif.",
-      "listDescription": "Nom, couleur et ce qui pose chaque étiquette toute seule sur les e-mails."
+      "listDescription": "Nom, couleur et ce qui pose chaque étiquette toute seule sur les e-mails.",
+      "autoLabel": "Pose automatique",
+      "autoLabelDesc": "Désactivé : l'étiquette n'est posée que si vous la posez à la main. Plus rien ne la pose automatiquement, ni ses conditions, ni la détection, ni les expéditeurs appris, ni les e-mails similaires, ni l'assistant."
     },
     "log": {
       "title": "Posées automatiquement récemment",
@@ -1948,7 +1921,48 @@
         "text": "le texte contient « {{value}} »",
         "attachmentYes": "a une pièce jointe",
         "attachmentNo": "n’a pas de pièce jointe"
+      },
+      "similar": "Comme {{count}} de vos e-mails avec cette étiquette ({{percent}} de ressemblance)",
+      "invoiceNumber": "Ressemble à une facture : numéro de facture {{number}}, {{amount}}",
+      "accountWord": "Concerne votre compte : « {{word}} »",
+      "accountCode": "Concerne votre compte : un code à usage unique",
+      "personalKnown": "Semble personnel : écrit par une personne que vous connaissez",
+      "personalPrivate": "Semble personnel : écrit par une personne depuis une adresse privée",
+      "workColleague": "Semble professionnel : écrit par un collègue de votre propre domaine",
+      "workContact": "Semble professionnel : écrit par un contact professionnel que vous connaissez",
+      "advertising": "Ressemble à de la publicité : {{words}}"
+    },
+    "base": {
+      "title": "Étiquettes de base",
+      "description": "Huit étiquettes fixes, chacune avec une définition précise, pour que les e-mails reçoivent toujours la même étiquette. Vous pouvez changer leur nom et leur couleur, et choisir pour chacune si elle est posée automatiquement.",
+      "showDefinition": "Afficher la définition",
+      "hideDefinition": "Masquer la définition",
+      "auto": "Poser « {{name}} » automatiquement",
+      "autoOn": "posée automatiquement",
+      "autoOff": "seulement à la main",
+      "missingTitle": "Étiquettes de base supprimées",
+      "missingDescription": "Rétablissez une étiquette de base avec sa définition. Les e-mails qui l'avaient avant ne la récupèrent pas.",
+      "restore": "Rétablir {{name}}",
+      "restored": "L'étiquette de base « {{name}} » est de retour",
+      "fixedDefinition": "La définition d'une étiquette de base est fixe : l'étiquetage s'y tient, à la main comme automatiquement.",
+      "detectorBuiltIn": "Possède déjà sa propre détection intégrée.",
+      "names": {
+        "invoice": "Facture",
+        "shipping": "Livraison",
+        "appointment": "Rendez-vous",
+        "newsletter": "Lettre d'info",
+        "account": "Compte & sécurité",
+        "personal": "Personnel",
+        "work": "Travail",
+        "advertising": "Publicité"
       }
+    },
+    "overlap": {
+      "title": "Recoupe vos étiquettes",
+      "name": "« {{name}} » porte déjà ce nom.",
+      "meaning": "Signifie la même chose que l'étiquette de base « {{name}} ».",
+      "words": "Mots très proches de « {{name}} » : {{words}}",
+      "hint": "Vous pouvez quand même enregistrer, mais les e-mails risquent alors de recevoir la mauvaise des deux."
     }
   },
   "font": {

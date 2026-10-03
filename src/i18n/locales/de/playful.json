@@ -233,9 +233,6 @@
     "compose": {
       "applied": "Hab’s in deinen Entwurf gesteckt ✿"
     },
-    "labels": {
-      "startersTitle": "Magst du mit ein paar Labels anfangen? (｀・ω・´)"
-    },
     "spam": {
       "certainty": {
         "unsure": "unsicher (・_・;)",
@@ -243,6 +240,11 @@
         "sure": "ganz sicher ✿"
       },
       "modelVerdict": "Das Modell dachte „{{verdict}}“, aber die Fakten sehen das anders, also bleibt es bei dem, was sie hergeben (｀・ω・´)"
+    }
+  },
+  "labels": {
+    "overlap": {
+      "title": "Hm, das kommt mir bekannt vor (・・?)"
     }
   }
 }

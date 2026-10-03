@@ -1396,17 +1396,17 @@
       "title": "ラベル",
       "description": "メールの種類を表す、あなた独自の言葉です。ラベルはここでも他のメールアプリでも（キーワードとして）メールに表示されます。モデルはあなたのラベルの中から選ぶだけで、メールを移動・削除したり返信したりすることはありません。",
       "auto": "新着メールに自動でラベルを付ける",
-      "autoDesc": "受信したメールに、合うラベルが付きます。そのためにモデルは、ラベルの名前と説明、そして各メールの冒頭を読みます。",
+      "autoDesc": "受信したメールには、最も合うラベルが1つ（場合によってはもう1つ）付き、モデルが確信できないときは何も付きません。そのためにモデルは、ラベルの名前と説明、そして各メールの冒頭を読みます。",
       "autoNoLabels": "まずラベルをいくつか追加してください。その後、受信したメールに合うラベルが付きます。",
       "noProvider": "現在ラベルを付けられるモデルがないため、ラベルは付きません。",
       "new": "新しいラベル",
       "newTitle": "新しいラベル",
       "editTitle": "「{{name}}」を編集",
       "name": "名前",
-      "namePlaceholder": "例: 請求書",
+      "namePlaceholder": "例: 旅行",
       "descriptionField": "対象となるメール",
       "descriptionHint": "モデルはこれを読んで判断します。いくつかの言葉や例で十分です。",
-      "descriptionPlaceholder": "例: 請求書、領収書、支払い確認",
+      "descriptionPlaceholder": "例: 航空券、ホテル、列車のチケット",
       "color": "色",
       "noColor": "色なし",
       "create": "ラベルを作成",
@@ -1421,10 +1421,6 @@
       "noDescription": "説明なし",
       "empty": "ラベルはまだありません。",
       "full_other": "ラベルの上限（{{count}} 個）に達しました。",
-      "startersTitle": "いくつかの候補から始めますか？",
-      "startersMore": "ほかの候補",
-      "addStarters_other": "ラベルを {{count}} 個追加",
-      "startersAdded_other": "ラベルを {{count}} 個追加しました",
       "applyDesc_other": "ラベルを使い始める前に届いたメールはそのままです。受信トレイの最新のメール {{count}} 件を、今すぐモデルに確認してもらえます。",
       "apply": "最近のメールにラベルを付ける",
       "applied_other": "{{count}} 件のメールにラベルが付きました",
@@ -1447,32 +1443,6 @@
         "nameTaken": "同じ名前のラベルがすでにあります。",
         "descriptionTooLong": "最大 {{max}} 文字です。",
         "control": "改行や制御文字はここでは使えません。"
-      }
-    },
-    "starter": {
-      "invoices": {
-        "name": "請求書",
-        "description": "請求書、領収書、支払い確認、督促"
-      },
-      "newsletters": {
-        "name": "ニュースレター",
-        "description": "ショップやサービスからのニュースレター、セール情報、広告"
-      },
-      "orders": {
-        "name": "注文・配送",
-        "description": "注文確認、発送通知、配達状況のお知らせ"
-      },
-      "travel": {
-        "name": "旅行",
-        "description": "予約、チケット、搭乗券、ホテルの予約確認"
-      },
-      "appointments": {
-        "name": "予定",
-        "description": "予定、招待、予約、日時のリマインダー"
-      },
-      "personal": {
-        "name": "個人",
-        "description": "友人や家族から届いた、人が書いたメール（一斉送信ではないもの）"
       }
     },
     "settings": {
@@ -1723,14 +1693,19 @@
       "rule": "ラベルの条件で付きました",
       "sender": "差出人をもとに付きました",
       "detector": "内蔵の判定で付きました",
-      "classifier": "学習した分類器が付けました"
+      "classifier": "学習した分類器が付けました",
+      "similar": "このラベルの付いたメールに似ています"
     },
     "detector": {
       "none": "なし",
       "invoice": "請求書",
       "appointment": "予定",
       "newsletter": "ニュースレター",
-      "shipping": "配送"
+      "shipping": "配送",
+      "account": "アカウントとセキュリティ",
+      "personal": "個人のメール",
+      "work": "仕事",
+      "advertising": "広告"
     },
     "condition": {
       "from": "差出人（アドレスまたはドメイン）",
@@ -1750,11 +1725,11 @@
       "autoDescription": "ラベルは AI を使わずに新しいメールに付けられます。ラベル自身の条件、内蔵の判定、以前にラベルを付けた差出人、そしてあなたから学ぶ小さな分類器によるものです。そのためにサーバーの外へ出るものはありません。",
       "auto": "新しいメールに AI なしで自動でラベルを付ける",
       "autoDesc": "下の各ラベルの設定を使います。",
-      "aiOn": "アシスタントも新しいメールにラベルを付け、まだ付いていないラベルを判断します。",
+      "aiOn": "AIなしのラベルで判断できないとき、アシスタントも新しいメールを手伝います。1通に付くラベルは最大2つで、はっきりしないときは付きません。",
       "aiOff": "アシスタントは新しいメールにラベルを付けません。",
       "toAi": "AI の設定",
       "manage": "ラベルを管理",
-      "listTitle": "あなたのラベル",
+      "listTitle": "自分のラベル",
       "mailCount_other": "{{count}} 件",
       "conditionCount_other": "条件 {{count}} 個",
       "learnsSenders": "差出人を学習",
@@ -1778,7 +1753,9 @@
       "classifierDesc": "サーバー上の小さな分類器が、あなたが手で付けたり外したりしたラベルから学習します。{{min}} 件の例が集まってから、十分に確信がある場合だけ動きます。",
       "examples_other": "現在 {{count}} / {{min}} 件の例。",
       "examplesReady_other": "{{count}} 件の例から学習済み: 有効。",
-      "listDescription": "名前、色、そして各ラベルを自動で付ける条件。"
+      "listDescription": "名前、色、そして各ラベルを自動で付ける条件。",
+      "autoLabel": "自動で付ける",
+      "autoLabelDesc": "オフ: このラベルは手動で付けたときだけ付きます。条件、判定、学習した差出人、似たメール、アシスタントのどれも自動では付けません。"
     },
     "log": {
       "title": "最近自動で付いたラベル",
@@ -1808,7 +1785,48 @@
         "text": "本文に「{{value}}」を含む",
         "attachmentYes": "添付ファイルあり",
         "attachmentNo": "添付ファイルなし"
+      },
+      "similar": "このラベルの付いたメール{{count}}件に似ています（類似度{{percent}}）",
+      "invoiceNumber": "請求書のようです：請求書番号 {{number}}、{{amount}}",
+      "accountWord": "アカウントに関するメールです：「{{word}}」",
+      "accountCode": "アカウントに関するメールです：ワンタイムコード",
+      "personalKnown": "個人的なメールのようです：知り合いが書いたものです",
+      "personalPrivate": "個人的なメールのようです：個人のアドレスから書かれています",
+      "workColleague": "仕事のメールのようです：同じドメインの同僚が書いたものです",
+      "workContact": "仕事のメールのようです：知っている取引先が書いたものです",
+      "advertising": "広告のようです：{{words}}"
+    },
+    "base": {
+      "title": "基本ラベル",
+      "description": "それぞれ明確な定義を持つ8つの固定ラベルです。メールに毎回同じラベルが付きます。名前と色は自由に変えられ、ラベルごとに自動で付けるかどうかを選べます。",
+      "showDefinition": "定義を表示",
+      "hideDefinition": "定義を隠す",
+      "auto": "「{{name}}」を自動で付ける",
+      "autoOn": "自動で付きます",
+      "autoOff": "手動のみ",
+      "missingTitle": "削除した基本ラベル",
+      "missingDescription": "基本ラベルを定義ごと元に戻します。以前付いていたメールには戻りません。",
+      "restore": "{{name}}を元に戻す",
+      "restored": "基本ラベル「{{name}}」を元に戻しました",
+      "fixedDefinition": "基本ラベルの定義は固定です。手動でも自動でも、この定義に沿ってラベルが付きます。",
+      "detectorBuiltIn": "専用の判定がすでに組み込まれています。",
+      "names": {
+        "invoice": "請求書",
+        "shipping": "配送",
+        "appointment": "予定",
+        "newsletter": "ニュースレター",
+        "account": "アカウントとセキュリティ",
+        "personal": "個人",
+        "work": "仕事",
+        "advertising": "広告"
       }
+    },
+    "overlap": {
+      "title": "既存のラベルと重なっています",
+      "name": "「{{name}}」はすでに同じ名前です。",
+      "meaning": "基本ラベル「{{name}}」と同じ意味です。",
+      "words": "「{{name}}」ととても似た言葉です: {{words}}",
+      "hint": "このまま保存できますが、メールに2つのうち違う方が付くかもしれません。"
     }
   },
   "font": {
