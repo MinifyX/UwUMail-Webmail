@@ -10,7 +10,7 @@ import { fontVariables, rewriteElementFonts } from "@/lib/mailFonts";
 import { dropLocalPictures, proxyCspSource, proxyRemoteImages, type ImageProxy } from "@/lib/remoteImages";
 import { SAFE_LINK_MARKER, unwrapSafeLink, unwrapSafeLinkElement } from "@/lib/safeLinks";
 import type { MailAppearance } from "@/state/settings";
-import { hideLinkStatus, watchLinks } from "./linkEvents";
+import { hideLinkStatus, keepFrameOnMail, watchLinks } from "./linkEvents";
 import { darkenImages, type RemoteImageLoader } from "./darkImages";
 import { darkenDocument, decide, declaresDarkMode, forceColorSchemeQueries, measure } from "./darkMode";
 import { forwardFrameKeys } from "./readerKeys";
@@ -91,6 +91,28 @@ function sanitize(html: string, alsoForbid: string[] = []) {
 }
 
 export const ROOT_ID = "uwu-mail-root";
+
+/**
+ * The sandbox of every frame that shows a mail. `allow-same-origin` lets the webmail measure the
+ * height, recolor for dark mode and read the document. `allow-scripts` is there for WebKit
+ * (Safari on macOS and iOS): in a frame without it, WebKit never calls the listeners the webmail
+ * puts on the mail's document, so a click on a link went past the link question and opened the
+ * page inside the frame, and dates and shortcuts did nothing either. The mail itself still runs
+ * nothing: the sanitizer drops scripts and event attributes, the document's own policy
+ * (`default-src 'none'`, the first thing in its head) blocks whatever would be left, and the
+ * webmail's policy (`script-src 'self'`) applies on top.
+ */
+export const MAIL_FRAME_SANDBOX = "allow-same-origin allow-scripts";
+
+/** Whether a mail frame shows something else than its mail, e.g. a page a link opened in it. */
+export function frameStrayed(frame: HTMLIFrameElement): boolean {
+  const doc = frame.contentDocument;
+  // Another origin's page can't be read at all; about:blank is where a frame starts out.
+  return !doc || (doc.URL !== "about:srcdoc" && doc.URL !== "about:blank");
+}
+
+/** How often a frame is put back on its mail before the reader gives up (a page fighting back). */
+const MAX_RETURNS = 3;
 
 const readable = new WeakMap<Message, string>();
 
@@ -220,8 +242,10 @@ a{color:${dark ? "#ff9dbf" : "#c8165f"}}`;
 a{color:${dark ? "#ff9dbf" : "#c8165f"}}
 p{margin:0 0 12px}
 blockquote{margin:8px 0;padding-left:12px;border-left:3px solid ${dark ? "#4d2338" : "#ffd0e2"};color:${dark ? "#b3a8b3" : "#716672"}}`;
-  return `<!doctype html><html><head><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="${csp}">
+  // The policy comes first, before anything else in the document: the frame may run scripts (see
+  // MessageBody), so this is what keeps the mail from running any of its own.
+  return `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${csp}">
+<meta charset="utf-8">
 <style>${frame}
 ${isHtml ? html : text}${defer ? `\n${PICTURE_STYLES}` : ""}</style></head><body><div id="${ROOT_ID}">${body}</div></body></html>`;
 }
@@ -271,8 +295,9 @@ export function buildPrintDocument(
   ]
     .map(([label, value]) => `<tr><th>${escape(label!)}</th><td>${value}</td></tr>`)
     .join("");
-  return `<!doctype html><html><head><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${imageSources}; style-src 'unsafe-inline'; font-src data:">
+  // The policy first, as in buildDocument: the print frame may run scripts, the mail may not.
+  return `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${imageSources}; style-src 'unsafe-inline'; font-src data:">
+<meta charset="utf-8">
 <title>${escape(message.subject)}</title>
 <style>@page{margin:16mm}body{margin:0;color:#1c1420;background:#fff;font:14px/1.5 system-ui,sans-serif}
 h1{font-size:20px;margin:0 0 8px}table.head{border-collapse:collapse;margin:0 0 12px;font-size:12.5px}
@@ -437,6 +462,20 @@ export function MessageBody({
   /** Documents already set up, so the early start and the load event never both do it. */
   const prepared = useRef(new WeakSet<Document>());
   const frameRef = useRef<HTMLIFrameElement | null>(null);
+  const returns = useRef({ signature: "", count: 0 });
+
+  /** The frame loaded something: its mail, to set up, or something else, to replace by the mail. */
+  const onLoad = (frame: HTMLIFrameElement) => {
+    if (!frameStrayed(frame)) {
+      setUp(frame);
+      return;
+    }
+    if (returns.current.signature !== signature) returns.current = { signature, count: 0 };
+    if (returns.current.count >= MAX_RETURNS) return;
+    returns.current.count += 1;
+    // React wouldn't set an unchanged srcdoc again; setting it loads the mail anew.
+    frame.srcdoc = html;
+  };
 
   const setUp = (frame: HTMLIFrameElement) => {
     const doc = frame.contentDocument;
@@ -505,6 +544,7 @@ export function MessageBody({
     // ↑/↓ and the other shortcuts keep working while the focus is inside the mail.
     forwardFrameKeys(frame, doc);
     watchLinks(frame, doc);
+    keepFrameOnMail(doc);
   };
 
   // A srcdoc frame's load event waits for every picture in it, and one dead host held the whole
@@ -572,11 +612,11 @@ export function MessageBody({
         key={signature}
         ref={frameRef}
         title={message.subject}
-        // No allow-scripts: mail content can never run code. allow-same-origin only
-        // lets the app measure the height, recolor for dark mode and intercept links.
-        sandbox="allow-same-origin"
+        // See MAIL_FRAME_SANDBOX: the webmail's listeners need allow-scripts in Safari, the
+        // mail's own code is kept out by the sanitizer and the document's policy.
+        sandbox={MAIL_FRAME_SANDBOX}
         srcDoc={html}
-        onLoad={(event) => setUp(event.currentTarget)}
+        onLoad={(event) => onLoad(event.currentTarget)}
         style={{ height, colorScheme: scheme, opacity: hidden ? 0 : 1 }}
         className="block w-full rounded-2xl border-0 transition-opacity duration-150"
       />

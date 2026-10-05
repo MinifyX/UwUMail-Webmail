@@ -143,3 +143,21 @@ export function watchLinks(frame: HTMLIFrameElement, doc: Document) {
     if (linkOf(event.target)) event.preventDefault();
   });
 }
+
+interface NavigateEvent extends Event {
+  destination: { url: string };
+}
+
+/**
+ * Belt and braces for the click handler above: whatever would still navigate the mail's frame (a
+ * kind of link it doesn't know, an engine that skips the listener) is stopped before it leaves,
+ * where the browser has the Navigation API. Only loading the mail itself (`about:srcdoc`, when its
+ * look changes) goes ahead. MessageBody puts a frame that left anyway back on its mail.
+ */
+export function keepFrameOnMail(doc: Document) {
+  const navigation = (doc.defaultView as (Window & { navigation?: EventTarget }) | null)?.navigation;
+  navigation?.addEventListener("navigate", (event) => {
+    const { destination, cancelable } = event as NavigateEvent;
+    if (cancelable && destination.url !== "about:srcdoc") event.preventDefault();
+  });
+}
