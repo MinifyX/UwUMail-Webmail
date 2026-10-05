@@ -32,12 +32,12 @@ talks to it over JMAP.
   the system's reduced motion). See [nyu-animations.md](nyu-animations.md).
 - **Fonts.** The webmail is set in UwU Sans, UwUMail's own font (Atkinson
   Hyperlegible Next with Nyu, a heart and arrows added; `:3` and `<3` stay as
-  you typed them). _Settings → Appearance → Font_ switches to Rubik, DM Sans
-  or the system font, in this browser only. Mails get the same font: one without a font of its own no
-  longer ends up in Times, serif fonts are replaced unless _Settings → Reading
-  → Sender fonts_ says to keep them, and a missing Calibri or Aptos falls back
-  to yours. The mail frame may load exactly that font's files and nothing else
-  from the server.
+  you typed them). _Settings → Appearance → Font_ switches to Rubik, DM Sans or
+  the system font, in this browser only. Mails get the same font: one without a
+  font of its own no longer ends up in Times, serif fonts are replaced unless
+  _Settings → Reading → Sender fonts_ says to keep them, and a missing Calibri
+  or Aptos falls back to yours. The mail frame may load exactly that font's
+  files and nothing else from the server.
 - **Mail HTML is never trusted.** The server hands out a cleaned version, and the
   webmail shows it in a sandboxed frame that blocks scripts and remote content
   until you ask for them.
