@@ -125,7 +125,11 @@ cp .env.example .env.local   # point UWUMAIL_DEV_SERVER at a test server
 pnpm dev                     # http://localhost:1440/mail/
 pnpm dev:demo                # sample data, no server needed
 pnpm build                   # typecheck, then dist/
+scripts/webkit-links.sh      # links in a demo mail, in real WebKit and Chromium (Docker)
 ```
+
+Run the last one after changing how mails are shown (the reader's frame, its links, keys or
+dates): Safari doesn't behave like jsdom there.
 
 `pnpm build` writes `dist/`, which the server bakes into its binary. The
 server's container build clones this repository at a fixed commit, so a server

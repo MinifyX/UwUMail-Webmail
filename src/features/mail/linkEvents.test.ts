@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { useLinks } from "@/state/links";
 import { DEFAULT_SETTINGS, useSettings } from "@/state/settings";
-import { watchLinks } from "./linkEvents";
+import { keepFrameOnMail, watchLinks } from "./linkEvents";
 
 function mailDocument(body: string) {
   const doc = document.implementation.createHTMLDocument("mail");
@@ -49,5 +49,33 @@ describe("links in a mail", () => {
     doc.querySelector("a")!.dispatchEvent(click);
     expect(click.defaultPrevented).toBe(false);
     expect(useLinks.getState().pending).toBeNull();
+  });
+});
+
+describe("keepFrameOnMail", () => {
+  /** A stand-in for the Navigation API, which jsdom lacks. */
+  function navigate(doc: Document, url: string) {
+    const event = Object.assign(new Event("navigate", { cancelable: true }), { destination: { url } });
+    (doc.defaultView as unknown as { navigation: EventTarget }).navigation.dispatchEvent(event);
+    return event.defaultPrevented;
+  }
+
+  it("stops every navigation but loading the mail itself", () => {
+    const frame = document.createElement("iframe");
+    document.body.append(frame);
+    const doc = frame.contentDocument!;
+    Object.defineProperty(doc.defaultView!, "navigation", { value: new EventTarget() });
+    keepFrameOnMail(doc);
+    expect(navigate(doc, "https://evil.example/")).toBe(true);
+    expect(navigate(doc, "about:blank#top")).toBe(true);
+    expect(navigate(doc, "about:srcdoc")).toBe(false);
+    frame.remove();
+  });
+
+  it("does nothing where the engine has no Navigation API", () => {
+    const frame = document.createElement("iframe");
+    document.body.append(frame);
+    expect(() => keepFrameOnMail(frame.contentDocument!)).not.toThrow();
+    frame.remove();
   });
 });
