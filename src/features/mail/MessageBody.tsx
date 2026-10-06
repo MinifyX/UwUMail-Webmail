@@ -62,8 +62,7 @@ purifier.addHook("afterSanitizeAttributes", (node) => {
 
 /**
  * The engine already sanitizes HTML. We sanitize again here because the demo
- * backend and future addons can also produce message bodies. `alsoForbid` drops more elements with
- * their content.
+ * backend can also produce message bodies. `alsoForbid` drops more elements with their content.
  */
 function sanitize(html: string, alsoForbid: string[] = []) {
   return purifier.sanitize(html, {

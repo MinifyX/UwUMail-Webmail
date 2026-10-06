@@ -62,7 +62,6 @@ export type SettingsSection =
   | "assistant"
   | "security"
   | "accounts"
-  | "addons"
   | "about";
 
 /** The parts of the app the switch at the top of the sidebar leads to. */
