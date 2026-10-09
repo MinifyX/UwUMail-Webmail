@@ -3,8 +3,8 @@
 // When a mail is shown dark, its light images are recolored to match (see
 // imageRecolor.ts for how). This part finds the images, reads their pixels,
 // has a worker do the work and swaps in the result. Remote images the page
-// may not read come from the engine (desktop) or need the sender's CORS
-// permission (webmail); otherwise they stay as they are.
+// may not read come from the engine (desktop) or the server's image proxy
+// (webmail); otherwise they stay as they are.
 
 import { contrast, DARK_SURFACE, IMAGE_BACKING, parseColor, type Rgba } from "./darkMode";
 import { FAILED_EVENT, LOADED_EVENT, PENDING, SOURCE_EVENT } from "./remotePictures";
@@ -131,9 +131,8 @@ function loaded(image: HTMLImageElement): Promise<boolean> {
   });
 }
 
-async function decode(src: string, crossOrigin: boolean): Promise<HTMLImageElement | null> {
+async function decode(src: string): Promise<HTMLImageElement | null> {
   const image = new Image();
-  if (crossOrigin) image.crossOrigin = "anonymous";
   image.src = src;
   try {
     await image.decode();
@@ -143,19 +142,32 @@ async function decode(src: string, crossOrigin: boolean): Promise<HTMLImageEleme
   }
 }
 
-/** Something the canvas may read: same-origin sources directly, remote ones via `loadRemote` or CORS. */
+function sameOrigin(src: string): boolean {
+  try {
+    return new URL(src).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Something the canvas may read: data and blob sources directly, remote ones via `loadRemote`, and
+ * pictures from the webmail's own origin (the image proxy) loaded again. Other hosts are never asked
+ * again with CORS: that request names the webmail's host to the picture's host (security-audit WM-2).
+ */
 async function readable(image: HTMLImageElement, src: string, loadRemote?: RemoteImageLoader) {
   if (/^(data|blob):/i.test(src)) return { source: image as CanvasImageSource, release: () => {} };
   if (!/^https?:/i.test(src)) return null;
   const blob = await loadRemote?.(src).catch(() => null);
   if (blob) {
     const url = URL.createObjectURL(blob);
-    const decoded = await decode(url, false);
+    const decoded = await decode(url);
     if (decoded) return { source: decoded as CanvasImageSource, release: () => URL.revokeObjectURL(url) };
     URL.revokeObjectURL(url);
   }
-  const shared = await decode(src, true);
-  return shared && { source: shared as CanvasImageSource, release: () => {} };
+  if (!sameOrigin(src)) return null;
+  const own = await decode(src);
+  return own && { source: own as CanvasImageSource, release: () => {} };
 }
 
 async function recolorImage(

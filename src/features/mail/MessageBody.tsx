@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ImageSizeProbe, Message } from "@/backend/types";
 import { useT } from "@/i18n";
 import { markMail, type Mark } from "@/lib/dates";
+import { isWebKit } from "@/lib/device";
 import type { FontChoice, SenderFonts } from "@/lib/fonts";
 import { escapeHtml, textToHtml } from "@/lib/format";
 import { replaceContentIds } from "@/lib/inlineImages";
@@ -92,16 +93,21 @@ function sanitize(html: string, alsoForbid: string[] = []) {
 export const ROOT_ID = "uwu-mail-root";
 
 /**
- * The sandbox of every frame that shows a mail. `allow-same-origin` lets the webmail measure the
- * height, recolor for dark mode and read the document. `allow-scripts` is there for WebKit
- * (Safari on macOS and iOS): in a frame without it, WebKit never calls the listeners the webmail
- * puts on the mail's document, so a click on a link went past the link question and opened the
- * page inside the frame, and dates and shortcuts did nothing either. The mail itself still runs
- * nothing: the sanitizer drops scripts and event attributes, the document's own policy
- * (`default-src 'none'`, the first thing in its head) blocks whatever would be left, and the
- * webmail's policy (`script-src 'self'`) applies on top.
+ * The sandbox of a frame that shows a mail. `allow-same-origin` lets the webmail measure the
+ * height, recolor for dark mode and read the document. Together with `allow-scripts` the sandbox
+ * would isolate nothing on the webmail's origin (security-audit F-2), so that is added only for
+ * WebKit (Safari on macOS, every browser on iOS): in a frame without it, WebKit never calls the
+ * listeners the webmail puts on the mail's document, so a click on a link went past the link
+ * question and opened the page inside the frame, and dates and shortcuts did nothing either. The
+ * mail itself still runs nothing there: the sanitizer drops scripts and event attributes, the
+ * document's own policy (`default-src 'none'; script-src 'none'`, the first thing in its head)
+ * blocks whatever would be left, and the webmail's policy (`script-src 'self'`) applies on top.
  */
-export const MAIL_FRAME_SANDBOX = "allow-same-origin allow-scripts";
+export function mailFrameSandbox(webKit: boolean) {
+  return webKit ? "allow-same-origin allow-scripts" : "allow-same-origin";
+}
+
+export const MAIL_FRAME_SANDBOX = mailFrameSandbox(isWebKit);
 
 /** Whether a mail frame shows something else than its mail, e.g. a page a link opened in it. */
 export function frameStrayed(frame: HTMLIFrameElement): boolean {
@@ -222,7 +228,7 @@ export function buildDocument(
       )
     : marked;
   const imageSources = `data: cid: blob:${pictures.remote}`;
-  const csp = `default-src 'none'; img-src ${imageSources}; style-src 'unsafe-inline'; font-src ${fonts.sources || "'none'"}; media-src data:`;
+  const csp = `default-src 'none'; script-src 'none'; img-src ${imageSources}; style-src 'unsafe-inline'; font-src ${fonts.sources || "'none'"}; media-src data:`;
   // The frame never scrolls itself (the reader around it does), so html/body
   // must not stretch to the frame height. Otherwise measuring and resizing
   // would feed each other. The color-scheme must match the frame element's,
@@ -240,8 +246,8 @@ a{color:${dark ? "#ff9dbf" : "#c8165f"}}`;
 a{color:${dark ? "#ff9dbf" : "#c8165f"}}
 p{margin:0 0 12px}
 blockquote{margin:8px 0;padding-left:12px;border-left:3px solid ${dark ? "#4d2338" : "#ffd0e2"};color:${dark ? "#b3a8b3" : "#716672"}}`;
-  // The policy comes first, before anything else in the document: the frame may run scripts (see
-  // MessageBody), so this is what keeps the mail from running any of its own.
+  // The policy comes first, before anything else in the document: in WebKit the frame may run
+  // scripts (see MAIL_FRAME_SANDBOX), so this is what keeps the mail from running any of its own.
   return `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta charset="utf-8">
 <style>${frame}
@@ -293,8 +299,8 @@ export function buildPrintDocument(
   ]
     .map(([label, value]) => `<tr><th>${escape(label!)}</th><td>${value}</td></tr>`)
     .join("");
-  // The policy first, as in buildDocument: the print frame may run scripts, the mail may not.
-  return `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${imageSources}; style-src 'unsafe-inline'; font-src data:">
+  // The policy first, as in buildDocument: the print frame may run scripts in WebKit, the mail may not.
+  return `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; img-src ${imageSources}; style-src 'unsafe-inline'; font-src data:">
 <meta charset="utf-8">
 <title>${escape(message.subject)}</title>
 <style>@page{margin:16mm}body{margin:0;color:#1c1420;background:#fff;font:14px/1.5 system-ui,sans-serif}
@@ -369,7 +375,7 @@ const NO_MARKS: readonly Mark[] = [];
 
 /**
  * Clicks and Enter/Space on the found dates, reported with where the date sits on the page. The
- * frame runs no scripts; this listens from the app, through the same-origin document.
+ * mail runs no scripts of its own; this listens from the app, through the same-origin document.
  */
 function watchDates(frame: HTMLIFrameElement, doc: Document, report: (index: number | null, anchor: Anchor) => void) {
   const anchorOf = (element: Element): Anchor => {
@@ -610,7 +616,7 @@ export function MessageBody({
         key={signature}
         ref={frameRef}
         title={message.subject}
-        // See MAIL_FRAME_SANDBOX: the webmail's listeners need allow-scripts in Safari, the
+        // See MAIL_FRAME_SANDBOX: the webmail's listeners need allow-scripts in WebKit only, the
         // mail's own code is kept out by the sanitizer and the document's policy.
         sandbox={MAIL_FRAME_SANDBOX}
         srcDoc={html}

@@ -42,6 +42,11 @@ sanitizer already cleaned, and nothing new uses `innerHTML` on the page or
 W-39 is the one place where a mail reached past the reader's consent: not to the reader's address
 (the frame's policy held), but to the server's fetcher.
 
+Update (0.24.0): since 0.22.3 (fdb80a5) the reader and print frames add `allow-scripts` in WebKit
+(Safari, every iOS browser), which otherwise never calls the webmail's listeners in the frame; other
+browsers keep `sandbox="allow-same-origin"` alone. The frame's own policy now also names
+`script-src 'none'`.
+
 ## Findings
 
 ### W-39 · Medium · A mail's own picture markers make the server fetch before pictures may load
@@ -137,7 +142,8 @@ the server) stay. Test `dates.test.tsx` ("never asks the assistant about mail so
 
 - **The reader frame.** `sandbox="allow-same-origin"` without scripts, the frame's own policy
   (`default-src 'none'`, pictures only from `data:`, `cid:`, `blob:` and — once allowed — the
-  webmail's own origin through the proxy), unchanged. Marking happens after sanitizing, on a
+  webmail's own origin through the proxy), unchanged (Update (0.24.0): `allow-scripts` in WebKit
+  since 0.22.3, see above). Marking happens after sanitizing, on a
   `DOMParser` document where nothing loads or runs, with `createElement`/`setAttribute`; the index
   in `data-uwu-date` is a number the app wrote, the label a translated string. The app listens
   from outside and only reads the mark's index and position; a mail's handlers never run. The

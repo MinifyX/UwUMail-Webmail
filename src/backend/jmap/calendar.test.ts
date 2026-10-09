@@ -346,6 +346,11 @@ describe("birthdays", () => {
     expect(toCalendarInfo({ id: "c", name: "Geburtstage", uwuBirthdays: true }, "a").isBirthdays).toBe(true);
     expect(toCalendarInfo({ id: "c", name: "Privat" }, "a").isBirthdays).toBeUndefined();
   });
+
+  // Regression (security-audit W-27): a calendar without a name broke sorting the whole list.
+  it("gives a calendar without a name an empty one", () => {
+    expect(toCalendarInfo({ id: "c" } as unknown as Parameters<typeof toCalendarInfo>[0], "a").name).toBe("");
+  });
 });
 
 describe("calendars", () => {
