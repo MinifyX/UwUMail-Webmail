@@ -15,6 +15,9 @@ describe("attachmentKind", () => {
     expect(isDangerous("Rechnung_2026.pdf.exe")).toBe(true);
     expect(isDangerous("page.xslt")).toBe(true);
     expect(isDangerous("page.xht")).toBe(true);
+    for (const name of ["setup.py", "tool.PYZ", "db.accde", "update.msu", "x.cab", "link.website", "app.xbap"]) {
+      expect(isDangerous(name), name).toBe(true);
+    }
     expect(isDangerous("xrechnung.xml")).toBe(false);
     expect(isDangerous("makro.XLSM")).toBe(true);
     expect(isDangerous("rechnung.pdf")).toBe(false);

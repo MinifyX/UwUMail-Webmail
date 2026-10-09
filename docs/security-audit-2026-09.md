@@ -180,6 +180,12 @@ filename.slice(dot + 1)…` — and strip format controls in a `cleanDisplayName
 | F-8 · a click on an image map went around the link check                             | Every click goes through `requestOpenLink`/`LinkWarning` | **holds** — image-map clicks are caught like any other link (commit f4fe86c); W-8/W-9 are weaknesses _inside_ `LinkWarning`'s heuristic, not a way around it.                                                                                |
 | No `dangerouslySetInnerHTML` anywhere; reader frame scriptless with its own policy   | XSS in the client                                        | **holds** — confirmed by re-reading; the reader frame carries `default-src 'none'` and no `allow-scripts`.                                                                                                                                   |
 
+Update (0.24.0): since 0.22.3 (fdb80a5) the reader and print frames add `allow-scripts` in WebKit
+(Safari, every iOS browser), which otherwise never calls the webmail's listeners in the frame;
+other browsers keep `sandbox="allow-same-origin"` alone. The mail still runs nothing: the sanitizer
+drops scripts and handlers, and the frame's own policy, the first element of its head, now names
+`script-src 'none'` next to `default-src 'none'`.
+
 ## New or changed accepted risks
 
 - **CSS is not filtered in the reader.** Carried by the scriptless frame with its own policy —
@@ -416,10 +422,10 @@ reproduction notes stay in the private notes file.
 | ---- | ------------- | ------------------------------------------------------------------------------ | ---------------- |
 | W-22 | Medium        | Quoted mail loads pictures whose address doesn't start with "http" or "//"     | fixed in e1fabfe |
 | W-23 | Low           | Links in calendar events open on a middle click or a drag without the question | fixed in 911d6e2 |
-| W-24 | Low           | Emptying the trash and deleting a folder answer to the key that opened them    | listed           |
-| W-25 | Low           | Saving rules switches off another active Sieve script without saying so        | listed           |
+| W-24 | Low           | Emptying the trash and deleting a folder answer to the key that opened them    | fixed in aeeeca2 |
+| W-25 | Low           | Saving rules switches off another active Sieve script without saying so        | fixed in 828dc1f |
 | W-26 | Informational | The server's Sieve engine reads `${…}` in rule text as a variable              | listed           |
-| W-27 | Informational | One malformed event or calendar from the server empties the calendar view      | listed           |
+| W-27 | Informational | One malformed event or calendar from the server empties the calendar view      | fixed in 0.24.0   |
 | W-28 | Informational | The German forward-address placeholder names a real domain                     | listed           |
 
 Nothing Critical or High. The new code adds no way to run script on the app's origin: calendar and
@@ -475,14 +481,16 @@ event links go through `requestOpenLink`, and neither the calendar nor the rules
   trash and junk the only one, "Empty" — and the question that follows focuses its danger button. A
   held Enter (key repeat) goes through both and deletes the trash for good. No attacker, but a
   permanent loss from one keystroke, the gesture W-18 closed for the link question. _Fix:_ use
-  `armedActivation` on both danger buttons, or focus "Cancel".
+  `armedActivation` on both danger buttons, or focus "Cancel". _Update (0.24.0):_ fixed in aeeeca2
+  (`armedActivation` on the danger buttons, also for deleting mail for good).
 - **W-25 · Saving rules switches off another active Sieve script without saying so** —
   `src/backend/jmap/JmapBackend.ts:1256-1257`, `src/features/rules/useMailRules.ts`. CVSS
   `AV:N/AC:H/PR:L/UI:R/S:U/C:N/I:L/A:N` (2.6). Every save activates the "UwUMail" script, and a
   JMAP server keeps only one script active, so a script written in another client (a spam or
   forwarding filter the account relies on) silently stops running when the first rule is saved. The
   editor shows an empty rule list in that case, not the other script. _Fix:_ when another script is
-  active, say so and ask before activating.
+  active, say so and ask before activating. _Update (0.24.0):_ fixed in 828dc1f: the rules settings
+  name the other active script and save nothing until the person chooses these rules instead.
 
 ### Informational
 
@@ -499,7 +507,8 @@ event links go through `requestOpenLink`, and neither the calendar nor the rules
   `AV:N/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:L` (1.8). An unreadable `utcStart`, an unknown time zone or a
   calendar without a name throws (a `RangeError` from `Intl`, checked), and the whole range fails
   to load. The server computes these values, so this needs a server bug. _Fix:_ skip or flag the one
-  item instead of failing the list.
+  item instead of failing the list. _Update (0.24.0):_ an event that fails to convert is left out
+  of its range, and a calendar without a name gets an empty one.
 - **W-28 · The German forward-address placeholder names a real domain** —
   `src/i18n/locales/de/neutral.json:589,630` (`name@beispiel.de`). Not a secret; the repository's
   rule is to use reserved example domains. _Fix:_ `name@beispiel.example`.
@@ -600,9 +609,9 @@ attached to a mail) and the CSS of a mail, which the image proxy now rewrites on
 | ---- | -------- | ---------------------------------------------------------------------------------------- | ---------------- |
 | WM-1 | Medium   | One crafted mail freezes the webmail tab (regex backtracking on the mail body)           | fixed in 9db330d |
 | WM-5 | Medium   | Once pictures are allowed, crafted CSS freezes the tab while the image proxy rewrites it | fixed in 84a8f88 |
-| WM-2 | Low      | Dark-mode recolouring re-requests allowed remote pictures with CORS, naming the origin   | listed           |
-| WM-3 | Low      | Links in a mail are not guarded until the frame's `load`, which a sender can hold open   | listed           |
-| WM-4 | Low      | The dangerous-attachment list misses common executable types                             | listed           |
+| WM-2 | Low      | Dark-mode recolouring re-requests allowed remote pictures with CORS, naming the origin   | fixed in 0.24.0   |
+| WM-3 | Low      | Links in a mail are not guarded until the frame's `load`, which a sender can hold open   | mitigated        |
+| WM-4 | Low      | The dangerous-attachment list misses common executable types                             | fixed in 0.24.0   |
 
 Nothing Critical or High. Dark-mode recolouring does not load remote pictures before the reader
 allows them: it only picks up an image that already loaded in the frame, whose policy blocks remote
@@ -667,7 +676,9 @@ block of a mail whose remote pictures may load, when the server offers the image
   tells the picture's host the webmail's host name and that dark mode is on. Since c92fc3b this is
   mostly moot: with the server's image proxy, pictures load from the webmail's own origin and are
   read through it, so a second request goes to our own server. It remains with a server that has
-  no proxy. _Fix:_ drop the CORS fallback for `http(s)` pictures.
+  no proxy. _Fix:_ drop the CORS fallback for `http(s)` pictures. _Update (0.24.0):_ fixed: only a
+  picture from the webmail's own origin is loaded a second time, without `crossOrigin`; another
+  host's picture is read through the server (`fetchMailImage`) or stays as it is.
 - **WM-3 · Links in a mail are not guarded until the frame's `load`, which a sender can hold
   open** — `src/features/mail/MessageBody.tsx` (`handleLoad`), `linkEvents.ts`. CVSS
   `AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N` (3.1). The click, middle-click, drag and context-menu
@@ -675,12 +686,18 @@ block of a mail whose remote pictures may load, when the server offers the image
   picture has finished. A picture that never finishes loading keeps the guards off; dragging a link
   to the tab bar then opens it without the link question. Needs pictures allowed. _Fix:_ keep the
   frame inert (`pointer-events: none`, `tabIndex={-1}`) until the guards are in place.
+  _Update (0.24.0):_ mitigated since e3e121f: the reader sets the frame up (guards included) as soon
+  as its document is parsed, checked every animation frame for up to 10 s, and no longer waits for
+  `load`, so a picture that never finishes no longer keeps the guards off. The frame is not made
+  inert for the moment before that.
 - **WM-4 · The dangerous-attachment list misses common executable types** —
   `src/lib/attachments.ts` (`DANGEROUS`). CVSS `AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:L/A:N` (4.2 by the
   numbers, Low in practice: the reader has to save and open the file). Missing:
   `py pyw pyz pyzw pyc`, `mdb mde accde ade adp`, `cab msu`, `ws vb vbp shb shs`, `xbap website`,
   and `xml xht` (XML in the XHTML namespace renders with script from disk). They are saved without
-  the "can run programs" question. _Fix:_ add them here and in the engine's list.
+  the "can run programs" question. _Fix:_ add them here and in the engine's list. _Update
+  (0.24.0):_ added to the webmail's list (`xht` was already in it; plain `xml` stays out for
+  e-invoices). The engine's list (`crates/uwumail-smtp/src/spam/attachments.rs`) is separate.
 
 ### W-10, completed
 
@@ -739,7 +756,8 @@ cache listener, and it was not worth it without a browser to check playback and 
 ### Status of the earlier findings
 
 W-1 to W-9 and W-11 to W-22 hold as listed in the check above. W-10 is now complete. W-23 to W-27
-are still open as listed; W-28 was fixed in 53df50e.
+are still open as listed; W-28 was fixed in 53df50e. (Update (0.24.0): W-24 was fixed in aeeeca2,
+W-25 in 828dc1f, W-27 in 0.24.0.)
 
 Later: W-23 was fixed in 911d6e2, after the server's 0.16.0 audit found it reachable by any sender
 (its WEBMAIL-3): event links have no `href` any more, and every way to open one goes through the
@@ -793,7 +811,7 @@ does, and the webmail doesn't see it.
 | W-35 | Low           | SVG sender pictures become `blob:` URLs of the webmail's own origin           | fixed in 5824931 |
 | W-36 | Informational | Person pictures follow the unauthenticated From                               | listed           |
 | W-37 | Informational | Picture URLs and queued lookups outlive the avatars that wanted them          | listed           |
-| W-38 | Informational | Card keys go into patch paths unescaped                                       | listed           |
+| W-38 | Informational | Card keys go into patch paths unescaped                                       | fixed in 0.24.0   |
 
 Nothing Critical, High or Medium. No path to running code on the app's origin was found in the
 new code: contact and event text is React text, a contact photo reaches the page only as a
@@ -888,7 +906,8 @@ page; it needs the reader to open the picture on its own.
   (`photoPatch`, as `singleText` and the birthday before it). Keys of `media` come from the card
   the server sent; a key with `/` or `~` would address another path of the same card, since
   RFC 8620 patch paths want `~1` and `~0`. Only the reader's own save of that card is affected.
-  _Fix:_ escape keys in patch paths, or skip entries whose key isn't a plain id.
+  _Fix:_ escape keys in patch paths, or skip entries whose key isn't a plain id. _Update (0.24.0):_
+  fixed: keys are escaped (`~0`, `~1`) in every patch path built from the card.
 
 ### What held up
 

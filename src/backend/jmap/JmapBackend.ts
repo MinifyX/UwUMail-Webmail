@@ -1838,15 +1838,23 @@ export class JmapBackend implements Backend {
       });
       for (const base of found.list) bases.set(base.id, base);
     }
-    return events.map((event) =>
-      toOccurrence(event, {
-        accountId,
-        viewerZone: timeZone,
-        calendar: calendars.get(Object.keys(event.calendarIds)[0] ?? ""),
-        base: event.baseEventId ? bases.get(event.baseEventId) : undefined,
-        ownAddresses,
-      }),
-    );
+    // One event the server sent malformed (an unreadable time, an unknown time zone) is left out
+    // instead of failing the whole range (security-audit W-27).
+    return events.flatMap((event) => {
+      try {
+        return [
+          toOccurrence(event, {
+            accountId,
+            viewerZone: timeZone,
+            calendar: calendars.get(Object.keys(event.calendarIds)[0] ?? ""),
+            base: event.baseEventId ? bases.get(event.baseEventId) : undefined,
+            ownAddresses,
+          }),
+        ];
+      } catch {
+        return [];
+      }
+    });
   }
 
   async createEvent(input: EventInput): Promise<string> {

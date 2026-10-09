@@ -365,6 +365,12 @@ describe("writing cards", () => {
     expect(patchFromInput(withMedia, input({ photo: null }))).toEqual({ "media/m1": null, "media/m2": null });
   });
 
+  // Regression (security-audit W-38): a key with `/` or `~` addressed another path of the card.
+  it("escapes the card's keys in patch paths", () => {
+    const odd = card({ media: { "a/b": { kind: "photo", uri: "cid:x" }, "c~d": { kind: "photo", uri: "cid:y" } } });
+    expect(patchFromInput(odd, input({ photo: null }))).toEqual({ "media/a~1b": null, "media/c~0d": null });
+  });
+
   it("leaves the picture alone when the editor didn't touch it", () => {
     const inside = "data:image/png;base64,iVBORw0KGgo=";
     const withPhoto = card({ media: { m1: { kind: "photo", uri: inside } } });
