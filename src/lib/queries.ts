@@ -1,16 +1,19 @@
 import { useInfiniteQuery, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { backend, BackendError } from "@/backend/backend";
 import { playNyu, type CameoName } from "@/components/nyu/cameo";
 import type {
+  Account,
   FlagChange,
   Folder,
   ListFilter,
   MailboxView,
   Message,
   MovedMessage,
+  SharedAccount,
   ThreadSummary,
 } from "@/backend/types";
+import { scopeFor, type ListScope } from "@/lib/arrangement";
 import { translate, useT } from "@/i18n";
 import { confirmDeleteForever } from "@/state/deleteForever";
 import { useSettings } from "@/state/settings";
@@ -77,6 +80,77 @@ export function useVisibleAccounts() {
   return { accounts, loaded, accountIds: undefined };
 }
 
+/**
+ * Every mailbox this page shows, as synced settings name them: the own one and the people who
+ * share folders with it (their folders carry their account id). Read-only ones can't be changed.
+ */
+export function mailboxesOf(accounts: readonly Account[], shared: readonly SharedAccount[]): MailboxRef[] {
+  return [
+    ...accounts.map((account) => ({
+      id: account.id,
+      email: account.email,
+      protocol: account.protocol,
+      readOnly: false,
+    })),
+    ...shared.map((owner) => ({
+      id: owner.id,
+      email: owner.email,
+      protocol: "jmap" as const,
+      readOnly: owner.readOnly,
+    })),
+  ];
+}
+
+export interface MailboxRef extends Pick<Account, "id" | "email" | "protocol"> {
+  readOnly: boolean;
+}
+
+export function useMailboxes(): { mailboxes: MailboxRef[]; loaded: boolean } {
+  const { data: accounts, isSuccess: loaded } = useAccounts();
+  const { data: shared } = useSharedAccounts();
+  const mailboxes = useMemo(() => mailboxesOf(accounts ?? [], shared ?? []), [accounts, shared]);
+  return { mailboxes, loaded };
+}
+
+/**
+ * What a list of `view` takes in: the unified views leave out the mailboxes hidden from them and
+ * the unified inbox takes in the extra folders. The mailboxes are null until they have loaded,
+ * when it matters.
+ */
+export function useListScope(view: MailboxView): {
+  accountIds: string[] | undefined | null;
+  includeFolderIds: string[] | undefined;
+} {
+  const { data: accounts = [], isSuccess: loaded } = useAccounts();
+  const { data: folders = [] } = useFolders();
+  const hidden = useSettings((s) => s.unifiedHidden);
+  const extra = useSettings((s) => s.unifiedFolders);
+  return useMemo(() => {
+    const scope = listScopeOf(view, accounts, folders, hidden, extra);
+    const waits = view.kind === "unified" && hidden.length > 0;
+    return { ...scope, accountIds: waits && !loaded ? null : scope.accountIds };
+  }, [view, accounts, folders, hidden, extra, loaded]);
+}
+
+function listScopeOf(
+  view: MailboxView,
+  accounts: readonly Account[],
+  folders: readonly Folder[],
+  hidden: readonly string[],
+  extra: Parameters<typeof scopeFor>[1]["extra"],
+): ListScope {
+  // The unified views are the own mailbox's: only its folders join the unified inbox.
+  return scopeFor(view, { accounts, visible: accounts, filtered: false, folders, hidden, extra });
+}
+
+/** The same, right now, from what is cached (for commands, which run outside components). */
+export function listScopeNow(client: QueryClient, view: MailboxView): ListScope {
+  const accounts = client.getQueryData<Account[]>(queryKeys.accounts) ?? [];
+  const folders = client.getQueryData<Folder[]>(queryKeys.folders) ?? [];
+  const { unifiedHidden, unifiedFolders } = useSettings.getState();
+  return listScopeOf(view, accounts, folders, unifiedHidden, unifiedFolders);
+}
+
 /** Every address the mailboxes can send from. */
 export function useIdentities() {
   return useQuery({ queryKey: queryKeys.identities, queryFn: () => backend().listIdentities() });
@@ -125,9 +199,9 @@ const PAGE_SIZE = 50;
 /** The list's conversations; `labels` are keywords every mail must have (see features/labels). */
 export function useThreads(view: MailboxView, filter: ListFilter, search: string, labels: string[] = []) {
   const conversations = useSettings((s) => s.conversations);
-  const { accountIds } = useVisibleAccounts();
+  const { accountIds, includeFolderIds } = useListScope(view);
   return useInfiniteQuery({
-    queryKey: [...queryKeys.threads, view, filter, search, labels, conversations, accountIds],
+    queryKey: [...queryKeys.threads, view, filter, search, labels, conversations, accountIds, includeFolderIds],
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
       backend().listThreads({
@@ -137,6 +211,7 @@ export function useThreads(view: MailboxView, filter: ListFilter, search: string
         ...(labels.length > 0 ? { labels } : {}),
         conversations,
         accountIds: accountIds ?? undefined,
+        ...(includeFolderIds ? { includeFolderIds } : {}),
         cursor: pageParam,
         limit: PAGE_SIZE,
       }),

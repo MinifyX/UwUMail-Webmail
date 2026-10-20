@@ -28,6 +28,9 @@ import { FolderDialogs } from "../mail/FolderDialogs";
 import { MailboxNav } from "../mail/MailboxNav";
 import { scrollReader, wantsTextSelectAll } from "../mail/readerKeys";
 import { MoveDialog } from "../mail/MoveDialog";
+import { useSnoozeRunner } from "../mail/snooze";
+import { usePushFilterSync } from "@/push";
+import { SnoozeDialog } from "../mail/SnoozeDialog";
 import { MobileShell } from "../mobile/MobileShell";
 import { ThreadList } from "../mail/ThreadList";
 import { ThreadReader } from "../mail/ThreadReader";
@@ -78,6 +81,8 @@ export function MailShell() {
       ? stored
       : fitPanes(stored, shellWidth - CHROME - HANDLE * (roomForFolders ? 2 : 1), roomForFolders);
   useAccounts();
+  useSnoozeRunner();
+  usePushFilterSync();
   // Loaded early, so a reply opens with the right sender address.
   useIdentities();
   // Likewise the signatures, so a new mail starts with its default one already in place.
@@ -213,6 +218,7 @@ export function MailShell() {
       <CommandPalette commands={commands} />
       <ShortcutsDialog />
       <MoveDialog />
+      <SnoozeDialog />
       <FolderDialogs />
       {labelsAvailable && (
         <>

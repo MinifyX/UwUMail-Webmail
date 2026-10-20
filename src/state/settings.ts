@@ -19,13 +19,54 @@ export type RemoteImages = "ask" | "always";
 /** How HTML mail looks while the webmail is dark. */
 export type MailAppearance = "auto" | "light" | "dark";
 /** What swiping a mail in the phone list does. */
-export type SwipeAction = "read" | "archive" | "spam" | "trash" | "flag" | "none";
+export type SwipeAction = "read" | "archive" | "spam" | "trash" | "flag" | "snooze" | "none";
 /** Seconds a sent mail waits before it goes out, so it can still be taken back. 0 sends at once. */
 export const UNDO_SEND_CHOICES = [0, 5, 10, 20, 30] as const;
 export type UndoSendSeconds = (typeof UNDO_SEND_CHOICES)[number];
 /** The money AI costs are shown in where the person may choose (English): euros or dollars. */
 export const CURRENCY_CHOICES = ["EUR", "USD"] as const;
 export type CurrencyChoice = (typeof CURRENCY_CHOICES)[number];
+
+/**
+ * Times of the week without new-mail notifications, local time: from `from` to `to` ("HH:MM") on
+ * `days` (0 = Sunday). Past midnight belongs to the day it starts on; `from === to` is the whole
+ * day. Follows the account as `notify.quietHours` while enabled.
+ */
+export interface QuietHours {
+  enabled: boolean;
+  from: string;
+  to: string;
+  days: number[];
+}
+
+/** A snoozed mail, as `snooze:<id>` keeps it on the server. */
+export interface SnoozeEntry {
+  /** The mailbox, by its lower-case address. */
+  account: string;
+  /** The Message-ID header without angle brackets. */
+  messageId: string;
+  /** Where it came from: the JMAP mailbox names joined by "/" (the app may have an IMAP path). */
+  folder: string;
+  /** When it comes back, RFC 3339 in UTC (`2026-10-21T07:00:00Z`). */
+  until: string;
+}
+
+/**
+ * A folder as every device knows it: its mailbox's address (lower case) and its path, levels
+ * joined by "/" (see lib/arrangement).
+ */
+export interface FolderRef {
+  account: string;
+  folder: string;
+}
+
+/** A text snippet the composer inserts, see lib/templates. Follows the account as `template:<id>`. */
+export interface MailTemplate {
+  name: string;
+  /** Put in when the mail has no subject yet; may be empty. */
+  subject: string;
+  html: string;
+}
 
 export interface Settings {
   listDensity: ListDensity;
@@ -78,6 +119,33 @@ export interface Settings {
   font: FontChoice;
   /** Serif fonts in HTML mails become `font`, or stay as the sender wrote them. This browser only. */
   senderFonts: SenderFonts;
+  /** Mailboxes (lower-case addresses) whose new mail doesn't notify. Follows the account as `notify.muted:<addr>`. */
+  notifyMuted: string[];
+  quietHours: QuietHours;
+  /** Snoozed mail by its random id. Follows the account as `snooze:<id>`. */
+  snoozes: Record<string, SnoozeEntry>;
+  /**
+   * Mailboxes (addresses, lower case) left out of the unified views and their counts; they stay
+   * in the sidebar. Follows the account as `unified.hidden:<address>`.
+   */
+  unifiedHidden: string[];
+  /** Folders the unified inbox shows besides the inbox. Follows the account as `unified.folders:<id>`. */
+  unifiedFolders: FolderRef[];
+  /** Mailbox addresses in the sidebar's order; empty keeps the usual order. Follows the account as `accounts.order`. */
+  accountsOrder: string[];
+  /** Folders pinned to "Favorites" atop the sidebar. Follows the account as `folders.favorite:<id>`. */
+  favoriteFolders: FolderRef[];
+  /** Folders the sidebar leaves out. Follows the account as `folders.hidden:<id>`. */
+  hiddenFolders: FolderRef[];
+  /** The sidebar shows hidden folders anyway (dimmed). This browser only. */
+  showHiddenFolders: boolean;
+  /**
+   * Sending asks first when the text mentions an attachment and none is there. Follows the account
+   * as `compose.attachmentReminder`.
+   */
+  attachmentReminder: boolean;
+  /** Text snippets by id (16 random characters), see lib/templates. Follows the account as `template:<id>`. */
+  templates: Record<string, MailTemplate>;
 }
 
 interface SettingsActions {
@@ -90,6 +158,8 @@ interface SettingsActions {
   rememberAppearance: (email: string, appearance: "light" | "dark") => void;
   forgetAppearances: () => void;
   toggleFolder: (folderId: string) => void;
+  saveTemplate: (id: string, template: MailTemplate) => void;
+  deleteTemplate: (id: string) => void;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -121,6 +191,17 @@ export const DEFAULT_SETTINGS: Settings = {
   groupByLabel: false,
   font: "uwu",
   senderFonts: "replace",
+  notifyMuted: [],
+  quietHours: { enabled: false, from: "22:00", to: "07:00", days: [0, 1, 2, 3, 4, 5, 6] },
+  snoozes: {},
+  unifiedHidden: [],
+  unifiedFolders: [],
+  accountsOrder: [],
+  favoriteFolders: [],
+  hiddenFolders: [],
+  showHiddenFolders: false,
+  attachmentReminder: true,
+  templates: {},
 };
 
 /**
@@ -141,8 +222,8 @@ type ServerKey = keyof typeof ON_SERVER;
 const ALLOWED: { [K in ServerKey]: readonly string[] } = {
   motion: ["system", "on", "off"],
   listDensity: ["relaxed", "compact"],
-  swipeRight: ["read", "archive", "trash", "flag", "spam", "none"],
-  swipeLeft: ["read", "archive", "trash", "flag", "spam", "none"],
+  swipeRight: ["read", "archive", "trash", "flag", "spam", "snooze", "none"],
+  swipeLeft: ["read", "archive", "trash", "flag", "spam", "snooze", "none"],
 };
 
 function toServerValue(key: ServerKey, value: unknown): string | null {
@@ -204,6 +285,13 @@ export const useSettings = create<Settings & SettingsActions>()(
             ? state.collapsedFolders.filter((id) => id !== folderId)
             : [...state.collapsedFolders, folderId],
         })),
+      saveTemplate: (id, template) => set((state) => ({ templates: { ...state.templates, [id]: template } })),
+      deleteTemplate: (id) =>
+        set((state) => {
+          const rest = { ...state.templates };
+          delete rest[id];
+          return { templates: rest };
+        }),
     }),
     // Kept per browser so the first paint is right; the server has the say once it answers.
     {
@@ -240,8 +328,43 @@ export const useSettings = create<Settings & SettingsActions>()(
         }
         if (!isFontChoice(state.font)) state.font = DEFAULT_SETTINGS.font;
         if (!isSenderFonts(state.senderFonts)) state.senderFonts = DEFAULT_SETTINGS.senderFonts;
+        const isText = (value: unknown) => typeof value === "string";
+        state.unifiedHidden = state.unifiedHidden.filter(isText);
+        state.accountsOrder = state.accountsOrder.filter(isText);
+        state.notifyMuted = state.notifyMuted.filter(isText);
+        for (const field of ["unifiedFolders", "favoriteFolders", "hiddenFolders"] as const) {
+          state[field] = state[field].filter((ref) => isText(ref?.account) && isText(ref?.folder));
+        }
+        state.templates = Object.fromEntries(
+          Object.entries(state.templates).filter(([, template]) => isTemplateShape(template)),
+        );
+        state.snoozes = Object.fromEntries(Object.entries(state.snoozes).filter(([, entry]) => isSnoozeShape(entry)));
+        const quiet = state.quietHours as Partial<QuietHours>;
+        if (
+          typeof quiet.enabled !== "boolean" ||
+          typeof quiet.from !== "string" ||
+          typeof quiet.to !== "string" ||
+          !Array.isArray(quiet.days)
+        ) {
+          state.quietHours = DEFAULT_SETTINGS.quietHours;
+        } else {
+          const days = quiet.days.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6);
+          state.quietHours = { ...(quiet as QuietHours), days };
+        }
         return state;
       },
     },
   ),
 );
+
+function isTemplateShape(value: unknown): value is MailTemplate {
+  if (typeof value !== "object" || value === null) return false;
+  const entry = value as Record<string, unknown>;
+  return typeof entry.name === "string" && typeof entry.subject === "string" && typeof entry.html === "string";
+}
+
+function isSnoozeShape(value: unknown): value is SnoozeEntry {
+  if (typeof value !== "object" || value === null) return false;
+  const entry = value as Record<string, unknown>;
+  return ["account", "messageId", "folder", "until"].every((key) => typeof entry[key] === "string");
+}

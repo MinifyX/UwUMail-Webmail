@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CONFIG_KEY,
   DEFAULT_TEXTS,
+  FILTER_KEY,
   MESSAGE_OPEN,
   MESSAGE_VERIFIED,
   type KeyValue,
@@ -51,6 +52,8 @@ function fakeScope(windows: Partial<WindowClient>[] = []) {
   const listeners = new Map<string, (event: never) => void>();
   const jmap: JmapCall[] = [];
   const shown: { title: string; options?: NotificationOptions }[] = [];
+  /** What is still on screen: shown and not closed. */
+  const open: { title: string; options?: NotificationOptions }[] = [];
   const opened: string[] = [];
   const messages: unknown[][] = windows.map(() => []);
   const focused: number[] = [];
@@ -69,7 +72,14 @@ function fakeScope(windows: Partial<WindowClient>[] = []) {
   const scope: ServiceWorkerScope = {
     registration: {
       scope: "https://mail.example.org/mail/",
-      showNotification: async (title, options) => void shown.push({ title, options }),
+      showNotification: async (title, options) => {
+        shown.push({ title, options });
+        open.push({ title, options });
+      },
+      getNotifications: async (filter) =>
+        open
+          .filter((notification) => !filter?.tag || notification.options?.tag === filter.tag)
+          .map((notification) => ({ close: () => void open.splice(open.indexOf(notification), 1) })),
       pushManager: {
         getSubscription: async () => (state.current.gone ? null : state.current),
         subscribe: async ({ applicationServerKey }) => {
@@ -137,7 +147,7 @@ function fakeScope(windows: Partial<WindowClient>[] = []) {
     await Promise.all(pending);
   }
 
-  return { scope, fire, jmap, shown, opened, messages, focused, state, listeners };
+  return { scope, fire, jmap, shown, open, opened, messages, focused, state, listeners };
 }
 
 function started(windows: Partial<WindowClient>[] = [], kv = memory({ [CONFIG_KEY]: CONFIG })) {
@@ -183,6 +193,22 @@ describe("the service worker's events", () => {
     const { fire, shown } = started([{ focused: true, visibilityState: "visible" }]);
     await fire("push", push({ "@type": "StateChange", changed: { a1: { EmailDelivery: "9" } } }));
     expect(shown).toEqual([]);
+  });
+
+  it("shows a silent notification during quiet hours and takes it away at once", async () => {
+    const kv = memory({
+      [CONFIG_KEY]: CONFIG,
+      [FILTER_KEY]: { mutedAccounts: [], quietHours: { from: "00:00", to: "00:00", days: [0, 1, 2, 3, 4, 5, 6] } },
+    });
+    const { fire, shown, open } = started([], kv);
+    await fire("push", push({ "@type": "StateChange", changed: { a1: { EmailDelivery: "9" } } }));
+    expect(shown).toEqual([
+      {
+        title: DEFAULT_TEXTS.newMail,
+        options: { icon: "/mail/uwumail-app-icon.svg", tag: "uwumail-quiet", silent: true, data: {} },
+      },
+    ]);
+    expect(open).toEqual([]);
   });
 
   it("ignores a push that is not JSON", async () => {

@@ -9,11 +9,13 @@ import {
   Trash,
   Star,
   MailOpen,
+  AlarmClock,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Account, AssistLabel, Folder, FolderRole, MailboxView } from "@/backend/types";
 import { useT } from "@/i18n";
 import { useAccounts, useFolders, useSharedAccounts } from "@/lib/queries";
+import { isSnoozedFolder } from "@/lib/snooze";
 import { useAssistLabels } from "../assist/useAssist";
 import { folderRights, type MailRights } from "./rights";
 
@@ -34,8 +36,15 @@ export const UNIFIED_ICONS = {
   sent: Send,
 } as const;
 
+/** A folder's name as the app shows it: the roles and the Snoozed folder in the app's language. */
+export function folderLabel(folder: Folder, t: (key: string) => string): string {
+  if (folder.role) return t(`folder.${folder.role}`);
+  return isSnoozedFolder(folder) ? t("folder.snoozed") : folder.name;
+}
+
 export function folderIcon(folder: Folder): LucideIcon {
-  return folder.role ? ROLE_ICONS[folder.role] : FolderIcon;
+  if (folder.role) return ROLE_ICONS[folder.role];
+  return isSnoozedFolder(folder) ? AlarmClock : FolderIcon;
 }
 
 export function sameView(a: MailboxView, b: MailboxView): boolean {
@@ -60,6 +69,8 @@ export interface ViewInfo {
   isTrash: boolean;
   /** Mail here is spam already, so "spam" means "not spam". */
   isJunk: boolean;
+  /** Mail here waits for its snooze to end; rows say until when. */
+  isSnoozed: boolean;
   /** What the list's actions may do here: everything but in folders somebody shares. */
   rights: MailRights;
 }
@@ -79,6 +90,7 @@ export function useViewInfo(view: MailboxView): ViewInfo {
       isDrafts: view.role === "drafts",
       isTrash: false,
       isJunk: false,
+      isSnoozed: false,
       rights: folderRights(undefined),
     };
   }
@@ -92,6 +104,7 @@ export function useViewInfo(view: MailboxView): ViewInfo {
       isDrafts: false,
       isTrash: false,
       isJunk: false,
+      isSnoozed: false,
       rights: folderRights(undefined),
     };
   }
@@ -99,7 +112,7 @@ export function useViewInfo(view: MailboxView): ViewInfo {
   const account = accounts.find((a) => a.id === view.accountId);
   const owner = folder?.shared ? shared.find((entry) => entry.id === folder.accountId) : undefined;
   return {
-    title: folder?.name ?? "",
+    title: folder && isSnoozedFolder(folder) ? t("folder.snoozed") : (folder?.name ?? ""),
     subtitle: owner ? t("sharing.sharedBy", { name: owner.name }) : account?.email,
     account,
     folder,
@@ -108,6 +121,7 @@ export function useViewInfo(view: MailboxView): ViewInfo {
     // A shared folder has no trash of this account: deleting there is for good.
     isTrash: folder?.role === "trash" || folder?.shared === true,
     isJunk: folder?.role === "junk",
+    isSnoozed: !!folder && isSnoozedFolder(folder),
     rights: folderRights(folder),
   };
 }

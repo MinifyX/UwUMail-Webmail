@@ -2,6 +2,7 @@ import clsx from "clsx";
 import {
   CircleUserRound,
   ExternalLink,
+  FileText,
   ImageIcon,
   Info,
   Keyboard,
@@ -42,9 +43,12 @@ import { useMailRulesAccounts } from "../rules/useMailRules";
 import { BlockedSenders } from "./BlockedSenders";
 import { FontPicker, SenderFontsSetting } from "./FontPicker";
 import { LinkSettings } from "./LinkSettings";
+import { MailboxSettings } from "./MailboxSettings";
+import { NotificationSettings } from "./NotificationSettings";
 import { ProfilePictureSettings, useProfilePictureOptions } from "./ProfilePicture";
 import { PushSettings } from "./PushSettings";
 import { Row } from "./Row";
+import { Templates } from "./Templates";
 import { Writing } from "./Writing";
 import { useUi, type SettingsSection } from "@/state/ui";
 
@@ -62,6 +66,7 @@ const SECTIONS: { id: SettingsSection; icon: LucideIcon }[] = [
   { id: "appearance", icon: Palette },
   { id: "mail", icon: Mail },
   { id: "compose", icon: PenLine },
+  { id: "templates", icon: FileText },
   { id: "profile", icon: CircleUserRound },
   { id: "rules", icon: ListFilter },
   { id: "masked", icon: VenetianMask },
@@ -237,7 +242,9 @@ function Reading() {
           description={t("settings.conversationsDesc")}
         />
       </div>
+      <MailboxSettings />
       <PushSettings />
+      <NotificationSettings />
       <Row label={t("settings.remoteImages")} description={t("settings.remoteImagesDesc")}>
         <Segmented
           label={t("settings.remoteImages")}
@@ -413,7 +420,7 @@ export function SettingsDialog() {
                 )}
               >
                 <Icon className="size-[17px]" aria-hidden />
-                {t(`settings.${id}`)}
+                {id === "templates" ? t("templates.title") : t(`settings.${id}`)}
               </button>
             ))}
           </nav>
@@ -421,6 +428,7 @@ export function SettingsDialog() {
             {section === "appearance" && <Appearance />}
             {section === "mail" && <Reading />}
             {section === "compose" && <Writing />}
+            {section === "templates" && <Templates />}
             {section === "profile" && <ProfilePictureSettings />}
             {section === "rules" && <MailRules />}
             {section === "masked" && <MaskedAddresses />}

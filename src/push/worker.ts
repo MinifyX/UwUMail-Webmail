@@ -14,14 +14,19 @@
 
 import {
   CONFIG_KEY,
+  FILTER_KEY,
   LIFETIME_MS,
   MESSAGE_VERIFIED,
   PROGRESS_KEY,
   PUSH_TYPES,
+  QUIET_TAG,
   deliveredTo,
   genericNotification,
+  inQuietHours,
   notificationsFor,
   parsePayload,
+  quietNotification,
+  readFilter,
   utcDate,
   type KeyValue,
   type NewMail,
@@ -37,6 +42,8 @@ export interface WorkerEnv {
   kv: KeyValue;
   fetch: typeof fetch;
   showNotification: (spec: NotificationSpec) => Promise<void>;
+  /** Takes the notifications with this tag away again (for the silent one a filtered push needs). */
+  closeNotifications?: (tag: string) => Promise<void>;
   /** Whether the webmail is open and in front: then it shows new mail itself. */
   webmailInFront: () => Promise<boolean>;
   postToClients: (message: unknown) => Promise<void>;
@@ -139,6 +146,8 @@ async function forget(env: WorkerEnv): Promise<void> {
   await env.unsubscribe().catch(() => undefined);
   await env.kv.delete(CONFIG_KEY).catch(() => undefined);
   await env.kv.delete(PROGRESS_KEY).catch(() => undefined);
+  // The session is gone: whoever signs in next brings their own muted mailboxes and quiet hours.
+  await env.kv.delete(FILTER_KEY).catch(() => undefined);
 }
 
 /** Runs a step against the server; a session that is gone takes push down, anything else waits for next time. */
@@ -330,11 +339,31 @@ async function announceNewMail(env: WorkerEnv, server: Server, config: PushConfi
   fresh.sort((a, b) => b.receivedAt.localeCompare(a.receivedAt));
   if (!failure) await env.kv.set(PROGRESS_KEY, progress);
 
-  if (!(await env.webmailInFront())) {
-    const specs = fresh.length > 0 ? notificationsFor(fresh, config) : [genericNotification(config)];
-    for (const spec of specs) await env.showNotification(spec);
-  }
+  if (!(await env.webmailInFront())) await show(env, config, accounts, fresh, now);
   if (failure) throw failure;
+}
+
+/**
+ * Shows what was found, but nothing of muted mailboxes and nothing during quiet hours (the page
+ * keeps the filter up to date, see `FILTER_KEY`). Should all of it stay quiet, a silent
+ * notification is shown and taken away at once: browsers want one for every push.
+ */
+async function show(env: WorkerEnv, config: PushConfig, accounts: string[], fresh: NewMail[], now: Date) {
+  const filter = readFilter(await env.kv.get(FILTER_KEY).catch(() => undefined));
+  const muted = new Set(filter?.mutedAccounts ?? []);
+  const accountOf = (mail: NewMail) => mail.shared?.accountId ?? config.accountId;
+  const audible = fresh.filter((mail) => !muted.has(accountOf(mail)));
+  const quiet =
+    inQuietHours(filter?.quietHours, now) ||
+    accounts.every((accountId) => muted.has(accountId)) ||
+    (fresh.length > 0 && audible.length === 0);
+  if (quiet) {
+    await env.showNotification(quietNotification(config));
+    await env.closeNotifications?.(QUIET_TAG).catch(() => undefined);
+    return;
+  }
+  const specs = audible.length > 0 ? notificationsFor(audible, config) : [genericNotification(config)];
+  for (const spec of specs) await env.showNotification(spec);
 }
 
 /**

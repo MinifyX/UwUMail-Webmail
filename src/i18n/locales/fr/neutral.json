@@ -17,7 +17,8 @@
       "calendar": "Agenda",
       "contacts": "Contacts"
     },
-    "scheduled": "Programmés"
+    "scheduled": "Programmés",
+    "favorites": "Favoris"
   },
   "filter": {
     "all": "Tous",
@@ -359,7 +360,15 @@
     "signatureOwn": "Signature propre",
     "signatureFollowsDomain": "Utilise la signature du domaine",
     "signatureOverride": "Signature propre pour cette adresse",
-    "signatureBackToDomain": "Utiliser la signature du domaine"
+    "signatureBackToDomain": "Utiliser la signature du domaine",
+    "accountUp": "Monter {{email}}",
+    "accountDown": "Descendre {{email}}",
+    "inUnified": "Dans Toutes les boîtes mail",
+    "inUnifiedDesc": "Ses e-mails apparaissent dans la réception, les non lus, les suivis, les brouillons et les envoyés de Toutes les boîtes mail, et comptent dans leurs badges.",
+    "showHiddenFolders": "Afficher les dossiers masqués",
+    "showHiddenFoldersDesc": "Les dossiers masqués apparaissent estompés dans la barre latérale.",
+    "mailboxes": "Boîtes mail",
+    "mailboxesDesc": "L’ordre de vos boîtes mail dans la barre latérale."
   },
   "theme": {
     "system": "Système",
@@ -421,7 +430,9 @@
     "contactsDelete": "Supprimer le contact",
     "contactsNext": "Contact suivant",
     "contactsPrevious": "Contact précédent",
-    "label": "Étiqueter"
+    "label": "Étiqueter",
+    "markAllRead": "Tout marquer comme lu",
+    "snooze": "Mettre en pause"
   },
   "palette": {
     "placeholder": "Tapez une commande",
@@ -442,7 +453,8 @@
     "drafts": "Brouillons",
     "archive": "Archives",
     "trash": "Corbeille",
-    "junk": "Indésirables"
+    "junk": "Indésirables",
+    "snoozed": "En pause"
   },
   "attachment": {
     "save": "Enregistrer",
@@ -528,7 +540,8 @@
       "flag": "Suivre",
       "none": "Rien",
       "spam": "Spam",
-      "notSpam": "Pas un spam"
+      "notSpam": "Pas un spam",
+      "snooze": "Pause"
     },
     "pull": {
       "pull": "Tirez pour actualiser",
@@ -647,7 +660,15 @@
     "emptyBody_other": "{{count}} messages seront supprimés définitivement. Cette action est irréversible.",
     "emptied_one": "{{count}} message supprimé définitivement",
     "emptied_many": "{{count}} messages supprimés définitivement",
-    "emptied_other": "{{count}} messages supprimés définitivement"
+    "emptied_other": "{{count}} messages supprimés définitivement",
+    "favorite": "Ajouter aux favoris",
+    "unfavorite": "Retirer des favoris",
+    "joinUnified": "Afficher dans la réception unifiée",
+    "leaveUnified": "Retirer de la réception unifiée",
+    "hide": "Masquer le dossier",
+    "unhide": "Afficher à nouveau le dossier",
+    "showHidden": "Afficher les dossiers masqués",
+    "hideHidden": "Masquer les dossiers masqués"
   },
   "rules": {
     "title": "Règles de messagerie",
@@ -1976,5 +1997,114 @@
   "font": {
     "system": "Police du système",
     "sample": "Coucou – rendez-vous à 10:30"
+  },
+  "markAllRead": {
+    "view": "Tout marquer comme lu",
+    "folder": "Marquer le dossier comme lu",
+    "account": "Marquer la boîte mail comme lue",
+    "done_one": "{{count}} message marqué comme lu",
+    "done_other": "{{count}} messages marqués comme lus",
+    "nothing": "Rien de non lu ici",
+    "done_many": "{{count}} messages marqués comme lus"
+  },
+  "unified": {
+    "include": "Afficher dans Toutes les boîtes mail",
+    "leaveOut": "Exclure de Toutes les boîtes mail"
+  },
+  "searchHelp": {
+    "open": "Astuces de recherche",
+    "title": "Rechercher avec des opérateurs",
+    "hint": "Tout le reste est recherché comme texte.",
+    "example": {
+      "from": "from:leni@example.com",
+      "to": "to:noah",
+      "subject": "subject:facture",
+      "phrase": "\"mots exacts\"",
+      "hasAttachment": "has:attachment",
+      "unread": "is:unread",
+      "flagged": "is:flagged",
+      "after": "after:2026-10-01",
+      "before": "before:2026-10-31"
+    },
+    "desc": {
+      "from": "Envoyé par un nom ou une adresse",
+      "to": "Envoyé à un nom ou une adresse (À ou Cc)",
+      "subject": "Mots dans l’objet",
+      "phrase": "Ces mots, dans cet ordre",
+      "hasAttachment": "Avec pièces jointes",
+      "unread": "Pas encore lu",
+      "flagged": "Suivi",
+      "after": "À partir de ce jour",
+      "before": "Avant ce jour"
+    }
+  },
+  "templates": {
+    "title": "Modèles",
+    "desc": "Les textes que vous écrivez souvent. Dans un e-mail, insérez-en un avec le bouton des modèles ou en tapant « / » au début d’une ligne. Suit votre compte sur vos autres appareils.",
+    "insert": "Insérer un modèle",
+    "none": "Aucun modèle pour l’instant",
+    "saveDraft": "Enregistrer comme modèle",
+    "saveDraftHint": "Garde l’objet et ce que vous avez écrit, sans signature ni e-mail cité.",
+    "manage": "Gérer les modèles…",
+    "add": "Nouveau modèle",
+    "edit": "Modifier {{name}}",
+    "delete": "Supprimer {{name}}",
+    "deleted": "« {{name}} » supprimé.",
+    "saved": "Enregistré comme modèle « {{name}} ».",
+    "tooBig": "Ce modèle est trop volumineux pour être enregistré.",
+    "untitled": "Modèle",
+    "name": "Nom",
+    "namePlaceholder": "Nom, par ex. Merci pour votre commande",
+    "subject": "Objet",
+    "subjectPlaceholder": "Objet (facultatif, utilisé seulement si l’e-mail n’en a pas)",
+    "text": "Texte du modèle",
+    "textPlaceholder": "Bonjour {firstName}, …",
+    "placeholder": {
+      "firstName": "Prénom du premier destinataire",
+      "name": "Nom du premier destinataire",
+      "date": "Date du jour",
+      "myName": "Votre nom d’expéditeur"
+    },
+    "filter": "Rechercher des modèles",
+    "noMatch": "Aucun modèle correspondant"
+  },
+  "attachmentReminder": {
+    "title": "Pièce jointe oubliée ?",
+    "body": "Votre e-mail mentionne une pièce jointe, mais rien n’est joint.",
+    "sendAnyway": "Envoyer quand même",
+    "attach": "Joindre un fichier",
+    "setting": "Rappel de pièce jointe",
+    "settingDesc": "Demande avant l’envoi quand votre texte mentionne une pièce jointe et qu’il n’y en a aucune. Le texte cité et les signatures ne comptent pas."
+  },
+  "snooze": {
+    "title": "Mettre en pause jusqu’à …",
+    "action": "Mettre en pause",
+    "unsnooze": "Remettre dans la réception maintenant",
+    "pick": "Choisir une date et une heure",
+    "confirm": "Mettre en pause",
+    "until": "En pause jusqu’à {{time}}",
+    "done": "En pause jusqu’à {{time}}",
+    "back": "L’e-mail est de retour",
+    "failed": "Impossible de mettre l’e-mail en pause. {{reason}}",
+    "preset": {
+      "laterToday": "Plus tard aujourd’hui",
+      "tomorrow": "Demain",
+      "weekend": "Ce week-end",
+      "nextWeek": "La semaine prochaine"
+    },
+    "problem": {
+      "invalid": "Choisissez une date et une heure.",
+      "past": "Cette heure est déjà passée."
+    }
+  },
+  "notify": {
+    "accounts": "Notifications par boîte mail",
+    "accountsDesc": "Les boîtes mail désactivées restent silencieuses sur tous vos appareils.",
+    "quiet": "Heures calmes",
+    "quietDesc": "Aucune notification pendant ces heures. Elles peuvent passer minuit.",
+    "from": "De",
+    "to": "à",
+    "days": "Jours",
+    "noDays": "Choisissez au moins un jour, sinon les heures calmes ne commencent jamais."
   }
 }

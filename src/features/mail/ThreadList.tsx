@@ -1,7 +1,9 @@
 import clsx from "clsx";
 import {
+  AlarmClock,
   Archive,
   FolderInput,
+  Inbox,
   MailOpen,
   Menu,
   RefreshCw,
@@ -32,7 +34,10 @@ import { openDraftThread } from "../compose/openDraft";
 import { LabelDot, ThreadLabelMenu } from "../labels/LabelMenus";
 import { groupByLabel } from "../labels/logic";
 import { useListThreads } from "../labels/useLabels";
+import { withSearchTerm } from "@/lib/searchQuery";
+import { SearchHelp } from "./SearchHelp";
 import { useSelectionActions } from "./selection";
+import { useSnoozedRows } from "./snooze";
 import { ThreadRow } from "./ThreadRow";
 import { useViewInfo } from "./view";
 
@@ -60,6 +65,7 @@ export function ThreadList({ variant, className }: ThreadListProps) {
   const selectedThreadId = useUi((s) => s.selectedThreadId);
   const { setFilter, setSearch, selectThread, setVisibleThreadIds, setFolderDrawerOpen } = useUi.getState();
   const info = useViewInfo(view);
+  const snoozedRows = useSnoozedRows(view);
   const { data: accounts = [] } = useAccounts();
   const { accounts: shown } = useVisibleAccounts();
   const { refresh } = useMessageActions();
@@ -145,6 +151,7 @@ export function ThreadList({ variant, className }: ThreadListProps) {
       dragIds={checked.includes(thread.id) ? checked : [thread.id]}
       inTrash={info.isTrash}
       inJunk={info.isJunk}
+      snoozedUntil={snoozedRows?.get(thread.id)}
       rights={info.rights}
       onContextMenu={(event) => openRowMenu(thread, event)}
       onSelect={(event) => {
@@ -232,17 +239,17 @@ export function ThreadList({ variant, className }: ThreadListProps) {
               }
             }}
             placeholder={t("list.search")}
-            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-10 pl-10 text-[13.5px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-[4.5rem] pl-10 text-[13.5px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
-          {draft && (
-            <IconButton
-              icon={X}
-              size="sm"
-              label={t("list.clearSearch")}
-              onClick={() => setDraft("")}
-              className="absolute top-1/2 right-1 -translate-y-1/2"
+          <div className="absolute top-1/2 right-1 flex -translate-y-1/2 items-center">
+            <SearchHelp
+              onInsert={(term) => {
+                setDraft(withSearchTerm(draft, term));
+                document.getElementById(SEARCH_INPUT_ID)?.focus();
+              }}
             />
-          )}
+            {draft && <IconButton icon={X} size="sm" label={t("list.clearSearch")} onClick={() => setDraft("")} />}
+          </div>
         </div>
 
         {checked.length > 0 ? (
@@ -293,6 +300,22 @@ export function ThreadList({ variant, className }: ThreadListProps) {
                 size="sm"
                 label={t("reader.move")}
                 onClick={() => runOnChecked(selection.move)}
+              />
+            )}
+            {!info.rights.shared && info.rights.remove && (
+              <IconButton
+                icon={AlarmClock}
+                size="sm"
+                label={t("snooze.action")}
+                onClick={() => runOnChecked(selection.snooze)}
+              />
+            )}
+            {info.isSnoozed && (
+              <IconButton
+                icon={Inbox}
+                size="sm"
+                label={t("snooze.unsnooze")}
+                onClick={() => runOnChecked(selection.unsnooze)}
               />
             )}
             {info.rights.flag && labels.length > 0 && (

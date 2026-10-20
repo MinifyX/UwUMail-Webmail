@@ -9,6 +9,8 @@ import { DemoMasked } from "./demo-masked";
 import { DemoSignatures } from "./demo-signatures";
 import type { DomainSignatureChange } from "@/lib/domainSignatures";
 import { rulesToSieve } from "@/lib/sieveRules";
+import { matchesSearch, parseSearch } from "@/lib/searchQuery";
+import { SNOOZED_FOLDER, isSnoozedFolder } from "@/lib/snooze";
 import { runUnsubscribe } from "@/lib/unsubscribe";
 import { resolveLanguage } from "@/i18n";
 import { useSettings } from "@/state/settings";
@@ -51,6 +53,7 @@ import type {
   EventDeleteScope,
   EventInput,
   FlagChange,
+  MarkReadScope,
   Folder,
   FolderRights,
   Identity,
@@ -59,6 +62,8 @@ import type {
   MaskedAddressInput,
   MaskedAddressPatch,
   MovedMessage,
+  SnoozedMessage,
+  UnsnoozeOutcome,
   Message,
   OutgoingMessage,
   ParticipationStatus,
@@ -476,6 +481,100 @@ export class DemoBackend implements Backend {
     }
     if (change.keywords) this.assist.keywordsChanged(messageIds, change.keywords);
     this.emitChanged(messageIds);
+  }
+
+  async markAllRead(scope: MarkReadScope): Promise<string[]> {
+    await wait(80);
+    const marked = this.messages.filter((message) => {
+      if (message.flags.seen) return false;
+      const rights = this.folders.find((f) => f.id === message.folderId)?.rights;
+      // Folders shared read-only stay as they are.
+      if (rights && !rights.maySetSeen) return false;
+      if (scope.kind === "account") {
+        const role = this.roleOf(message);
+        return message.accountId === scope.accountId && role !== "trash" && role !== "junk";
+      }
+      return this.inView(message, {
+        view: scope.view,
+        filter: "all",
+        conversations: false,
+        limit: 0,
+        accountIds: scope.accountIds,
+        includeFolderIds: scope.includeFolderIds,
+      });
+    });
+    const ids = marked.map((message) => message.id);
+    if (ids.length > 0) await this.setFlags(ids, { seen: true });
+    return ids;
+  }
+
+  /** Like the server: a "Snoozed" folder in the own mailbox, mail found again by its Message-ID. */
+  async snoozeMessages(messageIds: string[]): Promise<SnoozedMessage[]> {
+    await wait(120);
+    if (this.messages.some((m) => messageIds.includes(m.id) && this.isShared(m))) {
+      throw new BackendError("forbidden", "Mail in a shared folder stays in its owner's folders.");
+    }
+    const snoozed: SnoozedMessage[] = [];
+    for (const message of this.messages) {
+      if (!messageIds.includes(message.id)) continue;
+      const folder = this.snoozedFolder(message.accountId, true)!;
+      snoozed.push({
+        id: message.id,
+        accountId: message.accountId,
+        headerId: demoHeaderId(message),
+        folderId: message.folderId === folder.id ? null : message.folderId,
+      });
+      message.folderId = folder.id;
+    }
+    this.emitChanged(messageIds);
+    return snoozed;
+  }
+
+  async unsnooze(accountId: string, headerId: string, folderId: string | null): Promise<UnsnoozeOutcome> {
+    await wait(60);
+    const folder = this.snoozedFolder(accountId, false);
+    const found = this.messages.filter((m) => m.folderId === folder?.id && demoHeaderId(m) === headerId);
+    if (found.length === 0) return "gone";
+    const target =
+      this.folders.find((f) => f.id === folderId && f.accountId === accountId && f.selectable && f.id !== folder?.id) ??
+      this.folders.find((f) => f.accountId === accountId && f.role === "inbox");
+    if (!target) return "waiting";
+    for (const message of found) {
+      message.flags.seen = false;
+      message.folderId = target.id;
+    }
+    this.emitChanged(found.map((m) => m.id));
+    return "moved";
+  }
+
+  async folderHeaderIds(folderId: string): Promise<[string, string][]> {
+    await wait(40);
+    return this.messages
+      .filter((m) => m.folderId === folderId)
+      .flatMap((m): [string, string][] => [
+        [m.threadId, demoHeaderId(m)],
+        [`m:${m.id}`, demoHeaderId(m)],
+      ]);
+  }
+
+  private snoozedFolder(accountId: string, create: boolean): Folder | undefined {
+    const found = this.folders.find((f) => f.accountId === accountId && !f.parentId && isSnoozedFolder(f));
+    if (found || !create) return found;
+    const folder: Folder = {
+      id: `${accountId}:snoozed`,
+      accountId,
+      name: SNOOZED_FOLDER,
+      path: SNOOZED_FOLDER,
+      role: null,
+      parentId: null,
+      selectable: true,
+      unread: 0,
+      total: 0,
+      rights: ALL_RIGHTS,
+    };
+    this.folders.push(folder);
+    this.emit({ type: "mail:changed", accountId });
+    return folder;
   }
 
   async archive(messageIds: string[]) {
@@ -1416,11 +1515,12 @@ export class DemoBackend implements Backend {
     if (view.kind === "label") {
       return message.keywords?.includes(view.keyword) === true && role !== "trash" && role !== "junk";
     }
+    const included = query.includeFolderIds?.includes(message.folderId) ?? false;
     switch (view.role) {
       case "inbox":
-        return role === "inbox";
+        return role === "inbox" || included;
       case "unread":
-        return role === "inbox" && !message.flags.seen;
+        return (role === "inbox" || included) && !message.flags.seen;
       case "flagged":
         return message.flags.flagged && role !== "trash";
       case "drafts":
@@ -1435,12 +1535,22 @@ export class DemoBackend implements Backend {
     if (query.filter === "flagged" && !message.flags.flagged) return false;
     if (query.filter === "attachments" && message.attachments.length === 0) return false;
     if (query.labels?.some((keyword) => !message.keywords?.includes(keyword))) return false;
-    const search = query.search?.trim().toLowerCase();
-    if (!search) return true;
-    return [message.subject, message.from.name ?? "", message.from.email, message.bodyText ?? ""]
-      .join("\n")
-      .toLowerCase()
-      .includes(search);
+    if (!query.search?.trim()) return true;
+    const names = (list: { name?: string | null; email: string }[]) =>
+      list.map((a) => `${a.name ?? ""} ${a.email}`).join("\n");
+    return matchesSearch(
+      {
+        subject: message.subject,
+        from: names([message.from]),
+        to: names([...message.to, ...message.cc]),
+        body: message.bodyText ?? "",
+        date: message.date,
+        seen: message.flags.seen,
+        flagged: message.flags.flagged,
+        attachments: message.attachments.length,
+      },
+      parseSearch(query.search),
+    );
   }
 
   private threadMessages(threadId: string, trashed: boolean) {
@@ -1479,4 +1589,9 @@ function blobToDataUrl(blob: Blob): Promise<string> {
     reader.onerror = () => reject(new BackendError("invalid_input", "That picture couldn't be read."));
     reader.readAsDataURL(blob);
   });
+}
+
+/** The demo's mail has no headers; a Message-ID made from its id stands in. */
+function demoHeaderId(message: Message): string {
+  return `${message.id.replace(/[^A-Za-z0-9.-]/g, "-")}@demo.uwumail.example`;
 }

@@ -45,6 +45,7 @@ import type {
   EventDeleteScope,
   EventInput,
   FlagChange,
+  MarkReadScope,
   Folder,
   Identity,
   MailScheduling,
@@ -54,6 +55,8 @@ import type {
   MaskedOptions,
   MailtoDraft,
   MovedMessage,
+  SnoozedMessage,
+  UnsnoozeOutcome,
   OutgoingMessage,
   ParticipationStatus,
   Person,
@@ -222,12 +225,29 @@ export interface Backend {
   getThread(threadId: string, conversations: boolean): Promise<ThreadDetail>;
 
   setFlags(messageIds: string[], change: FlagChange): Promise<void>;
+  /**
+   * Marks every unread mail of a view or mailbox as read; folders shared read-only stay as they
+   * are. Returns the marked ids, for undoing.
+   */
+  markAllRead(scope: MarkReadScope): Promise<string[]>;
   /** These return what moved and from where, for undoing. Mail already in that folder stays and isn't returned. */
   archive(messageIds: string[]): Promise<MovedMessage[]>;
   trash(messageIds: string[]): Promise<MovedMessage[]>;
   /** Deletes mail in the trash for good; mail elsewhere stays. Returns how many went. */
   deleteForever(messageIds: string[]): Promise<number>;
   moveMessages(messageIds: string[], folderId: string): Promise<MovedMessage[]>;
+  /**
+   * Snooze: into the mailbox's "Snoozed" folder, made when missing. Refused for mail without a
+   * Message-ID. When it comes back is kept in the settings (`snooze:<id>`).
+   */
+  snoozeMessages(messageIds: string[]): Promise<SnoozedMessage[]>;
+  /**
+   * Brings snoozed mail back, unread: the mail with this Message-ID in the Snoozed folder moves
+   * to `folderId` (the inbox for null or a folder that's gone).
+   */
+  unsnooze(accountId: string, headerId: string, folderId: string | null): Promise<UnsnoozeOutcome>;
+  /** Thread id (and `m:<id>` for single mails) with the Message-ID of the mail in a folder, for "Snoozed until …" on its rows. */
+  folderHeaderIds(folderId: string): Promise<[string, string][]>;
   /** Spam goes into the junk folder; not spam back to the inbox. */
   markSpam(messageIds: string[], spam: boolean): Promise<MovedMessage[]>;
   /** What this server keeps on the account's blocked list. */

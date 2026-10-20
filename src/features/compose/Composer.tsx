@@ -55,6 +55,11 @@ import {
 } from "../assist/ComposeAssist";
 import { appendToOwnText, ownText, replaceOwnText } from "../assist/draftText";
 import { useAssistFeature } from "../assist/useAssist";
+import { needsAttachmentReminder } from "./attachmentReminder";
+import { AttachmentReminderDialog } from "./AttachmentReminderDialog";
+import { insertableTemplateHtml, SaveTemplateDialog, TemplatesMenu } from "./TemplatesMenu";
+import { fillText, templateValues } from "@/lib/templates";
+import { useSettings, type MailTemplate } from "@/state/settings";
 
 /** Quiet for this long after the last change, then the draft goes to the server. */
 const DRAFT_SAVE_DELAY = 2500;
@@ -99,6 +104,12 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   const [sending, setSending] = useState(false);
   const [pickingTime, setPickingTime] = useState(false);
   const { data: maxSendDelay = 0 } = useMaxSendDelay();
+  /** Sending waits for an answer: the text speaks of an attachment, and there is none. */
+  const [reminding, setReminding] = useState<{ sendAt?: string } | null>(null);
+  /** The template menu, opened from the toolbar or by typing "/" in the text. */
+  const [templatesOpen, setTemplatesOpen] = useState<"toolbar" | "slash" | null>(null);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const templatePicked = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const editor = useRef<HTMLDivElement | null>(null);
   /** A drag that started in the editor itself: moving text, not markup from elsewhere. */
@@ -367,10 +378,65 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
     document.execCommand(command);
   };
 
+  /** Puts a template in at the cursor (in place of the "/" that opened the menu); the subject only when empty. */
+  const insertTemplate = (template: MailTemplate, fromSlash: boolean) => {
+    const node = editor.current;
+    if (!node) return;
+    const sender = senders.find(
+      (s) => s.accountId === accountId && s.email.toLowerCase() === senderEmail.toLowerCase(),
+    );
+    const values = templateValues({
+      to: draft.to,
+      myName: sender?.name || accounts.find((a) => a.id === accountId)?.displayName || "",
+      language: i18n.language,
+    });
+    const html = insertableTemplateHtml(template.html, values);
+    const range = liveRange(lastRange.current);
+    const selection = window.getSelection();
+    node.focus();
+    if (range && selection) {
+      const { startContainer, startOffset } = range;
+      if (
+        fromSlash &&
+        range.collapsed &&
+        startContainer.nodeType === Node.TEXT_NODE &&
+        startOffset > 0 &&
+        startContainer.textContent?.[startOffset - 1] === "/"
+      ) {
+        range.setStart(startContainer, startOffset - 1);
+      }
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.execCommand("insertHTML", false, html);
+    } else {
+      // No cursor in the text yet: at the top, above the signature and any quote.
+      node.innerHTML = html + node.innerHTML;
+    }
+    body.current = node.innerHTML;
+    setEdits((count) => count + 1);
+    if (!draft.subject.trim() && template.subject.trim()) update({ subject: fillText(template.subject, values) });
+    else {
+      setError(null);
+      changed();
+    }
+  };
+
   /** Hands the mail to the server: it goes after the undo window, or at `sendAt`. */
-  const send = async (sendAt?: string) => {
+  const send = async (sendAt?: string, remindedAlready = false) => {
     if (draft.to.length + draft.cc.length + draft.bcc.length === 0) {
       setError(t("compose.noRecipients"));
+      return;
+    }
+    // Before the undo window too: undoing is for second thoughts, this is for a forgotten file.
+    if (
+      !remindedAlready &&
+      needsAttachmentReminder(
+        editor.current?.innerHTML ?? body.current,
+        attachments.length,
+        useSettings.getState().attachmentReminder,
+      )
+    ) {
+      setReminding({ sendAt });
       return;
     }
     // What people paste can carry forms or remote content; send only the safe part.
@@ -669,6 +735,27 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           aria-multiline
           aria-label={t("compose.placeholder")}
           data-placeholder={t("compose.placeholder")}
+          onKeyDown={(event) => {
+            // "/" at the start of a line or after a space offers the templates; the "/" stays
+            // unless one is picked.
+            if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return;
+            if (Object.keys(useSettings.getState().templates).length === 0) return;
+            const selection = window.getSelection();
+            const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+            if (!range?.collapsed) return;
+            const before =
+              range.startContainer.nodeType === Node.TEXT_NODE
+                ? (range.startContainer.textContent ?? "").slice(0, range.startOffset)
+                : "";
+            if (before !== "" && !/\s$/.test(before)) return;
+            // After the browser typed it, so the cursor sits behind the "/".
+            requestAnimationFrame(() => {
+              const typed = window.getSelection();
+              if (typed?.rangeCount) lastRange.current = typed.getRangeAt(0).cloneRange();
+              templatePicked.current = false;
+              setTemplatesOpen("slash");
+            });
+          }}
           onPaste={(event) => {
             // Pasted mail HTML goes through the same cleaner as saving and sending, so a remote
             // image (a tracking pixel) copied out of a message does not load from the app page
@@ -797,6 +884,28 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             </div>
           </>
         )}
+        {/* Keys in the dialogs are their own: Escape must not shrink the composer behind them. */}
+        <div onKeyDown={(event) => event.stopPropagation()}>
+          <AttachmentReminderDialog
+            open={reminding !== null}
+            onClose={() => setReminding(null)}
+            onAttach={() => {
+              setReminding(null);
+              fileInput.current?.click();
+            }}
+            onSend={() => {
+              const sendAt = reminding?.sendAt;
+              setReminding(null);
+              void send(sendAt, true);
+            }}
+          />
+          <SaveTemplateDialog
+            open={savingTemplate}
+            subject={draft.subject}
+            html={() => editor.current?.innerHTML ?? body.current}
+            onClose={() => setSavingTemplate(false)}
+          />
+        </div>
         <span className="mx-1.5 h-5 w-px bg-line" aria-hidden />
         <IconButton
           icon={Bold}
@@ -848,6 +957,31 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
               aria-controls={menu["aria-controls"]}
             />
           )}
+        />
+        <TemplatesMenu
+          open={templatesOpen !== null}
+          onOpenChange={(open) => {
+            const fromSlash = templatesOpen === "slash";
+            setTemplatesOpen(open ? (templatesOpen ?? "toolbar") : null);
+            // Closed without a pick after "/": back to typing where it was.
+            if (!open && fromSlash) {
+              requestAnimationFrame(() => {
+                if (templatePicked.current) return;
+                const range = liveRange(lastRange.current);
+                const selection = window.getSelection();
+                editor.current?.focus();
+                if (range && selection) {
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
+              });
+            }
+          }}
+          onPick={(template) => {
+            templatePicked.current = true;
+            insertTemplate(template, templatesOpen === "slash");
+          }}
+          onSaveDraft={() => setSavingTemplate(true)}
         />
         {assistAvailable && <ComposeAssistButton onPick={openAssist} context={() => assistContext()} />}
         <input

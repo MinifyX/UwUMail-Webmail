@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Archive, MailCheck, MailOpen, ShieldAlert, ShieldCheck, Star, Trash } from "lucide-react";
+import { AlarmClock, Archive, MailCheck, MailOpen, ShieldAlert, ShieldCheck, Star, Trash } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { mobile } from "@/backend/mobile";
@@ -19,6 +19,7 @@ const LOOKS: Record<Exclude<SwipeAction, "none">, { icon: LucideIcon; className:
   spam: { icon: ShieldAlert, className: "bg-[var(--uwu-account-coral)]" },
   trash: { icon: Trash, className: "bg-danger" },
   flag: { icon: Star, className: "bg-[var(--uwu-account-amber)]" },
+  snooze: { icon: AlarmClock, className: "bg-[var(--uwu-account-sky)]" },
 };
 /** "Spam" in junk takes the mail back out. */
 const NOT_SPAM_LOOK = { icon: ShieldCheck, className: "bg-[var(--uwu-account-mint)]" };
