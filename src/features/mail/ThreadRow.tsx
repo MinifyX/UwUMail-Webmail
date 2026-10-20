@@ -1,9 +1,21 @@
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
-import { Archive, Check, Mail, MailOpen, Paperclip, ShieldAlert, ShieldCheck, Star, Trash } from "lucide-react";
+import {
+  AlarmClock,
+  Archive,
+  Check,
+  Mail,
+  MailOpen,
+  Paperclip,
+  ShieldAlert,
+  ShieldCheck,
+  Star,
+  Trash,
+} from "lucide-react";
 import type { Account, ThreadSummary } from "@/backend/types";
 import { AccountDot, Avatar } from "@/components/ui/Avatar";
 import { useT } from "@/i18n";
+import { formatSnoozeTime } from "./snooze";
 import { displayName, formatListDate } from "@/lib/format";
 import type { useThreadActions } from "@/lib/queries";
 import type { ListDensity } from "@/state/settings";
@@ -30,6 +42,8 @@ interface ThreadRowProps {
   inTrash?: boolean;
   /** The row sits in junk, where "spam" means "not spam". */
   inJunk?: boolean;
+  /** When the row's snooze ends (in the Snoozed folder): shown instead of its date. */
+  snoozedUntil?: string;
   /** What may be done here; everything when left out (see ./rights). */
   rights?: MailRights;
 }
@@ -80,6 +94,7 @@ export function ThreadRow({
   dragIds,
   inTrash = false,
   inJunk = false,
+  snoozedUntil,
   rights,
 }: ThreadRowProps) {
   const { t, i18n } = useT();
@@ -92,7 +107,9 @@ export function ThreadRow({
   const people = others.length > 0 ? others : thread.hasDraft ? [] : thread.participants;
   const lead = people[people.length - 1] ?? thread.participants[0] ?? { email: "?" };
   const names = people.map(displayName).join(", ");
-  const date = formatListDate(thread.lastDate, i18n.language, t("common.yesterday"));
+  const date = snoozedUntil
+    ? t("snooze.until", { time: formatSnoozeTime(snoozedUntil) })
+    : formatListDate(thread.lastDate, i18n.language, t("common.yesterday"));
   const account = showAccount ? accounts.find((a) => a.id === thread.accountIds[0]) : undefined;
   const subject = thread.subject || t("reader.noSubject");
 
@@ -174,10 +191,11 @@ export function ThreadRow({
           <span className="flex shrink-0 items-center gap-1.5 self-center transition-opacity group-hover:opacity-0">
             {thread.hasAttachments && <Paperclip className="size-3.5 text-muted" aria-hidden />}
             {thread.flagged && <Star className="size-3.5 fill-pink text-pink" aria-hidden />}
+            {snoozedUntil && <AlarmClock className="size-3.5 text-pink-ink" aria-hidden />}
             <span
               className={clsx(
                 "text-[12px] tabular-nums",
-                unread ? "font-bold text-pink-ink" : "font-medium text-muted",
+                unread || snoozedUntil ? "font-bold text-pink-ink" : "font-medium text-muted",
               )}
             >
               {date}

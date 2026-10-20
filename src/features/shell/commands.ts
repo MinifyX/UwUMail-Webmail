@@ -1,8 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  AlarmClock,
   Archive,
   CalendarDays,
   CalendarPlus,
+  CheckCheck,
   CheckSquare,
   FolderInput,
   Forward,
@@ -36,7 +38,9 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { ThreadDetail } from "@/backend/types";
 import { startNewEvent } from "../calendar/CalendarSidebar";
 import { startNewContact } from "../contacts/state";
+import { markAllRead, viewScope } from "../mail/markAllRead";
 import { requestMove } from "../mail/selection";
+import { requestSnooze } from "../mail/snooze";
 import { SEARCH_INPUT_ID } from "../mail/ThreadList";
 
 export interface Command {
@@ -156,6 +160,14 @@ export function buildCommands(
       run: withThread((thread) => requestMove(thread.messages, () => ui.selectThread(null))),
     },
     {
+      id: "snooze",
+      title: t("shortcuts.snooze"),
+      icon: AlarmClock,
+      keys: ["b"],
+      needsThread: true,
+      run: withThread((thread) => requestSnooze(thread.messages, () => ui.selectThread(null))),
+    },
+    {
       id: "spam",
       title: t("shortcuts.spam"),
       icon: ShieldAlert,
@@ -209,6 +221,13 @@ export function buildCommands(
           },
         ]
       : []),
+    {
+      id: "markAllRead",
+      title: t("shortcuts.markAllRead"),
+      icon: CheckCheck,
+      keys: ["shift+i"],
+      run: () => markAllRead(client, viewScope(client, useUi.getState().view)),
+    },
     {
       id: "undo",
       title: t("shortcuts.undo"),

@@ -51,15 +51,24 @@ export interface MoveRequest {
   onMoved?: () => void;
 }
 
+/** Mail waiting for "Snooze until…". */
+export interface SnoozeRequest {
+  messages: Message[];
+  /** Runs once snoozed, e.g. to close the conversation. */
+  onSnoozed?: () => void;
+}
+
 export type SettingsSection =
   | "appearance"
   | "mail"
   | "compose"
+  | "templates"
   | "profile"
   | "rules"
   | "masked"
   | "labels"
   | "assistant"
+  | "templates"
   | "security"
   | "accounts"
   | "about";
@@ -91,6 +100,7 @@ interface UiState {
   /** Where a Shift range ends: the row Shift+↑/↓ last reached. */
   selectionCursor: string | null;
   moving: MoveRequest | null;
+  snoozing: SnoozeRequest | null;
   /** Label keywords the list is narrowed to (the chips next to the filters). */
   labelFilter: string[];
   /** Conversations the quick label picker (L) works on. */
@@ -124,6 +134,8 @@ interface UiState {
   checkAllVisible: () => void;
   openMove: (request: MoveRequest) => void;
   closeMove: () => void;
+  openSnooze: (request: SnoozeRequest) => void;
+  closeSnooze: () => void;
   toggleLabelFilter: (keyword: string) => void;
   setLabelFilter: (keywords: string[]) => void;
   openLabelPicker: (threadIds: string[]) => void;
@@ -151,6 +163,7 @@ export const useUi = create<UiState>()((set, get) => ({
   selectionAnchor: null,
   selectionCursor: null,
   moving: null,
+  snoozing: null,
   labelFilter: [],
   labelPicker: null,
   labelSuggest: null,
@@ -208,6 +221,8 @@ export const useUi = create<UiState>()((set, get) => ({
   checkAllVisible: () => set((state) => ({ checkedThreadIds: [...state.visibleThreadIds] })),
   openMove: (request) => set({ moving: request }),
   closeMove: () => set({ moving: null }),
+  openSnooze: (request) => set({ snoozing: request }),
+  closeSnooze: () => set({ snoozing: null }),
   toggleLabelFilter: (keyword) =>
     set((state) => ({
       labelFilter: state.labelFilter.includes(keyword)

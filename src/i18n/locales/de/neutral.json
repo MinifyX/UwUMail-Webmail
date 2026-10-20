@@ -17,7 +17,8 @@
       "calendar": "Kalender",
       "contacts": "Kontakte"
     },
-    "scheduled": "Geplant"
+    "scheduled": "Geplant",
+    "favorites": "Favoriten"
   },
   "filter": {
     "all": "Alle",
@@ -350,7 +351,15 @@
     "signatureOwn": "Eigene Signatur",
     "signatureFollowsDomain": "Nutzt die Domain-Signatur",
     "signatureOverride": "Eigene Signatur für diese Adresse",
-    "signatureBackToDomain": "Domain-Signatur verwenden"
+    "signatureBackToDomain": "Domain-Signatur verwenden",
+    "accountUp": "{{email}} nach oben",
+    "accountDown": "{{email}} nach unten",
+    "inUnified": "Unter „Alle Postfächer“",
+    "inUnifiedDesc": "Die Mails erscheinen in Posteingang, Ungelesen, Markiert, Entwürfe und Gesendet von „Alle Postfächer“ und zählen zu deren Zahlen.",
+    "showHiddenFolders": "Ausgeblendete Ordner zeigen",
+    "showHiddenFoldersDesc": "Ausgeblendete Ordner erscheinen abgeblendet in der Seitenleiste.",
+    "mailboxes": "Postfächer",
+    "mailboxesDesc": "Die Reihenfolge deiner Postfächer in der Seitenleiste."
   },
   "theme": {
     "system": "System",
@@ -412,7 +421,9 @@
     "contactsDelete": "Kontakt löschen",
     "contactsNext": "Nächster Kontakt",
     "contactsPrevious": "Vorheriger Kontakt",
-    "label": "Label setzen"
+    "label": "Label setzen",
+    "markAllRead": "Alle als gelesen markieren",
+    "snooze": "Zurückstellen"
   },
   "palette": {
     "placeholder": "Befehl eingeben",
@@ -433,7 +444,8 @@
     "drafts": "Entwürfe",
     "archive": "Archiv",
     "trash": "Papierkorb",
-    "junk": "Spam"
+    "junk": "Spam",
+    "snoozed": "Zurückgestellt"
   },
   "attachment": {
     "save": "Speichern",
@@ -518,7 +530,8 @@
       "flag": "Markieren",
       "none": "Nichts",
       "spam": "Spam",
-      "notSpam": "Kein Spam"
+      "notSpam": "Kein Spam",
+      "snooze": "Zurückstellen"
     },
     "pull": {
       "pull": "Zum Aktualisieren ziehen",
@@ -632,7 +645,15 @@
     "emptyBody_one": "{{count}} Mail wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
     "emptyBody_other": "{{count}} Mails werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
     "emptied_one": "{{count}} Mail endgültig gelöscht",
-    "emptied_other": "{{count}} Mails endgültig gelöscht"
+    "emptied_other": "{{count}} Mails endgültig gelöscht",
+    "favorite": "Zu Favoriten hinzufügen",
+    "unfavorite": "Aus Favoriten entfernen",
+    "joinUnified": "Im gemeinsamen Posteingang zeigen",
+    "leaveUnified": "Aus dem gemeinsamen Posteingang nehmen",
+    "hide": "Ordner ausblenden",
+    "unhide": "Ordner wieder einblenden",
+    "showHidden": "Ausgeblendete zeigen",
+    "hideHidden": "Ausgeblendete verbergen"
   },
   "rules": {
     "title": "Mail-Regeln",
@@ -1909,5 +1930,113 @@
   "font": {
     "system": "Systemschrift",
     "sample": "Hallo – Termin um 10:30"
+  },
+  "markAllRead": {
+    "view": "Alle als gelesen markieren",
+    "folder": "Ordner als gelesen markieren",
+    "account": "Postfach als gelesen markieren",
+    "done_one": "{{count}} Nachricht als gelesen markiert",
+    "done_other": "{{count}} Nachrichten als gelesen markiert",
+    "nothing": "Hier ist nichts ungelesen"
+  },
+  "unified": {
+    "include": "Unter „Alle Postfächer“ zeigen",
+    "leaveOut": "Aus „Alle Postfächer“ ausblenden"
+  },
+  "searchHelp": {
+    "open": "Suchtipps",
+    "title": "Suche verfeinern",
+    "hint": "Alles andere wird als Text gesucht.",
+    "example": {
+      "from": "from:leni@example.com",
+      "to": "to:noah",
+      "subject": "subject:Rechnung",
+      "phrase": "\"genau diese Worte\"",
+      "hasAttachment": "has:attachment",
+      "unread": "is:unread",
+      "flagged": "is:flagged",
+      "after": "after:2026-10-01",
+      "before": "before:2026-10-31"
+    },
+    "desc": {
+      "from": "Von einem Namen oder einer Adresse",
+      "to": "An einen Namen oder eine Adresse (An oder Cc)",
+      "subject": "Wörter im Betreff",
+      "phrase": "Diese Wörter in dieser Reihenfolge",
+      "hasAttachment": "Mit Anhängen",
+      "unread": "Noch nicht gelesen",
+      "flagged": "Markiert",
+      "after": "Ab diesem Tag",
+      "before": "Vor diesem Tag"
+    }
+  },
+  "templates": {
+    "title": "Vorlagen",
+    "desc": "Text, den du oft schreibst. In einer Mail fügst du ihn mit dem Vorlagen-Knopf ein oder indem du am Zeilenanfang „/“ tippst. Folgt deinem Konto auf deine anderen Geräte.",
+    "insert": "Vorlage einfügen",
+    "none": "Noch keine Vorlagen",
+    "saveDraft": "Als Vorlage speichern",
+    "saveDraftHint": "Behält den Betreff und was du geschrieben hast, ohne Signatur und zitierte Mail.",
+    "manage": "Vorlagen verwalten…",
+    "add": "Neue Vorlage",
+    "edit": "{{name}} bearbeiten",
+    "delete": "{{name}} löschen",
+    "deleted": "„{{name}}“ gelöscht.",
+    "saved": "Als Vorlage „{{name}}“ gespeichert.",
+    "tooBig": "Diese Vorlage ist zu groß zum Speichern.",
+    "untitled": "Vorlage",
+    "name": "Name",
+    "namePlaceholder": "Name, z. B. Danke für die Bestellung",
+    "subject": "Betreff",
+    "subjectPlaceholder": "Betreff (optional, nur wenn die Mail noch keinen hat)",
+    "text": "Text der Vorlage",
+    "textPlaceholder": "Hallo {firstName}, …",
+    "placeholder": {
+      "firstName": "Vorname des ersten Empfängers",
+      "name": "Name des ersten Empfängers",
+      "date": "Heutiges Datum",
+      "myName": "Dein Name als Absender"
+    },
+    "filter": "Vorlagen suchen",
+    "noMatch": "Keine passende Vorlage"
+  },
+  "attachmentReminder": {
+    "title": "Anhang vergessen?",
+    "body": "In deiner Mail ist von einem Anhang die Rede, aber es ist nichts angehängt.",
+    "sendAnyway": "Trotzdem senden",
+    "attach": "Datei anhängen",
+    "setting": "Anhang-Erinnerung",
+    "settingDesc": "Fragt vor dem Senden nach, wenn dein Text einen Anhang erwähnt und keiner da ist. Zitate und Signaturen zählen nicht."
+  },
+  "snooze": {
+    "title": "Zurückstellen bis …",
+    "action": "Zurückstellen",
+    "unsnooze": "Jetzt zurück in den Posteingang",
+    "pick": "Datum und Uhrzeit wählen",
+    "confirm": "Zurückstellen",
+    "until": "Zurückgestellt bis {{time}}",
+    "done": "Zurückgestellt bis {{time}}",
+    "back": "Die Mail ist zurück",
+    "failed": "Die Mail konnte nicht zurückgestellt werden. {{reason}}",
+    "preset": {
+      "laterToday": "Später heute",
+      "tomorrow": "Morgen",
+      "weekend": "Am Wochenende",
+      "nextWeek": "Nächste Woche"
+    },
+    "problem": {
+      "invalid": "Wähle ein Datum und eine Uhrzeit.",
+      "past": "Dieser Zeitpunkt ist schon vorbei."
+    }
+  },
+  "notify": {
+    "accounts": "Mitteilungen pro Postfach",
+    "accountsDesc": "Ausgeschaltete Postfächer bleiben auf allen deinen Geräten still.",
+    "quiet": "Ruhezeiten",
+    "quietDesc": "In dieser Zeit gibt es keine Mitteilungen. Über Mitternacht geht auch.",
+    "from": "Von",
+    "to": "bis",
+    "days": "Tage",
+    "noDays": "Wähle mindestens einen Tag, sonst beginnen die Ruhezeiten nie."
   }
 }

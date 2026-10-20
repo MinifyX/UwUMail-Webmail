@@ -17,7 +17,8 @@
       "calendar": "カレンダー",
       "contacts": "連絡先"
     },
-    "scheduled": "予約済み"
+    "scheduled": "予約済み",
+    "favorites": "お気に入り"
   },
   "filter": {
     "all": "すべて",
@@ -341,7 +342,15 @@
     "signatureOwn": "個別の署名",
     "signatureFollowsDomain": "ドメインの署名を使用",
     "signatureOverride": "このアドレス用の個別の署名",
-    "signatureBackToDomain": "ドメインの署名を使用"
+    "signatureBackToDomain": "ドメインの署名を使用",
+    "accountUp": "{{email}} を上へ移動",
+    "accountDown": "{{email}} を下へ移動",
+    "inUnified": "すべてのメールボックスに含める",
+    "inUnifiedDesc": "このメールボックスのメールは、すべてのメールボックスの受信トレイ・未読・フラグ付き・下書き・送信済みに表示され、バッジの数にも含まれます。",
+    "showHiddenFolders": "非表示のフォルダを表示",
+    "showHiddenFoldersDesc": "非表示のフォルダはサイドバーに薄く表示されます。",
+    "mailboxes": "メールボックス",
+    "mailboxesDesc": "サイドバーでのメールボックスの並び順です。"
   },
   "theme": {
     "system": "システム",
@@ -403,7 +412,9 @@
     "contactsDelete": "連絡先を削除",
     "contactsNext": "次の連絡先",
     "contactsPrevious": "前の連絡先",
-    "label": "ラベルを付ける"
+    "label": "ラベルを付ける",
+    "markAllRead": "すべて既読にする",
+    "snooze": "スヌーズ"
   },
   "palette": {
     "placeholder": "コマンドを入力",
@@ -424,7 +435,8 @@
     "drafts": "下書き",
     "archive": "アーカイブ",
     "trash": "ゴミ箱",
-    "junk": "迷惑メール"
+    "junk": "迷惑メール",
+    "snoozed": "スヌーズ中"
   },
   "attachment": {
     "save": "保存",
@@ -508,7 +520,8 @@
       "flag": "フラグ",
       "none": "なし",
       "spam": "迷惑メール",
-      "notSpam": "迷惑メールではない"
+      "notSpam": "迷惑メールではない",
+      "snooze": "スヌーズ"
     },
     "pull": {
       "pull": "引っ張って更新",
@@ -617,7 +630,15 @@
       "junk": "迷惑メールフォルダを空にしますか？"
     },
     "emptyBody_other": "{{count}} 件のメールが完全に削除されます。この操作は元に戻せません。",
-    "emptied_other": "{{count}} 件のメールを完全に削除しました"
+    "emptied_other": "{{count}} 件のメールを完全に削除しました",
+    "favorite": "お気に入りに追加",
+    "unfavorite": "お気に入りから削除",
+    "joinUnified": "統合受信トレイに表示",
+    "leaveUnified": "統合受信トレイから外す",
+    "hide": "フォルダを非表示",
+    "unhide": "フォルダを再表示",
+    "showHidden": "非表示のフォルダを表示",
+    "hideHidden": "非表示のフォルダを隠す"
   },
   "rules": {
     "title": "メールのルール",
@@ -1840,5 +1861,112 @@
   "font": {
     "system": "システムフォント",
     "sample": "こんにちは – 10:30 に会議"
+  },
+  "markAllRead": {
+    "view": "すべて既読にする",
+    "folder": "フォルダを既読にする",
+    "account": "メールボックスを既読にする",
+    "done_other": "{{count}} 件のメッセージを既読にしました",
+    "nothing": "未読のメールはありません"
+  },
+  "unified": {
+    "include": "すべてのメールボックスに表示",
+    "leaveOut": "すべてのメールボックスから外す"
+  },
+  "searchHelp": {
+    "open": "検索のヒント",
+    "title": "演算子で検索",
+    "hint": "それ以外はテキストとして検索されます。",
+    "example": {
+      "from": "from:leni@example.com",
+      "to": "to:noah",
+      "subject": "subject:請求書",
+      "phrase": "\"完全一致の語句\"",
+      "hasAttachment": "has:attachment",
+      "unread": "is:unread",
+      "flagged": "is:flagged",
+      "after": "after:2026-10-01",
+      "before": "before:2026-10-31"
+    },
+    "desc": {
+      "from": "名前またはアドレスからの送信",
+      "to": "名前またはアドレスへの送信（宛先または Cc）",
+      "subject": "件名に含まれる語句",
+      "phrase": "この語句をこの順番で",
+      "hasAttachment": "添付ファイルあり",
+      "unread": "未読",
+      "flagged": "フラグ付き",
+      "after": "この日以降",
+      "before": "この日より前"
+    }
+  },
+  "templates": {
+    "title": "テンプレート",
+    "desc": "よく書く文章です。メールでは、テンプレートボタンか、行の先頭で「/」を入力して挿入できます。アカウントと一緒にほかのデバイスにも同期されます。",
+    "insert": "テンプレートを挿入",
+    "none": "テンプレートはまだありません",
+    "saveDraft": "テンプレートとして保存",
+    "saveDraftHint": "件名と本文を保存します。署名と引用されたメールは含まれません。",
+    "manage": "テンプレートを管理…",
+    "add": "新しいテンプレート",
+    "edit": "{{name}} を編集",
+    "delete": "{{name}} を削除",
+    "deleted": "「{{name}}」を削除しました。",
+    "saved": "テンプレート「{{name}}」として保存しました。",
+    "tooBig": "このテンプレートは大きすぎて保存できません。",
+    "untitled": "テンプレート",
+    "name": "名前",
+    "namePlaceholder": "名前（例：ご注文ありがとうございます）",
+    "subject": "件名",
+    "subjectPlaceholder": "件名（任意。メールに件名がない場合のみ使用）",
+    "text": "テンプレート本文",
+    "textPlaceholder": "{firstName} さん、こんにちは。…",
+    "placeholder": {
+      "firstName": "最初の宛先の名",
+      "name": "最初の宛先の名前",
+      "date": "今日の日付",
+      "myName": "送信者としてのあなたの名前"
+    },
+    "filter": "テンプレートを検索",
+    "noMatch": "一致するテンプレートはありません"
+  },
+  "attachmentReminder": {
+    "title": "添付ファイルをお忘れですか？",
+    "body": "メールで添付ファイルに触れていますが、何も添付されていません。",
+    "sendAnyway": "このまま送信",
+    "attach": "ファイルを添付",
+    "setting": "添付ファイルのリマインダー",
+    "settingDesc": "本文で添付ファイルに触れているのに添付がない場合、送信前に確認します。引用文と署名は対象外です。"
+  },
+  "snooze": {
+    "title": "スヌーズする日時 …",
+    "action": "スヌーズ",
+    "unsnooze": "今すぐ受信トレイに戻す",
+    "pick": "日時を選択",
+    "confirm": "スヌーズ",
+    "until": "{{time}} までスヌーズ中",
+    "done": "{{time}} までスヌーズしました",
+    "back": "メールが戻ってきました",
+    "failed": "メールをスヌーズできませんでした。{{reason}}",
+    "preset": {
+      "laterToday": "今日の後ほど",
+      "tomorrow": "明日",
+      "weekend": "今週末",
+      "nextWeek": "来週"
+    },
+    "problem": {
+      "invalid": "日付と時刻を選んでください。",
+      "past": "その時刻はすでに過ぎています。"
+    }
+  },
+  "notify": {
+    "accounts": "メールボックスごとの通知",
+    "accountsDesc": "オフにしたメールボックスは、すべてのデバイスで通知されません。",
+    "quiet": "おやすみ時間",
+    "quietDesc": "この時間帯は通知しません。日付をまたいでも設定できます。",
+    "from": "開始",
+    "to": "終了",
+    "days": "曜日",
+    "noDays": "少なくとも 1 日選んでください。選ばないとおやすみ時間は始まりません。"
   }
 }

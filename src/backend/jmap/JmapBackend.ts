@@ -66,6 +66,7 @@ import type {
   EventDeleteScope,
   EventInput,
   FlagChange,
+  MarkReadScope,
   Folder,
   FolderRights,
   Identity,
@@ -76,6 +77,8 @@ import type {
   MaskedAddressPatch,
   MaskedOptions,
   MovedMessage,
+  SnoozedMessage,
+  UnsnoozeOutcome,
   OutgoingMessage,
   ParticipationStatus,
   Person,
@@ -232,6 +235,8 @@ import {
   type JmapProfilePicture,
 } from "./profile";
 import { probeImageSizes, toImageTextResult } from "./images";
+import { searchFilter } from "./search";
+import { SNOOZED_FOLDER, isSnoozedFolder } from "@/lib/snooze";
 import { SUGGEST, suggestionLimit, suggestionsToContacts, type JmapAddressSuggestion } from "./suggest";
 import {
   PRINCIPALS,
@@ -322,6 +327,11 @@ const MAIL_PROVIDERS = new Set([
   "aol.com",
   "zoho.com",
 ]);
+
+/** Ids per `Email/query` page when every match is wanted. */
+const QUERY_PAGE = 500;
+/** Mails per `Email/set` (servers cap it, commonly at 500 or more). */
+const SET_BATCH = 250;
 
 interface QueryResponse {
   ids: string[];
@@ -956,7 +966,17 @@ export class JmapBackend implements Backend {
     } else {
       const role = view.role === "unread" || view.role === "flagged" ? "inbox" : view.role;
       const folder = this.folderWithRole(role);
-      if (folder) conditions.push({ inMailbox: folder.id });
+      // The unified inbox takes in the extra folders of the own mailbox (see lib/arrangement).
+      const extra =
+        view.role === "inbox" || view.role === "unread"
+          ? (query.includeFolderIds ?? [])
+              .map((id) => unscopeId(id, this.accountId))
+              .filter((ref) => ref.accountId === this.accountId && ref.id !== folder?.id)
+              .map((ref) => ref.id)
+          : [];
+      if (folder && extra.length > 0) {
+        conditions.push({ operator: "OR", conditions: [folder.id, ...extra].map((id) => ({ inMailbox: id })) });
+      } else if (folder) conditions.push({ inMailbox: folder.id });
       if (view.role === "unread") conditions.push({ notKeyword: "$seen" });
       if (view.role === "flagged") conditions.push({ hasKeyword: "$flagged" });
     }
@@ -964,7 +984,7 @@ export class JmapBackend implements Backend {
     if (query.filter === "flagged") conditions.push({ hasKeyword: "$flagged" });
     if (query.filter === "attachments") conditions.push({ hasAttachment: true });
     for (const keyword of query.labels ?? []) conditions.push({ hasKeyword: keyword });
-    if (query.search?.trim()) conditions.push({ text: query.search.trim() });
+    conditions.push(...searchFilter(query.search));
     // Trash and junk stay out of every view but their own.
     const view_is_folder = view.kind === "folder";
     if (!view_is_folder) {
@@ -986,6 +1006,8 @@ export class JmapBackend implements Backend {
     const own = this.accountId;
     // A shared folder is asked for in its owner's account; everything else is the own mail.
     const accountId = query.view.kind === "folder" ? unscopeId(query.view.folderId, own).accountId : own;
+    // Only mail of the mailboxes asked for: the own one may be left out of the unified views.
+    if (query.accountIds && !query.accountIds.includes(accountId)) return { threads: [] };
 
     const calls: [string, Record<string, unknown>, string][] = [
       [
@@ -1121,6 +1143,196 @@ export class JmapBackend implements Backend {
       throwOnError(response);
       this.emit({ type: "mail:changed", accountId });
     }
+  }
+
+  /** Every id an `Email/query` finds, page by page (a mailbox's unread mail can be many). */
+  private async queryAll(accountId: string, filter: Record<string, unknown>): Promise<string[]> {
+    const ids: string[] = [];
+    for (let page = 0; page < 200; page += 1) {
+      const found = await one<QueryResponse>("Email/query", {
+        accountId,
+        filter,
+        position: ids.length,
+        limit: QUERY_PAGE,
+        calculateTotal: false,
+      });
+      ids.push(...found.ids);
+      if (found.ids.length < QUERY_PAGE) break;
+    }
+    return ids;
+  }
+
+  /** Sets the same patch on many mails of one account, a batch per call. */
+  private async updateAll(accountId: string, ids: string[], patch: Record<string, unknown>): Promise<void> {
+    for (let start = 0; start < ids.length; start += SET_BATCH) {
+      const update = Object.fromEntries(ids.slice(start, start + SET_BATCH).map((id) => [id, patch]));
+      const response = await one<SetResponse>("Email/set", { accountId, update });
+      if (Object.values(response.notUpdated ?? {}).some((problem) => problem.type === "forbidden")) {
+        throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+      }
+      throwOnError(response);
+    }
+  }
+
+  async markAllRead(scope: MarkReadScope): Promise<string[]> {
+    await this.start();
+    await this.loadFolders();
+    const own = this.accountId;
+    let accountId: string;
+    let filter: Record<string, unknown>;
+    if (scope.kind === "account") {
+      accountId = scope.accountId;
+      const folders = this.folders.filter(
+        (folder) =>
+          folder.accountId === accountId &&
+          folder.selectable &&
+          folder.role !== "trash" &&
+          folder.role !== "junk" &&
+          // Folders shared read-only stay as they are.
+          folder.rights?.maySetSeen !== false,
+      );
+      if (folders.length === 0) return [];
+      filter = {
+        operator: "AND",
+        conditions: [
+          { notKeyword: "$seen" },
+          {
+            operator: "OR",
+            conditions: folders.map((folder) => ({ inMailbox: unscopeId(folder.id, own).id })),
+          },
+        ],
+      };
+    } else {
+      const { view } = scope;
+      accountId = view.kind === "folder" ? unscopeId(view.folderId, own).accountId : own;
+      if (scope.accountIds && !scope.accountIds.includes(accountId)) return [];
+      if (view.kind === "folder") this.allowed([view.folderId], "maySetSeen");
+      const base = this.filterFor({
+        view,
+        filter: "all",
+        conversations: false,
+        limit: 0,
+        includeFolderIds: scope.includeFolderIds,
+      });
+      filter = { operator: "AND", conditions: [base, { notKeyword: "$seen" }] };
+    }
+    const ids = await this.queryAll(accountId, filter);
+    if (ids.length === 0) return [];
+    await this.updateAll(accountId, ids, { "keywords/$seen": true });
+    this.emit({ type: "mail:changed", accountId });
+    return ids.map((id) => scopeId(accountId, id, own));
+  }
+
+  /** The own mailbox's Snoozed folder (see lib/snooze), made when asked to and missing. */
+  private async snoozedFolder(create: boolean): Promise<Folder | undefined> {
+    const find = () =>
+      this.folders.find((folder) => folder.accountId === this.accountId && !folder.parentId && isSnoozedFolder(folder));
+    const found = find();
+    if (found || !create) return found;
+    const response = await one<SetResponse>("Mailbox/set", {
+      accountId: this.accountId,
+      create: { snoozed: { name: SNOOZED_FOLDER, parentId: null } },
+    });
+    throwOnMailboxError(response);
+    await this.loadFolders();
+    const made = find();
+    if (!made) throw new BackendError("internal", "The server didn't create the Snoozed folder.");
+    this.emit({ type: "mail:changed", accountId: this.accountId });
+    return made;
+  }
+
+  async snoozeMessages(messageIds: string[]): Promise<SnoozedMessage[]> {
+    await this.start();
+    // Somebody else's mail has no Snoozed folder of ours to wait in.
+    this.ownOnly(messageIds);
+    await this.loadFolders();
+    const own = this.accountId;
+    const current = await one<GetResponse<JmapEmail>>("Email/get", {
+      accountId: own,
+      ids: messageIds.map((id) => unscopeId(id, own).id),
+      properties: ["id", "mailboxIds", "messageId"],
+    });
+    const withHeader = current.list.filter((email) => bareMessageId(email.messageId?.[0]));
+    if (withHeader.length === 0) throw new BackendError("invalid_input", "This mail has no Message-ID to find it by.");
+    const folder = (await this.snoozedFolder(true))!;
+    const snoozed: SnoozedMessage[] = [];
+    const update: Record<string, Record<string, unknown>> = {};
+    for (const email of withHeader) {
+      const from = Object.keys(email.mailboxIds).filter((id) => email.mailboxIds[id] && id !== folder.id);
+      snoozed.push({
+        id: scopeId(own, email.id, own),
+        accountId: own,
+        headerId: bareMessageId(email.messageId![0]),
+        folderId: from[0] ? scopeId(own, from[0], own) : null,
+      });
+      if (from.length > 0) update[email.id] = { mailboxIds: { [folder.id]: true } };
+    }
+    if (Object.keys(update).length > 0) {
+      const response = await one<SetResponse>("Email/set", { accountId: own, update });
+      throwOnError(response);
+    }
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: own });
+    return snoozed;
+  }
+
+  /**
+   * Id and Message-ID of every mail in a folder, page by page: a mail missing from the list
+   * counts as gone, so the list has to be complete.
+   */
+  private async headersIn(folderId: string): Promise<{ accountId: string; emails: JmapEmail[] }> {
+    const own = this.accountId;
+    const { accountId, id } = unscopeId(folderId, own);
+    const ids = await this.queryAll(accountId, { inMailbox: id });
+    const emails: JmapEmail[] = [];
+    for (let start = 0; start < ids.length; start += QUERY_PAGE) {
+      const found = await one<GetResponse<JmapEmail>>("Email/get", {
+        accountId,
+        ids: ids.slice(start, start + QUERY_PAGE),
+        properties: ["id", "threadId", "mailboxIds", "messageId"],
+      });
+      emails.push(...found.list);
+    }
+    return { accountId, emails };
+  }
+
+  async unsnooze(accountId: string, headerId: string, folderId: string | null): Promise<UnsnoozeOutcome> {
+    await this.start();
+    const own = this.accountId;
+    if (accountId !== own) return "waiting";
+    await this.loadFolders();
+    const snoozed = await this.snoozedFolder(false);
+    if (!snoozed) return "gone";
+    const { emails } = await this.headersIn(snoozed.id);
+    const found = emails.filter((email) => email.messageId?.some((id) => bareMessageId(id) === headerId));
+    if (found.length === 0) return "gone";
+    const wanted = folderId ? this.folderMap.get(folderId) : undefined;
+    const target =
+      wanted && wanted.accountId === own && wanted.selectable && !isSnoozedFolder(wanted)
+        ? wanted
+        : this.folderWithRole("inbox");
+    if (!target) return "waiting";
+    const update = Object.fromEntries(
+      found.map((email) => [email.id, { mailboxIds: { [target.id]: true }, "keywords/$seen": null }]),
+    );
+    throwOnError(await one<SetResponse>("Email/set", { accountId: own, update }));
+    await this.loadFolders();
+    this.emit({ type: "mail:changed", accountId: own });
+    return "moved";
+  }
+
+  async folderHeaderIds(folderId: string): Promise<[string, string][]> {
+    await this.start();
+    const own = this.accountId;
+    const { accountId, emails } = await this.headersIn(folderId);
+    return emails.flatMap((email): [string, string][] => {
+      const header = bareMessageId(email.messageId?.[0]);
+      if (!header) return [];
+      return [
+        [scopeId(accountId, email.threadId, own), header],
+        [`${SINGLE}${scopeId(accountId, email.id, own)}`, header],
+      ];
+    });
   }
 
   /**

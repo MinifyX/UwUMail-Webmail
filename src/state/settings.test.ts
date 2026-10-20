@@ -51,6 +51,65 @@ describe("settings kept in this browser", () => {
     expect(state.undoSendSeconds).toBe(DEFAULT_SETTINGS.undoSendSeconds);
     expect("unknown" in state).toBe(false);
   });
+
+  it("keep the arrangement, templates and quiet hours, without broken entries", async () => {
+    const ref = { account: "mini@uwumail.test", folder: "INBOX/Work" };
+    const template = { name: "Thanks", subject: "", html: "<p>Hi</p>" };
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        state: {
+          unifiedHidden: ["leni@uwumail.test", 5],
+          accountsOrder: ["mini@uwumail.test", null],
+          notifyMuted: ["leni@uwumail.test", {}],
+          unifiedFolders: [ref, { account: "x" }, null],
+          favoriteFolders: [ref, "INBOX"],
+          hiddenFolders: "everything",
+          showHiddenFolders: true,
+          attachmentReminder: false,
+          templates: { ok: template, half: { name: "x" }, text: "hi" },
+          quietHours: { enabled: true, from: "22:00", to: "07:00", days: [1, 2, 9, "3"] },
+        },
+        version: 1,
+      }),
+    );
+    await useSettings.persist.rehydrate();
+    const state = useSettings.getState();
+    expect(state.unifiedHidden).toEqual(["leni@uwumail.test"]);
+    expect(state.accountsOrder).toEqual(["mini@uwumail.test"]);
+    expect(state.notifyMuted).toEqual(["leni@uwumail.test"]);
+    expect(state.unifiedFolders).toEqual([ref]);
+    expect(state.favoriteFolders).toEqual([ref]);
+    expect(state.hiddenFolders).toEqual([]);
+    expect(state.showHiddenFolders).toBe(true);
+    expect(state.attachmentReminder).toBe(false);
+    expect(state.templates).toEqual({ ok: template });
+    expect(state.quietHours).toEqual({ enabled: true, from: "22:00", to: "07:00", days: [1, 2] });
+  });
+
+  it("fall back to no quiet hours when they are broken", async () => {
+    localStorage.setItem(KEY, JSON.stringify({ state: { quietHours: { enabled: "yes" } }, version: 1 }));
+    await useSettings.persist.rehydrate();
+    expect(useSettings.getState().quietHours).toEqual(DEFAULT_SETTINGS.quietHours);
+  });
+
+  it("drop snoozes that are not whole", async () => {
+    const snooze = {
+      account: "mini@uwumail.test",
+      messageId: "a@uwumail.test",
+      folder: "INBOX",
+      until: "2026-10-21T07:00:00Z",
+    };
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        state: { snoozes: { ok: snooze, empty: null, half: { ...snooze, until: 5 }, text: "soon" } },
+        version: 1,
+      }),
+    );
+    await useSettings.persist.rehydrate();
+    expect(useSettings.getState().snoozes).toEqual({ ok: snooze });
+  });
 });
 
 describe("font settings", () => {

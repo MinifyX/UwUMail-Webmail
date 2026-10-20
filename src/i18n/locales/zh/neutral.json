@@ -17,7 +17,8 @@
       "calendar": "日历",
       "contacts": "联系人"
     },
-    "scheduled": "定时发送"
+    "scheduled": "定时发送",
+    "favorites": "收藏"
   },
   "filter": {
     "all": "全部",
@@ -341,7 +342,15 @@
     "signatureOwn": "单独签名",
     "signatureFollowsDomain": "使用域名签名",
     "signatureOverride": "为此地址设置单独签名",
-    "signatureBackToDomain": "使用域名签名"
+    "signatureBackToDomain": "使用域名签名",
+    "accountUp": "上移 {{email}}",
+    "accountDown": "下移 {{email}}",
+    "inUnified": "显示在所有邮箱中",
+    "inUnifiedDesc": "其邮件会显示在所有邮箱的收件箱、未读、已标记、草稿和已发送中，并计入它们的角标。",
+    "showHiddenFolders": "显示隐藏的文件夹",
+    "showHiddenFoldersDesc": "隐藏的文件夹会在侧边栏中变暗显示。",
+    "mailboxes": "邮箱",
+    "mailboxesDesc": "侧边栏中邮箱的排列顺序。"
   },
   "theme": {
     "system": "系统",
@@ -403,7 +412,9 @@
     "contactsDelete": "删除联系人",
     "contactsNext": "下一个联系人",
     "contactsPrevious": "上一个联系人",
-    "label": "加标签"
+    "label": "加标签",
+    "markAllRead": "全部标为已读",
+    "snooze": "稍后提醒"
   },
   "palette": {
     "placeholder": "输入命令",
@@ -424,7 +435,8 @@
     "drafts": "草稿",
     "archive": "归档",
     "trash": "废纸篓",
-    "junk": "垃圾邮件"
+    "junk": "垃圾邮件",
+    "snoozed": "已延后"
   },
   "attachment": {
     "save": "保存",
@@ -508,7 +520,8 @@
       "flag": "加星标",
       "none": "无操作",
       "spam": "垃圾邮件",
-      "notSpam": "不是垃圾邮件"
+      "notSpam": "不是垃圾邮件",
+      "snooze": "稍后提醒"
     },
     "pull": {
       "pull": "下拉刷新",
@@ -617,7 +630,15 @@
       "junk": "要清空垃圾邮件文件夹吗？"
     },
     "emptyBody_other": "{{count}} 封邮件将被永久删除。此操作无法撤销。",
-    "emptied_other": "已永久删除 {{count}} 封邮件"
+    "emptied_other": "已永久删除 {{count}} 封邮件",
+    "favorite": "添加到收藏",
+    "unfavorite": "从收藏中移除",
+    "joinUnified": "显示在统一收件箱中",
+    "leaveUnified": "从统一收件箱中移除",
+    "hide": "隐藏文件夹",
+    "unhide": "重新显示文件夹",
+    "showHidden": "显示隐藏的文件夹",
+    "hideHidden": "隐藏已隐藏的文件夹"
   },
   "rules": {
     "title": "邮件规则",
@@ -1840,5 +1861,112 @@
   "font": {
     "system": "系统字体",
     "sample": "你好 – 10:30 开会"
+  },
+  "markAllRead": {
+    "view": "全部标为已读",
+    "folder": "将文件夹标为已读",
+    "account": "将邮箱标为已读",
+    "done_other": "已将 {{count}} 封邮件标为已读",
+    "nothing": "这里没有未读邮件"
+  },
+  "unified": {
+    "include": "显示在所有邮箱中",
+    "leaveOut": "不显示在所有邮箱中"
+  },
+  "searchHelp": {
+    "open": "搜索技巧",
+    "title": "使用运算符搜索",
+    "hint": "其他内容均按文本搜索。",
+    "example": {
+      "from": "from:leni@example.com",
+      "to": "to:noah",
+      "subject": "subject:发票",
+      "phrase": "\"完整词组\"",
+      "hasAttachment": "has:attachment",
+      "unread": "is:unread",
+      "flagged": "is:flagged",
+      "after": "after:2026-10-01",
+      "before": "before:2026-10-31"
+    },
+    "desc": {
+      "from": "由某个名字或地址发送",
+      "to": "发送给某个名字或地址（收件人或抄送）",
+      "subject": "主题中的词语",
+      "phrase": "按此顺序出现的这些词",
+      "hasAttachment": "带附件",
+      "unread": "尚未阅读",
+      "flagged": "已标记",
+      "after": "从这一天起",
+      "before": "在这一天之前"
+    }
+  },
+  "templates": {
+    "title": "模板",
+    "desc": "你经常写的文字。在邮件中，可以用模板按钮或在行首输入“/”来插入。会随你的账户同步到其他设备。",
+    "insert": "插入模板",
+    "none": "还没有模板",
+    "saveDraft": "存为模板",
+    "saveDraftHint": "保留主题和你写的内容，不包括签名和引用的邮件。",
+    "manage": "管理模板…",
+    "add": "新建模板",
+    "edit": "编辑 {{name}}",
+    "delete": "删除 {{name}}",
+    "deleted": "已删除“{{name}}”。",
+    "saved": "已存为模板“{{name}}”。",
+    "tooBig": "此模板太大，无法保存。",
+    "untitled": "模板",
+    "name": "名称",
+    "namePlaceholder": "名称，例如：感谢您的订购",
+    "subject": "主题",
+    "subjectPlaceholder": "主题（可选，仅在邮件没有主题时使用）",
+    "text": "模板正文",
+    "textPlaceholder": "{firstName}，你好，…",
+    "placeholder": {
+      "firstName": "第一位收件人的名字",
+      "name": "第一位收件人的姓名",
+      "date": "今天的日期",
+      "myName": "你作为发件人的名字"
+    },
+    "filter": "搜索模板",
+    "noMatch": "没有匹配的模板"
+  },
+  "attachmentReminder": {
+    "title": "忘记添加附件了？",
+    "body": "你的邮件提到了附件，但没有添加任何附件。",
+    "sendAnyway": "仍然发送",
+    "attach": "添加文件",
+    "setting": "附件提醒",
+    "settingDesc": "当正文提到附件却没有附件时，在发送前询问。引用的文字和签名不算在内。"
+  },
+  "snooze": {
+    "title": "稍后提醒，直到 …",
+    "action": "稍后提醒",
+    "unsnooze": "立即移回收件箱",
+    "pick": "选择日期和时间",
+    "confirm": "稍后提醒",
+    "until": "已延后至 {{time}}",
+    "done": "已延后至 {{time}}",
+    "back": "邮件已回来",
+    "failed": "无法延后此邮件。{{reason}}",
+    "preset": {
+      "laterToday": "今天晚些时候",
+      "tomorrow": "明天",
+      "weekend": "本周末",
+      "nextWeek": "下周"
+    },
+    "problem": {
+      "invalid": "请选择日期和时间。",
+      "past": "该时间已经过去。"
+    }
+  },
+  "notify": {
+    "accounts": "按邮箱设置通知",
+    "accountsDesc": "已关闭的邮箱在你的所有设备上都不会发出通知。",
+    "quiet": "免打扰时段",
+    "quietDesc": "在这些时段内不发送通知。可以跨越午夜。",
+    "from": "从",
+    "to": "到",
+    "days": "日期",
+    "noDays": "请至少选择一天，否则免打扰时段永远不会开始。"
   }
 }

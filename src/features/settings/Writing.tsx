@@ -1,7 +1,7 @@
 import { SlidersHorizontal } from "lucide-react";
 import { PORTAL_URL } from "@/backend/server";
 import { Button } from "@/components/ui/Button";
-import { Segmented } from "@/components/ui/Field";
+import { Segmented, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { useIdentities } from "@/lib/queries";
 import { UNDO_SEND_CHOICES, useSettings, type UndoSendSeconds } from "@/state/settings";
@@ -18,6 +18,7 @@ import { Signatures } from "./Signatures";
 export function Writing() {
   const { t } = useT();
   const undoSendSeconds = useSettings((s) => s.undoSendSeconds);
+  const attachmentReminder = useSettings((s) => s.attachmentReminder);
   const update = useSettings((s) => s.update);
   return (
     <>
@@ -32,6 +33,14 @@ export function Writing() {
           }))}
         />
       </Row>
+      <div className="border-b border-hairline py-4 last:border-0">
+        <Toggle
+          checked={attachmentReminder}
+          onChange={(checked) => update({ attachmentReminder: checked })}
+          label={t("attachmentReminder.setting")}
+          description={t("attachmentReminder.settingDesc")}
+        />
+      </div>
       <Senders />
       <Signatures />
     </>

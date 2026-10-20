@@ -1,9 +1,11 @@
 import clsx from "clsx";
 import {
+  AlarmClock,
   Archive,
   ArrowLeft,
   FolderInput,
   Forward,
+  Inbox,
   MailOpen,
   RefreshCw,
   Reply,
@@ -24,6 +26,7 @@ import { ThreadAssistButton, ThreadSummary } from "../assist/ReaderAssist";
 import { MessageView } from "./MessageView";
 import { mailRights } from "./rights";
 import { requestMove } from "./selection";
+import { requestSnooze, someSnoozed, useSnooze } from "./snooze";
 import { useNyuOnOpen } from "./nyuOnOpen";
 
 interface ThreadReaderProps {
@@ -48,6 +51,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
   const { data: accounts = [] } = useAccounts();
   const { data: folders = [] } = useFolders();
   const actions = useMessageActions();
+  const { unsnooze } = useSnooze();
   const messages = data?.messages;
   const loadedThreadId = data?.thread.id;
   useNyuOnOpen(data);
@@ -131,6 +135,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
     all.map((m) => m.folderId),
     folders,
   );
+  const snoozed = someSnoozed(all, folders);
 
   return (
     <section
@@ -177,6 +182,21 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
             icon={FolderInput}
             label={t("reader.move")}
             onClick={() => requestMove(all, () => selectThread(null))}
+          />
+        )}
+        {/* Snoozed mail waits in the account's own Snoozed folder. */}
+        {rights.remove && !rights.shared && (
+          <IconButton
+            icon={AlarmClock}
+            label={t("snooze.action")}
+            onClick={() => requestSnooze(all, () => selectThread(null))}
+          />
+        )}
+        {snoozed && (
+          <IconButton
+            icon={Inbox}
+            label={t("snooze.unsnooze")}
+            onClick={() => void unsnooze(all, [data.thread.id]).then(() => selectThread(null))}
           />
         )}
         {rights.spam && (

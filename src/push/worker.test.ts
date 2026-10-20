@@ -3,11 +3,13 @@ import { describe, expect, it } from "vitest";
 import {
   CONFIG_KEY,
   DEFAULT_TEXTS,
+  FILTER_KEY,
   MESSAGE_VERIFIED,
   PROGRESS_KEY,
   type KeyValue,
   type NotificationSpec,
   type PushConfig,
+  type PushFilter,
   type PushProgress,
 } from "./shared";
 import { handlePush, resubscribe, utcDate, type WorkerEnv } from "./worker";
@@ -139,12 +141,14 @@ function fakeServer(
 
 function environment(kv: KeyValue, fetch: typeof globalThis.fetch, inFront = false) {
   const shown: NotificationSpec[] = [];
+  const closed: string[] = [];
   const posted: unknown[] = [];
   const browser = { subscribed: true };
   const env: WorkerEnv = {
     kv,
     fetch,
     showNotification: async (spec) => void shown.push(spec),
+    closeNotifications: async (tag) => void closed.push(tag),
     webmailInFront: async () => inFront,
     postToClients: async (message) => void posted.push(message),
     unsubscribe: async () => {
@@ -152,12 +156,14 @@ function environment(kv: KeyValue, fetch: typeof globalThis.fetch, inFront = fal
     },
     now: () => new Date("2026-09-27T12:00:00Z"),
   };
-  return { env, shown, posted, browser };
+  return { env, shown, closed, posted, browser };
 }
 
 const NEW_MAIL = { "@type": "StateChange", changed: { a1: { EmailDelivery: "12" } } };
 const START: PushProgress = { since: "2026-09-27T11:00:00Z", accounts: {} };
 const GENERIC = { title: DEFAULT_TEXTS.newMail, options: { tag: "uwumail-new", body: DEFAULT_TEXTS.hidden, data: {} } };
+const QUIET = { title: DEFAULT_TEXTS.newMail, options: { tag: "uwumail-quiet", silent: true, data: {} } };
+const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6];
 
 describe("the service worker", () => {
   it("sends the verification code back with the session's CSRF token", async () => {
@@ -325,7 +331,8 @@ describe("the service worker", () => {
     ["the session is refused", () => new Response(null, { status: 401 })],
     ["somebody else signed in", () => Response.json({ csrfToken: "csrf-1", account: { login: "other@example.org" } })],
   ])("takes push down when %s", async (_, session) => {
-    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: START });
+    const filter: PushFilter = { mutedAccounts: [], quietHours: null };
+    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: START, [FILTER_KEY]: filter });
     const server = fakeServer([{ id: "e2", subject: "Hi", name: "Nyu", receivedAt: "2026-09-27T11:30:00Z" }], session);
     const { env, shown, browser } = environment(kv, server.fetch);
     await expect(handlePush(env, NEW_MAIL)).resolves.toBeUndefined();
@@ -410,6 +417,84 @@ describe("the service worker", () => {
     const none = environment(memory(), server.fetch);
     await resubscribe(none.env, { endpoint: "https://push.example.net/new", keys: { p256dh: "B", auth: "a" } });
     expect(none.browser.subscribed).toBe(false);
+  });
+
+  it("keeps mail of muted mailboxes quiet, but remembers it as announced", async () => {
+    const kv = memory({
+      [CONFIG_KEY]: { ...CONFIG, accounts: { a1: "mini@example.org", a3: "support@example.org" } },
+      [PROGRESS_KEY]: START,
+      [FILTER_KEY]: { mutedAccounts: ["a3"], quietHours: null } satisfies PushFilter,
+    });
+    const server = fakeServer([
+      { id: "e1", subject: "Hi", name: "Nyu", receivedAt: "2026-09-27T11:10:00Z" },
+      { id: "x1", subject: "Refund?", name: "Kim", receivedAt: "2026-09-27T11:20:00Z", account: "a3" },
+    ]);
+    const { env, shown, closed } = environment(kv, server.fetch);
+    await handlePush(env, {
+      "@type": "StateChange",
+      changed: { a1: { EmailDelivery: "4" }, a3: { EmailDelivery: "2" } },
+    });
+    expect(shown.map((spec) => spec.options.tag)).toEqual(["uwumail-mail-e1"]);
+    expect(closed).toEqual([]);
+    expect(kv.data.get(PROGRESS_KEY)).toMatchObject({
+      accounts: { a1: { announced: ["e1"] }, a3: { announced: ["x1"] } },
+    });
+  });
+
+  it("shows a silent notification and takes it away when all new mail is of muted mailboxes", async () => {
+    const kv = memory({
+      [CONFIG_KEY]: { ...CONFIG, accounts: { a1: "mini@example.org", a3: "support@example.org" } },
+      [PROGRESS_KEY]: START,
+      [FILTER_KEY]: { mutedAccounts: ["a3"], quietHours: null } satisfies PushFilter,
+    });
+    const server = fakeServer([
+      { id: "x1", subject: "Refund?", name: "Kim", receivedAt: "2026-09-27T11:20:00Z", account: "a3" },
+    ]);
+    const { env, shown, closed } = environment(kv, server.fetch);
+    const toSupport = { "@type": "StateChange", changed: { a3: { EmailDelivery: "2" } } };
+    await handlePush(env, toSupport);
+    expect(shown).toEqual([QUIET]);
+    expect(closed).toEqual(["uwumail-quiet"]);
+    expect(kv.data.get(PROGRESS_KEY)).toMatchObject({ accounts: { a3: { announced: ["x1"] } } });
+
+    // Nothing new found in a muted mailbox: no "New mail" either.
+    shown.length = 0;
+    await handlePush(env, toSupport);
+    expect(shown).toEqual([QUIET]);
+  });
+
+  it("keeps quiet during quiet hours, and announces again outside them", async () => {
+    const kv = memory({
+      [CONFIG_KEY]: CONFIG,
+      [PROGRESS_KEY]: START,
+      // The whole day, every day: the same in every time zone the tests may run in.
+      [FILTER_KEY]: { mutedAccounts: [], quietHours: { from: "08:00", to: "08:00", days: EVERY_DAY } },
+    });
+    const server = fakeServer([{ id: "e2", subject: "Lunch?", name: "Nyu", receivedAt: "2026-09-27T11:30:00Z" }]);
+    const quiet = environment(kv, server.fetch);
+    await handlePush(quiet.env, NEW_MAIL);
+    expect(quiet.shown).toEqual([QUIET]);
+    expect(quiet.closed).toEqual(["uwumail-quiet"]);
+    expect(kv.data.get(PROGRESS_KEY)).toMatchObject({ accounts: { a1: { announced: ["e2"] } } });
+
+    // Quiet hours on no day at all: what comes next is announced.
+    kv.data.set(FILTER_KEY, { mutedAccounts: [], quietHours: { from: "08:00", to: "08:00", days: [] } });
+    const later = fakeServer([
+      { id: "e2", subject: "Lunch?", name: "Nyu", receivedAt: "2026-09-27T11:30:00Z" },
+      { id: "e3", subject: "Dinner?", name: "Nyu", receivedAt: "2026-09-27T11:50:00Z" },
+    ]);
+    const loud = environment(kv, later.fetch);
+    await handlePush(loud.env, NEW_MAIL);
+    expect(loud.shown.map((spec) => spec.options.tag)).toEqual(["uwumail-mail-e3"]);
+    expect(loud.closed).toEqual([]);
+  });
+
+  it("ignores a filter that isn't one", async () => {
+    const kv = memory({ [CONFIG_KEY]: CONFIG, [PROGRESS_KEY]: START, [FILTER_KEY]: "nonsense" });
+    const server = fakeServer([{ id: "e2", subject: "Lunch?", name: "Nyu", receivedAt: "2026-09-27T11:30:00Z" }]);
+    const { env, shown } = environment(kv, server.fetch);
+    await handlePush(env, NEW_MAIL);
+    expect(shown.map((spec) => spec.options.tag)).toEqual(["uwumail-mail-e2"]);
   });
 
   it("writes dates the way JMAP does", () => {

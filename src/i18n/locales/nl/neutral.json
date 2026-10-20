@@ -17,7 +17,8 @@
       "calendar": "Agenda",
       "contacts": "Contacten"
     },
-    "scheduled": "Gepland"
+    "scheduled": "Gepland",
+    "favorites": "Favorieten"
   },
   "filter": {
     "all": "Alle",
@@ -350,7 +351,15 @@
     "signatureOwn": "Eigen handtekening",
     "signatureFollowsDomain": "Gebruikt de domeinhandtekening",
     "signatureOverride": "Eigen handtekening voor dit adres",
-    "signatureBackToDomain": "Domeinhandtekening gebruiken"
+    "signatureBackToDomain": "Domeinhandtekening gebruiken",
+    "accountUp": "{{email}} omhoog",
+    "accountDown": "{{email}} omlaag",
+    "inUnified": "Onder Alle mailboxen",
+    "inUnifiedDesc": "De mail ervan verschijnt in de inbox, ongelezen, gemarkeerd, concepten en verzonden van Alle mailboxen en telt mee voor hun badges.",
+    "showHiddenFolders": "Verborgen mappen tonen",
+    "showHiddenFoldersDesc": "Verborgen mappen worden gedimd in de zijbalk getoond.",
+    "mailboxes": "Mailboxen",
+    "mailboxesDesc": "De volgorde van je mailboxen in de zijbalk."
   },
   "theme": {
     "system": "Systeem",
@@ -412,7 +421,9 @@
     "contactsDelete": "Contact verwijderen",
     "contactsNext": "Volgend contact",
     "contactsPrevious": "Vorig contact",
-    "label": "Labelen"
+    "label": "Labelen",
+    "markAllRead": "Alles als gelezen markeren",
+    "snooze": "Snoozen"
   },
   "palette": {
     "placeholder": "Typ een opdracht",
@@ -433,7 +444,8 @@
     "drafts": "Concepten",
     "archive": "Archief",
     "trash": "Prullenbak",
-    "junk": "Ongewenst"
+    "junk": "Ongewenst",
+    "snoozed": "Gesnoozed"
   },
   "attachment": {
     "save": "Opslaan",
@@ -518,7 +530,8 @@
       "flag": "Markeren",
       "none": "Niets",
       "spam": "Spam",
-      "notSpam": "Geen spam"
+      "notSpam": "Geen spam",
+      "snooze": "Snoozen"
     },
     "pull": {
       "pull": "Trek om te vernieuwen",
@@ -632,7 +645,15 @@
     "emptyBody_one": "{{count}} bericht wordt definitief verwijderd. Dit kan niet ongedaan worden gemaakt.",
     "emptyBody_other": "{{count}} berichten worden definitief verwijderd. Dit kan niet ongedaan worden gemaakt.",
     "emptied_one": "{{count}} bericht definitief verwijderd",
-    "emptied_other": "{{count}} berichten definitief verwijderd"
+    "emptied_other": "{{count}} berichten definitief verwijderd",
+    "favorite": "Aan favorieten toevoegen",
+    "unfavorite": "Uit favorieten verwijderen",
+    "joinUnified": "In de gecombineerde inbox tonen",
+    "leaveUnified": "Uit de gecombineerde inbox verwijderen",
+    "hide": "Map verbergen",
+    "unhide": "Map weer tonen",
+    "showHidden": "Verborgen mappen tonen",
+    "hideHidden": "Verborgen mappen verbergen"
   },
   "rules": {
     "title": "Mailregels",
@@ -1909,5 +1930,113 @@
   "font": {
     "system": "Systeemlettertype",
     "sample": "Hoi – afspraak om 10:30"
+  },
+  "markAllRead": {
+    "view": "Alles als gelezen markeren",
+    "folder": "Map als gelezen markeren",
+    "account": "Mailbox als gelezen markeren",
+    "done_one": "{{count}} bericht als gelezen gemarkeerd",
+    "done_other": "{{count}} berichten als gelezen gemarkeerd",
+    "nothing": "Hier is niets ongelezen"
+  },
+  "unified": {
+    "include": "Onder Alle mailboxen tonen",
+    "leaveOut": "Buiten Alle mailboxen laten"
+  },
+  "searchHelp": {
+    "open": "Zoektips",
+    "title": "Zoeken met operatoren",
+    "hint": "Al het andere wordt als tekst gezocht.",
+    "example": {
+      "from": "from:leni@example.com",
+      "to": "to:noah",
+      "subject": "subject:factuur",
+      "phrase": "\"exacte woorden\"",
+      "hasAttachment": "has:attachment",
+      "unread": "is:unread",
+      "flagged": "is:flagged",
+      "after": "after:2026-10-01",
+      "before": "before:2026-10-31"
+    },
+    "desc": {
+      "from": "Verzonden door een naam of adres",
+      "to": "Verzonden aan een naam of adres (Aan of Cc)",
+      "subject": "Woorden in het onderwerp",
+      "phrase": "Deze woorden, in deze volgorde",
+      "hasAttachment": "Met bijlagen",
+      "unread": "Nog niet gelezen",
+      "flagged": "Gemarkeerd",
+      "after": "Vanaf deze dag",
+      "before": "Vóór deze dag"
+    }
+  },
+  "templates": {
+    "title": "Sjablonen",
+    "desc": "Tekst die je vaak schrijft. Voeg er in een mail een in met de sjabloonknop of door “/” aan het begin van een regel te typen. Volgt je account naar je andere apparaten.",
+    "insert": "Sjabloon invoegen",
+    "none": "Nog geen sjablonen",
+    "saveDraft": "Als sjabloon opslaan",
+    "saveDraftHint": "Bewaart het onderwerp en wat je schreef, zonder handtekening en geciteerde mail.",
+    "manage": "Sjablonen beheren…",
+    "add": "Nieuw sjabloon",
+    "edit": "{{name}} bewerken",
+    "delete": "{{name}} verwijderen",
+    "deleted": "“{{name}}” verwijderd.",
+    "saved": "Opgeslagen als sjabloon “{{name}}”.",
+    "tooBig": "Dit sjabloon is te groot om op te slaan.",
+    "untitled": "Sjabloon",
+    "name": "Naam",
+    "namePlaceholder": "Naam, bijv. Bedankt voor je bestelling",
+    "subject": "Onderwerp",
+    "subjectPlaceholder": "Onderwerp (optioneel, alleen gebruikt als de mail er geen heeft)",
+    "text": "Sjabloontekst",
+    "textPlaceholder": "Hallo {firstName}, …",
+    "placeholder": {
+      "firstName": "Voornaam van de eerste ontvanger",
+      "name": "Naam van de eerste ontvanger",
+      "date": "Datum van vandaag",
+      "myName": "Je naam als afzender"
+    },
+    "filter": "Sjablonen zoeken",
+    "noMatch": "Geen passend sjabloon"
+  },
+  "attachmentReminder": {
+    "title": "Bijlage vergeten?",
+    "body": "Je mail noemt een bijlage, maar er is niets bijgevoegd.",
+    "sendAnyway": "Toch verzenden",
+    "attach": "Bestand bijvoegen",
+    "setting": "Bijlageherinnering",
+    "settingDesc": "Vraagt het voor het verzenden als je tekst een bijlage noemt en er geen is. Geciteerde tekst en handtekeningen tellen niet mee."
+  },
+  "snooze": {
+    "title": "Snoozen tot …",
+    "action": "Snoozen",
+    "unsnooze": "Nu terug naar de inbox",
+    "pick": "Kies een datum en tijd",
+    "confirm": "Snoozen",
+    "until": "Gesnoozed tot {{time}}",
+    "done": "Gesnoozed tot {{time}}",
+    "back": "De mail is terug",
+    "failed": "Kon de mail niet snoozen. {{reason}}",
+    "preset": {
+      "laterToday": "Later vandaag",
+      "tomorrow": "Morgen",
+      "weekend": "Dit weekend",
+      "nextWeek": "Volgende week"
+    },
+    "problem": {
+      "invalid": "Kies een datum en een tijd.",
+      "past": "Dat tijdstip is al voorbij."
+    }
+  },
+  "notify": {
+    "accounts": "Meldingen per mailbox",
+    "accountsDesc": "Uitgeschakelde mailboxen blijven stil op al je apparaten.",
+    "quiet": "Stille uren",
+    "quietDesc": "Geen meldingen tijdens deze uren. Ze mogen over middernacht heen lopen.",
+    "from": "Van",
+    "to": "tot",
+    "days": "Dagen",
+    "noDays": "Kies minstens één dag, anders beginnen de stille uren nooit."
   }
 }
