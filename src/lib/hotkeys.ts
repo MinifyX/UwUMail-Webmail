@@ -17,14 +17,17 @@ export function isTyping(target: EventTarget | null) {
 }
 
 /**
- * Keys use the format "mod+k", "shift+3" or plain "j". "mod" is Cmd on macOS
+ * Keys use the format "mod+k", "mod+shift+k" or plain "j". "mod" is Cmd on macOS
  * and Ctrl elsewhere. Single keys are ignored while the user types. "g i" is
  * a sequence: g, then i within a second. A key held down runs its handler once,
  * so holding Delete can't delete one conversation after the other.
  */
 function comboOf(event: KeyboardEvent) {
   const parts: string[] = [];
-  if (event.metaKey || event.ctrlKey) parts.push("mod");
+  const mod = event.metaKey || event.ctrlKey;
+  if (mod) parts.push("mod");
+  // Shift only counts beside mod: on its own it already changes the key, like ? or #.
+  if (mod && event.shiftKey) parts.push("shift");
   if (event.altKey) parts.push("alt");
   parts.push(event.key.length === 1 ? event.key.toLowerCase() : event.key);
   return parts.join("+");
@@ -47,7 +50,7 @@ export function useHotkeys(map: HotkeyMap, { enabled = true, repeat = [] }: Hotk
       if (event.defaultPrevented || event.isComposing) return;
       const combo = comboOf(event);
       if (!combo.startsWith("mod+") && isTyping(event.target)) return;
-      if (document.querySelector("dialog[open]") && combo !== "mod+k") return;
+      if (document.querySelector("dialog[open]") && combo !== "mod+shift+k") return;
       // An open menu keeps the arrows and letters to itself.
       if (document.querySelector('[role="menu"]')) return;
       const started = pending && event.timeStamp - pending.at < SEQUENCE_WAIT ? pending.key : null;

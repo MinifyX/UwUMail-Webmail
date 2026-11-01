@@ -37,7 +37,7 @@ import type { ThreadDetail } from "@/backend/types";
 import { startNewEvent } from "../calendar/CalendarSidebar";
 import { startNewContact } from "../contacts/state";
 import { requestMove } from "../mail/selection";
-import { SEARCH_INPUT_ID } from "../mail/ThreadList";
+import { focusSearch } from "./search";
 
 export interface Command {
   id: string;
@@ -97,7 +97,7 @@ export function buildCommands(
       title: t("shortcuts.search"),
       icon: Search,
       keys: ["/"],
-      run: () => document.getElementById(SEARCH_INPUT_ID)?.focus(),
+      run: focusSearch,
     },
     {
       id: "reply",

@@ -479,7 +479,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   if (minimized && phone) {
     const names = [...draft.to, ...draft.cc, ...draft.bcc].map((a) => a.name || a.email).join(", ");
     return (
-      <div className="fixed inset-x-3 bottom-[84px] z-30 flex animate-slide-up items-center gap-2 rounded-2xl bg-toast py-1.5 pr-1.5 pl-4 text-toast-ink shadow-float">
+      <div className="fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 flex animate-slide-up items-center gap-2 rounded-card bg-toast py-1.5 pr-1.5 pl-4 text-toast-ink shadow-float">
         <PenLine className="size-4 shrink-0 text-toast-accent" aria-hidden />
         <button type="button" onClick={() => setMinimized(false)} className="min-w-0 flex-1 py-1 text-left">
           <span className="block truncate text-body font-bold">

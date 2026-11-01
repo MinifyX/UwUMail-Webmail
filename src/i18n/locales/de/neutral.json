@@ -17,7 +17,10 @@
       "calendar": "Kalender",
       "contacts": "Kontakte"
     },
-    "scheduled": "Geplant"
+    "scheduled": "Geplant",
+    "searchAll": "In allen Postfächern suchen",
+    "account": "Konto",
+    "tabs": "Bereiche"
   },
   "filter": {
     "all": "Alle",
@@ -55,7 +58,11 @@
     "count_other": "{{count}} Mails",
     "selected_one": "{{count}} ausgewählt",
     "selected_other": "{{count}} ausgewählt",
-    "clearSelection": "Auswahl aufheben"
+    "clearSelection": "Auswahl aufheben",
+    "filterMenu": "Filter und Ansicht",
+    "filterGroup": "Filter",
+    "viewGroup": "Ansicht",
+    "clearFilter": "Filter entfernen"
   },
   "reader": {
     "empty": {
@@ -425,7 +432,8 @@
     "retry": "Nochmal versuchen",
     "yesterday": "Gestern",
     "save": "Speichern",
-    "ok": "OK"
+    "ok": "OK",
+    "today": "Heute"
   },
   "folder": {
     "inbox": "Posteingang",

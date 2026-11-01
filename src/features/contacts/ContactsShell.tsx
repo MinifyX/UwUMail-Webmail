@@ -53,7 +53,6 @@ function useContactHotkeys(contacts: ContactRecord[], calendar: boolean) {
       "g c": () => {
         if (calendar) useUi.getState().setSection("calendar");
       },
-      "mod+k": () => useUi.getState().setPaletteOpen(true),
       "mod+,": () => useUi.getState().openSettings(),
       "?": () => useUi.getState().setShortcutsOpen(true),
       Escape: () => {
@@ -99,19 +98,21 @@ function DesktopContacts() {
   const selectedId = useContactsUi((s) => s.selectedId);
 
   return (
-    <div className="relative flex min-h-0 flex-1 gap-3 p-3">
-      {room && <ContactsSidebar className="min-h-0 w-[240px] shrink-0 rounded-2xl border border-hairline" />}
-      <ContactList
-        header={<ListHeader onMenu={room ? undefined : () => setDrawerOpen(true)} />}
-        className={clsx(
-          "rounded-2xl border border-hairline",
-          selectedId ? "hidden w-[340px] shrink-0 lg:flex" : "w-full max-w-[420px] shrink-0 max-lg:max-w-none",
-        )}
-      />
-      <ContactDetail
-        className={clsx("min-w-0 flex-1 rounded-2xl border border-hairline", !selectedId && "max-lg:hidden")}
-        onBack={() => useContactsUi.getState().select(null)}
-      />
+    <div className="relative flex min-h-0 flex-1 gap-3 pr-3 pb-3">
+      {room && <ContactsSidebar className="min-h-0 w-[240px] shrink-0" />}
+      <div className="flex min-w-0 flex-1 overflow-hidden rounded-card border border-hairline bg-surface">
+        <ContactList
+          header={<ListHeader onMenu={room ? undefined : () => setDrawerOpen(true)} />}
+          className={clsx(
+            "border-hairline lg:border-r",
+            selectedId ? "hidden w-[340px] shrink-0 lg:flex" : "w-full max-w-[420px] shrink-0 max-lg:max-w-none",
+          )}
+        />
+        <ContactDetail
+          className={clsx("min-w-0 flex-1", !selectedId && "max-lg:hidden")}
+          onBack={() => useContactsUi.getState().select(null)}
+        />
+      </div>
 
       {drawerOpen && !room && (
         <div className="absolute inset-0 z-30 flex" role="presentation">
@@ -122,7 +123,7 @@ function DesktopContacts() {
             className="absolute inset-0 animate-fade bg-backdrop"
           />
           <ContactsSidebar
-            className="relative w-[280px] animate-slide-up rounded-r-2xl bg-surface shadow-float"
+            className="relative w-[280px] animate-slide-up rounded-r-dialog bg-surface shadow-float"
             onNavigate={() => setDrawerOpen(false)}
           />
         </div>
@@ -154,7 +155,7 @@ function PhoneContacts() {
             onClick={() => setDrawerOpen(false)}
             className="absolute inset-0 animate-fade bg-backdrop"
           />
-          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-2xl bg-surface shadow-float">
+          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-dialog bg-surface shadow-float">
             <ContactsSidebar className="h-full pt-3" onNavigate={() => setDrawerOpen(false)} />
           </div>
         </div>

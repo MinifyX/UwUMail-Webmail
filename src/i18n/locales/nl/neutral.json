@@ -17,7 +17,10 @@
       "calendar": "Agenda",
       "contacts": "Contacten"
     },
-    "scheduled": "Gepland"
+    "scheduled": "Gepland",
+    "searchAll": "Zoeken in alle postvakken",
+    "account": "Account",
+    "tabs": "Onderdelen"
   },
   "filter": {
     "all": "Alle",
@@ -55,7 +58,11 @@
     "count_other": "{{count}} berichten",
     "selected_one": "{{count}} geselecteerd",
     "selected_other": "{{count}} geselecteerd",
-    "clearSelection": "Selectie opheffen"
+    "clearSelection": "Selectie opheffen",
+    "filterMenu": "Filter en weergave",
+    "filterGroup": "Filter",
+    "viewGroup": "Weergave",
+    "clearFilter": "Filter verwijderen"
   },
   "reader": {
     "empty": {
@@ -425,7 +432,8 @@
     "retry": "Opnieuw proberen",
     "yesterday": "Gisteren",
     "save": "Opslaan",
-    "ok": "OK"
+    "ok": "OK",
+    "today": "Vandaag"
   },
   "folder": {
     "inbox": "Inbox",

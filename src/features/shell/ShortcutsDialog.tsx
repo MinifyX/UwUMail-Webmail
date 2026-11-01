@@ -26,7 +26,7 @@ export function KeyHint({ combo }: { combo: string }) {
 /** Combo, text key, and another combo doing the same. */
 const SHORTCUTS: [string, string, string?][] = [
   ["c", "compose"],
-  ["/", "search"],
+  ["/", "search", "mod+k"],
   ["j", "next", "ArrowDown"],
   ["k", "previous", "ArrowUp"],
   ["shift+ArrowDown", "extendDown"],
@@ -50,7 +50,7 @@ const SHORTCUTS: [string, string, string?][] = [
   ["g f", "goFlagged"],
   ["mod+Enter", "send"],
   ["mod+shift+d", "discardDraft"],
-  ["mod+k", "palette"],
+  ["mod+shift+k", "palette"],
   ["Escape", "close"],
 ];
 

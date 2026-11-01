@@ -7,9 +7,6 @@ import {
   FolderOpen,
   FolderPlus,
   LoaderCircle,
-  PenLine,
-  Settings,
-  SlidersHorizontal,
   Users,
   WifiOff,
 } from "lucide-react";
@@ -18,8 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Account, Folder, FolderRights, MailboxView, SharedAccount } from "@/backend/types";
 import { AccountDot } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Wordmark } from "@/components/ui/Logo";
+import { IconButton } from "@/components/ui/Button";
 import { ContextMenu } from "@/components/ui/Menu";
 import { Badge } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
@@ -34,10 +30,8 @@ import { openFolderDialog } from "@/state/folderDialog";
 import { toast } from "@/state/toasts";
 import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
-import { PORTAL_URL } from "@/backend/server";
 import { ScheduledNavItem } from "../compose/ScheduledSends";
 import { LabelNavSection } from "../labels/LabelNav";
-import { AppSwitch } from "../shell/AppSwitch";
 import { ShareDialog } from "../sharing/ShareDialog";
 import { buildFolderTree, countsUnread, type FolderNode } from "./folderTree";
 import { draggedThreadIds, THREAD_DRAG_TYPE, useSelectionActions } from "./selection";
@@ -380,7 +374,7 @@ function SharedSection({ owner, folders }: { owner: SharedAccount; folders: Fold
 }
 
 /** Counts arriving mail so Nyu in the logo hops once each time. Syncs without new mail don't count. */
-function useNewMailHops() {
+export function useNewMailHops() {
   const [hops, setHops] = useState(0);
   useEffect(
     () =>
@@ -394,36 +388,17 @@ function useNewMailHops() {
 
 export function MailboxNav({ className }: { className?: string }) {
   const { t } = useT();
-  const hops = useNewMailHops();
   const { accounts } = useVisibleAccounts();
   const { data: allFolders = [] } = useFolders();
   const { data: sharedAccounts = [] } = useSharedAccounts();
   const view = useUi((s) => s.view);
   const setView = useUi((s) => s.setView);
-  const openCompose = useUi((s) => s.openCompose);
-  const openSettings = useUi((s) => s.openSettings);
 
   const folders = allFolders.filter((f) => accounts.some((account) => account.id === f.accountId));
   const unreadInboxes = folders.filter((f) => f.role === "inbox").reduce((sum, f) => sum + f.unread, 0);
 
   return (
-    <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-4 pb-3", className)}>
-      <div className="flex items-center justify-between px-2">
-        <Wordmark className="text-section" hop={hops} />
-      </div>
-
-      <AppSwitch />
-
-      <Button
-        variant="primary"
-        size="lg"
-        icon={PenLine}
-        onClick={() => openCompose({ mode: "new" })}
-        className="w-full"
-      >
-        {t("nav.compose")}
-      </Button>
-
+    <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-3 pb-3", className)}>
       <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-1">
         <section className="flex flex-col gap-0.5">
           {UNIFIED_ROLES.map((role) => {
@@ -455,16 +430,6 @@ export function MailboxNav({ className }: { className?: string }) {
         {sharedAccounts.map((owner) => (
           <SharedSection key={owner.id} owner={owner} folders={allFolders.filter((f) => f.accountId === owner.id)} />
         ))}
-      </div>
-
-      <div className="flex flex-col gap-0.5 border-t border-hairline pt-3">
-        <NavItem icon={Settings} label={t("nav.settings")} active={false} onClick={() => openSettings()} />
-        <NavItem
-          icon={SlidersHorizontal}
-          label={t("nav.portal")}
-          active={false}
-          onClick={() => window.location.assign(PORTAL_URL)}
-        />
       </div>
     </nav>
   );

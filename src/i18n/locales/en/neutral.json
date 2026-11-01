@@ -17,7 +17,10 @@
       "calendar": "Calendar",
       "contacts": "Contacts"
     },
-    "scheduled": "Scheduled"
+    "scheduled": "Scheduled",
+    "searchAll": "Search all mailboxes",
+    "account": "Account",
+    "tabs": "Sections"
   },
   "filter": {
     "all": "All",
@@ -55,7 +58,11 @@
     "count_other": "{{count}} messages",
     "selected_one": "{{count}} selected",
     "selected_other": "{{count}} selected",
-    "clearSelection": "Clear selection"
+    "clearSelection": "Clear selection",
+    "filterMenu": "Filter and view",
+    "filterGroup": "Filter",
+    "viewGroup": "View",
+    "clearFilter": "Remove filter"
   },
   "reader": {
     "empty": {
@@ -425,7 +432,8 @@
     "retry": "Try again",
     "yesterday": "Yesterday",
     "save": "Save",
-    "ok": "OK"
+    "ok": "OK",
+    "today": "Today"
   },
   "folder": {
     "inbox": "Inbox",

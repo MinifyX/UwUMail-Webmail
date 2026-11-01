@@ -17,7 +17,10 @@
       "calendar": "Agenda",
       "contacts": "Contacts"
     },
-    "scheduled": "Programmés"
+    "scheduled": "Programmés",
+    "searchAll": "Rechercher dans toutes les boîtes",
+    "account": "Compte",
+    "tabs": "Sections"
   },
   "filter": {
     "all": "Tous",
@@ -57,7 +60,11 @@
     "selected_one": "{{count}} sélectionné",
     "selected_many": "{{count}} sélectionnés",
     "selected_other": "{{count}} sélectionnés",
-    "clearSelection": "Effacer la sélection"
+    "clearSelection": "Effacer la sélection",
+    "filterMenu": "Filtre et affichage",
+    "filterGroup": "Filtre",
+    "viewGroup": "Affichage",
+    "clearFilter": "Retirer le filtre"
   },
   "reader": {
     "empty": {
@@ -434,7 +441,8 @@
     "retry": "Réessayer",
     "yesterday": "Hier",
     "save": "Enregistrer",
-    "ok": "OK"
+    "ok": "OK",
+    "today": "Aujourd’hui"
   },
   "folder": {
     "inbox": "Boîte de réception",

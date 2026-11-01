@@ -17,7 +17,10 @@
       "calendar": "日历",
       "contacts": "联系人"
     },
-    "scheduled": "定时发送"
+    "scheduled": "定时发送",
+    "searchAll": "搜索所有邮箱",
+    "account": "账户",
+    "tabs": "版块"
   },
   "filter": {
     "all": "全部",
@@ -53,7 +56,11 @@
     },
     "count_other": "{{count}} 封邮件",
     "selected_other": "已选择 {{count}} 项",
-    "clearSelection": "取消选择"
+    "clearSelection": "取消选择",
+    "filterMenu": "筛选和视图",
+    "filterGroup": "筛选",
+    "viewGroup": "视图",
+    "clearFilter": "移除筛选"
   },
   "reader": {
     "empty": {
@@ -416,7 +423,8 @@
     "retry": "重试",
     "yesterday": "昨天",
     "save": "保存",
-    "ok": "确定"
+    "ok": "确定",
+    "today": "今天"
   },
   "folder": {
     "inbox": "收件箱",

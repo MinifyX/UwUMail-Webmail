@@ -76,6 +76,8 @@ interface UiState {
   /** Thread ids in the order the list currently shows them. */
   visibleThreadIds: string[];
   folderDrawerOpen: boolean;
+  /** The phone's "More" tab: settings, account and server, shortcuts. */
+  moreOpen: boolean;
   compose: ComposeRequest | null;
   composeMinimized: boolean;
   settingsOpen: SettingsSection | null;
@@ -107,6 +109,7 @@ interface UiState {
   setVisibleThreadIds: (ids: string[]) => void;
   selectRelative: (offset: 1 | -1) => void;
   setFolderDrawerOpen: (open: boolean) => void;
+  setMoreOpen: (open: boolean) => void;
   openCompose: (request: Omit<ComposeRequest, "key">) => void;
   closeCompose: () => void;
   setComposeMinimized: (minimized: boolean) => void;
@@ -140,6 +143,7 @@ export const useUi = create<UiState>()((set, get) => ({
   selectedThreadId: null,
   visibleThreadIds: [],
   folderDrawerOpen: false,
+  moreOpen: false,
   compose: null,
   composeMinimized: false,
   settingsOpen: null,
@@ -155,13 +159,14 @@ export const useUi = create<UiState>()((set, get) => ({
   labelPicker: null,
   labelSuggest: null,
 
-  setSection: (section) => set({ section, folderDrawerOpen: false, paletteOpen: false }),
+  setSection: (section) => set({ section, folderDrawerOpen: false, moreOpen: false, paletteOpen: false }),
   setView: (view) =>
     set({
       section: "mail",
       view,
       selectedThreadId: null,
       folderDrawerOpen: false,
+      moreOpen: false,
       labelFilter: [],
       checkedThreadIds: [],
       selectionAnchor: null,
@@ -178,7 +183,8 @@ export const useUi = create<UiState>()((set, get) => ({
     const next = stepThrough(visibleThreadIds, selectedThreadId, offset);
     if (next) set({ selectedThreadId: next, selectionAnchor: next, selectionCursor: null });
   },
-  setFolderDrawerOpen: (open) => set({ folderDrawerOpen: open }),
+  setFolderDrawerOpen: (open) => set(open ? { folderDrawerOpen: true, moreOpen: false } : { folderDrawerOpen: false }),
+  setMoreOpen: (open) => set(open ? { moreOpen: true, folderDrawerOpen: false } : { moreOpen: false }),
   openCompose: (request) => set({ compose: { ...request, key: Date.now() }, composeMinimized: false }),
   closeCompose: () => set({ compose: null, composeMinimized: false }),
   setComposeMinimized: (minimized) => set({ composeMinimized: minimized }),

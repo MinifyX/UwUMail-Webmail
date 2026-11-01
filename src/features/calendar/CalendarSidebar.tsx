@@ -1,13 +1,8 @@
 import clsx from "clsx";
-import { Plus, Settings, SlidersHorizontal } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { PORTAL_URL } from "@/backend/server";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Wordmark } from "@/components/ui/Logo";
 import { useT } from "@/i18n";
 import { addMinutes, localWall, withClock } from "@/lib/calendarDates";
-import { useUi } from "@/state/ui";
-import { AppSwitch } from "../shell/AppSwitch";
 import { CalendarList } from "./CalendarList";
 import { MiniMonth } from "./MiniMonth";
 import { useCalendarUi } from "./state";
@@ -23,31 +18,12 @@ export function startNewEvent() {
   openEditor({ occurrence: null, draft: { start, end: addMinutes(start, 60), allDay: false } });
 }
 
-function SidebarLink({ icon: Icon, label, onClick }: { icon: LucideIcon; label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-body text-ink/85 transition-colors hover:bg-pink-tint/50"
-    >
-      <Icon className="size-[18px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-    </button>
-  );
-}
-
-/** Beside the calendar: the switch back to mail, a new event, a small month and the calendars. */
+/** Beside the calendar: a new event, a small month and the calendars. */
 export function CalendarSidebar({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
   const { t } = useT();
-  const openSettings = useUi((s) => s.openSettings);
   return (
-    <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-4 pb-3", className)} aria-label={t("calendar.title")}>
-      <div className="flex items-center justify-between px-2">
-        <Wordmark className="text-section" />
-      </div>
-      <AppSwitch />
+    <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-3 pb-3", className)} aria-label={t("calendar.title")}>
       <Button
-        variant="primary"
         size="lg"
         icon={Plus}
         onClick={() => {
@@ -61,14 +37,6 @@ export function CalendarSidebar({ className, onNavigate }: { className?: string;
       <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-1">
         <MiniMonth onPick={onNavigate} />
         <CalendarList />
-      </div>
-      <div className="flex flex-col gap-0.5 border-t border-hairline pt-3">
-        <SidebarLink icon={Settings} label={t("nav.settings")} onClick={() => openSettings()} />
-        <SidebarLink
-          icon={SlidersHorizontal}
-          label={t("nav.portal")}
-          onClick={() => window.location.assign(PORTAL_URL)}
-        />
       </div>
     </nav>
   );

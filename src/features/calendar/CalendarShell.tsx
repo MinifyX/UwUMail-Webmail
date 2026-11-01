@@ -45,7 +45,6 @@ function useCalendarHotkeys(contacts: boolean) {
       "g p": () => {
         if (contacts) useUi.getState().setSection("contacts");
       },
-      "mod+k": () => useUi.getState().setPaletteOpen(true),
       "mod+,": () => useUi.getState().openSettings(),
       "?": () => useUi.getState().setShortcutsOpen(true),
       Escape: () => {
@@ -134,10 +133,10 @@ function DesktopCalendar() {
   const setDrawerOpen = useUi((s) => s.setFolderDrawerOpen);
 
   return (
-    <div className="relative flex min-h-0 flex-1 gap-3 p-3">
-      {room && <CalendarSidebar className="min-h-0 w-[240px] shrink-0 rounded-2xl border border-hairline" />}
+    <div className="relative flex min-h-0 flex-1 gap-3 pr-3 pb-3">
+      {room && <CalendarSidebar className="min-h-0 w-[240px] shrink-0" />}
       <section
-        className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface"
+        className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-card border border-hairline bg-surface"
         aria-label={t("calendar.title")}
       >
         <header className="flex flex-wrap items-center gap-2 px-4 pt-3 pb-3">
@@ -177,7 +176,7 @@ function DesktopCalendar() {
             className="absolute inset-0 animate-fade bg-backdrop"
           />
           <CalendarSidebar
-            className="relative w-[280px] animate-slide-up rounded-r-2xl bg-surface shadow-float"
+            className="relative w-[280px] animate-slide-up rounded-r-dialog bg-surface shadow-float"
             onNavigate={() => setDrawerOpen(false)}
           />
         </div>
@@ -221,16 +220,9 @@ function PhoneCalendar() {
           onClick={() => setView(view === "day" ? "agenda" : "day")}
           active={view === "day"}
         />
+        <IconButton icon={Plus} label={t("calendar.newEvent")} onClick={startNewEvent} />
       </header>
       <CalendarBody view={view} />
-      <button
-        type="button"
-        onClick={startNewEvent}
-        aria-label={t("calendar.newEvent")}
-        className="fixed right-4 bottom-4 z-20 grid size-14 place-items-center rounded-2xl bg-pink-solid text-on-pink shadow-[0_6px_20px_rgb(225_29_116/0.35)] active:scale-95"
-      >
-        <Plus className="size-5" strokeWidth={2.4} aria-hidden />
-      </button>
       {drawerOpen && (
         <div className="fixed inset-0 z-30" role="presentation">
           <button
@@ -239,7 +231,7 @@ function PhoneCalendar() {
             onClick={() => setDrawerOpen(false)}
             className="absolute inset-0 animate-fade bg-backdrop"
           />
-          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-2xl bg-surface shadow-float">
+          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-dialog bg-surface shadow-float">
             <CalendarSidebar className="h-full pt-3" onNavigate={() => setDrawerOpen(false)} />
           </div>
         </div>
