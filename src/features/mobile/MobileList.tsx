@@ -131,7 +131,7 @@ export function MobileList() {
         {selecting ? (
           <div className="flex h-12 items-center gap-1 rounded-2xl bg-pink-tint px-1 text-pink-ink">
             <IconButton icon={X} label={t("mobile.selection.clear")} onClick={() => setSelected(new Set())} />
-            <p className="min-w-0 flex-1 truncate text-[15px] font-bold">
+            <p className="min-w-0 flex-1 truncate text-reading font-bold">
               {t("mobile.selected", { count: selected.size })}
             </p>
             {info.rights.markSeen && (
@@ -156,8 +156,8 @@ export function MobileList() {
           <div className="flex h-12 items-center gap-1">
             <IconButton icon={Menu} label={t("nav.menu")} onClick={() => setFolderDrawerOpen(true)} />
             <div className="min-w-0 flex-1 px-1">
-              <h1 className="truncate text-[20px] leading-tight font-extrabold tracking-[-0.01em]">{info.title}</h1>
-              {info.subtitle && <p className="truncate text-[12px] text-muted">{info.subtitle}</p>}
+              <h1 className="truncate text-title leading-tight font-extrabold tracking-[-0.01em]">{info.title}</h1>
+              {info.subtitle && <p className="truncate text-caption text-muted">{info.subtitle}</p>}
             </div>
             {(info.isTrash || info.isJunk) && info.folder && threads.length > 0 && (
               <IconButton
@@ -186,7 +186,7 @@ export function MobileList() {
             onChange={(event) => setDraftSearch(event.target.value)}
             placeholder={t("list.search")}
             enterKeyHint="search"
-            className="h-11 w-full rounded-full border border-transparent bg-canvas pr-11 pl-10 text-[15px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="h-11 w-full rounded-full border border-transparent bg-canvas pr-11 pl-10 text-reading placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {draftSearch && (
             <IconButton
@@ -226,7 +226,7 @@ export function MobileList() {
           className="h-full overflow-y-auto overscroll-contain pb-28"
         >
           {query.isPending ? (
-            <p className="px-6 py-10 text-center text-[13px] text-muted">{t("list.loading")}</p>
+            <p className="px-6 py-10 text-center text-meta text-muted">{t("list.loading")}</p>
           ) : threads.length === 0 ? (
             <EmptyState
               scene={EMPTY_SCENES[empty]}
@@ -288,7 +288,7 @@ export function MobileList() {
                 );
               })}
               {query.isFetchingNextPage && (
-                <li className="py-4 text-center text-[12.5px] text-muted">{t("list.loading")}</li>
+                <li className="py-4 text-center text-meta text-muted">{t("list.loading")}</li>
               )}
               {serverButton && !query.hasNextPage && <li className="flex justify-center px-4 py-5">{serverButton}</li>}
             </ul>
@@ -307,7 +307,7 @@ export function MobileList() {
           )}
         >
           <PenLine className="size-5 shrink-0" strokeWidth={2.4} aria-hidden />
-          {!compact && <span className="text-[15px]">{t("nav.compose")}</span>}
+          {!compact && <span className="text-reading">{t("nav.compose")}</span>}
         </button>
       )}
     </section>

@@ -13,8 +13,8 @@ export function Row({
   return (
     <div className="flex flex-col gap-2.5 border-b border-hairline py-4 last:border-0">
       <div>
-        <p className="text-sm font-semibold">{label}</p>
-        {description && <p className="text-[13px] text-muted">{description}</p>}
+        <p className="text-body font-semibold">{label}</p>
+        {description && <p className="text-meta text-muted">{description}</p>}
       </div>
       {children}
     </div>

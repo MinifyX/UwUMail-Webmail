@@ -88,8 +88,8 @@ export function LabelsSettingsPage() {
           <Tags className="size-5" aria-hidden />
         </span>
         <div>
-          <p className="text-sm font-semibold">{t("labels.settings.title")}</p>
-          <p className="text-[13px] text-muted">{t("labels.settings.description")}</p>
+          <p className="text-body font-semibold">{t("labels.settings.title")}</p>
+          <p className="text-meta text-muted">{t("labels.settings.description")}</p>
         </div>
       </div>
       <AutomaticSettings options={options} />
@@ -122,7 +122,7 @@ function AutomaticSettings({ options }: { options: AssistOptions }) {
       {options.features.autoLabels && assist && (
         <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-canvas px-3.5 py-2.5">
           <Sparkles className="size-4 shrink-0 text-pink" aria-hidden />
-          <p className="min-w-[min(100%,14rem)] flex-1 text-[12.5px] text-muted">
+          <p className="min-w-[min(100%,14rem)] flex-1 text-meta text-muted">
             {assist.autoLabels ? t("labels.settings.aiOn") : t("labels.settings.aiOff")}
           </p>
           <Button size="sm" variant="ghost" icon={ArrowRight} onClick={() => openSettings("assistant")}>
@@ -182,7 +182,7 @@ export function AiLabelSettings({ options }: { options: AssistOptions }) {
       {settings && !settings.effective.autoLabels && <Note tone="warning">{t("assist.labels.noProvider")}</Note>}
       {labels.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-canvas px-3.5 py-2.5">
-          <p className="min-w-[min(100%,14rem)] flex-1 text-[12.5px] text-muted">
+          <p className="min-w-[min(100%,14rem)] flex-1 text-meta text-muted">
             {t("assist.labels.applyDesc", { count: APPLY_COUNT })}
           </p>
           <Button size="sm" icon={Sparkles} busy={applying} onClick={() => void applyNow()}>
@@ -277,10 +277,10 @@ export function LabelSettings({ options }: { options: AssistOptions }) {
           </div>
         )}
         {!isPending && own.length === 0 && editing !== "new" && (
-          <p className="text-[13px] text-muted">{t("assist.labels.empty")}</p>
+          <p className="text-meta text-muted">{t("assist.labels.empty")}</p>
         )}
         {own.length > 0 && rows(own)}
-        {!room && <p className="text-[12.5px] text-muted">{t("assist.labels.full", { count: options.maxLabels })}</p>}
+        {!room && <p className="text-meta text-muted">{t("assist.labels.full", { count: options.maxLabels })}</p>}
       </Section>
     </>
   );
@@ -301,8 +301,8 @@ function MissingBases({ missing }: { missing: LabelBase[] }) {
   return (
     <div className="flex flex-col gap-2 rounded-2xl bg-canvas px-3.5 py-3">
       <div>
-        <p className="text-[13px] font-semibold">{t("labels.base.missingTitle")}</p>
-        <p className="text-[12.5px] text-muted">{t("labels.base.missingDescription")}</p>
+        <p className="text-meta font-semibold">{t("labels.base.missingTitle")}</p>
+        <p className="text-meta text-muted">{t("labels.base.missingDescription")}</p>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {missing.map((base) => (
@@ -387,11 +387,11 @@ function LabelRow({
         <LabelDot color={label.color} className="mt-1 size-3" />
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-baseline gap-x-2">
-            <span className="text-[13.5px] font-bold break-words">{label.name}</span>
-            <code className="font-mono text-[11px] text-faint" title={t("assist.labels.keyword")}>
+            <span className="text-body font-bold break-words">{label.name}</span>
+            <code className="font-mono text-badge text-faint" title={t("assist.labels.keyword")}>
               {label.keyword}
             </code>
-            <span className="text-[11.5px] text-muted tabular-nums">
+            <span className="text-caption text-muted tabular-nums">
               {t("labels.settings.mailCount", { count: label.totalEmails })}
             </span>
           </p>
@@ -401,7 +401,7 @@ function LabelRow({
                 type="button"
                 aria-expanded={definition}
                 onClick={() => setDefinition((open) => !open)}
-                className="inline-flex items-center gap-1 rounded text-[12px] font-semibold text-muted hover:text-ink focus-visible:shadow-focus focus-visible:outline-none"
+                className="inline-flex items-center gap-1 rounded text-caption font-semibold text-muted hover:text-ink focus-visible:shadow-focus focus-visible:outline-none"
               >
                 <ChevronDown
                   className={clsx("size-3.5 transition-transform", definition && "rotate-180")}
@@ -409,14 +409,14 @@ function LabelRow({
                 />
                 {definition ? t("labels.base.hideDefinition") : t("labels.base.showDefinition")}
               </button>
-              {definition && <p className="text-[12.5px] break-words text-muted">{label.description}</p>}
+              {definition && <p className="text-meta break-words text-muted">{label.description}</p>}
               {label.previousDescription && (
-                <div className="mt-1.5 flex flex-col items-start gap-1 rounded-xl bg-canvas px-3 py-2 text-[12.5px]">
+                <div className="mt-1.5 flex flex-col items-start gap-1 rounded-xl bg-canvas px-3 py-2 text-meta">
                   <p className="break-words">
                     <span className="font-semibold">{t("labels.base.previousDescription")}</span>{" "}
                     <span className="selectable italic">{label.previousDescription}</span>
                   </p>
-                  <p className="text-[11.5px] text-muted">{t("labels.base.previousHint")}</p>
+                  <p className="text-caption text-muted">{t("labels.base.previousHint")}</p>
                   <div className="flex flex-wrap gap-1">
                     {onUsePrevious && (
                       <Button size="sm" variant="ghost" icon={Plus} onClick={onUsePrevious}>
@@ -431,15 +431,15 @@ function LabelRow({
               )}
             </>
           ) : (
-            <p className="text-[12.5px] break-words text-muted">
+            <p className="text-meta break-words text-muted">
               {label.description || <span className="italic">{t("assist.labels.noDescription")}</span>}
             </p>
           )}
-          {automation && <p className="text-[11.5px] text-faint">{automation}</p>}
+          {automation && <p className="text-caption text-faint">{automation}</p>}
         </div>
         {label.base && (
           <div className="flex shrink-0 items-center gap-2">
-            <span className="hidden text-[11.5px] text-muted sm:inline">
+            <span className="hidden text-caption text-muted sm:inline">
               {isAuto ? t("labels.base.autoOn") : t("labels.base.autoOff")}
             </span>
             <AutoSwitch
@@ -459,7 +459,7 @@ function LabelRow({
         />
       </div>
       {confirm && (
-        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-danger-tint px-3 py-2 text-[12.5px] text-danger">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-danger-tint px-3 py-2 text-meta text-danger">
           <span className="min-w-0 flex-1">{t("assist.labels.confirmDelete", { name: label.name })}</span>
           <Button size="sm" variant="ghost" onClick={() => setConfirm(false)}>
             {t("common.cancel")}
@@ -596,7 +596,7 @@ export function LabelEditor({
       noValidate
       className="flex flex-col gap-3 rounded-2xl border border-pink/30 bg-pink-tint/20 px-4 py-3.5"
     >
-      <p className="flex items-center gap-1.5 text-[13.5px] font-bold">
+      <p className="flex items-center gap-1.5 text-body font-bold">
         <Tags className="size-4 text-pink" aria-hidden />
         {label ? t("assist.labels.editTitle", { name: label.name }) : t("assist.labels.newTitle")}
       </p>
@@ -612,11 +612,11 @@ export function LabelEditor({
       </Field>
       {base ? (
         <div className="flex flex-col gap-1">
-          <p className="text-[13px] font-semibold text-muted">{t("assist.labels.descriptionField")}</p>
-          <p className="rounded-control border border-hairline bg-canvas px-3.5 py-2.5 text-[13px] break-words">
+          <p className="text-meta font-semibold text-muted">{t("assist.labels.descriptionField")}</p>
+          <p className="rounded-control border border-hairline bg-canvas px-3.5 py-2.5 text-meta break-words">
             {form.description}
           </p>
-          <p className="text-[12.5px] text-muted">{t("labels.base.fixedDefinition")}</p>
+          <p className="text-meta text-muted">{t("labels.base.fixedDefinition")}</p>
         </div>
       ) : (
         <Field
@@ -631,14 +631,14 @@ export function LabelEditor({
               value={form.description}
               placeholder={t("assist.labels.descriptionPlaceholder")}
               onChange={(event) => change({ description: event.target.value })}
-              className="w-full resize-y rounded-control border border-line bg-surface px-3.5 py-2.5 text-sm placeholder:text-faint focus:border-pink focus:shadow-focus focus:outline-none"
+              className="w-full resize-y rounded-control border border-line bg-surface px-3.5 py-2.5 text-body placeholder:text-faint focus:border-pink focus:shadow-focus focus:outline-none"
             />
           )}
         </Field>
       )}
       <OverlapWarning overlaps={overlaps} />
       <div className="flex flex-col gap-1.5">
-        <p className="text-[13px] font-semibold text-muted">{t("assist.labels.color")}</p>
+        <p className="text-meta font-semibold text-muted">{t("assist.labels.color")}</p>
         <div role="radiogroup" aria-label={t("assist.labels.color")} className="flex flex-wrap gap-1.5">
           {[null, ...LABEL_COLORS].map((color) => (
             <button
@@ -667,8 +667,8 @@ export function LabelEditor({
       <fieldset className="flex flex-col gap-3 rounded-2xl bg-surface px-3.5 py-3">
         <legend className="sr-only">{t("labels.settings.automaticTitle")}</legend>
         <div>
-          <p className="text-[13px] font-bold">{t("labels.settings.automaticTitle")}</p>
-          <p className="text-[12.5px] text-muted">{t("labels.settings.automaticHint")}</p>
+          <p className="text-meta font-bold">{t("labels.settings.automaticTitle")}</p>
+          <p className="text-meta text-muted">{t("labels.settings.automaticHint")}</p>
         </div>
         <Toggle
           checked={form.auto}
@@ -677,7 +677,7 @@ export function LabelEditor({
           description={t("labels.settings.autoLabelDesc")}
         />
         {base ? (
-          <p className="text-[12.5px] text-muted">{t("labels.base.detectorBuiltIn")}</p>
+          <p className="text-meta text-muted">{t("labels.base.detectorBuiltIn")}</p>
         ) : (
           <Field label={t("labels.settings.detector")} hint={t("labels.settings.detectorHint")}>
             {(id) => (
@@ -725,7 +725,7 @@ export function LabelEditor({
       </fieldset>
 
       {failure && (
-        <p role="alert" className="rounded-xl bg-danger-tint px-3 py-2 text-[13px] text-danger">
+        <p role="alert" className="rounded-xl bg-danger-tint px-3 py-2 text-meta text-danger">
           {failure}
         </p>
       )}
@@ -747,7 +747,7 @@ export function OverlapWarning({ overlaps }: { overlaps: LabelOverlap[] }) {
   const lines = overlapLines(overlaps, t);
   if (lines.length === 0) return null;
   return (
-    <div role="status" className="flex gap-2 rounded-xl bg-warning-tint px-3 py-2 text-[12.5px] text-warning">
+    <div role="status" className="flex gap-2 rounded-xl bg-warning-tint px-3 py-2 text-meta text-warning">
       <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{t("labels.overlap.title")}</p>
@@ -787,8 +787,8 @@ function ConditionsEditor({
     onChange(next.length > 0 ? { match: nextMatch, conditions: next } : null);
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-[13px] font-semibold text-muted">{t("labels.settings.conditions")}</p>
-      {conditions.length === 0 && <p className="text-[12.5px] text-muted">{t("labels.settings.noConditions")}</p>}
+      <p className="text-meta font-semibold text-muted">{t("labels.settings.conditions")}</p>
+      {conditions.length === 0 && <p className="text-meta text-muted">{t("labels.settings.noConditions")}</p>}
       {conditions.length > 1 && (
         <Segmented
           label={t("labels.settings.conditions")}
@@ -856,7 +856,7 @@ function ConditionsEditor({
               />
             </div>
             {bad && (
-              <p role="alert" className="text-[12.5px] text-danger">
+              <p role="alert" className="text-meta text-danger">
                 {t("labels.settings.conditionProblem", { max: MAX_CONDITION_LENGTH })}
               </p>
             )}
@@ -890,7 +890,7 @@ function LabelLog() {
   if (labels.length === 0) return null;
   return (
     <Section title={t("labels.log.title")} description={t("labels.log.description")}>
-      {!isPending && log.length === 0 && <p className="text-[13px] text-muted">{t("labels.log.empty")}</p>}
+      {!isPending && log.length === 0 && <p className="text-meta text-muted">{t("labels.log.empty")}</p>}
       {log.length > 0 && (
         <ul className="flex flex-col gap-1.5">
           {log.map((entry) => {
@@ -907,23 +907,21 @@ function LabelLog() {
                   <span
                     style={chipStyle(label?.color ?? null)}
                     className={clsx(
-                      "inline-flex h-[18px] items-center rounded-full border px-1.5 text-[10.5px] font-semibold",
+                      "inline-flex h-[18px] items-center rounded-full border px-1.5 text-badge font-semibold",
                       !label?.color && "border-line bg-canvas text-muted",
                     )}
                   >
                     {label?.name ?? entry.name}
                   </span>
-                  <span className="text-[11.5px] font-semibold text-muted">{t(`labels.source.${entry.source}`)}</span>
-                  {entry.undone && <span className="text-[11.5px] text-muted">{t("labels.log.undone")}</span>}
-                  <span className="ml-auto text-[11.5px] text-faint">
+                  <span className="text-caption font-semibold text-muted">{t(`labels.source.${entry.source}`)}</span>
+                  {entry.undone && <span className="text-caption text-muted">{t("labels.log.undone")}</span>}
+                  <span className="ml-auto text-caption text-faint">
                     {formatLongDate(entry.createdAt, i18n.language)}
                   </span>
                 </p>
-                {entry.reason && (
-                  <p className="text-[12.5px] break-words">{labelReasonText(entry, t, i18n.language)}</p>
-                )}
+                {entry.reason && <p className="text-meta break-words">{labelReasonText(entry, t, i18n.language)}</p>}
                 {entry.source === "ai" && entry.providerName && (
-                  <p className="text-[11px] text-faint">
+                  <p className="text-badge text-faint">
                     {providerLabel({ providerName: entry.providerName, model: entry.model })}
                   </p>
                 )}

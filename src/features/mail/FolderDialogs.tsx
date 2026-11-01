@@ -106,9 +106,9 @@ function NameForm({ dialog }: { dialog: Extract<FolderDialog, { kind: "create" |
       }}
     >
       <div>
-        <h2 className="text-lg font-bold">{renaming ? t("folders.renameTitle") : t("folders.createTitle")}</h2>
+        <h2 className="text-section font-bold">{renaming ? t("folders.renameTitle") : t("folders.createTitle")}</h2>
         {parent && (
-          <p className="text-[13px] text-muted">
+          <p className="text-meta text-muted">
             {t("folders.inside", { name: parent.role ? t(`folder.${parent.role}`) : parent.name })}
           </p>
         )}
@@ -151,10 +151,10 @@ function DeleteQuestion({ folder }: { folder: Folder }) {
   if (hasChildren) {
     return (
       <div className="flex flex-col items-center gap-3 px-6 pt-5 pb-6 text-center">
-        <h2 className="text-[18px] font-extrabold text-balance">
+        <h2 className="text-section font-extrabold text-balance">
           {t("folders.hasChildrenTitle", { name: folder.name })}
         </h2>
-        <p className="text-[13px] text-muted">{t("folders.hasChildrenBody")}</p>
+        <p className="text-meta text-muted">{t("folders.hasChildrenBody")}</p>
         <Button autoFocus onClick={closeFolderDialog}>
           {t("common.close")}
         </Button>
@@ -181,8 +181,8 @@ function DeleteQuestion({ folder }: { folder: Folder }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
       <NyuScene name="goodbye" className="w-36" />
-      <h2 className="text-[18px] font-extrabold text-balance">{t("folders.deleteTitle", { name: folder.name })}</h2>
-      <p className="text-[13px] text-muted">
+      <h2 className="text-section font-extrabold text-balance">{t("folders.deleteTitle", { name: folder.name })}</h2>
+      <p className="text-meta text-muted">
         {current.total > 0 ? t("folders.deleteBody", { count: current.total }) : t("folders.deleteBodyEmpty")}
       </p>
       <div className="flex flex-wrap justify-center gap-2 pt-1">
@@ -225,8 +225,8 @@ function EmptyQuestion({ folder }: { folder: Folder }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
       <NyuScene name="goodbye" className="w-36" />
-      <h2 className="text-[18px] font-extrabold text-balance">{t(`folders.emptyTitle.${role}`)}</h2>
-      <p className="text-[13px] text-muted">{t("folders.emptyBody", { count })}</p>
+      <h2 className="text-section font-extrabold text-balance">{t(`folders.emptyTitle.${role}`)}</h2>
+      <p className="text-meta text-muted">{t("folders.emptyBody", { count })}</p>
       <div className="flex flex-wrap justify-center gap-2 pt-1">
         <Button variant="danger" autoFocus busy={busy} {...armedActivation(shownAt, () => void empty())}>
           {t(`folders.empty.${role}`)}

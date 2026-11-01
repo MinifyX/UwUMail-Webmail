@@ -27,9 +27,9 @@ function SidebarLink({ icon: Icon, label, onClick }: { icon: LucideIcon; label: 
     <button
       type="button"
       onClick={onClick}
-      className="flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-[13.5px] text-ink/85 transition-colors hover:bg-pink-tint/50"
+      className="flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-body text-ink/85 transition-colors hover:bg-pink-tint/50"
     >
-      <Icon className="size-[17px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
+      <Icon className="size-[18px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
       <span className="min-w-0 flex-1 truncate">{label}</span>
     </button>
   );
@@ -42,7 +42,7 @@ export function ContactsSidebar({ className, onNavigate }: { className?: string;
   return (
     <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-4 pb-3", className)} aria-label={t("contacts.title")}>
       <div className="flex items-center justify-between px-2">
-        <Wordmark className="text-[19px]" />
+        <Wordmark className="text-section" />
       </div>
       <AppSwitch />
       <Button
@@ -126,9 +126,9 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
           type="button"
           aria-current={bookId === id ? "page" : undefined}
           onClick={() => pick(id)}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left text-[13.5px]"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left text-body"
         >
-          <Icon className="size-[17px] shrink-0 opacity-80" strokeWidth={2} aria-hidden />
+          <Icon className="size-[18px] shrink-0 opacity-80" strokeWidth={2} aria-hidden />
           <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
           {book?.isDefault && books.length > 1 && (
             <span className="shrink-0 text-muted" title={t("contacts.default")}>
@@ -136,7 +136,7 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
               <span className="sr-only">{t("contacts.default")}</span>
             </span>
           )}
-          <span className="shrink-0 text-[12px] text-muted tabular-nums">{count(id)}</span>
+          <span className="shrink-0 text-caption text-muted tabular-nums">{count(id)}</span>
         </button>
         {book && (
           <IconButton
@@ -159,7 +159,7 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
     <section className="flex flex-col gap-0.5" aria-labelledby="uwu-address-books">
       <ul className="flex flex-col gap-0.5">{entry(null, t("contacts.all"), UsersRound)}</ul>
       <div className="flex items-center justify-between pt-3 pr-1 pl-3">
-        <h2 id="uwu-address-books" className="text-[12px] font-bold tracking-wide text-muted uppercase">
+        <h2 id="uwu-address-books" className="text-caption font-bold tracking-wide text-muted uppercase">
           {t("contacts.addressBooks")}
         </h2>
         <IconButton icon={Plus} size="sm" label={t("contacts.newBook")} onClick={() => setEditing("new")} />
@@ -216,10 +216,10 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
         {deleting && (
           <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
             <NyuScene name="goodbye" className="w-36" />
-            <h2 className="text-[18px] font-extrabold text-balance">
+            <h2 className="text-section font-extrabold text-balance">
               {t("contacts.deleteBookTitle", { name: deleting.name })}
             </h2>
-            <p className="text-[13px] text-muted">{t("contacts.deleteBookBody", { count: count(deleting.id) })}</p>
+            <p className="text-meta text-muted">{t("contacts.deleteBookBody", { count: count(deleting.id) })}</p>
             <div className="flex flex-wrap justify-center gap-2 pt-1">
               <Button
                 variant="danger"
@@ -273,7 +273,7 @@ function BookForm({
         setBusy(false);
       }}
     >
-      <h2 className="text-lg font-bold">{book ? t("contacts.renameBook") : t("contacts.newBook")}</h2>
+      <h2 className="text-section font-bold">{book ? t("contacts.renameBook") : t("contacts.newBook")}</h2>
       <Field label={t("contacts.bookName")} error={tried && empty ? t("contacts.problem.bookName") : undefined}>
         {(id) => (
           <TextInput id={id} autoFocus value={name} maxLength={255} onChange={(event) => setName(event.target.value)} />

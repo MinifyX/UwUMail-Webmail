@@ -73,7 +73,7 @@ function CalendarBody({ view }: { view: CalendarView }) {
   if (query.isError && !query.data) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-        <p className="text-[14px] text-muted">{t("calendar.loadFailed")}</p>
+        <p className="text-body text-muted">{t("calendar.loadFailed")}</p>
         <Button size="sm" onClick={() => void query.refetch()}>
           {t("common.retry")}
         </Button>
@@ -135,9 +135,9 @@ function DesktopCalendar() {
 
   return (
     <div className="relative flex min-h-0 flex-1 gap-3 p-3">
-      {room && <CalendarSidebar className="min-h-0 w-[240px] shrink-0 rounded-[22px] border border-hairline" />}
+      {room && <CalendarSidebar className="min-h-0 w-[240px] shrink-0 rounded-2xl border border-hairline" />}
       <section
-        className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-hairline bg-surface"
+        className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface"
         aria-label={t("calendar.title")}
       >
         <header className="flex flex-wrap items-center gap-2 px-4 pt-3 pb-3">
@@ -152,7 +152,7 @@ function DesktopCalendar() {
             <IconButton icon={ChevronRight} label={t(`calendar.next.${view}`)} onClick={() => step(1)} />
           </span>
           <h1
-            className="min-w-0 flex-1 truncate text-[20px] leading-tight font-extrabold tracking-[-0.01em]"
+            className="min-w-0 flex-1 truncate text-title leading-tight font-extrabold tracking-[-0.01em]"
             aria-live="polite"
           >
             {title(view, date)}
@@ -174,10 +174,10 @@ function DesktopCalendar() {
             type="button"
             aria-label={t("common.close")}
             onClick={() => setDrawerOpen(false)}
-            className="absolute inset-0 animate-fade bg-[#1c1420]/30"
+            className="absolute inset-0 animate-fade bg-backdrop"
           />
           <CalendarSidebar
-            className="relative w-[280px] animate-slide-up rounded-r-[22px] bg-surface shadow-float"
+            className="relative w-[280px] animate-slide-up rounded-r-2xl bg-surface shadow-float"
             onNavigate={() => setDrawerOpen(false)}
           />
         </div>
@@ -208,7 +208,7 @@ function PhoneCalendar() {
         {view === "day" && (
           <IconButton icon={ChevronLeft} label={t("calendar.previous.day")} onClick={() => step(-1)} />
         )}
-        <h1 className="min-w-0 flex-1 truncate px-1 text-[18px] leading-tight font-extrabold">
+        <h1 className="min-w-0 flex-1 truncate px-1 text-section leading-tight font-extrabold">
           {view === "day" ? formatDayLong(date) : formatMonthTitle(date)}
         </h1>
         {view === "day" && <IconButton icon={ChevronRight} label={t("calendar.next.day")} onClick={() => step(1)} />}
@@ -229,7 +229,7 @@ function PhoneCalendar() {
         aria-label={t("calendar.newEvent")}
         className="fixed right-4 bottom-4 z-20 grid size-14 place-items-center rounded-2xl bg-pink-solid text-on-pink shadow-[0_6px_20px_rgb(225_29_116/0.35)] active:scale-95"
       >
-        <Plus className="size-6" strokeWidth={2.4} aria-hidden />
+        <Plus className="size-5" strokeWidth={2.4} aria-hidden />
       </button>
       {drawerOpen && (
         <div className="fixed inset-0 z-30" role="presentation">
@@ -237,9 +237,9 @@ function PhoneCalendar() {
             type="button"
             aria-label={t("common.close")}
             onClick={() => setDrawerOpen(false)}
-            className="absolute inset-0 animate-fade bg-[#1c1420]/40"
+            className="absolute inset-0 animate-fade bg-backdrop"
           />
-          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-[24px] bg-surface shadow-float">
+          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-2xl bg-surface shadow-float">
             <CalendarSidebar className="h-full pt-3" onNavigate={() => setDrawerOpen(false)} />
           </div>
         </div>

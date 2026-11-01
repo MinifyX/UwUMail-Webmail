@@ -45,8 +45,8 @@ function Row({
     <li className="flex gap-3 rounded-2xl px-3 py-2.5 hover:bg-canvas">
       <Icon className="mt-0.5 size-[18px] shrink-0 text-muted" strokeWidth={2} aria-label={label} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="selectable min-w-0 text-[14px] break-words">{children}</div>
-        {kind && <span className="text-[12px] text-muted">{kind}</span>}
+        <div className="selectable min-w-0 text-body break-words">{children}</div>
+        {kind && <span className="text-caption text-muted">{kind}</span>}
       </div>
     </li>
   );
@@ -108,10 +108,10 @@ export function ContactDetail({
         <div className="flex flex-col items-center gap-3 pt-2 pb-5 text-center">
           <ContactAvatar contact={contact} size="lg" />
           <div className="min-w-0">
-            <h1 className="selectable text-[22px] leading-tight font-extrabold break-words">
+            <h1 className="selectable text-title leading-tight font-extrabold break-words">
               {contact.displayName || t("contacts.nameless")}
             </h1>
-            {subtitle && <p className="selectable text-[14px] text-muted">{subtitle}</p>}
+            {subtitle && <p className="selectable text-body text-muted">{subtitle}</p>}
           </div>
           {firstEmail && (
             <Button variant="primary" size="sm" icon={Mail} onClick={() => writeTo(contact, firstEmail)}>
@@ -161,7 +161,7 @@ export function ContactDetail({
           {contact.birthday && (
             <Row icon={Cake} label={t("contacts.birthday")} kind={t("contacts.birthday")}>
               {formatBirthday(contact.birthday, i18n.language)}
-              <span className="block text-[12.5px] text-muted">
+              <span className="block text-meta text-muted">
                 {describeDay(contact.birthday, "birth", i18n.language, t)}
               </span>
             </Row>
@@ -169,7 +169,7 @@ export function ContactDetail({
           {contact.anniversary && (
             <Row icon={Heart} label={t("contacts.anniversary")} kind={t("contacts.anniversary")}>
               {formatBirthday(contact.anniversary, i18n.language)}
-              <span className="block text-[12.5px] text-muted">
+              <span className="block text-meta text-muted">
                 {describeDay(contact.anniversary, "wedding", i18n.language, t)}
               </span>
             </Row>
@@ -190,7 +190,7 @@ export function ContactDetail({
             </Row>
           )}
         </ul>
-        {contact.isGroup && <p className="mt-4 text-center text-[13px] text-muted">{t("contacts.groupReadOnly")}</p>}
+        {contact.isGroup && <p className="mt-4 text-center text-meta text-muted">{t("contacts.groupReadOnly")}</p>}
       </div>
     </section>
   );

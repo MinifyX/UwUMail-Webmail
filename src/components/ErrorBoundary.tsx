@@ -26,17 +26,17 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
     return (
       <div role="alert" className="flex min-h-screen items-center justify-center bg-canvas p-6 text-ink">
         <div className="flex max-w-md flex-col gap-3 rounded-3xl border border-line bg-surface p-6 shadow-lg">
-          <h1 className="text-[17px] font-bold">{text("crash.title", "Something went wrong")}</h1>
-          <p className="text-[14px] text-muted">
+          <h1 className="text-section font-bold">{text("crash.title", "Something went wrong")}</h1>
+          <p className="text-body text-muted">
             {text("crash.body", "Part of the page crashed while drawing. Reloading brings you back.")}
           </p>
-          <pre className="max-h-32 overflow-auto rounded-xl bg-canvas px-3 py-2 text-[12px] whitespace-pre-wrap text-faint">
+          <pre className="max-h-32 overflow-auto rounded-xl bg-canvas px-3 py-2 text-caption whitespace-pre-wrap text-faint">
             {error.message}
           </pre>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="self-start rounded-full bg-pink-solid px-4 py-2 text-[14px] font-semibold text-on-pink hover:bg-pink-solid-hover"
+            className="self-start rounded-full bg-pink-solid px-4 py-2 text-body font-semibold text-on-pink hover:bg-pink-solid-hover"
           >
             {text("crash.reload", "Reload")}
           </button>

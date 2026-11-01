@@ -155,7 +155,7 @@ export function MailShell() {
   return (
     <div className="flex h-full flex-col">
       {backend().kind === "demo" && (
-        <p className="shrink-0 bg-pink-tint py-1 text-center text-[12px] font-semibold text-pink-ink">
+        <p className="shrink-0 bg-pink-tint py-1 text-center text-caption font-semibold text-pink-ink">
           {t("status.demo")}
         </p>
       )}
@@ -174,14 +174,14 @@ export function MailShell() {
         >
           {roomForFolders && (
             <>
-              <MailboxNav className="min-h-0 w-(--sidebar-w) shrink-0 rounded-[22px] border border-hairline" />
+              <MailboxNav className="min-h-0 w-(--sidebar-w) shrink-0 rounded-2xl border border-hairline" />
               <PaneHandle pane="sidebar" width={widths.sidebar} label={t("layout.resizeFolders")} />
             </>
           )}
           <ThreadList
             variant="simple"
             className={clsx(
-              "shrink-0 rounded-[22px] border border-hairline lg:w-(--list-w)",
+              "shrink-0 rounded-2xl border border-hairline lg:w-(--list-w)",
               selectedThreadId ? "hidden lg:flex" : "w-full",
             )}
           />
@@ -189,7 +189,7 @@ export function MailShell() {
           <ThreadReader
             variant="simple"
             className={clsx(
-              "min-w-0 flex-1 overflow-hidden rounded-[22px] border border-hairline",
+              "min-w-0 flex-1 overflow-hidden rounded-2xl border border-hairline",
               !selectedThreadId && "max-lg:hidden",
             )}
           />
@@ -200,9 +200,9 @@ export function MailShell() {
                 type="button"
                 aria-label={t("common.close")}
                 onClick={() => setDrawerOpen(false)}
-                className="absolute inset-0 animate-fade bg-[#1c1420]/30"
+                className="absolute inset-0 animate-fade bg-backdrop"
               />
-              <MailboxNav className="relative w-[280px] animate-slide-up rounded-r-[22px] bg-surface shadow-float" />
+              <MailboxNav className="relative w-[280px] animate-slide-up rounded-r-2xl bg-surface shadow-float" />
             </div>
           )}
         </div>

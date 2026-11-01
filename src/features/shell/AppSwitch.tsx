@@ -32,7 +32,7 @@ export function AppSwitch() {
     <div
       role="tablist"
       aria-label={t("nav.apps")}
-      className={clsx("grid gap-1 bg-canvas p-1", three ? "grid-cols-3 rounded-[18px]" : "grid-cols-2 rounded-full")}
+      className={clsx("grid gap-1 bg-canvas p-1", three ? "grid-cols-3 rounded-2xl" : "grid-cols-2 rounded-full")}
     >
       {SECTIONS.filter(({ id }) => available.includes(id)).map(({ id, icon: Icon }) => (
         <button
@@ -44,8 +44,8 @@ export function AppSwitch() {
           className={clsx(
             // Three don't fit side by side with their names; then the name goes under the icon.
             three
-              ? "flex h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-[14px] px-1 text-[11.5px] font-semibold transition-colors"
-              : "flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full px-1 text-[13px] font-semibold transition-colors",
+              ? "flex h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-[14px] px-1 text-caption font-semibold transition-colors"
+              : "flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full px-1 text-meta font-semibold transition-colors",
             section === id ? "bg-surface text-pink-ink shadow-sm" : "text-muted hover:text-ink",
           )}
         >

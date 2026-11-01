@@ -56,9 +56,9 @@ function Thumbnail({ attachment, onOpen }: { attachment: Attachment; onOpen: () 
           className="size-full object-cover transition-transform group-hover:scale-105"
         />
       ) : (
-        <FileImage className="absolute inset-0 m-auto size-6 text-muted" aria-hidden />
+        <FileImage className="absolute inset-0 m-auto size-5 text-muted" aria-hidden />
       )}
-      <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/60 to-transparent px-2 pt-4 pb-1 text-left text-[11px] font-semibold text-white">
+      <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/60 to-transparent px-2 pt-4 pb-1 text-left text-badge font-semibold text-white">
         {formatSize(attachment.size, i18n.language)}
       </span>
     </button>
@@ -93,8 +93,8 @@ function Tile({ attachment, onOpen }: { attachment: Attachment; onOpen: () => vo
         <Icon className="size-4" aria-hidden />
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-[13px] font-semibold">{attachment.filename}</span>
-        <span className={clsx("block text-[11.5px]", dangerous ? "font-semibold text-danger" : "text-muted")}>
+        <span className="block truncate text-meta font-semibold">{attachment.filename}</span>
+        <span className={clsx("block text-caption", dangerous ? "font-semibold text-danger" : "text-muted")}>
           {dangerous
             ? t("attachment.dangerTag")
             : packed
@@ -120,7 +120,7 @@ export function AttachmentTiles({ attachments, sender }: { attachments: Attachme
 
   return (
     <footer className="flex flex-col gap-2 border-t border-hairline pt-4">
-      <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-muted">
+      <p className="flex items-center gap-1.5 text-meta font-semibold text-muted">
         <Paperclip className="size-3.5" aria-hidden />
         {t("reader.attachments", { count: visible.length })}
       </p>

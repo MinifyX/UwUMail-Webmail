@@ -52,12 +52,12 @@ export function AgendaView({ days, occurrences, calendars }: AgendaViewProps) {
             aria-label={t("calendar.openDay", { date: formatDayLong(day) })}
             className="flex w-12 shrink-0 flex-col items-center pt-1"
           >
-            <span className={clsx("text-[11.5px] font-bold uppercase", day === today ? "text-pink-ink" : "text-muted")}>
+            <span className={clsx("text-caption font-bold uppercase", day === today ? "text-pink-ink" : "text-muted")}>
               {formatWeekdayShort(day)}
             </span>
             <span
               className={clsx(
-                "grid size-9 place-items-center rounded-full text-[18px] font-extrabold",
+                "grid size-9 place-items-center rounded-full text-section font-extrabold",
                 day === today && "bg-pink-solid text-on-pink",
               )}
             >
@@ -66,7 +66,7 @@ export function AgendaView({ days, occurrences, calendars }: AgendaViewProps) {
           </button>
           <ul className="flex min-w-0 flex-1 flex-col gap-1.5">
             {events.length === 0 && (
-              <li className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13.5px] text-muted">
+              <li className="rounded-2xl border border-dashed border-line px-4 py-3 text-body text-muted">
                 {t("calendar.nothingToday")}
               </li>
             )}
@@ -81,11 +81,11 @@ export function AgendaView({ days, occurrences, calendars }: AgendaViewProps) {
                   >
                     <span className="w-1 shrink-0 rounded-full" style={{ background: color }} aria-hidden />
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-1.5 truncate text-[15px] font-semibold">
+                      <span className="flex items-center gap-1.5 truncate text-reading font-semibold">
                         <BirthdayMark occurrence={occurrence} className="size-4" />
                         {occurrence.title || t("calendar.untitled")}
                       </span>
-                      <span className="block truncate text-[13px] text-muted">
+                      <span className="block truncate text-meta text-muted">
                         {isAllDayRow(occurrence)
                           ? t("calendar.allDay")
                           : `${formatTime(occurrence.start)} – ${formatTime(occurrence.end)}`}

@@ -79,7 +79,7 @@ export function DayField({
 
   return (
     <fieldset className="flex flex-col gap-1.5">
-      <legend className="mb-1.5 text-[13px] font-semibold text-muted">{label}</legend>
+      <legend className="mb-1.5 text-meta font-semibold text-muted">{label}</legend>
       <div className="flex flex-wrap items-center gap-2">
         <TextInput
           id={`${id}-day`}
@@ -124,7 +124,7 @@ export function DayField({
         )}
       </div>
       {invalid ? (
-        <p role="alert" className="text-[13px] text-danger">
+        <p role="alert" className="text-meta text-danger">
           {t("contacts.noSuchDay")}
         </p>
       ) : (
@@ -138,7 +138,7 @@ export function DayField({
 export function DayPreview({ value, kind, locale }: { value: string; kind: "birth" | "wedding"; locale: string }) {
   const { t } = useT();
   const text = describeDay(value, kind, locale, t);
-  return text ? <p className="text-[12.5px] text-muted">{text}</p> : null;
+  return text ? <p className="text-meta text-muted">{text}</p> : null;
 }
 
 /** The age and the next time of a birthday or anniversary, in words; null when it's no day. */
@@ -204,10 +204,10 @@ export function RemindersField({
     onChange(normalizeReminders(on ? [...value, reminder] : value.filter((mine) => !sameReminder(mine, reminder))));
   return (
     <fieldset className="flex flex-col gap-1.5">
-      <legend className="mb-1.5 text-[13px] font-semibold text-muted">{t("contacts.reminders")}</legend>
+      <legend className="mb-1.5 text-meta font-semibold text-muted">{t("contacts.reminders")}</legend>
       <div className="flex flex-wrap gap-x-5 gap-y-2">
         {[...REMINDER_PRESETS, ...others].map((reminder) => (
-          <label key={`${reminder.daysBefore}-${reminder.time}`} className="flex items-center gap-2 text-[13.5px]">
+          <label key={`${reminder.daysBefore}-${reminder.time}`} className="flex items-center gap-2 text-body">
             <input
               type="checkbox"
               checked={has(reminder)}
@@ -218,7 +218,7 @@ export function RemindersField({
           </label>
         ))}
       </div>
-      <p className="text-[12px] text-muted">{t("contacts.remindersHint")}</p>
+      <p className="text-caption text-muted">{t("contacts.remindersHint")}</p>
     </fieldset>
   );
 }

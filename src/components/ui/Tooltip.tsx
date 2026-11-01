@@ -62,7 +62,7 @@ export function Tooltip({ content, children, className, onActivate }: TooltipPro
           role="tooltip"
           style={position ?? undefined}
           className={clsx(
-            "pointer-events-none fixed z-50 w-max max-w-[min(360px,calc(100vw-16px))] rounded-lg bg-ink px-2.5 py-1 text-[12px] font-medium break-all text-canvas shadow-float",
+            "pointer-events-none fixed z-50 w-max max-w-[min(360px,calc(100vw-16px))] rounded-lg bg-ink px-2.5 py-1 text-caption font-medium break-all text-canvas shadow-float",
             !position && "hidden",
           )}
         >

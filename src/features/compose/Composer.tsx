@@ -479,14 +479,14 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   if (minimized && phone) {
     const names = [...draft.to, ...draft.cc, ...draft.bcc].map((a) => a.name || a.email).join(", ");
     return (
-      <div className="fixed inset-x-3 bottom-[84px] z-30 flex animate-slide-up items-center gap-2 rounded-2xl bg-[#1c1420] py-1.5 pr-1.5 pl-4 text-white shadow-float dark:bg-elevated dark:text-ink">
-        <PenLine className="size-4 shrink-0 text-(--uwu-toast-accent) dark:text-pink" aria-hidden />
+      <div className="fixed inset-x-3 bottom-[84px] z-30 flex animate-slide-up items-center gap-2 rounded-2xl bg-toast py-1.5 pr-1.5 pl-4 text-toast-ink shadow-float">
+        <PenLine className="size-4 shrink-0 text-toast-accent" aria-hidden />
         <button type="button" onClick={() => setMinimized(false)} className="min-w-0 flex-1 py-1 text-left">
-          <span className="block truncate text-[13.5px] font-bold">
+          <span className="block truncate text-body font-bold">
             {names ? t("mobile.draft.to", { names }) : title}
             {names && draft.subject ? `: ${draft.subject}` : ""}
           </span>
-          <span className="block text-[12px] opacity-70">{t("mobile.draft.continue")}</span>
+          <span className="block text-caption opacity-70">{t("mobile.draft.continue")}</span>
         </button>
         <button
           type="button"
@@ -506,9 +506,9 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       <button
         type="button"
         onClick={() => setMinimized(false)}
-        className="fixed right-6 bottom-0 z-40 flex h-12 w-80 items-center gap-3 rounded-t-2xl bg-[#1c1420] px-4 text-left text-[13.5px] font-semibold text-white shadow-float dark:bg-elevated dark:text-ink"
+        className="fixed right-6 bottom-0 z-40 flex h-12 w-80 items-center gap-3 rounded-t-2xl bg-toast px-4 text-left text-body font-semibold text-toast-ink shadow-float"
       >
-        <Send className="size-4 text-(--uwu-toast-accent) dark:text-pink" aria-hidden />
+        <Send className="size-4 text-toast-accent" aria-hidden />
         <span className="min-w-0 flex-1 truncate">{title}</span>
         <ChevronDown className="size-4 rotate-180" aria-hidden />
       </button>
@@ -535,15 +535,12 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         phone
           ? "inset-0"
           : large
-            ? "inset-x-[max(24px,calc(50vw-460px))] top-10 bottom-10 rounded-[22px] border border-line shadow-float"
-            : "right-6 bottom-6 h-[min(620px,calc(100vh-48px))] w-[min(580px,calc(100vw-48px))] rounded-[22px] border border-line shadow-float",
+            ? "inset-x-[max(24px,calc(50vw-460px))] top-10 bottom-10 rounded-2xl border border-line shadow-float"
+            : "right-6 bottom-6 h-[min(620px,calc(100vh-48px))] w-[min(580px,calc(100vw-48px))] rounded-2xl border border-line shadow-float",
       )}
     >
       <header
-        className={clsx(
-          "flex items-center gap-1 bg-[#1c1420] pr-2 text-white dark:bg-elevated dark:text-ink",
-          phone ? "py-1.5 pl-1.5" : "py-2 pl-5",
-        )}
+        className={clsx("flex items-center gap-1 bg-toast pr-2 text-toast-ink", phone ? "py-1.5 pl-1.5" : "py-2 pl-5")}
       >
         {phone && (
           <button
@@ -556,7 +553,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             <ArrowLeft className="size-5" aria-hidden />
           </button>
         )}
-        <h2 className="min-w-0 flex-1 truncate text-[14px] font-bold">{title}</h2>
+        <h2 className="min-w-0 flex-1 truncate text-body font-bold">{title}</h2>
         {!phone && (
           <>
             <button
@@ -592,7 +589,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
 
       {senders.length > 1 && (
         <div className="flex h-11 items-center gap-2 border-b border-hairline px-4">
-          <label htmlFor="compose-from" className="w-12 shrink-0 text-[13px] font-semibold text-muted">
+          <label htmlFor="compose-from" className="w-12 shrink-0 text-meta font-semibold text-muted">
             {t("compose.from")}
           </label>
           {account && <AccountDot color={account.color} />}
@@ -609,7 +606,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
               }
               update({ accountId: sender.accountId, fromEmail: sender.primary ? "" : sender.email });
             }}
-            className="h-9 min-w-0 flex-1 bg-transparent text-[14px] outline-none"
+            className="h-9 min-w-0 flex-1 bg-transparent text-body outline-none"
           >
             {senders.map(senderOption)}
           </select>
@@ -617,7 +614,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       )}
 
       {companyFooter && (
-        <p className="border-b border-hairline px-4 py-1.5 text-[12px] text-muted" data-testid="company-footer-note">
+        <p className="border-b border-hairline px-4 py-1.5 text-caption text-muted" data-testid="company-footer-note">
           {t("compose.companyFooter")}
         </p>
       )}
@@ -633,7 +630,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           <button
             type="button"
             onClick={() => setShowCc(true)}
-            className="absolute top-2.5 right-4 rounded-full px-2 py-1 text-[12px] font-semibold text-muted hover:bg-pink-tint hover:text-pink-ink"
+            className="absolute top-2.5 right-4 rounded-full px-2 py-1 text-caption font-semibold text-muted hover:bg-pink-tint hover:text-pink-ink"
           >
             {t("compose.showCcBcc")}
           </button>
@@ -646,14 +643,14 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         </>
       )}
       <div className="flex h-11 items-center gap-2 border-b border-hairline px-4">
-        <label htmlFor="compose-subject" className="w-12 shrink-0 text-[13px] font-semibold text-muted">
+        <label htmlFor="compose-subject" className="w-12 shrink-0 text-meta font-semibold text-muted">
           {t("compose.subject")}
         </label>
         <input
           id="compose-subject"
           value={draft.subject}
           onChange={(event) => update({ subject: event.target.value })}
-          className="h-9 min-w-0 flex-1 bg-transparent text-[14px] font-semibold outline-none"
+          className="h-9 min-w-0 flex-1 bg-transparent text-body font-semibold outline-none"
         />
       </div>
 
@@ -709,7 +706,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             body.current = event.currentTarget.innerHTML;
             setEdits((count) => count + 1);
           }}
-          className="min-h-full px-5 py-4 text-[14.5px] leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_blockquote]:my-2 [&_blockquote]:border-l-[3px] [&_blockquote]:border-pink-tint-strong [&_blockquote]:pl-3 [&_blockquote]:text-muted [&_p]:min-h-[1.4em] [&_ul]:list-disc [&_ul]:pl-6"
+          className="min-h-full px-5 py-4 text-body leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_blockquote]:my-2 [&_blockquote]:border-l-[3px] [&_blockquote]:border-pink-tint-strong [&_blockquote]:pl-3 [&_blockquote]:text-muted [&_p]:min-h-[1.4em] [&_ul]:list-disc [&_ul]:pl-6"
         />
       </div>
 
@@ -731,7 +728,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           {attachments.map((attachment, index) => (
             <li
               key={`${attachment.filename}-${index}`}
-              className="flex h-8 items-center gap-2 rounded-full bg-canvas pr-1 pl-3 text-[12.5px]"
+              className="flex h-8 items-center gap-2 rounded-full bg-canvas pr-1 pl-3 text-meta"
             >
               <Paperclip className="size-3.5 text-muted" aria-hidden />
               <span className="max-w-[180px] truncate font-semibold">{attachment.filename}</span>
@@ -745,7 +742,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
                 }}
                 className="grid size-6 place-items-center rounded-full hover:bg-pink-tint"
               >
-                <X className="size-3" aria-hidden />
+                <X className="size-3.5" aria-hidden />
               </button>
             </li>
           ))}
@@ -753,7 +750,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       )}
 
       {error && (
-        <p role="alert" className="mx-4 mb-2 rounded-xl bg-danger-tint px-3 py-2 text-[13px] font-medium text-danger">
+        <p role="alert" className="mx-4 mb-2 rounded-xl bg-danger-tint px-3 py-2 text-meta font-medium text-danger">
           {error}
         </p>
       )}
@@ -893,7 +890,7 @@ function DraftStatus({ state }: { state: SaveState }) {
     <span
       role="status"
       className={clsx(
-        "mr-1 flex min-w-0 items-center gap-1 text-[12px]",
+        "mr-1 flex min-w-0 items-center gap-1 text-caption",
         state.kind === "local" ? "font-semibold text-danger" : "text-muted",
       )}
     >

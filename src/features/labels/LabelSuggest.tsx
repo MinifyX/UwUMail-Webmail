@@ -56,10 +56,10 @@ export function SuggestBody({ emailId, onClose }: { emailId: string; onClose: ()
     const detail = assistErrorDetail(query.error);
     return (
       <div className="flex flex-col gap-3 px-6 pt-2 pb-6">
-        <p role="alert" className="rounded-xl bg-danger-tint px-3 py-2 text-[13px] text-danger">
+        <p role="alert" className="rounded-xl bg-danger-tint px-3 py-2 text-meta text-danger">
           {assistErrorText(query.error)}
         </p>
-        {detail && <p className="text-[12px] break-words text-muted">{detail}</p>}
+        {detail && <p className="text-caption break-words text-muted">{detail}</p>}
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             {t("common.close")}
@@ -113,10 +113,10 @@ function Verdicts({
   return (
     <div className="flex flex-col gap-4 px-6 pt-1 pb-5">
       {known.length === 0 ? (
-        <p className="text-[13px] text-muted">{t("labels.suggest.noLabels")}</p>
+        <p className="text-meta text-muted">{t("labels.suggest.noLabels")}</p>
       ) : (
         <fieldset className="flex flex-col gap-1.5">
-          <legend className="mb-1.5 text-[13px] text-muted">{t("labels.suggest.intro")}</legend>
+          <legend className="mb-1.5 text-meta text-muted">{t("labels.suggest.intro")}</legend>
           {known.map((verdict) => (
             <VerdictRow
               key={verdict.labelId}
@@ -131,7 +131,7 @@ function Verdicts({
 
       {result.newLabels.length > 0 && (
         <section className="flex flex-col gap-2" aria-labelledby="label-suggest-new">
-          <h3 id="label-suggest-new" className="flex items-center gap-1.5 text-[13px] font-bold">
+          <h3 id="label-suggest-new" className="flex items-center gap-1.5 text-meta font-bold">
             <Sparkles className="size-4 text-pink" aria-hidden />
             {t("labels.suggest.newTitle")}
           </h3>
@@ -142,7 +142,7 @@ function Verdicts({
       )}
 
       <div className="flex flex-wrap items-center gap-2 border-t border-hairline pt-4">
-        <p className="min-w-0 flex-1 truncate text-[11.5px] text-muted">{providerLabel(result)}</p>
+        <p className="min-w-0 flex-1 truncate text-caption text-muted">{providerLabel(result)}</p>
         <Button variant="ghost" onClick={onClose}>
           {t("common.cancel")}
         </Button>
@@ -183,23 +183,23 @@ function VerdictRow({
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <LabelDot color={label.color} />
-          <span className="text-[13.5px] font-bold break-words">{label.name}</span>
+          <span className="text-body font-bold break-words">{label.name}</span>
           <span
             className={clsx(
-              "rounded-full px-2 text-[11px] leading-[18px] font-bold",
+              "rounded-full px-2 text-badge leading-[18px] font-bold",
               verdict.fits ? "bg-success-tint text-success" : "bg-canvas text-muted",
             )}
           >
             {verdict.fits ? t("labels.suggest.fits") : t("labels.suggest.fitsNot")}
           </span>
-          {verdict.isSet && <span className="text-[11.5px] text-muted">{t("labels.suggest.isSet")}</span>}
+          {verdict.isSet && <span className="text-caption text-muted">{t("labels.suggest.isSet")}</span>}
           {change && (
-            <span className={clsx("text-[11.5px] font-semibold", change === "add" ? "text-pink-ink" : "text-danger")}>
+            <span className={clsx("text-caption font-semibold", change === "add" ? "text-pink-ink" : "text-danger")}>
               {change === "add" ? t("labels.suggest.willAdd") : t("labels.suggest.willRemove")}
             </span>
           )}
         </span>
-        {verdict.reason && <span className="selectable text-[12.5px] text-muted">{verdict.reason}</span>}
+        {verdict.reason && <span className="selectable text-meta text-muted">{verdict.reason}</span>}
       </span>
     </label>
   );
@@ -246,13 +246,13 @@ function NewLabelCard({
       <div className="flex flex-wrap items-center gap-2">
         <span
           style={chipStyle(color)}
-          className="inline-flex h-6 items-center rounded-full border px-2 text-[11.5px] font-semibold"
+          className="inline-flex h-6 items-center rounded-full border px-2 text-caption font-semibold"
         >
           {suggestion.name}
         </span>
         <span className="flex-1" />
         {state === "done" || taken ? (
-          <span className="flex items-center gap-1 text-[12px] font-semibold text-success">
+          <span className="flex items-center gap-1 text-caption font-semibold text-success">
             <Check className="size-3.5" aria-hidden />
             {state === "done" ? t("labels.suggest.createdShort") : t("labels.suggest.exists")}
           </span>
@@ -268,8 +268,8 @@ function NewLabelCard({
           </Button>
         )}
       </div>
-      {suggestion.description && <p className="text-[12.5px]">{suggestion.description}</p>}
-      {suggestion.reason && <p className="text-[12px] text-muted">{suggestion.reason}</p>}
+      {suggestion.description && <p className="text-meta">{suggestion.description}</p>}
+      {suggestion.reason && <p className="text-caption text-muted">{suggestion.reason}</p>}
     </div>
   );
 }

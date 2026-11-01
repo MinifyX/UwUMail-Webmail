@@ -180,8 +180,8 @@ export function ThreadList({ variant, className }: ThreadListProps) {
             <IconButton icon={Menu} label={t("nav.menu")} onClick={() => setFolderDrawerOpen(true)} className="-ml-1" />
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[20px] leading-tight font-extrabold tracking-[-0.01em]">{info.title}</h1>
-            {info.subtitle && <p className="truncate text-[12px] text-muted">{info.subtitle}</p>}
+            <h1 className="truncate text-title leading-tight font-extrabold tracking-[-0.01em]">{info.title}</h1>
+            {info.subtitle && <p className="truncate text-caption text-muted">{info.subtitle}</p>}
           </div>
           {(info.isTrash || info.isJunk) && info.folder && threads.length > 0 && (
             <Button
@@ -232,7 +232,7 @@ export function ThreadList({ variant, className }: ThreadListProps) {
               }
             }}
             placeholder={t("list.search")}
-            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-10 pl-10 text-[13.5px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-10 pl-10 text-body placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {draft && (
             <IconButton
@@ -252,7 +252,7 @@ export function ThreadList({ variant, className }: ThreadListProps) {
             aria-label={t("list.selected", { count: checked.length })}
           >
             <IconButton icon={X} size="sm" label={t("list.clearSelection")} onClick={() => setChecked([])} />
-            <span className="min-w-0 flex-1 truncate px-1 text-[13px] font-bold">
+            <span className="min-w-0 flex-1 truncate px-1 text-meta font-bold">
               {t("list.selected", { count: checked.length })}
             </span>
             {info.rights.archive && (
@@ -350,7 +350,7 @@ export function ThreadList({ variant, className }: ThreadListProps) {
         )}
       >
         {query.isPending ? (
-          <p className="px-6 py-10 text-center text-[13px] text-muted">{t("list.loading")}</p>
+          <p className="px-6 py-10 text-center text-meta text-muted">{t("list.loading")}</p>
         ) : threads.length === 0 ? (
           <EmptyState
             scene={EMPTY_SCENES[empty]}
@@ -364,8 +364,12 @@ export function ThreadList({ variant, className }: ThreadListProps) {
             {(sections ?? [{ label: undefined, threads }]).map((section) => (
               <Fragment key={section.label === undefined ? "all" : (section.label?.id ?? "none")}>
                 {section.label !== undefined && (
-                  <h2 className="sticky top-0 z-10 flex items-center gap-2 bg-surface/95 px-3 pt-3 pb-1.5 text-[12px] font-bold tracking-wide text-muted uppercase backdrop-blur-sm">
-                    {section.label ? <LabelDot color={section.label.color} /> : <Tag className="size-3" aria-hidden />}
+                  <h2 className="sticky top-0 z-10 flex items-center gap-2 bg-surface/95 px-3 pt-3 pb-1.5 text-caption font-bold tracking-wide text-muted uppercase backdrop-blur-sm">
+                    {section.label ? (
+                      <LabelDot color={section.label.color} />
+                    ) : (
+                      <Tag className="size-3.5" aria-hidden />
+                    )}
                     <span className="min-w-0 truncate normal-case">
                       {section.label ? section.label.name : t("labels.group.none")}
                     </span>

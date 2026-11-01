@@ -14,23 +14,23 @@ export function Field({ label, hint, error, children, className }: FieldProps) {
   const id = useId();
   return (
     <div className={clsx("flex flex-col gap-1.5", className)}>
-      <label htmlFor={id} className="text-[13px] font-semibold text-muted">
+      <label htmlFor={id} className="text-meta font-semibold text-muted">
         {label}
       </label>
       {children(id)}
       {error ? (
-        <p role="alert" className="text-[13px] text-danger">
+        <p role="alert" className="text-meta text-danger">
           {error}
         </p>
       ) : (
-        hint && <p className="text-[12px] text-muted">{hint}</p>
+        hint && <p className="text-caption text-muted">{hint}</p>
       )}
     </div>
   );
 }
 
 const controlClass =
-  "h-11 w-full rounded-control border border-line bg-surface px-3.5 text-sm text-ink placeholder:text-faint transition-shadow focus:border-pink focus:shadow-focus focus:outline-none";
+  "h-11 w-full rounded-control border border-line bg-surface px-3.5 text-body text-ink placeholder:text-faint transition-shadow focus:border-pink focus:shadow-focus focus:outline-none";
 
 export const TextInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function TextInput(
   { className, ...rest },
@@ -66,8 +66,8 @@ export function Toggle({ checked, onChange, label, description, disabled }: Togg
   return (
     <div className="flex items-start justify-between gap-6">
       <label htmlFor={id} className="flex flex-col gap-0.5">
-        <span className="text-sm font-semibold">{label}</span>
-        {description && <span className="text-[13px] text-muted">{description}</span>}
+        <span className="text-body font-semibold">{label}</span>
+        {description && <span className="text-meta text-muted">{description}</span>}
       </label>
       <button
         id={id}
@@ -110,7 +110,7 @@ export function Segmented<T extends string>({ value, onChange, options, label }:
           aria-checked={value === option.value}
           onClick={() => onChange(option.value)}
           className={clsx(
-            "h-8 rounded-full px-4 text-[13px] font-semibold transition-colors",
+            "h-8 rounded-full px-4 text-meta font-semibold transition-colors",
             value === option.value ? "bg-surface text-pink-ink shadow-sm" : "text-muted hover:text-ink",
           )}
         >

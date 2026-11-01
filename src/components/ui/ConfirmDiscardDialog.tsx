@@ -17,8 +17,8 @@ export function ConfirmDiscardDialog({ open, onDiscard, onKeepEditing }: Confirm
       {open && (
         <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
           <NyuScene name="search" className="w-44" />
-          <h2 className="text-[18px] font-extrabold text-balance">{t("discardChanges.title")}</h2>
-          <p className="text-[13px] text-muted">{t("discardChanges.body")}</p>
+          <h2 className="text-section font-extrabold text-balance">{t("discardChanges.title")}</h2>
+          <p className="text-meta text-muted">{t("discardChanges.body")}</p>
           <div className="flex flex-wrap justify-center gap-2 pt-1">
             <Button variant="primary" autoFocus onClick={onKeepEditing}>
               {t("discardChanges.keepEditing")}

@@ -268,7 +268,7 @@ function EditorDialog({ request, onClose }: { request: EditorRequest | null; onC
 
           {editable ? (
             <fieldset className="flex flex-col gap-3">
-              <legend className="mb-1.5 text-[13px] font-semibold text-muted">{t("calendar.repeat.label")}</legend>
+              <legend className="mb-1.5 text-meta font-semibold text-muted">{t("calendar.repeat.label")}</legend>
               <Select
                 aria-label={t("calendar.repeat.label")}
                 value={form.frequency}
@@ -282,7 +282,7 @@ function EditorDialog({ request, onClose }: { request: EditorRequest | null; onC
               </Select>
               {form.frequency !== "none" && (
                 <>
-                  <div className="flex items-center gap-2 text-[13.5px]">
+                  <div className="flex items-center gap-2 text-body">
                     <span>{t("calendar.repeat.everyLabel")}</span>
                     <span className="w-20 shrink-0">
                       <TextInput
@@ -314,7 +314,7 @@ function EditorDialog({ request, onClose }: { request: EditorRequest | null; onC
                               setForm({ byDay: on ? form.byDay.filter((d) => d !== day) : [...form.byDay, day] })
                             }
                             className={clsx(
-                              "grid size-9 place-items-center rounded-full text-[13px] font-bold transition-colors",
+                              "grid size-9 place-items-center rounded-full text-meta font-bold transition-colors",
                               on ? "bg-pink-solid text-on-pink" : "bg-canvas text-muted hover:text-ink",
                             )}
                           >
@@ -347,7 +347,7 @@ function EditorDialog({ request, onClose }: { request: EditorRequest | null; onC
                       </span>
                     )}
                     {form.ends === "count" && (
-                      <span className="flex items-center gap-2 text-[13.5px]">
+                      <span className="flex items-center gap-2 text-body">
                         <span className="w-20 shrink-0">
                           <TextInput
                             type="number"
@@ -364,17 +364,17 @@ function EditorDialog({ request, onClose }: { request: EditorRequest | null; onC
                     )}
                   </div>
                   {shown.some((problem) => problem !== "end") && (
-                    <p role="alert" className="text-[13px] text-danger">
+                    <p role="alert" className="text-meta text-danger">
                       {t("calendar.problem.repeat")}
                     </p>
                   )}
                 </>
               )}
-              {occurrence?.recurrence && <p className="text-[12.5px] text-muted">{t("calendar.repeat.wholeSeries")}</p>}
+              {occurrence?.recurrence && <p className="text-meta text-muted">{t("calendar.repeat.wholeSeries")}</p>}
             </fieldset>
           ) : (
             occurrence?.recurrence && (
-              <div className="rounded-2xl bg-canvas px-4 py-3 text-[13px]">
+              <div className="rounded-2xl bg-canvas px-4 py-3 text-meta">
                 <p className="font-semibold">{describeRecurrence(occurrence.recurrence, t)}</p>
                 <p className="text-muted">{t("calendar.repeat.complex")}</p>
               </div>
@@ -410,7 +410,7 @@ function EditorDialog({ request, onClose }: { request: EditorRequest | null; onC
                 rows={4}
                 maxLength={10000}
                 onChange={(event) => setForm({ description: event.target.value })}
-                className="w-full resize-y rounded-control border border-line bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-faint focus:border-pink focus:shadow-focus focus:outline-none"
+                className="w-full resize-y rounded-control border border-line bg-surface px-3.5 py-2.5 text-body text-ink placeholder:text-faint focus:border-pink focus:shadow-focus focus:outline-none"
               />
             )}
           </Field>

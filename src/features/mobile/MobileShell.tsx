@@ -28,11 +28,11 @@ function Drawer() {
         type="button"
         aria-label={t("common.close")}
         onClick={() => setOpen(false)}
-        className="absolute inset-0 animate-fade bg-[#1c1420]/40"
+        className="absolute inset-0 animate-fade bg-backdrop"
       />
       <div
         className={clsx(
-          "absolute inset-y-0 left-0 max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-[24px] bg-surface shadow-float",
+          "absolute inset-y-0 left-0 max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-2xl bg-surface shadow-float",
           drag === null && "transition-transform duration-200",
         )}
         style={{ width: DRAWER_WIDTH, transform: `translateX(${Math.min(0, drag ?? 0)}px)`, touchAction: "pan-y" }}
@@ -58,7 +58,7 @@ function Drawer() {
         }}
       >
         {/* Taller rows for thumbs than in the desktop sidebar. */}
-        <MailboxNav className="h-full pt-3 [&_.h-9]:h-11 [&_.h-9]:text-[15px]" />
+        <MailboxNav className="h-full pt-3 [&_.h-9]:h-11 [&_.h-9]:text-reading" />
       </div>
     </div>
   );

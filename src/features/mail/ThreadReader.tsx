@@ -114,7 +114,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
 
   if (isPending || !data) {
     return (
-      <section className={clsx("flex h-full items-center justify-center bg-canvas text-[13px] text-muted", className)}>
+      <section className={clsx("flex h-full items-center justify-center bg-canvas text-meta text-muted", className)}>
         {t("reader.loading")}
       </section>
     );
@@ -208,14 +208,14 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
           mine={new Set(accounts.map((account) => account.email.toLowerCase()))}
         />
         {rights.shared && !rights.flag && (
-          <span className="ml-2 truncate text-[12px] font-semibold text-muted">{t("sharing.readOnly")}</span>
+          <span className="ml-2 truncate text-caption font-semibold text-muted">{t("sharing.readOnly")}</span>
         )}
       </header>
 
       <div data-reader-scroll className="min-h-0 flex-1 overflow-y-auto">
         {/* The mail fills the reading pane; only very wide windows keep lines readable with a cap. */}
         <div className={clsx("mx-auto flex w-full max-w-[1400px] flex-col gap-3", variant === "pro" ? "p-4" : "p-3")}>
-          <h2 className="selectable px-1 pt-1 pb-2 text-[22px] leading-tight font-extrabold tracking-[-0.01em]">
+          <h2 className="selectable px-1 pt-1 pb-2 text-title leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>
           <ThreadSummary threadId={latest.threadId} count={all.length} />
@@ -223,7 +223,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
             <button
               type="button"
               onClick={() => expand(ids)}
-              className="self-start rounded-full bg-pink-tint px-3 py-1 text-[12.5px] font-semibold text-pink-ink hover:bg-pink-tint-strong"
+              className="self-start rounded-full bg-pink-tint px-3 py-1 text-meta font-semibold text-pink-ink hover:bg-pink-tint-strong"
             >
               {t("reader.earlier", { count: hiddenCount })}
             </button>

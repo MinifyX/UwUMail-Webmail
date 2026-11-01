@@ -32,8 +32,8 @@ export function FontPicker() {
                 : "border-hairline text-ink hover:border-line hover:bg-canvas",
             )}
           >
-            <span className="text-[15px] font-semibold">{fontName(choice, t("font.system"))}</span>
-            <span className="text-[13px] text-muted tabular-nums">{t("font.sample")}</span>
+            <span className="text-reading font-semibold">{fontName(choice, t("font.system"))}</span>
+            <span className="text-meta text-muted tabular-nums">{t("font.sample")}</span>
           </button>
         ))}
       </div>

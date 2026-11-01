@@ -81,10 +81,10 @@ export function ProviderSettings({ options }: { options: AssistOptions }) {
         />
       )}
       {!isPending && providers.length === 0 && editing !== "new" && (
-        <p className="text-[13px] text-muted">{t("assist.providers.empty")}</p>
+        <p className="text-meta text-muted">{t("assist.providers.empty")}</p>
       )}
       {options.mayAddProviders && !room && (
-        <p className="text-[12.5px] text-muted">{t("assist.providers.full", { count: options.maxProviders })}</p>
+        <p className="text-meta text-muted">{t("assist.providers.full", { count: options.maxProviders })}</p>
       )}
       {!options.mayAddProviders && <Note>{t("assist.providers.noOwn")}</Note>}
       <ul className="flex flex-col gap-2">
@@ -124,7 +124,7 @@ function Models({ provider }: { provider: AssistProvider }) {
   const { t } = useT();
   if (!provider.model && !provider.fastModel) return null;
   return (
-    <p className="truncate text-[12px] text-muted">
+    <p className="truncate text-caption text-muted">
       {provider.fastModel && provider.fastModel !== provider.model
         ? t("assist.providers.models", { model: provider.model ?? "—", fastModel: provider.fastModel })
         : t("assist.providers.model", { model: provider.model ?? provider.fastModel })}
@@ -152,13 +152,13 @@ function ServerProvider({ provider }: { provider: AssistProvider }) {
       <ProviderIcon provider={provider} />
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="text-[13.5px] font-bold">{provider.name}</span>
-          <span className="rounded-full bg-canvas px-2 py-px text-[11px] font-semibold text-muted">
+          <span className="text-body font-bold">{provider.name}</span>
+          <span className="rounded-full bg-canvas px-2 py-px text-badge font-semibold text-muted">
             {t("assist.providers.server")}
           </span>
         </p>
         <Models provider={provider} />
-        <p className="text-[12px] text-muted">
+        <p className="text-caption text-muted">
           {limits.length > 0 ? limits.join(" · ") : t("assist.providers.noLimit")}
         </p>
       </div>
@@ -228,17 +228,17 @@ function OwnProvider({
         <ProviderIcon provider={provider} />
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="text-[13.5px] font-bold break-words">{provider.name}</span>
-            <span className="rounded-full bg-canvas px-2 py-px text-[11px] font-semibold text-muted">{kind.label}</span>
+            <span className="text-body font-bold break-words">{provider.name}</span>
+            <span className="rounded-full bg-canvas px-2 py-px text-badge font-semibold text-muted">{kind.label}</span>
             {provider.experimental && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-warning-tint px-2 py-px text-[11px] font-semibold text-warning">
-                <FlaskConical className="size-3" aria-hidden />
+              <span className="inline-flex items-center gap-1 rounded-full bg-warning-tint px-2 py-px text-badge font-semibold text-warning">
+                <FlaskConical className="size-3.5" aria-hidden />
                 {t("assist.providers.experimental")}
               </span>
             )}
           </p>
           <Models provider={provider} />
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-muted">
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-caption text-muted">
             <span
               className={clsx("inline-flex items-center gap-1", provider.connected ? "text-success" : "text-warning")}
             >
@@ -257,7 +257,7 @@ function OwnProvider({
                   : t("assist.providers.noKey")}
               </span>
             )}
-            {provider.baseUrl && <span className="min-w-0 truncate font-mono text-[11.5px]">{provider.baseUrl}</span>}
+            {provider.baseUrl && <span className="min-w-0 truncate font-mono text-caption">{provider.baseUrl}</span>}
           </p>
         </div>
         <div className="flex shrink-0 items-start gap-0.5">
@@ -276,7 +276,7 @@ function OwnProvider({
         </div>
       </div>
       {confirmDelete ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-danger-tint px-3 py-2 text-[12.5px] text-danger">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-danger-tint px-3 py-2 text-meta text-danger">
           <span className="min-w-0 flex-1">{t("assist.providers.confirmDelete")}</span>
           <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>
             {t("common.cancel")}
@@ -389,7 +389,7 @@ function ProviderEditor({
       noValidate
       className="flex flex-col gap-3 rounded-2xl border border-pink/30 bg-pink-tint/20 px-4 py-3.5"
     >
-      <p className="text-[13.5px] font-bold">
+      <p className="text-body font-bold">
         {provider ? t("assist.providers.editTitle", { name: provider.name }) : t("assist.providers.addTitle")}
       </p>
       {!provider && (
@@ -474,7 +474,7 @@ function ProviderEditor({
         </Field>
       )}
       {(kind.keyUrl || (provider?.hasKey && kind.key === "optional")) && (
-        <div className="-mt-1 flex flex-wrap items-center gap-3 text-[12.5px]">
+        <div className="-mt-1 flex flex-wrap items-center gap-3 text-meta">
           {kind.keyUrl && (
             <button
               type="button"
@@ -554,14 +554,14 @@ function ProviderEditor({
         </div>
       )}
       {failure !== null && Object.keys(fromServer).length === 0 && (
-        <p role="alert" className="rounded-xl bg-danger-tint px-3 py-2 text-[13px] text-danger">
+        <p role="alert" className="rounded-xl bg-danger-tint px-3 py-2 text-meta text-danger">
           {assistErrorText(failure)}
           {assistErrorDetail(failure) && (
-            <span className="block text-[12px] opacity-80">{assistErrorDetail(failure)}</span>
+            <span className="block text-caption opacity-80">{assistErrorDetail(failure)}</span>
           )}
         </p>
       )}
-      <p className="text-[12px] text-muted">{t("assist.providers.privacy")}</p>
+      <p className="text-caption text-muted">{t("assist.providers.privacy")}</p>
       <div className="flex flex-wrap justify-end gap-2">
         <Button variant="ghost" onClick={() => onDone()}>
           {t("common.cancel")}
@@ -641,17 +641,13 @@ function ChatgptSignIn({ provider, onClose }: { provider: AssistProvider; onClos
   };
 
   return (
-    <div
-      className="flex flex-col gap-2.5 rounded-xl bg-canvas px-3.5 py-3 text-[13px]"
-      role="status"
-      aria-live="polite"
-    >
+    <div className="flex flex-col gap-2.5 rounded-xl bg-canvas px-3.5 py-3 text-meta" role="status" aria-live="polite">
       {state === "starting" && <p className="text-muted">{t("assist.chatgpt.starting")}</p>}
       {state === "waiting" && login && (
         <>
           <p>{t("assist.chatgpt.steps")}</p>
           <div className="flex flex-wrap items-center gap-2">
-            <code className="selectable rounded-xl bg-surface px-3 py-1.5 font-mono text-[18px] font-bold tracking-[0.12em]">
+            <code className="selectable rounded-xl bg-surface px-3 py-1.5 font-mono text-section font-bold tracking-[0.12em]">
               {login.userCode}
             </code>
             <IconButton
@@ -674,7 +670,7 @@ function ChatgptSignIn({ provider, onClose }: { provider: AssistProvider; onClos
               {t("assist.chatgpt.open")}
             </Button>
           </div>
-          <p className="flex items-center gap-2 text-[12px] text-muted">
+          <p className="flex items-center gap-2 text-caption text-muted">
             <span
               className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent"
               aria-hidden
@@ -686,7 +682,7 @@ function ChatgptSignIn({ provider, onClose }: { provider: AssistProvider; onClos
       {(state === "expired" || state === "failed") && (
         <p className="text-danger">
           {state === "expired" ? t("assist.chatgpt.expired") : t("assist.chatgpt.failed")}
-          {problem && <span className="block text-[12px] opacity-80">{problem}</span>}
+          {problem && <span className="block text-caption opacity-80">{problem}</span>}
         </p>
       )}
       <div className="flex flex-wrap gap-2">

@@ -22,8 +22,8 @@ function SourceBadge({ event }: { event: DetectedEvent }) {
   const ai = event.source === "ai" || event.refined;
   const Icon = ai ? Sparkles : ImageIcon;
   return (
-    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-pink-tint px-2 py-0.5 align-middle text-[11.5px] font-semibold text-pink-ink">
-      <Icon className="size-3" aria-hidden />
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-pink-tint px-2 py-0.5 align-middle text-caption font-semibold text-pink-ink">
+      <Icon className="size-3.5" aria-hidden />
       {ai ? t("dates.fromAssistant") : t("dates.fromPicture")}
     </span>
   );
@@ -35,7 +35,7 @@ function Doubts({ event, locale }: { event: DetectedEvent; locale: string }) {
   const swapped = event.ambiguous ? swappedDay(event, locale) : null;
   if (!swapped && !event.weekdayMismatch) return null;
   return (
-    <span className="flex items-start gap-1 text-[12px] text-warning">
+    <span className="flex items-start gap-1 text-caption text-warning">
       <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
       <span>
         {swapped ? t("dates.ambiguous", { other: swapped }) : null}
@@ -112,7 +112,7 @@ export function EventsBar({ messageId, found, onAdd }: EventsBarProps) {
     return (
       <section
         aria-label={t("dates.barLabel")}
-        className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-[13px]"
+        className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-meta"
       >
         <Sparkles
           className={clsx("size-4 shrink-0 text-pink", outcome === "searching" && "animate-pulse")}
@@ -149,7 +149,7 @@ export function EventsBar({ messageId, found, onAdd }: EventsBarProps) {
   return (
     <section
       aria-label={t("dates.barLabel")}
-      className="flex flex-col gap-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-[13px]"
+      className="flex flex-col gap-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-meta"
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <CalendarPlus className="size-4 shrink-0 text-pink" aria-hidden />
@@ -184,7 +184,7 @@ export function EventsBar({ messageId, found, onAdd }: EventsBarProps) {
         <span className="ml-auto flex items-center gap-1.5">
           {refine}
           {found.refineFailed && (
-            <span role="status" className="text-[12px] text-muted">
+            <span role="status" className="text-caption text-muted">
               {t("dates.refineFailed")}
             </span>
           )}
@@ -252,19 +252,19 @@ export function DatePopover({ event, anchor, onAdd, onClose }: DatePopoverProps)
         <div className="flex items-start gap-3 pr-8">
           <CalendarPlus className="mt-0.5 size-5 shrink-0 text-pink" aria-hidden />
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <p className="text-[12px] font-bold tracking-wide text-muted uppercase">{t("dates.popoverHeading")}</p>
-            <p className="text-[15px] font-bold break-words">
+            <p className="text-caption font-bold tracking-wide text-muted uppercase">{t("dates.popoverHeading")}</p>
+            <p className="text-reading font-bold break-words">
               {title} <SourceBadge event={event} />
             </p>
-            <p className="text-[13.5px]">{whenLabel(event, locale)}</p>
+            <p className="text-body">{whenLabel(event, locale)}</p>
             {event.location && (
-              <p className="flex items-start gap-1.5 text-[13px] text-muted">
+              <p className="flex items-start gap-1.5 text-meta text-muted">
                 <MapPin className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                 <span className="min-w-0 break-words">{event.location}</span>
               </p>
             )}
             <Doubts event={event} locale={locale} />
-            {!isUpcoming(event) && <p className="text-[12.5px] text-muted">{t("dates.over")}</p>}
+            {!isUpcoming(event) && <p className="text-meta text-muted">{t("dates.over")}</p>}
           </div>
         </div>
         <Button variant="primary" icon={CalendarPlus} data-autofocus {...armedActivation(shownAt, () => onAdd(event))}>

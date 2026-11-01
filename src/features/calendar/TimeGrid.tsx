@@ -206,12 +206,12 @@ export function TimeGrid({ days, occurrences, calendars }: TimeGridProps) {
             aria-label={t("calendar.openDay", { date: formatDayLong(day) })}
             className="flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 hover:bg-pink-tint/40"
           >
-            <span className={clsx("text-[11.5px] font-bold uppercase", day === today ? "text-pink-ink" : "text-muted")}>
+            <span className={clsx("text-caption font-bold uppercase", day === today ? "text-pink-ink" : "text-muted")}>
               {formatWeekdayShort(day)}
             </span>
             <span
               className={clsx(
-                "grid size-8 place-items-center rounded-full text-[17px] font-extrabold",
+                "grid size-8 place-items-center rounded-full text-section font-extrabold",
                 day === today && "bg-pink-solid text-on-pink",
               )}
             >
@@ -222,7 +222,7 @@ export function TimeGrid({ days, occurrences, calendars }: TimeGridProps) {
       </div>
 
       <div className="flex shrink-0 [scrollbar-gutter:stable] overflow-y-hidden border-b border-hairline">
-        <div className="flex w-16 shrink-0 items-start justify-end pt-1 pr-2 text-[10.5px] font-semibold text-muted">
+        <div className="flex w-16 shrink-0 items-start justify-end pt-1 pr-2 text-badge font-semibold text-muted">
           {t("calendar.allDayShort")}
         </div>
         <div
@@ -259,7 +259,7 @@ export function TimeGrid({ days, occurrences, calendars }: TimeGridProps) {
                 }}
                 onClick={(event) => showPopover(bar.occurrence, anchorOf(event.currentTarget))}
                 className={clsx(
-                  "absolute flex h-[21px] items-center gap-1 truncate px-2 text-left text-[12px] font-semibold",
+                  "absolute flex h-[21px] items-center gap-1 truncate px-2 text-left text-caption font-semibold",
                   EVENT_TINT,
                   bar.continuesBefore ? "rounded-l-none" : "rounded-l-md",
                   bar.continuesAfter ? "rounded-r-none" : "rounded-r-md",
@@ -279,7 +279,7 @@ export function TimeGrid({ days, occurrences, calendars }: TimeGridProps) {
             {Array.from({ length: 23 }, (_, index) => index + 1).map((hour) => (
               <span
                 key={hour}
-                className="absolute right-2 -translate-y-1/2 text-[10.5px] font-semibold text-muted tabular-nums"
+                className="absolute right-2 -translate-y-1/2 text-badge font-semibold text-muted tabular-nums"
                 style={{ top: hour * HOUR }}
               >
                 {formatHour(hour)}
@@ -337,7 +337,7 @@ export function TimeGrid({ days, occurrences, calendars }: TimeGridProps) {
                           width: `calc(${100 / piece.columns}% - 4px)`,
                         }}
                         className={clsx(
-                          "group absolute flex flex-col overflow-hidden border-l-[3px] border-[var(--event)] px-1.5 py-0.5 text-left text-[12px] leading-tight",
+                          "group absolute flex flex-col overflow-hidden border-l-[3px] border-[var(--event)] px-1.5 py-0.5 text-left text-caption leading-tight",
                           EVENT_TINT,
                           piece.continuesBefore ? "rounded-t-none" : "rounded-t-md",
                           piece.continuesAfter ? "rounded-b-none" : "rounded-b-md",

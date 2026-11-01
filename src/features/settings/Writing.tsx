@@ -46,8 +46,8 @@ function Senders() {
       <ul className="flex flex-col gap-1 rounded-2xl border border-hairline p-2">
         {identities.map((identity) => (
           <li key={identity.id} className="flex flex-wrap items-baseline gap-x-2 rounded-xl px-2 py-1.5">
-            <span className="selectable min-w-0 flex-1 truncate text-[13.5px] font-semibold">{identity.email}</span>
-            <span className="text-[12px] text-muted">
+            <span className="selectable min-w-0 flex-1 truncate text-body font-semibold">{identity.email}</span>
+            <span className="text-caption text-muted">
               {identity.primary ? t("settings.senderOwn") : t("settings.senderFromServer")}
             </span>
           </li>

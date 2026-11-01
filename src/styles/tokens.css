@@ -1,6 +1,27 @@
-/* UwUMail design tokens. See docs/design.md before changing a value. */
+/* UwUMail design tokens, taken unchanged from UwUSuite-Design 1.9 (src/css/tokens.css). See docs/design.md;
+   change a value in the design package first, then copy the file here again. */
+
+/*
+ * UwUSuite design tokens. One file for every app: UwUMail, UwUMirror, UwUNotes, UwULock, UwUSSH,
+ * UwURDP, UwUAuth and the servers' web UIs. Taken from UwUMail; UwUMirror added the always-dark
+ * stage and the state colours, UwULock the control outline and high contrast.
+ *
+ * Rules (docs/color.md):
+ * - Components never use raw hex values. A missing colour becomes a token here.
+ * - Two pinks: white text on --uwu-pink reaches only 3.1:1, so anything with text on a pink fill
+ *   uses --uwu-pink-solid (4.5:1). --uwu-pink is for dots, badges, selection, focus and the logo.
+ * - The same split for every state colour: the plain token for dots, icons and fills, the -ink
+ *   token for text. tests/contrast.test.ts checks every text pair against WCAG AA.
+ * - --uwu-pink reaches 3:1 on --uwu-surface, not on --uwu-canvas. On the canvas it is decoration
+ *   (logo, sparkles, a dot next to bold text); a mark that alone carries a state uses pink-solid.
+ * - Pink means "selected" or "focus". It never means "online" or "ok" — that is --uwu-success.
+ *
+ * Themes: <html data-theme="light|dark">, <html data-contrast="high">, <html data-motion="reduced">,
+ * set by applyAppearance() (src/lib/appearance.ts).
+ */
 
 :root {
+  /* Surfaces and text */
   --uwu-canvas: #f8f4f6;
   --uwu-surface: #ffffff;
   --uwu-elevated: #fcf8fa;
@@ -9,7 +30,11 @@
   --uwu-faint: #a69ba5;
   --uwu-hairline: #f2e8ee;
   --uwu-border: #e9dde4;
+  /* The outline of what takes input (fields, selects, switches off): 3:1 against the page
+     (WCAG 1.4.11). --uwu-border stays for cards and dividers. */
+  --uwu-control: #8a7d8b;
 
+  /* Brand */
   --uwu-pink: #ff4d8d;
   --uwu-pink-solid: #e11d74;
   --uwu-pink-solid-hover: #c8165f;
@@ -17,16 +42,20 @@
   --uwu-pink-ink: #a3154f;
   --uwu-pink-tint: #ffe4ef;
   --uwu-pink-tint-strong: #ffd0e2;
-  /* The accent on the dark toasts of the light theme. */
-  --uwu-toast-accent: #ff7fac;
 
+  /* States: plain for dots, icons and fills; -ink for text; -tint for backgrounds. */
   --uwu-danger: #d92d44;
+  --uwu-danger-ink: #b4233a;
   --uwu-danger-tint: #fde4e7;
   --uwu-success: #12a06d;
+  --uwu-success-ink: #17796a;
   --uwu-success-tint: #d8f5e8;
   --uwu-warning: #b86e00;
+  --uwu-warning-ink: #8e5510;
   --uwu-warning-tint: #fdf0d6;
+  --uwu-offline: #b3a8b3;
 
+  /* Accounts, profiles, spaces: a fixed, contrast-checked set, the same in both themes. */
   --uwu-account-pink: #ff4d8d;
   --uwu-account-violet: #8b5cf6;
   --uwu-account-sky: #0ea5e9;
@@ -34,10 +63,230 @@
   --uwu-account-amber: #f59e0b;
   --uwu-account-coral: #f97360;
 
+  /* Avatars and account chips: a tint with readable initials per account colour. */
+  --uwu-avatar-pink: #ffe4ef;
+  --uwu-avatar-pink-ink: #a3154f;
+  --uwu-avatar-violet: #ede5ff;
+  --uwu-avatar-violet-ink: #5b32c7;
+  --uwu-avatar-sky: #dff3fc;
+  --uwu-avatar-sky-ink: #0b6591;
+  --uwu-avatar-mint: #d8f5e8;
+  --uwu-avatar-mint-ink: #0b6e4c;
+  --uwu-avatar-amber: #fdf0d6;
+  --uwu-avatar-amber-ink: #8a5606;
+  --uwu-avatar-coral: #fde6e2;
+  --uwu-avatar-coral-ink: #a8392a;
+
+  /* The toast is inverted: dark on a light app, light on a dark app. */
+  --uwu-toast: #1c1420;
+  --uwu-toast-ink: #ffffff;
+  --uwu-toast-accent: #ff7fac;
+  --uwu-toast-danger: #ff8096;
+
+  /* Behind modal dialogs. */
+  --uwu-backdrop: rgb(28 20 32 / 0.35);
+
+  /* The stage (a mirrored phone, a remote desktop, a terminal) is dark in both themes. */
+  --uwu-stage: #0c0a0d;
+  --uwu-stage-ink: #f8f2f6;
+  --uwu-stage-muted: #b3a8b3;
+  --uwu-stage-overlay: rgb(28 23 31 / 0.92);
+  --uwu-stage-border: #3a3040;
+
+  /* Brand art: the app icon tile, installers, the website. Fixed, never themed. */
+  --uwu-tile-from: #fff3f8;
+  --uwu-tile-to: #ffd3e5;
+  --uwu-plum: #4b1d3f;
+  --uwu-plum-soft: #7a5670;
+
+  /* Shape */
+  --uwu-radius-small: 8px;
+  --uwu-radius-control: 10px;
+  --uwu-radius-card: 16px;
+  --uwu-radius-dialog: 22px;
+  --uwu-radius-pill: 999px;
+
+  /* Elevation: shadows only for what floats (menus, dialogs, toasts, popovers). */
   --uwu-shadow-float: 0 12px 32px rgb(28 20 32 / 0.12), 0 2px 8px rgb(28 20 32 / 0.06);
-  --uwu-focus: 0 0 0 3px rgb(255 77 141 / 0.35);
+  --uwu-shadow-primary: 0 2px 10px rgb(225 29 116 / 0.25);
+  --uwu-shadow-nyu: 0 6px 10px rgb(194 48 111 / 0.12);
+  /* The focus ring: opaque --uwu-pink-solid, 3:1 against every surface (WCAG 1.4.11). */
+  --uwu-focus: 0 0 0 3px #e11d74;
+
+  /* Space: one 4 px scale. A value that is not on it is a mistake, not a style. */
+  --uwu-space-1: 4px;
+  --uwu-space-2: 8px;
+  --uwu-space-3: 12px;
+  --uwu-space-4: 16px;
+  --uwu-space-5: 20px;
+  --uwu-space-6: 24px;
+  --uwu-space-8: 32px;
+  --uwu-space-10: 40px;
+
+  /* Type (docs/typography.md). --font-ui and --tracking-ui are set by applyUiFont(); data-type,
+     --uwu-type-optical and --uwu-type-scale by applyType(). Every size is the platform's points
+     (--uwu-pt-*, the desktop's here, the others below) × optical × scale; the sizes themselves are
+     computed below, next to the platform scales. */
+  --font-ui: "UwU Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif;
+  --tracking-ui: -0.008em;
+  --uwu-font: var(--font-ui);
+  --uwu-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --uwu-type-optical: 1;
+  --uwu-type-scale: 1;
+  --uwu-pt-text-badge: 11;
+  --uwu-pt-text-caption: 12;
+  --uwu-pt-text-meta: 13;
+  --uwu-pt-text-body: 14;
+  --uwu-pt-text-reading: 16;
+  --uwu-pt-text-section: 18;
+  --uwu-pt-text-title: 22;
+  --uwu-pt-text-large: 28;
+  --uwu-pt-type-caption2: 11;
+  --uwu-pt-type-caption1: 12;
+  --uwu-pt-type-footnote: 12;
+  --uwu-pt-type-subheadline: 13;
+  --uwu-pt-type-callout: 13;
+  --uwu-pt-type-body: 14;
+  --uwu-pt-type-headline: 14;
+  --uwu-pt-type-title3: 16;
+  --uwu-pt-type-title2: 18;
+  --uwu-pt-type-title1: 22;
+  --uwu-pt-type-large-title: 28;
+  --uwu-leading: 1.45;
+  --uwu-leading-reading: 1.55;
+  --uwu-leading-tight: 1.25;
+
+  /* Motion (docs/motion.md) */
+  --uwu-duration-fast: 150ms;
+  --uwu-duration-base: 200ms;
+  --uwu-duration-enter: 220ms;
+  --uwu-ease-out: cubic-bezier(0.2, 0.9, 0.3, 1);
+  --uwu-ease-pop: cubic-bezier(0.2, 0.9, 0.3, 1.3);
+  --uwu-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Layers. Modal dialogs use the browser's top layer and sit above all of these. */
+  --uwu-z-sticky: 30;
+  --uwu-z-menu: 40;
+  --uwu-z-cameo: 45;
+  --uwu-z-toast: 50;
+  --uwu-z-tooltip: 60;
+
+  /* Window chrome (docs/window.md) */
+  --uwu-titlebar-height: 38px;
+  --uwu-titlebar-mac-inset: 78px;
+
+  /* Mobile (docs/mobile.md). iOS 26 Liquid Glass: a translucent fill over a blurred, saturated
+     backdrop, a bright top edge and a soft shade. Never carries body text on its own. */
+  --uwu-glass: rgb(255 255 255 / 0.56);
+  --uwu-glass-edge: rgb(255 255 255 / 0.8);
+  --uwu-glass-highlight: rgb(255 255 255 / 0.95);
+  --uwu-glass-shade: rgb(70 20 50 / 0.16);
+  --uwu-glass-selected: rgb(28 20 32 / 0.075);
+  --uwu-glass-blur: 16px;
+  /* Android Material 3: surface tones derived from the suite pink (tone 98, 94, 92, 90). */
+  --uwu-m3-surface: #fff8fa;
+  --uwu-m3-container: #f9eef3;
+  --uwu-m3-container-high: #f4e6ec;
+  --uwu-m3-indicator: #ffd9e5;
+  /* What dims the app behind a sheet or a context menu. */
+  --uwu-scrim: rgb(25 10 20 / 0.3);
 
   color-scheme: light;
+}
+
+/*
+ * The platform scales (docs/typography.md, src/lib/type.ts holds the same numbers and a test keeps
+ * them equal): macOS after the HIG, iOS and iPadOS after Dynamic Type "Large", Android after
+ * Material 3. Without data-type an app keeps the desktop scale above. data-type sits on <html>
+ * (applyType); the mobile shell carries it too, so a phone frame on a desktop page gets its scale.
+ */
+:root,
+[data-type] {
+  --uwu-text-badge: calc(var(--uwu-pt-text-badge) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-text-caption: calc(var(--uwu-pt-text-caption) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-text-meta: calc(var(--uwu-pt-text-meta) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-text-body: calc(var(--uwu-pt-text-body) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-text-reading: calc(var(--uwu-pt-text-reading) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-text-section: calc(var(--uwu-pt-text-section) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-text-title: calc(var(--uwu-pt-text-title) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-text-large: calc(var(--uwu-pt-text-large) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-caption2: calc(var(--uwu-pt-type-caption2) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-caption1: calc(var(--uwu-pt-type-caption1) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-footnote: calc(var(--uwu-pt-type-footnote) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-subheadline: calc(var(--uwu-pt-type-subheadline) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-callout: calc(var(--uwu-pt-type-callout) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-body: calc(var(--uwu-pt-type-body) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-headline: calc(var(--uwu-pt-type-headline) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-title3: calc(var(--uwu-pt-type-title3) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-title2: calc(var(--uwu-pt-type-title2) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-title1: calc(var(--uwu-pt-type-title1) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+  --uwu-type-large-title: calc(var(--uwu-pt-type-large-title) * var(--uwu-type-optical) * var(--uwu-type-scale) * 1px);
+}
+
+[data-type="macos"] {
+  --uwu-pt-text-badge: 10;
+  --uwu-pt-text-caption: 11;
+  --uwu-pt-text-meta: 12;
+  --uwu-pt-text-body: 13;
+  --uwu-pt-text-reading: 15;
+  --uwu-pt-text-section: 17;
+  --uwu-pt-text-title: 22;
+  --uwu-pt-text-large: 26;
+  --uwu-pt-type-caption2: 10;
+  --uwu-pt-type-caption1: 10;
+  --uwu-pt-type-footnote: 10;
+  --uwu-pt-type-subheadline: 11;
+  --uwu-pt-type-callout: 12;
+  --uwu-pt-type-body: 13;
+  --uwu-pt-type-headline: 13;
+  --uwu-pt-type-title3: 15;
+  --uwu-pt-type-title2: 17;
+  --uwu-pt-type-title1: 22;
+  --uwu-pt-type-large-title: 26;
+}
+
+[data-type="ios"] {
+  --uwu-pt-text-badge: 11;
+  --uwu-pt-text-caption: 13;
+  --uwu-pt-text-meta: 15;
+  --uwu-pt-text-body: 17;
+  --uwu-pt-text-reading: 17;
+  --uwu-pt-text-section: 20;
+  --uwu-pt-text-title: 28;
+  --uwu-pt-text-large: 34;
+  --uwu-pt-type-caption2: 11;
+  --uwu-pt-type-caption1: 12;
+  --uwu-pt-type-footnote: 13;
+  --uwu-pt-type-subheadline: 15;
+  --uwu-pt-type-callout: 16;
+  --uwu-pt-type-body: 17;
+  --uwu-pt-type-headline: 17;
+  --uwu-pt-type-title3: 20;
+  --uwu-pt-type-title2: 22;
+  --uwu-pt-type-title1: 28;
+  --uwu-pt-type-large-title: 34;
+}
+
+[data-type="android"] {
+  --uwu-pt-text-badge: 11;
+  --uwu-pt-text-caption: 12;
+  --uwu-pt-text-meta: 14;
+  --uwu-pt-text-body: 16;
+  --uwu-pt-text-reading: 16;
+  --uwu-pt-text-section: 22;
+  --uwu-pt-text-title: 24;
+  --uwu-pt-text-large: 32;
+  --uwu-pt-type-caption2: 11;
+  --uwu-pt-type-caption1: 12;
+  --uwu-pt-type-footnote: 12;
+  --uwu-pt-type-subheadline: 14;
+  --uwu-pt-type-callout: 14;
+  --uwu-pt-type-body: 16;
+  --uwu-pt-type-headline: 16;
+  --uwu-pt-type-title3: 18;
+  --uwu-pt-type-title2: 22;
+  --uwu-pt-type-title1: 24;
+  --uwu-pt-type-large-title: 32;
 }
 
 :root[data-theme="dark"] {
@@ -49,6 +298,7 @@
   --uwu-faint: #7d717d;
   --uwu-hairline: #2c2430;
   --uwu-border: #3a3040;
+  --uwu-control: #7d7185;
 
   --uwu-pink: #ff7fac;
   --uwu-pink-solid: #ff7fac;
@@ -59,14 +309,145 @@
   --uwu-pink-tint-strong: #4d2338;
 
   --uwu-danger: #ff6b7e;
+  --uwu-danger-ink: #ff8a99;
   --uwu-danger-tint: #3d1a20;
   --uwu-success: #3ddc97;
+  --uwu-success-ink: #5cc7ac;
   --uwu-success-tint: #123a2a;
   --uwu-warning: #f5b94a;
+  --uwu-warning-ink: #d8a25c;
   --uwu-warning-tint: #3a2a0c;
+  --uwu-offline: #6d6474;
+
+  --uwu-avatar-pink: #3a1a2a;
+  --uwu-avatar-pink-ink: #ffa3c4;
+  --uwu-avatar-violet: #2a2142;
+  --uwu-avatar-violet-ink: #c4b1ff;
+  --uwu-avatar-sky: #10293a;
+  --uwu-avatar-sky-ink: #8fd6f8;
+  --uwu-avatar-mint: #123a2a;
+  --uwu-avatar-mint-ink: #6ee7b7;
+  --uwu-avatar-amber: #3a2a0c;
+  --uwu-avatar-amber-ink: #f5c453;
+  --uwu-avatar-coral: #3d1d18;
+  --uwu-avatar-coral-ink: #ffab9d;
+
+  --uwu-toast: #f8f2f6;
+  --uwu-toast-ink: #1c1420;
+  --uwu-toast-accent: #a3154f;
+  --uwu-toast-danger: #b4233a;
+
+  --uwu-backdrop: rgb(0 0 0 / 0.5);
+
+  --uwu-glass: rgb(44 36 48 / 0.52);
+  --uwu-glass-edge: rgb(255 255 255 / 0.13);
+  --uwu-glass-highlight: rgb(255 255 255 / 0.16);
+  --uwu-glass-shade: rgb(0 0 0 / 0.5);
+  --uwu-glass-selected: rgb(255 255 255 / 0.1);
+  --uwu-m3-surface: #191115;
+  --uwu-m3-container: #261c21;
+  --uwu-m3-container-high: #31252b;
+  --uwu-m3-indicator: #5c1f39;
+  --uwu-scrim: rgb(0 0 0 / 0.5);
 
   --uwu-shadow-float: 0 12px 32px rgb(0 0 0 / 0.45), 0 2px 8px rgb(0 0 0 / 0.3);
-  --uwu-focus: 0 0 0 3px rgb(255 127 172 / 0.4);
+  --uwu-shadow-primary: 0 2px 10px rgb(255 127 172 / 0.2);
+  --uwu-focus: 0 0 0 3px #ff7fac;
 
   color-scheme: dark;
+}
+
+/*
+ * High contrast (Settings → Darstellung → Kontrast, or prefers-contrast: more): black on white and
+ * white on black, text and borders at 7:1 or more, an accent dark or light enough to be text.
+ * `html:root[…]` outranks an admin's accent colour (branding.css), so high contrast always wins.
+ */
+html:root[data-contrast="high"] {
+  --uwu-canvas: #ffffff;
+  --uwu-surface: #ffffff;
+  --uwu-elevated: #eeeeee;
+  --uwu-ink: #000000;
+  --uwu-muted: #333333;
+  --uwu-faint: #595959;
+  --uwu-hairline: #595959;
+  --uwu-border: #333333;
+  --uwu-control: #000000;
+
+  --uwu-pink: #8a0046;
+  --uwu-pink-solid: #8a0046;
+  --uwu-pink-solid-hover: #6e0038;
+  --uwu-on-pink: #ffffff;
+  --uwu-pink-ink: #7a003c;
+  --uwu-pink-tint: #ffe4ef;
+  --uwu-pink-tint-strong: #ffc2d9;
+
+  --uwu-danger: #8a0017;
+  --uwu-danger-ink: #8a0017;
+  --uwu-success: #00564a;
+  --uwu-success-ink: #00564a;
+  --uwu-warning: #5c3d00;
+  --uwu-warning-ink: #5c3d00;
+  --uwu-offline: #595959;
+
+  --uwu-toast: #000000;
+  --uwu-toast-ink: #ffffff;
+  --uwu-toast-accent: #ffa6c9;
+  --uwu-toast-danger: #ff9aa8;
+  --uwu-account-pink: #8a0046;
+  --uwu-focus: 0 0 0 3px #000000;
+
+  /* Glass turns solid with a real border; M3 tones become plain surfaces. */
+  --uwu-glass: #ffffff;
+  --uwu-glass-edge: #000000;
+  --uwu-glass-highlight: #ffffff;
+  --uwu-glass-shade: rgb(0 0 0 / 0);
+  --uwu-glass-selected: #ffe4ef;
+  --uwu-m3-surface: #ffffff;
+  --uwu-m3-container: #ffffff;
+  --uwu-m3-container-high: #eeeeee;
+  --uwu-m3-indicator: #ffe4ef;
+}
+
+html:root[data-contrast="high"][data-theme="dark"] {
+  --uwu-canvas: #000000;
+  --uwu-surface: #000000;
+  --uwu-elevated: #1f1f1f;
+  --uwu-ink: #ffffff;
+  --uwu-muted: #e6e6e6;
+  --uwu-faint: #a8a8a8;
+  --uwu-hairline: #8c8c8c;
+  --uwu-border: #d9d9d9;
+  --uwu-control: #ffffff;
+
+  --uwu-pink: #ffa6c9;
+  --uwu-pink-solid: #ffa6c9;
+  --uwu-pink-solid-hover: #ffc2d9;
+  --uwu-on-pink: #000000;
+  --uwu-pink-ink: #ffc2d9;
+  --uwu-pink-tint: #4a0f2c;
+  --uwu-pink-tint-strong: #5c1236;
+
+  --uwu-danger: #ff9aa8;
+  --uwu-danger-ink: #ff9aa8;
+  --uwu-success: #7fe0c6;
+  --uwu-success-ink: #7fe0c6;
+  --uwu-warning: #ffd08a;
+  --uwu-warning-ink: #ffd08a;
+  --uwu-offline: #a8a8a8;
+
+  --uwu-toast: #ffffff;
+  --uwu-toast-ink: #000000;
+  --uwu-toast-accent: #8a0046;
+  --uwu-toast-danger: #8a0017;
+  --uwu-account-pink: #ffa6c9;
+  --uwu-focus: 0 0 0 3px #ffffff;
+
+  --uwu-glass: #000000;
+  --uwu-glass-edge: #ffffff;
+  --uwu-glass-highlight: #000000;
+  --uwu-glass-selected: #4a0f2c;
+  --uwu-m3-surface: #000000;
+  --uwu-m3-container: #000000;
+  --uwu-m3-container-high: #1f1f1f;
+  --uwu-m3-indicator: #4a0f2c;
 }

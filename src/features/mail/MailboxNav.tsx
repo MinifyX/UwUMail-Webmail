@@ -60,11 +60,11 @@ function NavItem({ icon: Icon, label, count, active, onClick }: NavItemProps) {
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       className={clsx(
-        "group flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-[13.5px] transition-colors",
+        "group flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-body transition-colors",
         active ? "bg-pink-tint font-semibold text-pink-ink" : "text-ink/85 hover:bg-pink-tint/50",
       )}
     >
-      <Icon className={clsx("size-[17px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
+      <Icon className={clsx("size-[18px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {count !== undefined && count > 0 && <Badge count={count} />}
     </button>
@@ -75,7 +75,7 @@ const INDENT = 16;
 
 function Glyph({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) {
   return (
-    <Icon className={clsx("size-[17px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
+    <Icon className={clsx("size-[18px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
   );
 }
 
@@ -238,7 +238,7 @@ function FolderItem({ node, accountId }: { node: FolderNode; accountId: string }
           type="button"
           onClick={() => (folder.selectable ? setView(target) : toggleFolder(folder.id))}
           aria-current={active ? "page" : undefined}
-          className="flex h-full min-w-0 flex-1 items-center gap-2.5 pr-3 pl-1 text-left text-[13.5px]"
+          className="flex h-full min-w-0 flex-1 items-center gap-2.5 pr-3 pl-1 text-left text-body"
         >
           <Glyph icon={icon} active={active} />
           <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -317,7 +317,7 @@ function AccountSection({ account, folders }: { account: Account; folders: Folde
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           title={statusLabel}
-          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-[12px] font-bold tracking-wide text-muted uppercase hover:text-ink"
+          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-caption font-bold tracking-wide text-muted uppercase hover:text-ink"
         >
           <AccountDot color={account.color} />
           <span className="min-w-0 flex-1 truncate text-left tracking-normal normal-case">{account.email}</span>
@@ -361,11 +361,11 @@ function SharedSection({ owner, folders }: { owner: SharedAccount; folders: Fold
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         title={owner.email}
-        className="flex h-8 min-w-0 items-center gap-2 rounded-lg pr-1 pl-3 text-[12px] font-bold text-muted hover:text-ink"
+        className="flex h-8 min-w-0 items-center gap-2 rounded-lg pr-1 pl-3 text-caption font-bold text-muted hover:text-ink"
       >
         <Users className="size-3.5 shrink-0" aria-hidden />
         <span className="min-w-0 flex-1 truncate text-left">{title}</span>
-        {owner.readOnly && <span className="shrink-0 text-[11px] font-semibold">{t("sharing.readOnlyShort")}</span>}
+        {owner.readOnly && <span className="shrink-0 text-badge font-semibold">{t("sharing.readOnlyShort")}</span>}
         <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
       </button>
       {open && (
@@ -409,7 +409,7 @@ export function MailboxNav({ className }: { className?: string }) {
   return (
     <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-4 pb-3", className)}>
       <div className="flex items-center justify-between px-2">
-        <Wordmark className="text-[19px]" hop={hops} />
+        <Wordmark className="text-section" hop={hops} />
       </div>
 
       <AppSwitch />

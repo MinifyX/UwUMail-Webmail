@@ -104,7 +104,7 @@ export function Menu({ trigger, items, align = "start", side = "below", classNam
                 <p
                   role="presentation"
                   className={clsx(
-                    "px-3 pt-2 pb-1 text-[11px] font-bold tracking-wide text-muted uppercase",
+                    "px-3 pt-2 pb-1 text-badge font-bold tracking-wide text-muted uppercase",
                     index > 0 && "mt-1 border-t border-hairline",
                   )}
                 >
@@ -120,7 +120,7 @@ export function Menu({ trigger, items, align = "start", side = "below", classNam
                     setOpen(false);
                     item.onSelect();
                   }}
-                  className="rounded-xl px-3 py-2 text-left text-[13px] font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none"
+                  className="rounded-xl px-3 py-2 text-left text-meta font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none"
                 >
                   {item.label}
                 </button>,
@@ -224,7 +224,7 @@ export function ContextMenu({ at, items, onClose, label }: ContextMenuProps) {
             item.onSelect();
           }}
           className={clsx(
-            "rounded-xl px-3 py-2 text-left text-[13px] font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none",
+            "rounded-xl px-3 py-2 text-left text-meta font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none",
             item.danger && "text-danger",
           )}
         >

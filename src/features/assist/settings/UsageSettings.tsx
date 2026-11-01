@@ -31,22 +31,22 @@ export function UsageSettings() {
 
   return (
     <Section title={t("assist.usage.title")} description={t("assist.usage.description")}>
-      {isPending && <p className="text-[13px] text-muted">{t("assist.usage.loading")}</p>}
-      {isError && <p className="text-[13px] text-danger">{t("assist.usage.failed")}</p>}
+      {isPending && <p className="text-meta text-muted">{t("assist.usage.loading")}</p>}
+      {isError && <p className="text-meta text-danger">{t("assist.usage.failed")}</p>}
       {usage && (
         <>
           <div className="flex flex-col gap-2">
-            <p className="text-[12px] font-bold tracking-wide text-muted uppercase">{t("assist.usage.today")}</p>
+            <p className="text-caption font-bold tracking-wide text-muted uppercase">{t("assist.usage.today")}</p>
             {usage.today.length === 0 ? (
-              <p className="text-[13px] text-muted">{t("assist.usage.nothingToday")}</p>
+              <p className="text-meta text-muted">{t("assist.usage.nothingToday")}</p>
             ) : (
               usage.today.map((entry) => {
                 const share = todayShare(entry);
                 return (
                   <div key={entry.providerId} className="flex flex-col gap-1.5 rounded-2xl bg-canvas px-3.5 py-2.5">
-                    <p className="flex flex-wrap items-baseline justify-between gap-x-3 text-[13px]">
+                    <p className="flex flex-wrap items-baseline justify-between gap-x-3 text-meta">
                       <span className="font-semibold">{entry.providerName}</span>
-                      <span className="text-[12px] text-muted">
+                      <span className="text-caption text-muted">
                         {[
                           entry.requestsPerDay != null
                             ? t("assist.usage.requestsOf", {
@@ -88,7 +88,7 @@ export function UsageSettings() {
                       </span>
                     )}
                     {share.max !== null && share.max >= 1 && (
-                      <p className="text-[12px] text-danger">{t("assist.usage.limitReached")}</p>
+                      <p className="text-caption text-danger">{t("assist.usage.limitReached")}</p>
                     )}
                   </div>
                 );
@@ -98,10 +98,10 @@ export function UsageSettings() {
 
           <div className="flex flex-col gap-2">
             <p className="flex flex-wrap items-baseline justify-between gap-x-3">
-              <span className="text-[12px] font-bold tracking-wide text-muted uppercase">
+              <span className="text-caption font-bold tracking-wide text-muted uppercase">
                 {t("assist.usage.lastDays", { count: DAYS })}
               </span>
-              <span className="text-[12px] text-muted">
+              <span className="text-caption text-muted">
                 {t("assist.usage.requests", { count: total.requests, formatted: number.format(total.requests) })} ·{" "}
                 {t("assist.usage.tokens", { formatted: compact.format(total.tokens) })}
                 {totalCost && ` · ${cost(totalCost)}`}
@@ -121,7 +121,7 @@ export function UsageSettings() {
               ))}
             </div>
             {features.length > 0 ? (
-              <ul className="grid gap-1.5 text-[12.5px] sm:grid-cols-2">
+              <ul className="grid gap-1.5 text-meta sm:grid-cols-2">
                 {features.map((entry) => (
                   <li
                     key={entry.feature}
@@ -141,7 +141,7 @@ export function UsageSettings() {
                 ))}
               </ul>
             ) : (
-              <p className="text-[13px] text-muted">{t("assist.usage.nothing")}</p>
+              <p className="text-meta text-muted">{t("assist.usage.nothing")}</p>
             )}
           </div>
         </>

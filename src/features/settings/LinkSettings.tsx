@@ -27,10 +27,10 @@ export function LinkSettings() {
       </div>
       <Row label={t("settings.linkDomains")} description={t("settings.linkDomainsDesc")}>
         {!linkConfirm && domains.length > 0 && (
-          <p className="text-[12.5px] text-warning">{t("settings.linkDomainsInactive")}</p>
+          <p className="text-meta text-warning">{t("settings.linkDomainsInactive")}</p>
         )}
         {domains.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13px] text-muted">
+          <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-meta text-muted">
             {t("settings.linkDomainsEmpty")}
           </p>
         ) : (
@@ -43,7 +43,7 @@ export function LinkSettings() {
             {domains.map((domain) => (
               <li key={domain} className="flex items-center gap-3 rounded-xl py-1 pr-1 pl-3 hover:bg-elevated">
                 <Link2 className="size-4 shrink-0 text-faint" aria-hidden />
-                <span className="selectable min-w-0 flex-1 truncate text-[13.5px] font-semibold">{domain}</span>
+                <span className="selectable min-w-0 flex-1 truncate text-body font-semibold">{domain}</span>
                 <IconButton
                   icon={X}
                   size="sm"

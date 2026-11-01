@@ -64,7 +64,7 @@ export function ContactList({ className, header }: { className?: string; header?
             }}
             placeholder={t("contacts.search")}
             aria-label={t("contacts.search")}
-            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-10 pl-10 text-[13.5px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-10 pl-10 text-body placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {search && (
             <IconButton
@@ -81,13 +81,13 @@ export function ContactList({ className, header }: { className?: string; header?
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-3">
         {failed ? (
           <div className="flex flex-col items-center gap-3 p-8 text-center">
-            <p className="text-[14px] text-muted">{t("contacts.loadFailed")}</p>
+            <p className="text-body text-muted">{t("contacts.loadFailed")}</p>
             <Button size="sm" onClick={() => void query.refetch()}>
               {t("common.retry")}
             </Button>
           </div>
         ) : loading ? (
-          <p className="p-6 text-center text-[13px] text-muted" aria-live="polite">
+          <p className="p-6 text-center text-meta text-muted" aria-live="polite">
             {t("contacts.loading")}
           </p>
         ) : contacts.length === 0 ? (
@@ -120,7 +120,7 @@ export function ContactList({ className, header }: { className?: string; header?
                   {newLetter && !search && (
                     <li
                       aria-hidden
-                      className="sticky top-0 z-[1] bg-surface/95 px-3 pt-3 pb-1 text-[12px] font-bold text-pink-ink backdrop-blur-sm"
+                      className="sticky top-0 z-[1] bg-surface/95 px-3 pt-3 pb-1 text-caption font-bold text-pink-ink backdrop-blur-sm"
                     >
                       {letter}
                     </li>
@@ -137,20 +137,20 @@ export function ContactList({ className, header }: { className?: string; header?
                     >
                       <ContactAvatar contact={contact} />
                       <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate text-[14px] font-semibold">
+                        <span className="truncate text-body font-semibold">
                           {contact.displayName || t("contacts.nameless")}
                         </span>
-                        {subtitle && <span className="truncate text-[12.5px] text-muted">{subtitle}</span>}
+                        {subtitle && <span className="truncate text-meta text-muted">{subtitle}</span>}
                       </span>
                       {(age !== null || birthdayToday) && (
                         <span
                           className={clsx(
-                            "flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-semibold tabular-nums",
+                            "flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-caption font-semibold tabular-nums",
                             birthdayToday ? "bg-pink-tint text-pink-ink" : "bg-canvas text-muted",
                           )}
                           title={age !== null ? t("contacts.yearsOld", { count: age }) : t("contacts.isToday")}
                         >
-                          {birthdayToday && <Cake className="size-3" aria-hidden />}
+                          {birthdayToday && <Cake className="size-3.5" aria-hidden />}
                           {age !== null && <span aria-label={t("contacts.yearsOld", { count: age })}>{age}</span>}
                         </span>
                       )}

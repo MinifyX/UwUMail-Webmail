@@ -46,8 +46,8 @@ function Message({
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 p-8 text-center">
       <NyuScene name={scene} className="w-[220px]" />
-      <h1 className="text-[20px] font-bold text-ink">{title}</h1>
-      <p className="text-ink-soft max-w-[420px] text-[14px]">{children}</p>
+      <h1 className="text-title font-bold text-ink">{title}</h1>
+      <p className="text-ink-soft max-w-[420px] text-body">{children}</p>
       {action && <Button onClick={action.onClick}>{action.label}</Button>}
     </div>
   );

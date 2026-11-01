@@ -607,7 +607,7 @@ export function MessageBody({
               style={{ width: `${(loading.done / loading.total) * 100}%` }}
             />
           </div>
-          <span className="absolute top-2 right-2 rounded-full border border-hairline bg-surface/90 px-2 py-0.5 text-[11.5px] font-semibold text-muted tabular-nums shadow-sm">
+          <span className="absolute top-2 right-2 rounded-full border border-hairline bg-surface/90 px-2 py-0.5 text-caption font-semibold text-muted tabular-nums shadow-sm">
             {label}
           </span>
         </div>

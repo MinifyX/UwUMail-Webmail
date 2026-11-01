@@ -7,5 +7,5 @@ export function BirthdayMark({ occurrence, className }: { occurrence: CalendarOc
   const kind = occurrence.birthday?.kind;
   if (!kind) return null;
   const Icon = kind === "birth" ? Cake : kind === "wedding" ? Heart : PartyPopper;
-  return <Icon className={clsx("shrink-0", className ?? "size-3")} strokeWidth={2.25} aria-hidden />;
+  return <Icon className={clsx("shrink-0", className ?? "size-3.5")} strokeWidth={2.25} aria-hidden />;
 }

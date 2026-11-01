@@ -14,7 +14,7 @@ export function KeyHint({ combo }: { combo: string }) {
       {keys.map((key) => (
         <kbd
           key={key}
-          className="grid h-6 min-w-6 place-items-center rounded-md border border-line bg-canvas px-1.5 font-sans text-[11.5px] font-bold text-muted"
+          className="grid h-6 min-w-6 place-items-center rounded-md border border-line bg-canvas px-1.5 font-sans text-caption font-bold text-muted"
         >
           {key}
         </kbd>
@@ -94,7 +94,7 @@ export function ShortcutsDialog() {
       <ShortcutList shortcuts={shortcuts} />
       {calendar && (
         <>
-          <h3 className="px-6 pt-1 pb-1 text-[12px] font-bold tracking-wide text-muted uppercase">
+          <h3 className="px-6 pt-1 pb-1 text-caption font-bold tracking-wide text-muted uppercase">
             {t("nav.section.calendar")}
           </h3>
           <ShortcutList shortcuts={CALENDAR_SHORTCUTS.map(label)} />
@@ -102,7 +102,7 @@ export function ShortcutsDialog() {
       )}
       {contacts && (
         <>
-          <h3 className="px-6 pt-1 pb-1 text-[12px] font-bold tracking-wide text-muted uppercase">
+          <h3 className="px-6 pt-1 pb-1 text-caption font-bold tracking-wide text-muted uppercase">
             {t("nav.section.contacts")}
           </h3>
           <ShortcutList shortcuts={CONTACT_SHORTCUTS.map(label)} />
@@ -118,14 +118,14 @@ function ShortcutList({ shortcuts }: { shortcuts: [string, string, string?][] })
       {shortcuts.map(([combo, label, alt]) => (
         <li
           key={combo}
-          className="flex h-10 items-center justify-between border-b border-hairline text-[13.5px] last:border-0"
+          className="flex h-10 items-center justify-between border-b border-hairline text-body last:border-0"
         >
           <span>{label}</span>
           <span className="flex items-center gap-1.5">
             <KeyHint combo={combo === "Escape" ? "Esc" : combo} />
             {alt && (
               <>
-                <span className="text-[12px] text-muted">/</span>
+                <span className="text-caption text-muted">/</span>
                 <KeyHint combo={alt} />
               </>
             )}

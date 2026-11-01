@@ -53,9 +53,9 @@ export function PushSettings() {
         label={t("push.label")}
         description={t("push.description")}
       />
-      {!possible && <p className="text-[12.5px] text-warning">{t("push.problem.unsupported")}</p>}
+      {!possible && <p className="text-meta text-warning">{t("push.problem.unsupported")}</p>}
       {problem && (
-        <p role="alert" className="text-[12.5px] text-danger">
+        <p role="alert" className="text-meta text-danger">
           {problem}
         </p>
       )}

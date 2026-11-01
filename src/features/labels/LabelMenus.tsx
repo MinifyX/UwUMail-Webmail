@@ -166,7 +166,7 @@ function PickerBody({ threadIds }: { threadIds: string[] }) {
 
   return (
     <div className="flex flex-col gap-2 px-5 pt-1 pb-5">
-      <p className="text-[12.5px] text-muted">{t("labels.quick.for", { count: threadIds.length })}</p>
+      <p className="text-meta text-muted">{t("labels.quick.for", { count: threadIds.length })}</p>
       <div className="relative">
         <Search
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
@@ -194,7 +194,7 @@ function PickerBody({ threadIds }: { threadIds: string[] }) {
               choose(current);
             }
           }}
-          className="h-10 w-full rounded-full border border-line bg-canvas pr-3 pl-9 text-[13.5px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none"
+          className="h-10 w-full rounded-full border border-line bg-canvas pr-3 pl-9 text-body placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none"
         />
       </div>
       <ul id={listId} role="listbox" aria-label={t("labels.quick.title")} className="flex flex-col gap-0.5">
@@ -210,7 +210,7 @@ function PickerBody({ threadIds }: { threadIds: string[] }) {
               onClick={() => choose(index)}
               onPointerMove={() => setActive(index)}
               className={clsx(
-                "flex h-9 cursor-pointer items-center gap-2.5 rounded-xl px-3 text-[13.5px]",
+                "flex h-9 cursor-pointer items-center gap-2.5 rounded-xl px-3 text-body",
                 index === current && "bg-pink-tint/60",
               )}
             >
@@ -228,7 +228,7 @@ function PickerBody({ threadIds }: { threadIds: string[] }) {
             onClick={() => choose(shown.length)}
             onPointerMove={() => setActive(shown.length)}
             className={clsx(
-              "flex h-9 cursor-pointer items-center gap-2.5 rounded-xl px-3 text-[13.5px] font-semibold text-pink-ink",
+              "flex h-9 cursor-pointer items-center gap-2.5 rounded-xl px-3 text-body font-semibold text-pink-ink",
               current === shown.length && "bg-pink-tint/60",
             )}
           >
@@ -236,7 +236,7 @@ function PickerBody({ threadIds }: { threadIds: string[] }) {
             <span className="min-w-0 flex-1 truncate">{t("labels.quick.create", { name })}</span>
           </li>
         )}
-        {count === 0 && <li className="px-3 py-2 text-[13px] text-muted">{t("labels.quick.none")}</li>}
+        {count === 0 && <li className="px-3 py-2 text-meta text-muted">{t("labels.quick.none")}</li>}
       </ul>
     </div>
   );

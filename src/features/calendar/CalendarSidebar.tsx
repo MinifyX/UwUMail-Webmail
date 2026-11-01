@@ -28,9 +28,9 @@ function SidebarLink({ icon: Icon, label, onClick }: { icon: LucideIcon; label: 
     <button
       type="button"
       onClick={onClick}
-      className="flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-[13.5px] text-ink/85 transition-colors hover:bg-pink-tint/50"
+      className="flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-body text-ink/85 transition-colors hover:bg-pink-tint/50"
     >
-      <Icon className="size-[17px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
+      <Icon className="size-[18px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
       <span className="min-w-0 flex-1 truncate">{label}</span>
     </button>
   );
@@ -43,7 +43,7 @@ export function CalendarSidebar({ className, onNavigate }: { className?: string;
   return (
     <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-4 pb-3", className)} aria-label={t("calendar.title")}>
       <div className="flex items-center justify-between px-2">
-        <Wordmark className="text-[19px]" />
+        <Wordmark className="text-section" />
       </div>
       <AppSwitch />
       <Button

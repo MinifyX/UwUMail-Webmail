@@ -77,11 +77,11 @@ export function BirthdayHint({ onOpen }: { onOpen: () => void }) {
           setDismissed(true);
         }}
       />
-      <p className="flex items-center gap-2 pr-7 text-[13px] font-bold">
+      <p className="flex items-center gap-2 pr-7 text-meta font-bold">
         <Cake className="size-4 shrink-0 text-pink-ink" aria-hidden />
         {t("calendar.birthdays.hintTitle", { count: open.length })}
       </p>
-      <p className="text-[12.5px] text-muted">{t("calendar.birthdays.hintBody")}</p>
+      <p className="text-meta text-muted">{t("calendar.birthdays.hintBody")}</p>
       <Button size="sm" variant="primary" onClick={onOpen} className="self-start">
         {t("calendar.birthdays.hintAction")}
       </Button>
@@ -201,11 +201,10 @@ function ImportBody({ onClose }: { onClose: () => void }) {
     }
   };
 
-  if (scan.isPending)
-    return <p className="px-6 pt-2 pb-6 text-[13.5px] text-muted">{t("calendar.birthdays.scanning")}</p>;
-  if (scan.isError) return <p className="px-6 pt-2 pb-6 text-[13.5px] text-danger">{t("calendar.birthdays.failed")}</p>;
+  if (scan.isPending) return <p className="px-6 pt-2 pb-6 text-body text-muted">{t("calendar.birthdays.scanning")}</p>;
+  if (scan.isError) return <p className="px-6 pt-2 pb-6 text-body text-danger">{t("calendar.birthdays.failed")}</p>;
   if (candidates.length === 0) {
-    return <p className="px-6 pt-2 pb-6 text-[13.5px] text-muted">{t("calendar.birthdays.none")}</p>;
+    return <p className="px-6 pt-2 pb-6 text-body text-muted">{t("calendar.birthdays.none")}</p>;
   }
 
   const clear = candidates.filter(automatic);
@@ -213,12 +212,12 @@ function ImportBody({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="flex flex-col gap-5 px-6 pt-1 pb-6">
-      <p className="text-[13.5px] text-muted">{t("calendar.birthdays.intro")}</p>
-      {scan.data?.truncated && <p className="text-[13px] text-muted">{t("calendar.birthdays.truncated")}</p>}
+      <p className="text-body text-muted">{t("calendar.birthdays.intro")}</p>
+      {scan.data?.truncated && <p className="text-meta text-muted">{t("calendar.birthdays.truncated")}</p>}
 
       {clear.length > 0 && (
         <section aria-labelledby="uwu-bday-clear" className="flex flex-col gap-2">
-          <h3 id="uwu-bday-clear" className="text-[12px] font-bold tracking-wide text-muted uppercase">
+          <h3 id="uwu-bday-clear" className="text-caption font-bold tracking-wide text-muted uppercase">
             {t("calendar.birthdays.automatic")}
           </h3>
           <ul className="flex flex-col gap-1.5">
@@ -228,7 +227,7 @@ function ImportBody({ onClose }: { onClose: () => void }) {
               const contact = candidate.contacts[0];
               return (
                 <li key={candidate.eventId} className="rounded-2xl border border-line px-3.5 py-2.5">
-                  <label className="flex items-start gap-3 text-[13.5px]">
+                  <label className="flex items-start gap-3 text-body">
                     <input
                       type="checkbox"
                       checked={included}
@@ -246,7 +245,7 @@ function ImportBody({ onClose }: { onClose: () => void }) {
                       <span className="block font-semibold break-words">
                         {candidate.title} · {date(candidate.birthday)}
                       </span>
-                      <span className="block text-[12.5px] text-muted">
+                      <span className="block text-meta text-muted">
                         → {contact?.name ?? candidate.name}
                         {candidate.match === "known" && ` (${t("calendar.birthdays.known")})`}
                       </span>
@@ -262,7 +261,7 @@ function ImportBody({ onClose }: { onClose: () => void }) {
 
       {unclear.length > 0 && (
         <section aria-labelledby="uwu-bday-unclear" className="flex flex-col gap-2">
-          <h3 id="uwu-bday-unclear" className="text-[12px] font-bold tracking-wide text-muted uppercase">
+          <h3 id="uwu-bday-unclear" className="text-caption font-bold tracking-wide text-muted uppercase">
             {t("calendar.birthdays.decide")}
           </h3>
           <ul className="flex flex-col gap-2">
@@ -283,7 +282,7 @@ function ImportBody({ onClose }: { onClose: () => void }) {
 
       <div className="flex flex-col gap-3 border-t border-hairline pt-4">
         {deleting > 0 && (
-          <p role="note" className="flex gap-2 text-[13px] font-semibold text-danger">
+          <p role="note" className="flex gap-2 text-meta font-semibold text-danger">
             <Trash className="mt-0.5 size-4 shrink-0" aria-hidden />
             {t("calendar.birthdays.deleteWarning", { count: deleting })}
           </p>
@@ -307,12 +306,12 @@ function ImportBody({ onClose }: { onClose: () => void }) {
 function EventFate({ candidate }: { candidate: BirthdayCandidate }) {
   const { t } = useT();
   return candidate.mayDeleteEvent ? (
-    <span className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-danger">
+    <span className="mt-1 flex items-center gap-1.5 text-caption font-semibold text-danger">
       <Trash className="size-3.5 shrink-0" aria-hidden />
       {t("calendar.birthdays.willDelete")}
     </span>
   ) : (
-    <span className="mt-1 block text-[12px] text-muted">{t("calendar.birthdays.keeps")}</span>
+    <span className="mt-1 block text-caption text-muted">{t("calendar.birthdays.keeps")}</span>
   );
 }
 
@@ -361,12 +360,12 @@ function UnclearEntry({
 
   return (
     <li className="flex flex-col gap-2.5 rounded-2xl border border-line px-3.5 py-3">
-      <div className="text-[13.5px]">
+      <div className="text-body">
         <span className="flex items-center gap-1.5 font-semibold break-words">
           <Cake className="size-3.5 shrink-0 text-muted" aria-hidden />
           {candidate.title} · {date(candidate.birthday)}
         </span>
-        <span className="block text-[12.5px] text-muted">{why}</span>
+        <span className="block text-meta text-muted">{why}</span>
       </div>
       <div role="radiogroup" aria-label={candidate.title} className="flex flex-wrap gap-1.5">
         {(["create", "assign", "skip"] as const).map((action) => (
@@ -385,7 +384,7 @@ function UnclearEntry({
               )
             }
             className={clsx(
-              "h-8 rounded-full px-3.5 text-[13px] font-medium transition-colors",
+              "h-8 rounded-full px-3.5 text-meta font-medium transition-colors",
               plan.action === action
                 ? "bg-pink-tint font-semibold text-pink-ink"
                 : "border border-line text-muted hover:border-faint/60 hover:text-ink",
@@ -414,7 +413,7 @@ function UnclearEntry({
             onChange={(event) => setSearch(event.target.value)}
           />
           {found.length === 0 ? (
-            <p className="text-[12.5px] text-muted">{t("calendar.birthdays.noContact")}</p>
+            <p className="text-meta text-muted">{t("calendar.birthdays.noContact")}</p>
           ) : (
             <ul role="radiogroup" aria-label={t("calendar.birthdays.assign")} className="flex flex-col gap-0.5">
               {found.map((choice) => (
@@ -425,7 +424,7 @@ function UnclearEntry({
                     aria-checked={assigned === choice.id}
                     onClick={() => onPlan({ action: "assign", contactId: choice.id, include: true })}
                     className={clsx(
-                      "flex h-8 w-full items-center rounded-lg px-2.5 text-left text-[13px]",
+                      "flex h-8 w-full items-center rounded-lg px-2.5 text-left text-meta",
                       assigned === choice.id ? "bg-pink-tint font-semibold text-pink-ink" : "hover:bg-pink-tint/50",
                     )}
                   >
@@ -436,7 +435,7 @@ function UnclearEntry({
             </ul>
           )}
           {overwrites && assignedBirthday && (
-            <p className="text-[12.5px] text-muted">
+            <p className="text-meta text-muted">
               {t("calendar.birthdays.overwrite", { date: date(assignedBirthday) })}
             </p>
           )}

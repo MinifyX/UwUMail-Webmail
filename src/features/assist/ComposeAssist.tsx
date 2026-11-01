@@ -276,14 +276,14 @@ export function ComposeAssistPanel({
         }
         if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) event.stopPropagation();
       }}
-      className="mx-3 mb-2 flex max-h-[48%] min-h-0 shrink-0 animate-fade flex-col overflow-hidden rounded-2xl border border-pink/30 bg-pink-tint/35 shadow-[0_4px_18px_rgb(225_29_116/0.08)]"
+      className="mx-3 mb-2 flex max-h-[48%] min-h-0 shrink-0 animate-fade flex-col overflow-hidden rounded-2xl border border-pink/30 bg-pink-tint/35 shadow-primary"
     >
       <header className="flex items-center gap-2 px-3.5 pt-2.5 pb-1.5">
         <Sparkles className="size-4 shrink-0 text-pink" aria-hidden />
-        <h3 className="min-w-0 truncate text-[13.5px] font-bold">{title}</h3>
+        <h3 className="min-w-0 truncate text-body font-bold">{title}</h3>
         {used && (
           <span
-            className="ml-auto min-w-0 truncate rounded-full bg-surface/80 px-2 py-0.5 text-[11.5px] font-semibold text-muted"
+            className="ml-auto min-w-0 truncate rounded-full bg-surface/80 px-2 py-0.5 text-caption font-semibold text-muted"
             title={t("assist.usedProvider", { provider: providerLabel(used) })}
           >
             {providerLabel(used)}
@@ -299,7 +299,7 @@ export function ComposeAssistPanel({
       </header>
 
       <div className="flex min-h-0 flex-col gap-2.5 overflow-y-auto px-3.5 pb-3">
-        <p className="flex items-start gap-1.5 text-[12px] text-muted">
+        <p className="flex items-start gap-1.5 text-caption text-muted">
           <Info className="mt-px size-3.5 shrink-0" aria-hidden />
           <span>
             {ask.mode === "write"
@@ -318,13 +318,13 @@ export function ComposeAssistPanel({
         {asking && !nothingToRewrite && !tooLong && (
           <form onSubmit={submit} className="flex flex-col gap-2">
             {ask.preset === "translate" ? (
-              <label htmlFor={inputId} className="flex flex-wrap items-center gap-2 text-[13px] font-semibold">
+              <label htmlFor={inputId} className="flex flex-wrap items-center gap-2 text-meta font-semibold">
                 {t("assist.compose.translateTo")}
                 <select
                   id={inputId}
                   value={targetLanguage}
                   onChange={(event) => setTargetLanguage(event.target.value)}
-                  className="h-9 rounded-control border border-line bg-surface px-3 text-[13.5px] font-normal focus:border-pink focus:shadow-focus focus:outline-none"
+                  className="h-9 rounded-control border border-line bg-surface px-3 text-body font-normal focus:border-pink focus:shadow-focus focus:outline-none"
                 >
                   {TARGET_LANGUAGES.map((tag) => (
                     <option key={tag} value={tag}>
@@ -358,13 +358,13 @@ export function ComposeAssistPanel({
                         : t("assist.compose.writePlaceholder")
                       : t("assist.compose.adjustPlaceholder")
                   }
-                  className="w-full resize-none rounded-xl border border-line bg-surface px-3 py-2 text-[13.5px] placeholder:text-faint focus:border-pink focus:shadow-focus focus:outline-none"
+                  className="w-full resize-none rounded-xl border border-line bg-surface px-3 py-2 text-body placeholder:text-faint focus:border-pink focus:shadow-focus focus:outline-none"
                 />
               </>
             )}
             <div className="flex flex-wrap items-center gap-2">
               {ask.mode === "write" && subjectEmpty && (
-                <label className="flex items-center gap-1.5 text-[12.5px] text-muted">
+                <label className="flex items-center gap-1.5 text-meta text-muted">
                   <input
                     type="checkbox"
                     checked={wantSubject}
@@ -397,7 +397,7 @@ export function ComposeAssistPanel({
         {!asking && (state.status !== "idle" || hasText) && (
           <div className="flex flex-col gap-2">
             {state.subject && (
-              <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface px-3 py-2 text-[13px]">
+              <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface px-3 py-2 text-meta">
                 <span className="font-semibold text-muted">{t("compose.subject")}:</span>
                 <span className="selectable min-w-0 flex-1 font-semibold break-words">{state.subject}</span>
                 {!working && (
@@ -420,7 +420,7 @@ export function ComposeAssistPanel({
               role="status"
               aria-live="polite"
               aria-busy={working}
-              className="selectable max-h-72 min-h-[3.5rem] overflow-y-auto rounded-xl bg-surface px-3 py-2.5 text-[14px] leading-relaxed whitespace-pre-wrap"
+              className="selectable max-h-72 min-h-[3.5rem] overflow-y-auto rounded-xl bg-surface px-3 py-2.5 text-body leading-relaxed whitespace-pre-wrap"
             >
               {hasText ? state.text : working ? <Thinking /> : null}
               {working && hasText && <Caret />}
@@ -429,7 +429,7 @@ export function ComposeAssistPanel({
               <Note tone="danger">
                 {assistErrorText(state.error)}
                 {assistErrorDetail(state.error) && (
-                  <span className="mt-0.5 block text-[12px] opacity-80">{assistErrorDetail(state.error)}</span>
+                  <span className="mt-0.5 block text-caption opacity-80">{assistErrorDetail(state.error)}</span>
                 )}
               </Note>
             )}
@@ -479,7 +479,7 @@ export function ComposeAssistPanel({
             </div>
           </div>
         )}
-        <p className="text-[11.5px] text-faint">{t("assist.compose.reviewNote")}</p>
+        <p className="text-caption text-faint">{t("assist.compose.reviewNote")}</p>
       </div>
     </section>
   );
@@ -490,7 +490,7 @@ function Note({ tone, children }: { tone: "warning" | "danger"; children: ReactN
     <p
       role={tone === "danger" ? "alert" : undefined}
       className={clsx(
-        "rounded-xl px-3 py-2 text-[13px] font-medium",
+        "rounded-xl px-3 py-2 text-meta font-medium",
         tone === "danger" ? "bg-danger-tint text-danger" : "bg-warning-tint text-warning",
       )}
     >
@@ -514,7 +514,7 @@ export function Thinking() {
     </span>
   );
   return (
-    <span className="inline-flex items-center gap-2 text-[13px] text-muted">
+    <span className="inline-flex items-center gap-2 text-meta text-muted">
       <NyuThinking fallback={dots} className="-my-1.5" />
       {t("assist.thinking")}
     </span>

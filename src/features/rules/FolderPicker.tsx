@@ -67,12 +67,12 @@ function FolderChoices({ accountId, onPick }: { accountId: string; onPick: (fold
           }}
           placeholder={t("move.search")}
           aria-label={t("move.search")}
-          className="h-10 w-full rounded-full border border-transparent bg-canvas pr-4 pl-10 text-[13.5px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+          className="h-10 w-full rounded-full border border-transparent bg-canvas pr-4 pl-10 text-body placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
       </div>
       <ul className="flex max-h-[min(420px,60vh)] flex-col gap-0.5 overflow-y-auto">
         {shown.length === 0 ? (
-          <li className="px-3 py-6 text-center text-[13px] text-muted">{t("move.empty")}</li>
+          <li className="px-3 py-6 text-center text-meta text-muted">{t("move.empty")}</li>
         ) : (
           shown.map((node) => {
             const Icon = folderIcon(node.folder);
@@ -81,7 +81,7 @@ function FolderChoices({ accountId, onPick }: { accountId: string; onPick: (fold
                 <button
                   type="button"
                   onClick={() => onPick(node.folder)}
-                  className="flex h-10 w-full items-center gap-2.5 rounded-xl pr-3 text-left text-[13.5px] hover:bg-pink-tint/60 focus-visible:bg-pink-tint/60 focus-visible:outline-none"
+                  className="flex h-10 w-full items-center gap-2.5 rounded-xl pr-3 text-left text-body hover:bg-pink-tint/60 focus-visible:bg-pink-tint/60 focus-visible:outline-none"
                   style={{ paddingLeft: 12 + (query ? 0 : node.depth * 16) }}
                 >
                   <Icon className="size-4 shrink-0 text-muted" aria-hidden />

@@ -16,10 +16,10 @@ export function DeleteContactQuestion() {
       {contact && (
         <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
           <NyuScene name="goodbye" className="w-36" />
-          <h2 className="text-[18px] font-extrabold text-balance">
+          <h2 className="text-section font-extrabold text-balance">
             {t("contacts.deleteTitle", { name: contact.displayName || t("contacts.nameless") })}
           </h2>
-          <p className="text-[13px] text-muted">{t("contacts.deleteBody")}</p>
+          <p className="text-meta text-muted">{t("contacts.deleteBody")}</p>
           <div className="flex flex-wrap justify-center gap-2 pt-1">
             <Button
               variant="danger"

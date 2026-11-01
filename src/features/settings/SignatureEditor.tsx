@@ -121,7 +121,7 @@ export function SignatureEditor({
               <button
                 key={placeholder}
                 type="button"
-                className="rounded-full border border-line px-2 py-0.5 font-mono text-[12px] text-muted hover:border-pink"
+                className="rounded-full border border-line px-2 py-0.5 font-mono text-caption text-muted hover:border-pink"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   editor.current?.focus();
@@ -182,7 +182,7 @@ export function SignatureEditor({
           onDrop={(event) => {
             if (!draggingInside.current) insertDroppedHtml(event, cleanSignatureHtml);
           }}
-          className="min-h-28 px-3 py-2 text-[14px] leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_img]:inline-block [&_img]:max-w-full [&_p]:min-h-[1.4em]"
+          className="min-h-28 px-3 py-2 text-body leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_img]:inline-block [&_img]:max-w-full [&_p]:min-h-[1.4em]"
         />
       </div>
       {!simple && (

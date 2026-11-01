@@ -59,7 +59,7 @@ export function LinkStatus() {
       role="status"
       style={{ left: area.left + 8, bottom: area.bottom + 8, maxWidth: Math.max(area.width - 16, 160) }}
       className={
-        "pointer-events-none fixed z-40 flex max-w-full min-w-0 flex-col gap-0.5 rounded-xl border px-3 py-1.5 text-[12px] shadow-float " +
+        "pointer-events-none fixed z-40 flex max-w-full min-w-0 flex-col gap-0.5 rounded-xl border px-3 py-1.5 text-caption shadow-float " +
         (danger ? "border-danger/40 bg-danger-tint text-danger" : "border-hairline bg-elevated text-ink")
       }
     >
@@ -89,10 +89,10 @@ export function LinkSheet() {
     >
       {sheet && (
         <div className="flex flex-col gap-3 px-5 pt-4 pb-6">
-          <h2 className="text-[15px] font-extrabold">{t("link.sheetTitle")}</h2>
+          <h2 className="text-reading font-extrabold">{t("link.sheetTitle")}</h2>
           <div className="rounded-2xl bg-canvas px-4 py-3 text-left">
             {sheet.kind === "mail" ? (
-              <span className="font-mono text-[12.5px] break-all">{visibleText(sheet.href)}</span>
+              <span className="font-mono text-meta break-all">{visibleText(sheet.href)}</span>
             ) : (
               <LinkAddress href={sheet.href} />
             )}

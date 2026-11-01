@@ -85,7 +85,7 @@ function ListHeader({ onMenu }: { onMenu?: () => void }) {
   return (
     <div className="flex items-center gap-1">
       {onMenu && <IconButton icon={Menu} label={t("contacts.menu")} onClick={onMenu} className="-ml-1" />}
-      <h1 className="min-w-0 flex-1 truncate text-[20px] leading-tight font-extrabold tracking-[-0.01em]">{title}</h1>
+      <h1 className="min-w-0 flex-1 truncate text-title leading-tight font-extrabold tracking-[-0.01em]">{title}</h1>
       {onMenu && <IconButton icon={UserPlus} label={t("contacts.newContact")} onClick={() => startNewContact()} />}
     </div>
   );
@@ -100,16 +100,16 @@ function DesktopContacts() {
 
   return (
     <div className="relative flex min-h-0 flex-1 gap-3 p-3">
-      {room && <ContactsSidebar className="min-h-0 w-[240px] shrink-0 rounded-[22px] border border-hairline" />}
+      {room && <ContactsSidebar className="min-h-0 w-[240px] shrink-0 rounded-2xl border border-hairline" />}
       <ContactList
         header={<ListHeader onMenu={room ? undefined : () => setDrawerOpen(true)} />}
         className={clsx(
-          "rounded-[22px] border border-hairline",
+          "rounded-2xl border border-hairline",
           selectedId ? "hidden w-[340px] shrink-0 lg:flex" : "w-full max-w-[420px] shrink-0 max-lg:max-w-none",
         )}
       />
       <ContactDetail
-        className={clsx("min-w-0 flex-1 rounded-[22px] border border-hairline", !selectedId && "max-lg:hidden")}
+        className={clsx("min-w-0 flex-1 rounded-2xl border border-hairline", !selectedId && "max-lg:hidden")}
         onBack={() => useContactsUi.getState().select(null)}
       />
 
@@ -119,10 +119,10 @@ function DesktopContacts() {
             type="button"
             aria-label={t("common.close")}
             onClick={() => setDrawerOpen(false)}
-            className="absolute inset-0 animate-fade bg-[#1c1420]/30"
+            className="absolute inset-0 animate-fade bg-backdrop"
           />
           <ContactsSidebar
-            className="relative w-[280px] animate-slide-up rounded-r-[22px] bg-surface shadow-float"
+            className="relative w-[280px] animate-slide-up rounded-r-2xl bg-surface shadow-float"
             onNavigate={() => setDrawerOpen(false)}
           />
         </div>
@@ -152,9 +152,9 @@ function PhoneContacts() {
             type="button"
             aria-label={t("common.close")}
             onClick={() => setDrawerOpen(false)}
-            className="absolute inset-0 animate-fade bg-[#1c1420]/40"
+            className="absolute inset-0 animate-fade bg-backdrop"
           />
-          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-[24px] bg-surface shadow-float">
+          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] animate-[uwu-drawer_220ms_cubic-bezier(0.2,0.9,0.3,1)] overflow-hidden rounded-r-2xl bg-surface shadow-float">
             <ContactsSidebar className="h-full pt-3" onNavigate={() => setDrawerOpen(false)} />
           </div>
         </div>

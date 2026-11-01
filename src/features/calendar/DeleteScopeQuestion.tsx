@@ -28,15 +28,15 @@ function ScopeChoice({ title, onCancel }: { title: string; onCancel: () => void 
       }}
     >
       <div>
-        <h2 className="text-[18px] font-extrabold">{t("calendar.deleteScope.title")}</h2>
-        <p className="truncate text-[13px] text-muted">{title || t("calendar.untitled")}</p>
+        <h2 className="text-section font-extrabold">{t("calendar.deleteScope.title")}</h2>
+        <p className="truncate text-meta text-muted">{title || t("calendar.untitled")}</p>
       </div>
       <fieldset className="flex flex-col gap-1">
         <legend className="sr-only">{t("calendar.deleteScope.title")}</legend>
         {(["occurrence", "series"] as const).map((option) => (
           <label
             key={option}
-            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] hover:bg-pink-tint/50"
+            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-body hover:bg-pink-tint/50"
           >
             <input
               type="radio"
