@@ -22,7 +22,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
+import { ListLabelChips } from "../assist/LabelChips";
 import { ThreadAssistButton, ThreadSummary } from "../assist/ReaderAssist";
+import { useVerificationCodes } from "../codes/codes";
+import { CodeHint } from "../codes/VerificationCodeBar";
 import { MessageView } from "../mail/MessageView";
 import { requestMove } from "../mail/selection";
 import { mailRights } from "../mail/rights";
@@ -58,6 +61,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
   const { data: accounts = [] } = useAccounts();
   const { data: folders = [] } = useFolders();
   const actions = useMessageActions();
+  const codes = useVerificationCodes();
   const [menuOpen, setMenuOpen] = useState(false);
   const [barHidden, setBarHidden] = useState(false);
   const lastScroll = useRef(0);
@@ -138,6 +142,9 @@ export function MobileReader({ threadId }: { threadId: string }) {
     all.map((m) => m.folderId),
     folders,
   );
+  const code =
+    codes.find((entry) => all.some((message) => message.id === entry.emailId)) ??
+    codes.find((entry) => entry.threadId === data.thread.id);
 
   return (
     <section className="flex h-full min-w-0 flex-col bg-canvas" aria-label={data.thread.subject}>
@@ -230,10 +237,21 @@ export function MobileReader({ threadId }: { threadId: string }) {
           lastScroll.current = top;
         }}
       >
-        <div className="flex flex-col gap-2.5 px-2.5 pt-3 pb-24">
+        <div className="flex flex-col gap-2.5 px-2.5 pt-3 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+          {(code || (data.thread.keywords?.length ?? 0) > 0) && (
+            <div className="flex flex-wrap items-center gap-1.5 px-1.5">
+              <ListLabelChips keywords={data.thread.keywords} />
+              {code && (
+                <span className="inline-flex h-6 items-center rounded-full bg-pink-tint px-2.5 text-caption font-bold text-pink-ink">
+                  {t("codes.tag")}
+                </span>
+              )}
+            </div>
+          )}
           <h2 className="selectable px-1.5 pb-1 text-title leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>
+          {code && <CodeHint code={code} />}
           <ThreadSummary threadId={latest.threadId} count={all.length} />
           {hiddenCount > 1 && (
             <button
@@ -258,7 +276,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
 
       <nav
         className={clsx(
-          "fixed inset-x-0 bottom-0 z-10 flex border-t border-hairline bg-surface/95 px-1 pt-1 pb-1.5 backdrop-blur transition-transform duration-200",
+          "fixed inset-x-0 bottom-0 z-10 flex border-t border-hairline bg-surface/95 px-1 pt-1 pb-[calc(0.375rem+env(safe-area-inset-bottom))] backdrop-blur transition-transform duration-200",
           barHidden && "translate-y-full",
         )}
         aria-label={t("mobile.actions")}
