@@ -1,25 +1,27 @@
 import clsx from "clsx";
 import {
   Archive,
+  Check,
   FolderInput,
+  ListFilter as FilterIcon,
   MailOpen,
-  Menu,
-  RefreshCw,
-  Search,
+  Menu as MenuIcon,
   ShieldAlert,
   ShieldCheck,
   Star,
   Tag,
-  Tags,
   Trash,
   Trash2,
   X,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { ListFilter, ThreadSummary } from "@/backend/types";
 import type { SceneName } from "@/components/nyu/scenes";
 import { Button, IconButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Segmented } from "@/components/ui/Field";
+import { Menu } from "@/components/ui/Menu";
 import { Pill } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
 import { flattenThreads, useAccounts, useMessageActions, useThreadActions, useVisibleAccounts } from "@/lib/queries";
@@ -28,15 +30,30 @@ import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
 import { chipStyle } from "../assist/labels";
 import { useAssistLabels } from "../assist/useAssist";
+import { useVerificationCodes, isActive } from "../codes/codes";
+import { VerificationCodeBar } from "../codes/VerificationCodeBar";
 import { openDraftThread } from "../compose/openDraft";
 import { LabelDot, ThreadLabelMenu } from "../labels/LabelMenus";
 import { groupByLabel } from "../labels/logic";
 import { useListThreads } from "../labels/useLabels";
 import { useSelectionActions } from "./selection";
+import { formatDayHeading, groupByDay } from "./dayGroups";
 import { ThreadRow } from "./ThreadRow";
 import { useViewInfo } from "./view";
 
-const FILTERS: ListFilter[] = ["all", "unread", "flagged", "attachments"];
+/** In the switch beside the title; the others sit in the menu. */
+const SEGMENTS: ListFilter[] = ["all", "unread"];
+const MORE_FILTERS: ListFilter[] = ["flagged", "attachments"];
+
+/** A menu entry with a check mark in front when it is on. */
+function Checked({ on, children }: { on: boolean; children: ReactNode }) {
+  return (
+    <span className="flex items-center gap-2">
+      <Check className={clsx("size-4 shrink-0 text-pink", !on && "invisible")} aria-hidden />
+      {children}
+    </span>
+  );
+}
 
 const EMPTY_SCENES = {
   offline: "offline",
@@ -45,20 +62,20 @@ const EMPTY_SCENES = {
   other: "emptyFolder",
 } as const satisfies Record<string, SceneName>;
 
-export const SEARCH_INPUT_ID = "uwu-search";
-
 interface ThreadListProps {
   variant: "simple" | "pro";
   className?: string;
+  /** Shows the button for the folder drawer, when the folders don't fit beside the list. */
+  showMenu?: boolean;
 }
 
-export function ThreadList({ variant, className }: ThreadListProps) {
-  const { t } = useT();
+export function ThreadList({ variant, className, showMenu = false }: ThreadListProps) {
+  const { t, i18n } = useT();
   const view = useUi((s) => s.view);
   const filter = useUi((s) => s.filter);
   const search = useUi((s) => s.search);
   const selectedThreadId = useUi((s) => s.selectedThreadId);
-  const { setFilter, setSearch, selectThread, setVisibleThreadIds, setFolderDrawerOpen } = useUi.getState();
+  const { setFilter, selectThread, setVisibleThreadIds, setFolderDrawerOpen } = useUi.getState();
   const info = useViewInfo(view);
   const { data: accounts = [] } = useAccounts();
   const { accounts: shown } = useVisibleAccounts();
@@ -79,11 +96,9 @@ export function ThreadList({ variant, className }: ThreadListProps) {
   const cursor = useUi((s) => s.selectionCursor);
   const setAnchor = useUi((s) => s.setSelectionAnchor);
 
-  const [draft, setDraft] = useState(search);
-  useEffect(() => {
-    const timer = setTimeout(() => setSearch(draft), 180);
-    return () => clearTimeout(timer);
-  }, [draft, setSearch]);
+  const codes = useVerificationCodes();
+  const codeFor = (thread: ThreadSummary) =>
+    codes.find((code) => code.threadId === thread.id && isActive(code, Date.now()));
 
   const query = useListThreads(view, filter, search);
   const loaded = flattenThreads(query.data?.pages);
@@ -146,6 +161,7 @@ export function ThreadList({ variant, className }: ThreadListProps) {
       inTrash={info.isTrash}
       inJunk={info.isJunk}
       rights={info.rights}
+      code={codeFor(thread)}
       onContextMenu={(event) => openRowMenu(thread, event)}
       onSelect={(event) => {
         const anchor = useUi.getState().selectionAnchor ?? selectedThreadId;
@@ -176,8 +192,13 @@ export function ThreadList({ variant, className }: ThreadListProps) {
     <section className={clsx("flex h-full min-w-0 flex-col bg-surface", className)} aria-label={info.title}>
       <header className={clsx("flex flex-col gap-3 pt-4", variant === "pro" ? "px-5 pb-3" : "px-4 pb-2")}>
         <div className="flex items-center gap-2">
-          {variant === "simple" && (
-            <IconButton icon={Menu} label={t("nav.menu")} onClick={() => setFolderDrawerOpen(true)} className="-ml-1" />
+          {showMenu && (
+            <IconButton
+              icon={MenuIcon}
+              label={t("nav.menu")}
+              onClick={() => setFolderDrawerOpen(true)}
+              className="-ml-1"
+            />
           )}
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-title leading-tight font-extrabold tracking-[-0.01em]">{info.title}</h1>
@@ -194,55 +215,55 @@ export function ThreadList({ variant, className }: ThreadListProps) {
               {t("folders.emptyShort")}
             </Button>
           )}
-          {labels.length > 0 && (
-            <IconButton
-              icon={Tags}
-              label={grouped ? t("labels.group.off") : t("labels.group.on")}
-              active={grouped}
-              aria-pressed={grouped}
-              onClick={() => updateSettings({ groupByLabel: !grouped })}
-            />
-          )}
-          <IconButton
-            icon={RefreshCw}
-            label={t("list.refresh")}
-            className={clsx(refreshing && "[&>svg]:animate-spin")}
-            onClick={async () => {
-              setRefreshing(true);
-              await refresh();
-              setRefreshing(false);
-            }}
+          <Segmented
+            label={t("list.filterMenu")}
+            value={filter}
+            onChange={setFilter}
+            options={SEGMENTS.map((item) => ({ value: item, label: t(`filter.${item}`) }))}
           />
-        </div>
-
-        <div className="relative">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-            aria-hidden
+          <Menu
+            align="end"
+            items={[
+              ...MORE_FILTERS.map((item) => ({
+                label: <Checked on={filter === item}>{t(`filter.${item}`)}</Checked>,
+                onSelect: () => setFilter(filter === item ? "all" : item),
+                group: t("list.filterGroup"),
+              })),
+              ...(labels.length > 0
+                ? [
+                    {
+                      label: <Checked on={grouped}>{t("labels.group.on")}</Checked>,
+                      onSelect: () => updateSettings({ groupByLabel: !grouped }),
+                      group: t("list.viewGroup"),
+                    },
+                  ]
+                : []),
+              {
+                label: (
+                  <span className="flex items-center gap-2">
+                    <span className="size-4 shrink-0" aria-hidden />
+                    {t("list.refresh")}
+                  </span>
+                ),
+                onSelect: async () => {
+                  setRefreshing(true);
+                  await refresh();
+                  setRefreshing(false);
+                },
+                group: t("list.viewGroup"),
+              },
+            ]}
+            trigger={({ open, toggle, ...aria }) => (
+              <IconButton
+                {...aria}
+                icon={FilterIcon}
+                label={t("list.filterMenu")}
+                active={MORE_FILTERS.includes(filter) || open}
+                className={clsx(refreshing && "animate-pulse")}
+                onClick={toggle}
+              />
+            )}
           />
-          <input
-            id={SEARCH_INPUT_ID}
-            type="search"
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                setDraft("");
-                event.currentTarget.blur();
-              }
-            }}
-            placeholder={t("list.search")}
-            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-10 pl-10 text-body placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
-          />
-          {draft && (
-            <IconButton
-              icon={X}
-              size="sm"
-              label={t("list.clearSearch")}
-              onClick={() => setDraft("")}
-              className="absolute top-1/2 right-1 -translate-y-1/2"
-            />
-          )}
         </div>
 
         {checked.length > 0 ? (
@@ -313,32 +334,39 @@ export function ThreadList({ variant, className }: ThreadListProps) {
             )}
           </div>
         ) : (
-          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="toolbar" aria-label={t("list.search")}>
-            {FILTERS.map((item) => (
-              <Pill key={item} active={filter === item} onClick={() => setFilter(item)}>
-                {t(`filter.${item}`)}
-              </Pill>
-            ))}
-            {chipLabels.length > 0 && <span className="mx-0.5 my-1.5 w-px shrink-0 bg-line" aria-hidden />}
-            {chipLabels.map((label) => {
-              const active = labelFilter.includes(label.keyword);
-              return (
-                <Pill
-                  key={label.id}
-                  active={active}
-                  title={t("labels.filter.title", { name: label.name })}
-                  onClick={() => toggleLabelFilter(label.keyword)}
-                  style={active ? chipStyle(label.color) : undefined}
-                  className={clsx(active && label.color && "border")}
-                >
-                  <LabelDot color={label.color} />
-                  {label.name}
+          (MORE_FILTERS.includes(filter) || chipLabels.length > 0) && (
+            <div
+              className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+              role="toolbar"
+              aria-label={t("list.filterMenu")}
+            >
+              {MORE_FILTERS.includes(filter) && (
+                <Pill active onClick={() => setFilter("all")} title={t("list.clearFilter")}>
+                  {t(`filter.${filter}`)}
+                  <X className="size-3.5" aria-hidden />
                 </Pill>
-              );
-            })}
-          </div>
+              )}
+              {chipLabels.map((label) => {
+                const active = labelFilter.includes(label.keyword);
+                return (
+                  <Pill
+                    key={label.id}
+                    active={active}
+                    title={t("labels.filter.title", { name: label.name })}
+                    onClick={() => toggleLabelFilter(label.keyword)}
+                    style={active ? chipStyle(label.color) : undefined}
+                    className={clsx(active && label.color && "border")}
+                  >
+                    <LabelDot color={label.color} />
+                    {label.name}
+                  </Pill>
+                );
+              })}
+            </div>
+          )
         )}
       </header>
+      <VerificationCodeBar codes={codes} />
 
       <div
         ref={listRef}
@@ -361,7 +389,16 @@ export function ThreadList({ variant, className }: ThreadListProps) {
           />
         ) : (
           <>
-            {(sections ?? [{ label: undefined, threads }]).map((section) => (
+            {sections === null &&
+              groupByDay(threads).map((group) => (
+                <Fragment key={group.key}>
+                  <h2 className="sticky top-0 z-10 bg-surface/95 px-3 pt-3 pb-1.5 text-caption font-bold tracking-wide text-muted uppercase backdrop-blur-sm">
+                    {group.day === "date" ? formatDayHeading(group.date, i18n.language) : t(`common.${group.day}`)}
+                  </h2>
+                  {group.threads.map((thread) => renderRow(thread))}
+                </Fragment>
+              ))}
+            {(sections ?? []).map((section) => (
               <Fragment key={section.label === undefined ? "all" : (section.label?.id ?? "none")}>
                 {section.label !== undefined && (
                   <h2 className="sticky top-0 z-10 flex items-center gap-2 bg-surface/95 px-3 pt-3 pb-1.5 text-caption font-bold tracking-wide text-muted uppercase backdrop-blur-sm">

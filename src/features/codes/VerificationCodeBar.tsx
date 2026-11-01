@@ -129,7 +129,7 @@ export function RowCodeChip({ code, selected }: { code: VerificationCode; select
   return (
     <span
       className={clsx(
-        "mr-1.5 inline-flex shrink-0 items-center rounded-md px-1.5 font-mono text-caption font-bold tabular-nums",
+        "inline-flex shrink-0 items-center rounded-md px-1.5 font-mono text-caption font-bold tabular-nums",
         selected ? "bg-surface text-pink-ink" : "bg-pink-tint text-pink-ink",
       )}
     >

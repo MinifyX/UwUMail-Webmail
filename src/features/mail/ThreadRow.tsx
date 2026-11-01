@@ -8,6 +8,8 @@ import { displayName, formatListDate } from "@/lib/format";
 import type { useThreadActions } from "@/lib/queries";
 import type { ListDensity } from "@/state/settings";
 import { ListLabelChips } from "../assist/LabelChips";
+import type { VerificationCode } from "../codes/codes";
+import { RowCodeChip } from "../codes/VerificationCodeBar";
 import { THREAD_DRAG_TYPE } from "./selection";
 import type { MailRights } from "./rights";
 
@@ -32,6 +34,8 @@ interface ThreadRowProps {
   inJunk?: boolean;
   /** What may be done here; everything when left out (see ./rights). */
   rights?: MailRights;
+  /** A valid code from this conversation, shown before the subject. */
+  code?: VerificationCode;
 }
 
 function QuickAction({
@@ -81,6 +85,7 @@ export function ThreadRow({
   inTrash = false,
   inJunk = false,
   rights,
+  code,
 }: ThreadRowProps) {
   const { t, i18n } = useT();
   const compact = density === "compact";
@@ -187,6 +192,7 @@ export function ThreadRow({
 
         {compact ? (
           <span className="flex min-w-0 items-center gap-1.5 text-meta">
+            {code && <RowCodeChip code={code} selected={selected} />}
             <ListLabelChips keywords={thread.keywords} />
             <span className="min-w-0 truncate">
               <span className={clsx(unread ? "font-semibold text-ink" : "text-ink/80")}>{subject}</span>
@@ -196,6 +202,7 @@ export function ThreadRow({
         ) : (
           <>
             <span className="flex min-w-0 items-center gap-1.5">
+              {code && <RowCodeChip code={code} selected={selected} />}
               <ListLabelChips keywords={thread.keywords} />
               <span className={clsx("min-w-0 truncate text-body", unread ? "font-semibold text-ink" : "text-ink/80")}>
                 {subject}
