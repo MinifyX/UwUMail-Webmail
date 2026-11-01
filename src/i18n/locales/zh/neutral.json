@@ -1840,5 +1840,34 @@
   "font": {
     "system": "系统字体",
     "sample": "你好 – 10:30 开会"
+  },
+  "codes": {
+    "bar": "验证码",
+    "tag": "验证码",
+    "link": "登录链接",
+    "open": "打开",
+    "copy": "复制验证码",
+    "copied": "已复制验证码 {{code}}",
+    "copyFailed": "无法复制验证码。",
+    "remaining": "剩余 {{time}}",
+    "noAutofill": "不自动填充",
+    "noAutofillHint": "从邮件正文识别，来源未确认：不会自动填入。",
+    "purpose": {
+      "login": "登录",
+      "signup": "注册",
+      "confirm-email": "确认邮箱",
+      "reset-password": "重置密码",
+      "confirm-action": "确认操作",
+      "other": "确认"
+    },
+    "hint": {
+      "title": "{{origin}} 的验证码 {{code}} · 剩余 {{time}}",
+      "linkTitle": "{{origin}} 的登录链接 · 剩余 {{time}}",
+      "signed": "来源已签名（Verification-Info，DKIM 已验证）。可在 {{origin}} 上自动填充。",
+      "signedNoAutofill": "来源已签名（Verification-Info，DKIM 已验证）。",
+      "heuristic": "从正文识别。来源未确认，因此不会自动填入。",
+      "link": "来源已签名。链接请自行打开。",
+      "expired": "此验证码已过期。"
+    }
   }
 }

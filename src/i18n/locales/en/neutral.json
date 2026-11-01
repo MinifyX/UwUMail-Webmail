@@ -1909,5 +1909,34 @@
   "font": {
     "system": "System font",
     "sample": "Hi – meeting at 10:30"
+  },
+  "codes": {
+    "bar": "Verification codes",
+    "tag": "Code",
+    "link": "Sign-in link",
+    "open": "Open",
+    "copy": "Copy code",
+    "copied": "Code {{code}} copied",
+    "copyFailed": "The code couldn't be copied.",
+    "remaining": "{{time}} left",
+    "noAutofill": "No autofill",
+    "noAutofillHint": "Read from the mail text, origin not confirmed: never filled in automatically.",
+    "purpose": {
+      "login": "Sign-in",
+      "signup": "Sign-up",
+      "confirm-email": "Confirm email",
+      "reset-password": "Reset password",
+      "confirm-action": "Confirm action",
+      "other": "Confirmation"
+    },
+    "hint": {
+      "title": "Code {{code}} for {{origin}} · {{time}} left",
+      "linkTitle": "Sign-in link for {{origin}} · {{time}} left",
+      "signed": "Signed origin (Verification-Info, DKIM checked). Autofill on {{origin}} is possible.",
+      "signedNoAutofill": "Signed origin (Verification-Info, DKIM checked).",
+      "heuristic": "Read from the text. The origin isn't confirmed, so it's never filled in automatically.",
+      "link": "Signed origin. You open links yourself.",
+      "expired": "This code has expired."
+    }
   }
 }

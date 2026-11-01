@@ -1909,5 +1909,34 @@
   "font": {
     "system": "Systeemlettertype",
     "sample": "Hoi – afspraak om 10:30"
+  },
+  "codes": {
+    "bar": "Verificatiecodes",
+    "tag": "Code",
+    "link": "Inloglink",
+    "open": "Openen",
+    "copy": "Code kopiëren",
+    "copied": "Code {{code}} gekopieerd",
+    "copyFailed": "De code kon niet worden gekopieerd.",
+    "remaining": "nog {{time}}",
+    "noAutofill": "Geen autofill",
+    "noAutofillHint": "Uit de mailtekst gehaald, herkomst niet bevestigd: wordt nooit automatisch ingevuld.",
+    "purpose": {
+      "login": "Inloggen",
+      "signup": "Registratie",
+      "confirm-email": "E-mail bevestigen",
+      "reset-password": "Wachtwoord herstellen",
+      "confirm-action": "Actie bevestigen",
+      "other": "Bevestiging"
+    },
+    "hint": {
+      "title": "Code {{code}} voor {{origin}} · nog {{time}}",
+      "linkTitle": "Inloglink voor {{origin}} · nog {{time}}",
+      "signed": "Ondertekende herkomst (Verification-Info, DKIM gecontroleerd). Autofill op {{origin}} mogelijk.",
+      "signedNoAutofill": "Ondertekende herkomst (Verification-Info, DKIM gecontroleerd).",
+      "heuristic": "Uit de tekst gehaald. Herkomst niet bevestigd, dus geen automatisch invullen.",
+      "link": "Ondertekende herkomst. Links open je zelf.",
+      "expired": "Deze code is verlopen."
+    }
   }
 }

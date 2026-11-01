@@ -1976,5 +1976,34 @@
   "font": {
     "system": "Police du système",
     "sample": "Coucou – rendez-vous à 10:30"
+  },
+  "codes": {
+    "bar": "Codes de vérification",
+    "tag": "Code",
+    "link": "Lien de connexion",
+    "open": "Ouvrir",
+    "copy": "Copier le code",
+    "copied": "Code {{code}} copié",
+    "copyFailed": "Impossible de copier le code.",
+    "remaining": "encore {{time}}",
+    "noAutofill": "Pas de remplissage auto",
+    "noAutofillHint": "Lu dans le texte du mail, origine non confirmée : jamais inséré automatiquement.",
+    "purpose": {
+      "login": "Connexion",
+      "signup": "Inscription",
+      "confirm-email": "Confirmer l’e-mail",
+      "reset-password": "Réinitialiser le mot de passe",
+      "confirm-action": "Confirmer une action",
+      "other": "Confirmation"
+    },
+    "hint": {
+      "title": "Code {{code}} pour {{origin}} · encore {{time}}",
+      "linkTitle": "Lien de connexion pour {{origin}} · encore {{time}}",
+      "signed": "Origine signée (Verification-Info, DKIM vérifié). Remplissage auto possible sur {{origin}}.",
+      "signedNoAutofill": "Origine signée (Verification-Info, DKIM vérifié).",
+      "heuristic": "Lu dans le texte. Origine non confirmée, donc pas d’insertion automatique.",
+      "link": "Origine signée. Tu ouvres les liens toi-même.",
+      "expired": "Ce code a expiré."
+    }
   }
 }

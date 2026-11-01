@@ -1840,5 +1840,34 @@
   "font": {
     "system": "システムフォント",
     "sample": "こんにちは – 10:30 に会議"
+  },
+  "codes": {
+    "bar": "確認コード",
+    "tag": "コード",
+    "link": "ログインリンク",
+    "open": "開く",
+    "copy": "コードをコピー",
+    "copied": "コード {{code}} をコピーしました",
+    "copyFailed": "コードをコピーできませんでした。",
+    "remaining": "残り {{time}}",
+    "noAutofill": "自動入力なし",
+    "noAutofillHint": "メール本文から検出。送信元が未確認のため自動入力しません。",
+    "purpose": {
+      "login": "ログイン",
+      "signup": "登録",
+      "confirm-email": "メールの確認",
+      "reset-password": "パスワードの再設定",
+      "confirm-action": "操作の確認",
+      "other": "確認"
+    },
+    "hint": {
+      "title": "{{origin}} のコード {{code}} · 残り {{time}}",
+      "linkTitle": "{{origin}} のログインリンク · 残り {{time}}",
+      "signed": "署名済みの送信元（Verification-Info、DKIM 確認済み）。{{origin}} で自動入力できます。",
+      "signedNoAutofill": "署名済みの送信元（Verification-Info、DKIM 確認済み）。",
+      "heuristic": "本文から検出しました。送信元が未確認のため自動入力しません。",
+      "link": "署名済みの送信元。リンクはご自身で開いてください。",
+      "expired": "このコードは期限切れです。"
+    }
   }
 }
