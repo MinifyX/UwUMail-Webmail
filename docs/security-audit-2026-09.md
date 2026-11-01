@@ -425,7 +425,7 @@ reproduction notes stay in the private notes file.
 | W-24 | Low           | Emptying the trash and deleting a folder answer to the key that opened them    | fixed in aeeeca2 |
 | W-25 | Low           | Saving rules switches off another active Sieve script without saying so        | fixed in 828dc1f |
 | W-26 | Informational | The server's Sieve engine reads `${…}` in rule text as a variable              | listed           |
-| W-27 | Informational | One malformed event or calendar from the server empties the calendar view      | fixed in 0.24.0   |
+| W-27 | Informational | One malformed event or calendar from the server empties the calendar view      | fixed in 0.24.0  |
 | W-28 | Informational | The German forward-address placeholder names a real domain                     | listed           |
 
 Nothing Critical or High. The new code adds no way to run script on the app's origin: calendar and
@@ -609,9 +609,9 @@ attached to a mail) and the CSS of a mail, which the image proxy now rewrites on
 | ---- | -------- | ---------------------------------------------------------------------------------------- | ---------------- |
 | WM-1 | Medium   | One crafted mail freezes the webmail tab (regex backtracking on the mail body)           | fixed in 9db330d |
 | WM-5 | Medium   | Once pictures are allowed, crafted CSS freezes the tab while the image proxy rewrites it | fixed in 84a8f88 |
-| WM-2 | Low      | Dark-mode recolouring re-requests allowed remote pictures with CORS, naming the origin   | fixed in 0.24.0   |
+| WM-2 | Low      | Dark-mode recolouring re-requests allowed remote pictures with CORS, naming the origin   | fixed in 0.24.0  |
 | WM-3 | Low      | Links in a mail are not guarded until the frame's `load`, which a sender can hold open   | mitigated        |
-| WM-4 | Low      | The dangerous-attachment list misses common executable types                             | fixed in 0.24.0   |
+| WM-4 | Low      | The dangerous-attachment list misses common executable types                             | fixed in 0.24.0  |
 
 Nothing Critical or High. Dark-mode recolouring does not load remote pictures before the reader
 allows them: it only picks up an image that already loaded in the frame, whose policy blocks remote
@@ -811,7 +811,7 @@ does, and the webmail doesn't see it.
 | W-35 | Low           | SVG sender pictures become `blob:` URLs of the webmail's own origin           | fixed in 5824931 |
 | W-36 | Informational | Person pictures follow the unauthenticated From                               | listed           |
 | W-37 | Informational | Picture URLs and queued lookups outlive the avatars that wanted them          | listed           |
-| W-38 | Informational | Card keys go into patch paths unescaped                                       | fixed in 0.24.0   |
+| W-38 | Informational | Card keys go into patch paths unescaped                                       | fixed in 0.24.0  |
 
 Nothing Critical, High or Medium. No path to running code on the app's origin was found in the
 new code: contact and event text is React text, a contact photo reaches the page only as a
