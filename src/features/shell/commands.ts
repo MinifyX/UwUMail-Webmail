@@ -41,7 +41,7 @@ import { startNewContact } from "../contacts/state";
 import { markAllRead, viewScope } from "../mail/markAllRead";
 import { requestMove } from "../mail/selection";
 import { requestSnooze } from "../mail/snooze";
-import { SEARCH_INPUT_ID } from "../mail/ThreadList";
+import { focusSearch } from "./search";
 
 export interface Command {
   id: string;
@@ -101,7 +101,7 @@ export function buildCommands(
       title: t("shortcuts.search"),
       icon: Search,
       keys: ["/"],
-      run: () => document.getElementById(SEARCH_INPUT_ID)?.focus(),
+      run: focusSearch,
     },
     {
       id: "reply",

@@ -68,7 +68,7 @@ export function NotificationSettings() {
         />
         {quiet.enabled && (
           <>
-            <div className="flex flex-wrap items-center gap-2 text-[13.5px]">
+            <div className="flex flex-wrap items-center gap-2 text-body">
               <label className="flex items-center gap-2">
                 {t("notify.from")}
                 <TextInput
@@ -104,7 +104,7 @@ export function NotificationSettings() {
                     aria-pressed={on}
                     onClick={() => toggleDay(day)}
                     className={clsx(
-                      "h-8 min-w-11 rounded-full px-3 text-[12.5px] font-semibold transition-colors",
+                      "h-8 min-w-11 rounded-full px-3 text-meta font-semibold transition-colors",
                       on ? "bg-pink-solid text-on-pink" : "bg-canvas text-muted hover:text-ink",
                     )}
                   >
@@ -113,7 +113,7 @@ export function NotificationSettings() {
                 );
               })}
             </div>
-            {quiet.days.length === 0 && <p className="text-[12.5px] text-muted">{t("notify.noDays")}</p>}
+            {quiet.days.length === 0 && <p className="text-meta text-muted">{t("notify.noDays")}</p>}
           </>
         )}
       </div>

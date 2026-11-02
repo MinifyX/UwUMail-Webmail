@@ -32,7 +32,7 @@ export function BlockedSenders() {
   return (
     <Row label={t("settings.blockedSenders")} description={t("settings.blockedSendersDesc")}>
       {blocked.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13px] text-muted">
+        <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-meta text-muted">
           {t("settings.blockedSendersEmpty")}
         </p>
       ) : (
@@ -41,8 +41,8 @@ export function BlockedSenders() {
             <li key={keyOf(sender)} className="flex items-center gap-3 rounded-xl py-1 pr-1 pl-3 hover:bg-elevated">
               <Ban className="size-4 shrink-0 text-faint" aria-hidden />
               <span className="min-w-0 flex-1">
-                <span className="selectable block truncate text-[13.5px]">{sender.entry}</span>
-                <span className="block truncate text-[12px] text-muted">{where(sender)}</span>
+                <span className="selectable block truncate text-body">{sender.entry}</span>
+                <span className="block truncate text-caption text-muted">{where(sender)}</span>
               </span>
               <IconButton
                 icon={X}

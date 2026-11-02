@@ -67,8 +67,8 @@ export function Templates() {
           ) : (
             <div key={id} className="flex items-center gap-2 rounded-xl border border-hairline px-3 py-2">
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13.5px] font-semibold">{template.name}</span>
-                <span className="block truncate text-[12px] text-muted">
+                <span className="block truncate text-body font-semibold">{template.name}</span>
+                <span className="block truncate text-caption text-muted">
                   {template.subject || htmlToPlainText(cleanTemplateHtml(template.html)).slice(0, 120)}
                 </span>
               </span>
@@ -197,7 +197,7 @@ function TemplateEditor({
               key={placeholder}
               type="button"
               title={t(`templates.placeholder.${placeholder}`)}
-              className="rounded-full border border-line px-2 py-0.5 font-mono text-[12px] text-muted hover:border-pink"
+              className="rounded-full border border-line px-2 py-0.5 font-mono text-caption text-muted hover:border-pink"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
                 editor.current?.focus();
@@ -240,7 +240,7 @@ function TemplateEditor({
           onDrop={(event) => {
             if (!draggingInside.current) insertDroppedHtml(event, cleanTemplateHtml);
           }}
-          className="min-h-28 px-3 py-2 text-[14px] leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_img]:inline-block [&_img]:max-w-full [&_p]:min-h-[1.4em] [&_ul]:list-disc [&_ul]:pl-6"
+          className="min-h-28 px-3 py-2 text-body leading-relaxed outline-none empty:before:pointer-events-none empty:before:text-faint empty:before:content-[attr(data-placeholder)] [&_a]:text-pink-ink [&_a]:underline [&_img]:inline-block [&_img]:max-w-full [&_p]:min-h-[1.4em] [&_ul]:list-disc [&_ul]:pl-6"
         />
       </div>
       <div className="flex justify-end gap-2">

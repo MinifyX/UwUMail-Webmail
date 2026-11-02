@@ -19,7 +19,7 @@ export function AttachmentReminderDialog({
   return (
     <Dialog open={open} onClose={onClose} title={t("attachmentReminder.title")} width="sm">
       <div className="flex flex-col gap-4 px-6 pt-2 pb-6">
-        <p className="text-[14px]">{t("attachmentReminder.body")}</p>
+        <p className="text-body">{t("attachmentReminder.body")}</p>
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onSend}>
             {t("attachmentReminder.sendAnyway")}

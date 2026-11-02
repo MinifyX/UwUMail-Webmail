@@ -71,6 +71,10 @@ const DANGEROUS = new Set(
     // XHTML and XSLT render (and script) like a web page when opened in a browser. Plain xml is
     // left out: e-invoices (XRechnung, ZUGFeRD) come as .xml every day (security-audit W-44).
     "xht xsl xslt",
+    // Python scripts and bytecode, Access databases and projects, cabinets and update packages,
+    // Windows Script and VB project files, shell scraps, XAML browser apps and Internet shortcuts
+    // also run or install something when opened (security-audit WM-4).
+    "py pyw pyz pyzw pyc mdb mde accde ade adp cab msu ws vb vbp shb shs xbap website",
   ]
     .join(" ")
     .split(" "),

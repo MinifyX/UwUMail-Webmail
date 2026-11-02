@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { backend } from "@/backend/backend";
 import { useT } from "@/i18n";
 import { useIsPhone, useMediaQuery } from "@/lib/device";
+import { useBackLayer } from "@/lib/backStack";
 import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
 import { fitPanes, keyedWidth, PANE_LIMITS, type Pane } from "@/lib/paneSizes";
 import { useAccounts, useBackendEvents, useIdentities, useSignatures } from "@/lib/queries";
@@ -37,6 +38,7 @@ import { ThreadReader } from "../mail/ThreadReader";
 import { SettingsDialog } from "../settings/SettingsDialog";
 import { buildCommands } from "./commands";
 import { CommandPalette } from "./CommandPalette";
+import { IconRail, MoreScreen, PhoneTabBar, TopBar, useFrameHotkeys } from "./Frame";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 
 /** Keys that scroll the open mail from the list as well. */
@@ -46,8 +48,8 @@ const SCROLL_KEYS = [" ", "PageDown", "PageUp", "Home", "End"];
 const THREE_COLUMNS = "(min-width: 1100px)";
 /** Wide enough for list and reader side by side (Tailwind's `lg`). */
 const TWO_COLUMNS = "(min-width: 1024px)";
-/** The shell's padding on both sides and the handles between the columns, in pixels. */
-const CHROME = 24;
+/** The border around list and reader, and the handle right of the folders, in pixels. */
+const CHROME = 2;
 const HANDLE = 12;
 
 /** The width of an element, following it as the window changes. */
@@ -70,6 +72,7 @@ export function MailShell() {
   const selectedThreadId = useUi((s) => s.selectedThreadId);
   const drawerOpen = useUi((s) => s.folderDrawerOpen);
   const setDrawerOpen = useUi((s) => s.setFolderDrawerOpen);
+  const moreOpen = useUi((s) => s.moreOpen);
   const phone = useIsPhone();
   const roomForFolders = useMediaQuery(THREE_COLUMNS);
   const sideBySide = useMediaQuery(TWO_COLUMNS);
@@ -79,7 +82,7 @@ export function MailShell() {
   const widths =
     shellWidth === null
       ? stored
-      : fitPanes(stored, shellWidth - CHROME - HANDLE * (roomForFolders ? 2 : 1), roomForFolders);
+      : fitPanes(stored, shellWidth - CHROME - (roomForFolders ? HANDLE : 0), roomForFolders);
   useAccounts();
   useSnoozeRunner();
   usePushFilterSync();
@@ -116,7 +119,6 @@ export function MailShell() {
 
   const hotkeys = useMemo(() => {
     const map: HotkeyMap = {
-      "mod+k": () => useUi.getState().setPaletteOpen(true),
       j: () => useUi.getState().selectRelative(1),
       k: () => useUi.getState().selectRelative(-1),
       Escape: () => {
@@ -156,60 +158,91 @@ export function MailShell() {
   }, [commands, phone]);
   // The calendar and the contacts bring their own keys.
   useHotkeys(hotkeys, { enabled: section === "mail", repeat: ["j", "k", "ArrowDown", "ArrowUp", ...SCROLL_KEYS] });
+  useFrameHotkeys();
+  useBackLayer(phone && moreOpen, () => useUi.getState().setMoreOpen(false));
 
   return (
     <div className="flex h-full flex-col">
       {backend().kind === "demo" && (
-        <p className="shrink-0 bg-pink-tint py-1 text-center text-[12px] font-semibold text-pink-ink">
+        <p className="shrink-0 bg-pink-tint py-1 text-center text-caption font-semibold text-pink-ink">
           {t("status.demo")}
         </p>
       )}
 
-      {section === "calendar" ? (
-        <CalendarShell />
-      ) : section === "contacts" ? (
-        <ContactsShell />
-      ) : phone ? (
-        <MobileShell />
+      {phone ? (
+        <div className="flex min-h-0 flex-1 flex-col pt-[env(safe-area-inset-top)]">
+          <div className="relative min-h-0 flex-1">
+            {moreOpen ? (
+              <MoreScreen />
+            ) : section === "calendar" ? (
+              <CalendarShell />
+            ) : section === "contacts" ? (
+              <ContactsShell />
+            ) : (
+              <MobileShell />
+            )}
+          </div>
+          {!(section === "mail" && selectedThreadId && !moreOpen) && <PhoneTabBar />}
+        </div>
       ) : (
-        <div
-          ref={shellRef}
-          className="relative flex min-h-0 flex-1 p-3 max-lg:gap-3"
-          style={{ "--list-w": `${widths.list}px`, "--sidebar-w": `${widths.sidebar}px` } as CSSProperties}
-        >
-          {roomForFolders && (
-            <>
-              <MailboxNav className="min-h-0 w-(--sidebar-w) shrink-0 rounded-[22px] border border-hairline" />
-              <PaneHandle pane="sidebar" width={widths.sidebar} label={t("layout.resizeFolders")} />
-            </>
-          )}
-          <ThreadList
-            variant="simple"
-            className={clsx(
-              "shrink-0 rounded-[22px] border border-hairline lg:w-(--list-w)",
-              selectedThreadId ? "hidden lg:flex" : "w-full",
-            )}
-          />
-          {sideBySide && <PaneHandle pane="list" width={widths.list} label={t("layout.resizeList")} />}
-          <ThreadReader
-            variant="simple"
-            className={clsx(
-              "min-w-0 flex-1 overflow-hidden rounded-[22px] border border-hairline",
-              !selectedThreadId && "max-lg:hidden",
-            )}
-          />
+        <div className="flex min-h-0 flex-1">
+          <IconRail />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TopBar />
+            {section === "calendar" ? (
+              <CalendarShell />
+            ) : section === "contacts" ? (
+              <ContactsShell />
+            ) : (
+              <div
+                ref={shellRef}
+                className="relative flex min-h-0 flex-1 pr-3 pb-3"
+                style={{ "--list-w": `${widths.list}px`, "--sidebar-w": `${widths.sidebar}px` } as CSSProperties}
+              >
+                {roomForFolders && (
+                  <>
+                    <MailboxNav className="min-h-0 w-(--sidebar-w) shrink-0 overflow-y-auto" />
+                    <PaneHandle pane="sidebar" width={widths.sidebar} label={t("layout.resizeFolders")} />
+                  </>
+                )}
+                {/* List and reader share one card, with a hairline between them. */}
+                <div className="flex min-w-0 flex-1 overflow-hidden rounded-card border border-hairline bg-surface">
+                  <ThreadList
+                    variant="simple"
+                    showMenu={!roomForFolders}
+                    className={clsx(
+                      "shrink-0 border-hairline lg:w-(--list-w) lg:border-r",
+                      selectedThreadId ? "hidden lg:flex" : "w-full",
+                    )}
+                  />
+                  {sideBySide && (
+                    <PaneHandle
+                      pane="list"
+                      width={widths.list}
+                      label={t("layout.resizeList")}
+                      className="relative z-10 -mx-1.5"
+                    />
+                  )}
+                  <ThreadReader
+                    variant="simple"
+                    className={clsx("min-w-0 flex-1 overflow-hidden", !selectedThreadId && "max-lg:hidden")}
+                  />
+                </div>
 
-          {drawerOpen && !roomForFolders && (
-            <div className="absolute inset-0 z-30 flex" role="presentation">
-              <button
-                type="button"
-                aria-label={t("common.close")}
-                onClick={() => setDrawerOpen(false)}
-                className="absolute inset-0 animate-fade bg-[#1c1420]/30"
-              />
-              <MailboxNav className="relative w-[280px] animate-slide-up rounded-r-[22px] bg-surface shadow-float" />
-            </div>
-          )}
+                {drawerOpen && !roomForFolders && (
+                  <div className="absolute inset-0 z-30 flex" role="presentation">
+                    <button
+                      type="button"
+                      aria-label={t("common.close")}
+                      onClick={() => setDrawerOpen(false)}
+                      className="absolute inset-0 animate-fade bg-backdrop"
+                    />
+                    <MailboxNav className="relative w-[280px] animate-slide-up overflow-y-auto rounded-r-dialog bg-surface shadow-float" />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -240,13 +273,24 @@ export function MailShell() {
 }
 
 /** The handle right of a column, which drags it wider or narrower. */
-function PaneHandle({ pane, width, label }: { pane: Pane; width: number; label: string }) {
+function PaneHandle({
+  pane,
+  width,
+  label,
+  className,
+}: {
+  pane: Pane;
+  width: number;
+  label: string;
+  className?: string;
+}) {
   const setWidth = usePanes((s) => s.setWidth);
   const save = usePanes((s) => s.save);
   const reset = usePanes((s) => s.reset);
   return (
     <ResizeHandle
       label={label}
+      className={className}
       width={width}
       min={PANE_LIMITS[pane].min}
       max={PANE_LIMITS[pane].max}

@@ -114,7 +114,7 @@ export function TemplatesMenu({
   };
 
   const item =
-    "flex items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none";
+    "flex items-center gap-2.5 rounded-xl px-3 py-2 text-left text-meta font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none";
 
   return (
     <div ref={root} className="relative inline-flex">
@@ -139,10 +139,7 @@ export function TemplatesMenu({
         >
           {hasTemplates ? (
             <>
-              <p
-                role="presentation"
-                className="px-3 pt-2 pb-1 text-[11px] font-bold tracking-wide text-muted uppercase"
-              >
+              <p role="presentation" className="px-3 pt-2 pb-1 text-badge font-bold tracking-wide text-muted uppercase">
                 {t("templates.title")}
               </p>
               <input
@@ -158,7 +155,7 @@ export function TemplatesMenu({
                   const first = matches[0];
                   if (first) select(() => onPick(first[1]));
                 }}
-                className="mx-1 mb-1 h-8 rounded-lg border border-line bg-surface px-2.5 text-[13px] placeholder:text-faint focus:border-pink focus:outline-none"
+                className="mx-1 mb-1 h-8 rounded-lg border border-line bg-surface px-2.5 text-meta placeholder:text-faint focus:border-pink focus:outline-none"
               />
               {matches.map(([key, template]) => (
                 <button
@@ -172,10 +169,10 @@ export function TemplatesMenu({
                   <span className="min-w-0">{template.name}</span>
                 </button>
               ))}
-              {matches.length === 0 && <p className="px-3 py-2 text-[13px] text-muted">{t("templates.noMatch")}</p>}
+              {matches.length === 0 && <p className="px-3 py-2 text-meta text-muted">{t("templates.noMatch")}</p>}
             </>
           ) : (
-            <p role="presentation" className="px-3 pt-2 pb-1 text-[13px] text-muted">
+            <p role="presentation" className="px-3 pt-2 pb-1 text-meta text-muted">
               {t("templates.none")}
             </p>
           )}
@@ -245,7 +242,7 @@ function SaveTemplateForm({ subject, html, onClose }: { subject: string; html: (
         save();
       }}
     >
-      <p className="text-[13px] text-muted">{t("templates.saveDraftHint")}</p>
+      <p className="text-meta text-muted">{t("templates.saveDraftHint")}</p>
       <Field label={t("templates.name")}>
         {(fieldId) => (
           <TextInput

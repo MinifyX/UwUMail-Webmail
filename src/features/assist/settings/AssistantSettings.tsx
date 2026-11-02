@@ -39,8 +39,8 @@ export function AssistantSettings() {
           <Sparkles className="size-5" aria-hidden />
         </span>
         <div>
-          <p className="text-sm font-semibold">{t("assist.settings.title")}</p>
-          <p className="text-[13px] text-muted">{t("assist.settings.description")}</p>
+          <p className="text-body font-semibold">{t("assist.settings.title")}</p>
+          <p className="text-meta text-muted">{t("assist.settings.description")}</p>
         </div>
       </div>
       {available.length === 0 && (
@@ -114,7 +114,7 @@ function ChoiceRow({
   const provider = providers.find((entry) => entry.id === choice?.providerId);
   return (
     <div className="flex flex-col gap-1.5">
-      <p className="text-[13px] font-semibold text-muted">{label}</p>
+      <p className="text-meta font-semibold text-muted">{label}</p>
       <div className="flex flex-wrap gap-2">
         <Select
           aria-label={label}
@@ -163,8 +163,8 @@ function FeatureChoice({
   return (
     <div className="flex flex-col gap-2 rounded-xl bg-surface px-3 py-2.5 sm:flex-row sm:items-center">
       <div className="min-w-0 flex-1">
-        <p className="text-[13.5px] font-semibold">{t(`assist.feature.${feature}`)}</p>
-        <p className="truncate text-[12px] text-muted">
+        <p className="text-body font-semibold">{t(`assist.feature.${feature}`)}</p>
+        <p className="truncate text-caption text-muted">
           {effective
             ? t("assist.settings.effective", { provider: providerLabel(effective) })
             : t("assist.settings.effectiveNone")}
@@ -175,7 +175,7 @@ function FeatureChoice({
           aria-label={t("assist.settings.featureProvider", { feature: t(`assist.feature.${feature}`) })}
           value={choice?.providerId ?? ""}
           onChange={(event) => set(nextChoice(choice, { providerId: event.target.value }))}
-          className="min-w-[9rem] flex-1 [&_select]:h-9 [&_select]:text-[13px]"
+          className="min-w-[9rem] flex-1 [&_select]:h-9 [&_select]:text-meta"
         >
           <option value="">{t("assist.settings.asDefault")}</option>
           {providers.map((entry) => (

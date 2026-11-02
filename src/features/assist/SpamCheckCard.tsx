@@ -105,13 +105,13 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
   return (
     <section
       aria-label={t("assist.spam.title")}
-      className="flex animate-fade flex-col gap-3 rounded-[18px] border border-line bg-canvas px-4 py-3"
+      className="flex animate-fade flex-col gap-3 rounded-2xl border border-line bg-canvas px-4 py-3"
     >
       <header className="flex items-center gap-2">
         <ShieldQuestion className="size-4 shrink-0 text-pink" aria-hidden />
-        <h3 className="min-w-0 flex-1 truncate text-[13.5px] font-bold">{t("assist.spam.title")}</h3>
+        <h3 className="min-w-0 flex-1 truncate text-body font-bold">{t("assist.spam.title")}</h3>
         {saved && !state.working && (
-          <span className="hidden min-w-0 truncate text-[11.5px] font-semibold text-muted sm:inline">
+          <span className="hidden min-w-0 truncate text-caption font-semibold text-muted sm:inline">
             {providerLabel(saved)}
           </span>
         )}
@@ -125,11 +125,11 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
         </div>
       )}
       {!state.working && state.error !== null && (
-        <div role="alert" className="flex flex-wrap items-center gap-2 text-[13px] text-danger">
+        <div role="alert" className="flex flex-wrap items-center gap-2 text-meta text-danger">
           <span className="min-w-0 flex-1">
             {assistErrorText(state.error)}
             {assistErrorDetail(state.error) && (
-              <span className="block text-[12px] opacity-80">{assistErrorDetail(state.error)}</span>
+              <span className="block text-caption opacity-80">{assistErrorDetail(state.error)}</span>
             )}
           </span>
           <Button size="sm" variant="ghost" icon={RotateCcw} onClick={check}>
@@ -142,7 +142,7 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
       {!state.working && state.error === null && saved && <Signals result={saved} language={i18n.language} />}
 
       <footer className="flex flex-wrap items-center gap-2 border-t border-hairline pt-3">
-        <p className="min-w-[min(100%,12rem)] flex-1 text-[12px] text-muted">{t("assist.spam.decide")}</p>
+        <p className="min-w-[min(100%,12rem)] flex-1 text-caption text-muted">{t("assist.spam.decide")}</p>
         <Button
           size="sm"
           variant={
@@ -163,7 +163,7 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
           {t("reader.notSpam")}
         </Button>
       </footer>
-      {saved && !state.working && <p className="-mt-1 text-[11.5px] text-muted sm:hidden">{providerLabel(saved)}</p>}
+      {saved && !state.working && <p className="-mt-1 text-caption text-muted sm:hidden">{providerLabel(saved)}</p>}
     </section>
   );
 }
@@ -184,14 +184,14 @@ function Verdict({ result }: { result: AssistSpamCheck }) {
       <div className="flex flex-wrap items-center gap-3">
         <span
           className={clsx(
-            "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13.5px] font-extrabold",
+            "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-body font-extrabold",
             look.className,
           )}
         >
           <Icon className="size-4" aria-hidden />
           {t(`assist.spam.verdict.${result.verdict}`)}
         </span>
-        <span className="flex min-w-[9rem] flex-1 items-center gap-2 text-[12px] text-muted">
+        <span className="flex min-w-[9rem] flex-1 items-center gap-2 text-caption text-muted">
           <span
             className="h-1.5 max-w-40 flex-1 overflow-hidden rounded-full bg-line"
             role="meter"
@@ -206,36 +206,36 @@ function Verdict({ result }: { result: AssistSpamCheck }) {
           {sure}
         </span>
       </div>
-      <p className="text-[12.5px] text-muted">{t(`assist.spam.verdictHint.${result.verdict}`)}</p>
+      <p className="text-meta text-muted">{t(`assist.spam.verdictHint.${result.verdict}`)}</p>
       {result.modelVerdict && result.modelVerdict !== result.verdict && (
-        <p className="rounded-xl bg-surface px-3 py-2 text-[12.5px] text-muted">
+        <p className="rounded-xl bg-surface px-3 py-2 text-meta text-muted">
           {t("assist.spam.modelVerdict", { verdict: t(`assist.spam.verdict.${result.modelVerdict}`) })}
         </p>
       )}
       {reasons.length > 0 && (
         // The model's own words, kept apart from what the server found: they are not checked facts.
         <div className="flex flex-col gap-1.5 rounded-xl border border-dashed border-line px-3 py-2">
-          <p className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide text-muted uppercase">
+          <p className="flex items-center gap-1.5 text-badge font-bold tracking-wide text-muted uppercase">
             <Bot className="size-3.5" aria-hidden />
             <span>{t("assist.spam.modelWordsTitle")}</span>
           </p>
-          <p className="text-[11.5px] text-muted">{t("assist.spam.modelWordsHint")}</p>
-          <ul className="selectable flex flex-col gap-1.5 text-[13.5px]" aria-label={t("assist.spam.modelWordsTitle")}>
+          <p className="text-caption text-muted">{t("assist.spam.modelWordsHint")}</p>
+          <ul className="selectable flex flex-col gap-1.5 text-body" aria-label={t("assist.spam.modelWordsTitle")}>
             {reasons.map((reason, index) => (
               <li key={index} className="flex gap-2 leading-snug">
                 <span className={clsx("mt-[7px] size-1.5 shrink-0 rounded-full", look.bar)} aria-hidden />
                 <span className="min-w-0">
                   {reason.text}
                   {reason.quote ? (
-                    <span className="mt-0.5 flex items-start gap-1 text-[12px] text-muted">
-                      <Quote className="mt-0.5 size-3 shrink-0" aria-hidden />
+                    <span className="mt-0.5 flex items-start gap-1 text-caption text-muted">
+                      <Quote className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                       <span className="min-w-0 break-words italic">
                         <QuotedIn text={t("assist.spam.reasonQuote", { quote: QUOTE_SLOT })} quote={reason.quote} />
                       </span>
                     </span>
                   ) : (
                     reason.fact && (
-                      <span className="mt-0.5 block text-[12px] text-muted">{t("assist.spam.reasonFact")}</span>
+                      <span className="mt-0.5 block text-caption text-muted">{t("assist.spam.reasonFact")}</span>
                     )
                   )}
                 </span>
@@ -245,7 +245,7 @@ function Verdict({ result }: { result: AssistSpamCheck }) {
         </div>
       )}
       {result.droppedReasons > 0 && (
-        <p className="text-[12px] text-muted">{t("assist.spam.dropped", { count: result.droppedReasons })}</p>
+        <p className="text-caption text-muted">{t("assist.spam.dropped", { count: result.droppedReasons })}</p>
       )}
     </div>
   );
@@ -264,12 +264,12 @@ function Facts({ facts, language }: { facts: AssistSpamFacts; language: string }
   const good = facts.band === "clean" || facts.band === "leaningClean";
   return (
     <div className="flex flex-col gap-2">
-      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold tracking-wide text-muted uppercase">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-badge font-bold tracking-wide text-muted uppercase">
         <ClipboardList className="size-3.5" aria-hidden />
         <span>{t("assist.spam.factsTitle")}</span>
         <span
           className={clsx(
-            "rounded-full px-2 py-px text-[11px] font-bold tracking-normal normal-case",
+            "rounded-full px-2 py-px text-badge font-bold tracking-normal normal-case",
             bad ? "bg-danger-tint text-danger" : good ? "bg-success-tint text-success" : "bg-warning-tint text-warning",
           )}
         >
@@ -277,7 +277,7 @@ function Facts({ facts, language }: { facts: AssistSpamFacts; language: string }
         </span>
       </p>
       {evidence.length > 0 && (
-        <ul className="flex flex-col gap-1 text-[12.5px]" aria-label={t("assist.spam.factsTitle")}>
+        <ul className="flex flex-col gap-1 text-meta" aria-label={t("assist.spam.factsTitle")}>
           {evidence.map((item) => {
             const look = TONE_LOOK[item.tone];
             const Icon = look.icon;
@@ -287,13 +287,13 @@ function Facts({ facts, language }: { facts: AssistSpamFacts; language: string }
                 <span className="min-w-0 flex-1">
                   <span className="block">{t(`assist.spam.evidence.${item.code}`, { defaultValue: item.code })}</span>
                   {item.detail && (
-                    <span className="selectable block font-mono text-[11px] break-all text-muted">
+                    <span className="selectable block font-mono text-badge break-all text-muted">
                       {/* Mail text: its direction marks stay inside (WF-2). */}
                       <bdi>{item.detail}</bdi>
                     </span>
                   )}
                 </span>
-                <span className={clsx("shrink-0 font-mono text-[11px] font-semibold", look.className)}>
+                <span className={clsx("shrink-0 font-mono text-badge font-semibold", look.className)}>
                   {points.format(item.weight)}
                 </span>
               </li>
@@ -314,8 +314,8 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
   const over = share !== null && share >= 1;
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-[11px] font-bold tracking-wide text-muted uppercase">{t("assist.spam.serverTitle")}</p>
-      <dl className="grid gap-2 text-[12.5px] sm:grid-cols-2">
+      <p className="text-badge font-bold tracking-wide text-muted uppercase">{t("assist.spam.serverTitle")}</p>
+      <dl className="grid gap-2 text-meta sm:grid-cols-2">
         <Signal icon={KeyRound} label={t("assist.spam.auth")}>
           {noAuth ? (
             <span className="text-muted">{t("assist.spam.authNone")}</span>
@@ -327,7 +327,7 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
             </span>
           )}
           {auth.fromDomain && (
-            <span className="block text-[11.5px] text-muted">
+            <span className="block text-caption text-muted">
               {t("assist.spam.fromDomain", { domain: auth.fromDomain })}
             </span>
           )}
@@ -361,12 +361,12 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
           {result.signals.tests.length > 0 && (
             <span className="mt-1 flex flex-wrap gap-1" aria-label={t("assist.spam.tests")}>
               {result.signals.tests.slice(0, 12).map((test) => (
-                <code key={test} className="rounded-md bg-surface px-1.5 py-px font-mono text-[10.5px] text-muted">
+                <code key={test} className="rounded-md bg-surface px-1.5 py-px font-mono text-badge text-muted">
                   {test}
                 </code>
               ))}
               {result.signals.tests.length > 12 && (
-                <span className="text-[11px] text-muted">+{result.signals.tests.length - 12}</span>
+                <span className="text-badge text-muted">+{result.signals.tests.length - 12}</span>
               )}
             </span>
           )}
@@ -407,7 +407,7 @@ function Signal({ icon: Icon, label, children }: { icon: LucideIcon; label: stri
     <div className="flex min-w-0 gap-2 rounded-xl bg-surface px-3 py-2">
       <Icon className="mt-0.5 size-3.5 shrink-0 text-muted" aria-hidden />
       <div className="min-w-0 flex-1">
-        <dt className="text-[11px] font-semibold text-muted">{label}</dt>
+        <dt className="text-badge font-semibold text-muted">{label}</dt>
         <dd className="min-w-0">{children}</dd>
       </div>
     </div>

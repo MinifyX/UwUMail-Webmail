@@ -21,8 +21,8 @@ export function Section({
     <section className="flex flex-col gap-3 border-b border-hairline pb-5 last:border-0">
       <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
         <div className="min-w-[min(100%,14rem)] flex-1">
-          <h3 className="text-sm font-bold">{title}</h3>
-          {description && <p className="text-[13px] text-muted">{description}</p>}
+          <h3 className="text-body font-bold">{title}</h3>
+          {description && <p className="text-meta text-muted">{description}</p>}
         </div>
         {action}
       </div>
@@ -37,7 +37,7 @@ export function Note({ tone = "info", children }: { tone?: "info" | "warning"; c
   return (
     <div
       className={clsx(
-        "flex gap-2 rounded-2xl px-3.5 py-2.5 text-[12.5px]",
+        "flex gap-2 rounded-2xl px-3.5 py-2.5 text-meta",
         tone === "warning" ? "bg-warning-tint text-warning" : "bg-canvas text-muted",
       )}
     >
@@ -109,7 +109,7 @@ export function ModelInput({
             commit();
           }
         }}
-        className={clsx("h-9 text-[13px]", className)}
+        className={clsx("h-9 text-meta", className)}
       />
       <datalist id={listId}>
         {data?.models.map((model) => (

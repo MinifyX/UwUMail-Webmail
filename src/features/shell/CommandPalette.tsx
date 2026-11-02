@@ -72,11 +72,11 @@ function PaletteBody({
             }
             if (event.key === "Enter") run(results[active]);
           }}
-          className="h-14 flex-1 bg-transparent text-[15px] outline-none"
+          className="h-14 flex-1 bg-transparent text-reading outline-none"
         />
       </div>
       <ul className="max-h-[360px] overflow-y-auto p-2" role="listbox">
-        {results.length === 0 && <li className="px-4 py-6 text-center text-[13px] text-muted">{empty}</li>}
+        {results.length === 0 && <li className="px-4 py-6 text-center text-meta text-muted">{empty}</li>}
         {results.map((command, index) => {
           const Icon = command.icon;
           return (
@@ -92,7 +92,7 @@ function PaletteBody({
               )}
             >
               <Icon className={clsx("size-[18px]", index === active ? "text-pink" : "text-muted")} aria-hidden />
-              <span className="flex-1 text-[14px] font-medium">{command.title}</span>
+              <span className="flex-1 text-body font-medium">{command.title}</span>
               {command.keys?.[0] && <KeyHint combo={command.keys[0]} />}
             </li>
           );

@@ -20,6 +20,8 @@ import { displayName, formatListDate } from "@/lib/format";
 import type { useThreadActions } from "@/lib/queries";
 import type { ListDensity } from "@/state/settings";
 import { ListLabelChips } from "../assist/LabelChips";
+import type { VerificationCode } from "../codes/codes";
+import { RowCodeChip } from "../codes/VerificationCodeBar";
 import { THREAD_DRAG_TYPE } from "./selection";
 import type { MailRights } from "./rights";
 
@@ -46,6 +48,8 @@ interface ThreadRowProps {
   snoozedUntil?: string;
   /** What may be done here; everything when left out (see ./rights). */
   rights?: MailRights;
+  /** A valid code from this conversation, shown before the subject. */
+  code?: VerificationCode;
 }
 
 function QuickAction({
@@ -96,6 +100,7 @@ export function ThreadRow({
   inJunk = false,
   snoozedUntil,
   rights,
+  code,
 }: ThreadRowProps) {
   const { t, i18n } = useT();
   const compact = density === "compact";
@@ -173,7 +178,7 @@ export function ThreadRow({
           <span
             className={clsx(
               "min-w-0 flex-1 truncate",
-              compact ? "text-[13.5px]" : "text-[14px]",
+              compact ? "text-body" : "text-body",
               unread ? "font-bold text-ink" : "font-semibold text-ink/85",
             )}
           >
@@ -185,7 +190,7 @@ export function ThreadRow({
             )}
             {names}
             {thread.messageCount > 1 && (
-              <span className="ml-1.5 text-[12px] font-semibold text-muted tabular-nums">{thread.messageCount}</span>
+              <span className="ml-1.5 text-caption font-semibold text-muted tabular-nums">{thread.messageCount}</span>
             )}
           </span>
           <span className="flex shrink-0 items-center gap-1.5 self-center transition-opacity group-hover:opacity-0">
@@ -194,7 +199,7 @@ export function ThreadRow({
             {snoozedUntil && <AlarmClock className="size-3.5 text-pink-ink" aria-hidden />}
             <span
               className={clsx(
-                "text-[12px] tabular-nums",
+                "text-caption tabular-nums",
                 unread || snoozedUntil ? "font-bold text-pink-ink" : "font-medium text-muted",
               )}
             >
@@ -204,7 +209,8 @@ export function ThreadRow({
         </span>
 
         {compact ? (
-          <span className="flex min-w-0 items-center gap-1.5 text-[13px]">
+          <span className="flex min-w-0 items-center gap-1.5 text-meta">
+            {code && <RowCodeChip code={code} selected={selected} />}
             <ListLabelChips keywords={thread.keywords} />
             <span className="min-w-0 truncate">
               <span className={clsx(unread ? "font-semibold text-ink" : "text-ink/80")}>{subject}</span>
@@ -214,18 +220,14 @@ export function ThreadRow({
         ) : (
           <>
             <span className="flex min-w-0 items-center gap-1.5">
+              {code && <RowCodeChip code={code} selected={selected} />}
               <ListLabelChips keywords={thread.keywords} />
-              <span
-                className={clsx("min-w-0 truncate text-[13.5px]", unread ? "font-semibold text-ink" : "text-ink/80")}
-              >
+              <span className={clsx("min-w-0 truncate text-body", unread ? "font-semibold text-ink" : "text-ink/80")}>
                 {subject}
               </span>
             </span>
             <span
-              className={clsx(
-                "text-[13px] leading-snug text-muted",
-                variant === "simple" ? "line-clamp-2" : "truncate",
-              )}
+              className={clsx("text-meta leading-snug text-muted", variant === "simple" ? "line-clamp-2" : "truncate")}
             >
               {thread.snippet}
             </span>
@@ -235,7 +237,7 @@ export function ThreadRow({
 
       <span
         className={clsx(
-          "absolute right-2 hidden -translate-y-1/2 items-center gap-0.5 rounded-full border border-hairline bg-surface p-0.5 shadow-[0_2px_8px_rgb(28_20_32/0.08)] group-hover:flex",
+          "absolute right-2 hidden -translate-y-1/2 items-center gap-0.5 rounded-full border border-hairline bg-surface p-0.5 group-hover:flex",
           // Centered on the first line, where the date was.
           compact ? "top-[18px]" : "top-[22px]",
         )}

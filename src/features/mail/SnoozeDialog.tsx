@@ -54,11 +54,11 @@ function SnoozeForm({ request, onClose }: { request: SnoozeRequest; onClose: () 
             <button
               type="button"
               onClick={() => pick(at)}
-              className="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[13.5px] hover:bg-pink-tint/60 focus-visible:bg-pink-tint/60 focus-visible:outline-none"
+              className="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-body hover:bg-pink-tint/60 focus-visible:bg-pink-tint/60 focus-visible:outline-none"
             >
               <Clock size={16} className="shrink-0 text-muted" aria-hidden />
               <span className="min-w-0 flex-1 truncate font-semibold">{t(`snooze.preset.${preset}`)}</span>
-              <span className="shrink-0 text-[12.5px] text-muted">{format(at)}</span>
+              <span className="shrink-0 text-meta text-muted">{format(at)}</span>
             </button>
           </li>
         ))}

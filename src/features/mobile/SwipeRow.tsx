@@ -109,7 +109,7 @@ export function SwipeRow({
         <div
           aria-hidden
           className={clsx(
-            "absolute inset-0 flex items-center gap-2 px-6 text-[13px] font-bold text-white transition-opacity",
+            "absolute inset-0 flex items-center gap-2 px-6 text-meta font-bold text-white transition-opacity",
             look.className,
             offset > 0 ? "justify-start" : "justify-end",
             armed ? "opacity-100" : "opacity-75",

@@ -51,7 +51,7 @@ export function MonthView({ weeks, month, occurrences, calendars }: MonthViewPro
     <div className="flex min-h-0 flex-1 flex-col" role="grid" aria-label={t("calendar.views.month")}>
       <div className="grid shrink-0 grid-cols-7 border-b border-hairline" role="row">
         {weeks[0]?.map((day) => (
-          <div key={day} role="columnheader" className="py-2 text-center text-[12px] font-bold text-muted uppercase">
+          <div key={day} role="columnheader" className="py-2 text-center text-caption font-bold text-muted uppercase">
             {formatWeekdayShort(day)}
           </div>
         ))}
@@ -92,7 +92,7 @@ export function MonthView({ weeks, month, occurrences, calendars }: MonthViewPro
                     }}
                     aria-label={t("calendar.openDay", { date: formatDayLong(day) })}
                     className={clsx(
-                      "grid size-7 shrink-0 place-items-center self-center rounded-full text-[12.5px] font-bold transition-colors",
+                      "grid size-7 shrink-0 place-items-center self-center rounded-full text-meta font-bold transition-colors",
                       day === today
                         ? "bg-pink-solid text-on-pink"
                         : outside
@@ -156,7 +156,7 @@ export function MonthView({ weeks, month, occurrences, calendars }: MonthViewPro
                           showPopover(occurrence, anchorOf(event.currentTarget));
                         }}
                         className={clsx(
-                          "flex h-[22px] w-full shrink-0 items-center gap-1.5 truncate rounded-md px-1.5 text-left text-[12px]",
+                          "flex h-[22px] w-full shrink-0 items-center gap-1.5 truncate rounded-md px-1.5 text-left text-caption",
                           bar ? `${EVENT_TINT} font-semibold` : "hover:bg-pink-tint/50",
                           canDrag(occurrence) && "touch-none",
                         )}
@@ -175,7 +175,7 @@ export function MonthView({ weeks, month, occurrences, calendars }: MonthViewPro
                         setDate(day);
                         setView("day");
                       }}
-                      className="h-[22px] shrink-0 truncate rounded-md px-1.5 text-left text-[12px] font-semibold text-muted hover:bg-pink-tint/50 hover:text-ink"
+                      className="h-[22px] shrink-0 truncate rounded-md px-1.5 text-left text-caption font-semibold text-muted hover:bg-pink-tint/50 hover:text-ink"
                     >
                       {t("calendar.more", { count: hidden + 1 })}
                     </button>

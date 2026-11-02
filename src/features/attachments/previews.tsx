@@ -53,15 +53,15 @@ function ImagePreview({ file }: { file: AttachmentContent }) {
 function TextPreview({ file, kind }: { file: AttachmentContent; kind: "text" | "json" | "csv" }) {
   const { t } = useT();
   const state = useText(file.url);
-  if (!state) return <p className="p-6 text-[13px] text-muted">{t("attachment.loading")}</p>;
-  if ("error" in state) return <p className="p-6 text-[13px] text-danger">{state.error}</p>;
+  if (!state) return <p className="p-6 text-meta text-muted">{t("attachment.loading")}</p>;
+  if ("error" in state) return <p className="p-6 text-meta text-danger">{state.error}</p>;
 
   if (kind === "csv") {
     const rows = parseCsv(state.text, CSV_ROWS);
     const [head, ...body] = rows;
     return (
       <div className="h-full overflow-auto p-4">
-        <table className="selectable w-max min-w-full border-collapse text-[13px]">
+        <table className="selectable w-max min-w-full border-collapse text-meta">
           {head && (
             <thead className="sticky top-0 bg-elevated">
               <tr>
@@ -86,7 +86,7 @@ function TextPreview({ file, kind }: { file: AttachmentContent; kind: "text" | "
           </tbody>
         </table>
         {rows.length >= CSV_ROWS && (
-          <p className="pt-3 text-[12px] text-muted">{t("attachment.tableTruncated", { count: CSV_ROWS })}</p>
+          <p className="pt-3 text-caption text-muted">{t("attachment.tableTruncated", { count: CSV_ROWS })}</p>
         )}
       </div>
     );
@@ -102,8 +102,8 @@ function TextPreview({ file, kind }: { file: AttachmentContent; kind: "text" | "
   }
   return (
     <div className="h-full overflow-auto p-5">
-      <pre className="selectable font-mono text-[13px] leading-relaxed whitespace-pre-wrap text-ink">{content}</pre>
-      {state.truncated && <p className="pt-3 text-[12px] text-muted">{t("attachment.textTruncated")}</p>}
+      <pre className="selectable font-mono text-meta leading-relaxed whitespace-pre-wrap text-ink">{content}</pre>
+      {state.truncated && <p className="pt-3 text-caption text-muted">{t("attachment.textTruncated")}</p>}
     </div>
   );
 }
@@ -111,8 +111,8 @@ function TextPreview({ file, kind }: { file: AttachmentContent; kind: "text" | "
 function CalendarPreview({ file }: { file: AttachmentContent }) {
   const { t, i18n } = useT();
   const state = useText(file.url);
-  if (!state) return <p className="p-6 text-[13px] text-muted">{t("attachment.loading")}</p>;
-  if ("error" in state) return <p className="p-6 text-[13px] text-danger">{state.error}</p>;
+  if (!state) return <p className="p-6 text-meta text-muted">{t("attachment.loading")}</p>;
+  if ("error" in state) return <p className="p-6 text-meta text-danger">{state.error}</p>;
   const events = parseIcs(state.text);
   const format = (value: { date: Date; allDay: boolean } | null) =>
     value
@@ -124,16 +124,13 @@ function CalendarPreview({ file }: { file: AttachmentContent }) {
   return (
     <div className="grid h-full content-start justify-items-center gap-4 overflow-auto p-6">
       {events.map((event, index) => (
-        <article
-          key={index}
-          className="selectable w-full max-w-[520px] rounded-[20px] border border-line bg-surface p-6"
-        >
-          <p className="flex items-center gap-2 text-[12px] font-bold tracking-wide text-pink-ink uppercase">
+        <article key={index} className="selectable w-full max-w-[520px] rounded-2xl border border-line bg-surface p-6">
+          <p className="flex items-center gap-2 text-caption font-bold tracking-wide text-pink-ink uppercase">
             <CalendarDays className="size-4" aria-hidden />
             {event.method === "REQUEST" ? t("attachment.invitation") : t("attachment.event")}
           </p>
-          <h3 className="pt-2 text-[20px] font-extrabold">{event.summary}</h3>
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 pt-4 text-[14px]">
+          <h3 className="pt-2 text-title font-extrabold">{event.summary}</h3>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 pt-4 text-body">
             <dt className="text-muted">{t("attachment.when")}</dt>
             <dd>
               {format(event.start)}
@@ -158,7 +155,7 @@ function CalendarPreview({ file }: { file: AttachmentContent }) {
             )}
           </dl>
           {event.description && (
-            <p className="mt-4 border-t border-hairline pt-4 text-[14px] whitespace-pre-wrap text-muted">
+            <p className="mt-4 border-t border-hairline pt-4 text-body whitespace-pre-wrap text-muted">
               {event.description}
             </p>
           )}
@@ -172,25 +169,25 @@ function ContactPreview({ file }: { file: AttachmentContent }) {
   const { t } = useT();
   const state = useText(file.url);
   const { data: contactsAvailable = false } = useContactsAvailable();
-  if (!state) return <p className="p-6 text-[13px] text-muted">{t("attachment.loading")}</p>;
-  if ("error" in state) return <p className="p-6 text-[13px] text-danger">{state.error}</p>;
+  if (!state) return <p className="p-6 text-meta text-muted">{t("attachment.loading")}</p>;
+  if ("error" in state) return <p className="p-6 text-meta text-danger">{state.error}</p>;
   return (
     <div className="grid h-full content-start justify-items-center gap-4 overflow-auto p-6">
       {parseVcf(state.text).map((card, index) => (
         <article
           key={index}
-          className="selectable flex w-full max-w-[420px] flex-col items-center gap-3 rounded-[20px] border border-line bg-surface p-6 text-center"
+          className="selectable flex w-full max-w-[420px] flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-6 text-center"
         >
           <span className="grid size-16 place-items-center rounded-full bg-pink-tint text-pink-ink">
-            <User className="size-7" aria-hidden />
+            <User className="size-5" aria-hidden />
           </span>
           <div>
-            <h3 className="text-[20px] font-extrabold">{card.name}</h3>
+            <h3 className="text-title font-extrabold">{card.name}</h3>
             {(card.title || card.organization) && (
-              <p className="text-[14px] text-muted">{[card.title, card.organization].filter(Boolean).join(" · ")}</p>
+              <p className="text-body text-muted">{[card.title, card.organization].filter(Boolean).join(" · ")}</p>
             )}
           </div>
-          <ul className="flex w-full flex-col gap-2 pt-2 text-[14px]">
+          <ul className="flex w-full flex-col gap-2 pt-2 text-body">
             {card.emails.map((email) => (
               <li key={email} className="flex items-center gap-2 rounded-xl bg-canvas px-3 py-2">
                 <Mail className="size-4 text-muted" aria-label={t("attachment.email")} />
@@ -250,8 +247,8 @@ function PdfPreview({ file }: { file: AttachmentContent }) {
     };
   }, [file.url]);
 
-  if (state?.url !== file.url) return <p className="p-6 text-[13px] text-muted">{t("attachment.loading")}</p>;
-  if (!state.pdf) return <p className="p-6 text-center text-[13px] text-muted">{t("attachment.notPdf")}</p>;
+  if (state?.url !== file.url) return <p className="p-6 text-meta text-muted">{t("attachment.loading")}</p>;
+  if (!state.pdf) return <p className="p-6 text-center text-meta text-muted">{t("attachment.notPdf")}</p>;
   return (
     <div className="flex h-full flex-col">
       {/* sandbox without allow-top-navigation: a link inside the PDF cannot replace the webmail tab
@@ -262,7 +259,7 @@ function PdfPreview({ file }: { file: AttachmentContent }) {
         sandbox="allow-same-origin"
         className="min-h-0 w-full flex-1 border-0 bg-white"
       />
-      <p className="px-4 py-2 text-center text-[12px] text-muted">{t("attachment.pdfHint")}</p>
+      <p className="px-4 py-2 text-center text-caption text-muted">{t("attachment.pdfHint")}</p>
     </div>
   );
 }

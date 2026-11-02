@@ -65,7 +65,7 @@ export function InvitationAnswer({
             onClick={() => void answer(status)}
             className={clsx(
               "inline-flex items-center gap-1.5 rounded-full border font-semibold transition-colors disabled:opacity-55",
-              compact ? "h-8 px-3 text-[12.5px]" : "h-9 px-3.5 text-[13px]",
+              compact ? "h-8 px-3 text-meta" : "h-9 px-3.5 text-meta",
               chosen
                 ? "border-pink-solid bg-pink-solid text-on-pink"
                 : "border-line bg-surface text-ink hover:bg-pink-tint/60",
@@ -143,24 +143,24 @@ export function MailInvitationCard({ message }: { message: Message }) {
           <CalendarCheck className="mt-0.5 size-5 shrink-0 text-pink" aria-hidden />
         )}
         <div className="min-w-0">
-          <p className="text-[12px] font-bold tracking-wide text-muted uppercase">{heading}</p>
-          <p className="truncate text-[14.5px] font-bold">{found.title || t("calendar.untitled")}</p>
-          {when && <p className="text-[13px] text-muted">{when}</p>}
+          <p className="text-caption font-bold tracking-wide text-muted uppercase">{heading}</p>
+          <p className="truncate text-body font-bold">{found.title || t("calendar.untitled")}</p>
+          {when && <p className="text-meta text-muted">{when}</p>}
         </div>
       </div>
       {!found.verified ? (
         <Unverified found={found} sender={message.from.email} />
       ) : found.kind === "reply" ? (
-        <p className="text-[13px]">{t(`invitation.reply.status.${found.status}`, { name: found.attendee })}</p>
+        <p className="text-meta">{t(`invitation.reply.status.${found.status}`, { name: found.attendee })}</p>
       ) : found.cancelled ? (
-        <p className="text-[13px] font-semibold text-danger">{t("invitation.cancelled")}</p>
+        <p className="text-meta font-semibold text-danger">{t("invitation.cancelled")}</p>
       ) : found.method === "cancel" ? (
         // Single dates cancelled: the event itself goes on, and the mail is no reason to answer it.
-        <p className="text-[12px] text-muted">{t(invitationStatusKey(found.status))}</p>
+        <p className="text-caption text-muted">{t(invitationStatusKey(found.status))}</p>
       ) : (
         <>
           <InvitationAnswer invitation={found} />
-          <p className="text-[12px] text-muted">{t(invitationStatusKey(found.status))}</p>
+          <p className="text-caption text-muted">{t(invitationStatusKey(found.status))}</p>
         </>
       )}
     </section>
@@ -180,7 +180,7 @@ function Unverified({ found, sender }: { found: MailScheduling; sender: string }
   // This line tells who wrote the mail from who may; direction marks and invisible characters in
   // either would let one read as the other, so they are shown, not obeyed (security-audit W-34).
   return (
-    <div role="note" className="flex gap-2.5 rounded-xl bg-warning-tint px-3 py-2.5 text-[13px] text-warning">
+    <div role="note" className="flex gap-2.5 rounded-xl bg-warning-tint px-3 py-2.5 text-meta text-warning">
       <ShieldAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
       <div className="flex min-w-0 flex-col gap-1">
         <p className="font-semibold">{text}</p>

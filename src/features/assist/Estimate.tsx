@@ -284,7 +284,7 @@ export function EstimateTip({ request, hint, children, beside = false }: Estimat
             id={id}
             role="tooltip"
             style={place}
-            className="pointer-events-none fixed z-50 flex w-max max-w-[min(280px,calc(100vw-16px))] animate-fade flex-col gap-0.5 rounded-lg bg-ink px-2.5 py-1.5 text-[12px] font-medium text-canvas shadow-float"
+            className="pointer-events-none fixed z-50 flex w-max max-w-[min(280px,calc(100vw-16px))] animate-fade flex-col gap-0.5 rounded-lg bg-ink px-2.5 py-1.5 text-caption font-medium text-canvas shadow-float"
           >
             {lines.map((line, index) => (
               <span key={index} className={index < lines.length - 1 ? "opacity-80" : undefined}>
@@ -292,7 +292,7 @@ export function EstimateTip({ request, hint, children, beside = false }: Estimat
               </span>
             ))}
             {breakdown.length > 0 && (
-              <span className="mt-1 grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-px border-t border-canvas/20 pt-1 text-[11.5px]">
+              <span className="mt-1 grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-px border-t border-canvas/20 pt-1 text-caption">
                 {breakdown.map((line) => (
                   <span key={line.key} className="contents">
                     <span className="opacity-70">{line.label}</span>
@@ -301,7 +301,7 @@ export function EstimateTip({ request, hint, children, beside = false }: Estimat
                 ))}
               </span>
             )}
-            {estimate?.calibrated && <span className="text-[11px] opacity-70">{t("assist.estimate.calibrated")}</span>}
+            {estimate?.calibrated && <span className="text-badge opacity-70">{t("assist.estimate.calibrated")}</span>}
           </span>,
           document.body,
         )}

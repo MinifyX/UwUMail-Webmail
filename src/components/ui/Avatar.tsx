@@ -7,33 +7,33 @@ import { useSenderPicture } from "@/lib/queries";
 
 export const COLOR_CLASSES: Record<AccountColor, { bg: string; text: string; dot: string }> = {
   pink: {
-    bg: "bg-[#ffe4ef] dark:bg-[#3a1a2a]",
-    text: "text-[#a3154f] dark:text-[#ffa3c4]",
+    bg: "bg-avatar-pink",
+    text: "text-avatar-pink-ink",
     dot: "bg-[var(--uwu-account-pink)]",
   },
   violet: {
-    bg: "bg-[#ede5ff] dark:bg-[#2a2142]",
-    text: "text-[#5b32c7] dark:text-[#c4b1ff]",
+    bg: "bg-avatar-violet",
+    text: "text-avatar-violet-ink",
     dot: "bg-[var(--uwu-account-violet)]",
   },
   sky: {
-    bg: "bg-[#dff3fc] dark:bg-[#10293a]",
-    text: "text-[#0b6591] dark:text-[#8fd6f8]",
+    bg: "bg-avatar-sky",
+    text: "text-avatar-sky-ink",
     dot: "bg-[var(--uwu-account-sky)]",
   },
   mint: {
-    bg: "bg-[#d8f5e8] dark:bg-[#123a2a]",
-    text: "text-[#0b6e4c] dark:text-[#6ee7b7]",
+    bg: "bg-avatar-mint",
+    text: "text-avatar-mint-ink",
     dot: "bg-[var(--uwu-account-mint)]",
   },
   amber: {
-    bg: "bg-[#fdf0d6] dark:bg-[#3a2a0c]",
-    text: "text-[#8a5606] dark:text-[#f5c453]",
+    bg: "bg-avatar-amber",
+    text: "text-avatar-amber-ink",
     dot: "bg-[var(--uwu-account-amber)]",
   },
   coral: {
-    bg: "bg-[#fde6e2] dark:bg-[#3d1d18]",
-    text: "text-[#a8392a] dark:text-[#ffab9d]",
+    bg: "bg-avatar-coral",
+    text: "text-avatar-coral-ink",
     dot: "bg-[var(--uwu-account-coral)]",
   },
 };
@@ -67,11 +67,11 @@ export function Avatar({ address, size = "md", className }: AvatarProps) {
         "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold",
         // Initials wait underneath until the picture is there, and come back if it can't load.
         !ready && [color.bg, color.text],
-        size === "xs" && "size-5 text-[8.5px]",
-        size === "list" && "size-9 text-[12px]",
-        size === "sm" && "size-7 text-[11px]",
-        size === "md" && "size-10 text-[13px]",
-        size === "lg" && "size-12 text-[15px]",
+        size === "xs" && "size-5 text-badge",
+        size === "list" && "size-9 text-caption",
+        size === "sm" && "size-7 text-badge",
+        size === "md" && "size-10 text-meta",
+        size === "lg" && "size-12 text-reading",
         className,
       )}
     >
@@ -81,7 +81,7 @@ export function Avatar({ address, size = "md", className }: AvatarProps) {
           className={clsx(
             "absolute inset-0 grid place-items-center rounded-full transition-opacity duration-200",
             !fill && "ring-1 ring-inset",
-            !fill && (look?.light ? "bg-[#2b2530] ring-white/10 dark:bg-[#3a3340]" : "bg-white ring-black/5"),
+            !fill && (look?.light ? "bg-toast ring-white/10 dark:bg-elevated" : "bg-white ring-black/5"),
             ready ? "opacity-100" : "opacity-0",
           )}
         >

@@ -80,12 +80,12 @@ function ShareForm({ sharedWith, onShare, kind }: Pick<ShareDialogProps, "shared
 
   return (
     <div className="flex flex-col gap-5 px-6 pt-1 pb-6">
-      <p className="text-[13px] text-muted">{t(`sharing.levelsDesc.${kind}`)}</p>
+      <p className="text-meta text-muted">{t(`sharing.levelsDesc.${kind}`)}</p>
 
       <section className="flex flex-col gap-2" aria-label={t("sharing.current")}>
-        <h3 className="text-[12px] font-bold tracking-wide text-muted uppercase">{t("sharing.current")}</h3>
+        <h3 className="text-caption font-bold tracking-wide text-muted uppercase">{t("sharing.current")}</h3>
         {current.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13px] text-muted">
+          <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-meta text-muted">
             {t("sharing.nobody")}
           </p>
         ) : (
@@ -94,8 +94,8 @@ function ShareForm({ sharedWith, onShare, kind }: Pick<ShareDialogProps, "shared
               <li key={person.id} className="flex items-center gap-3 rounded-2xl border border-hairline p-2 pl-3">
                 <Avatar address={{ name: person.name, email: person.email || person.name }} size="sm" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13.5px] font-semibold">{person.name}</span>
-                  {person.email && <span className="block truncate text-[12px] text-muted">{person.email}</span>}
+                  <span className="block truncate text-body font-semibold">{person.name}</span>
+                  {person.email && <span className="block truncate text-caption text-muted">{person.email}</span>}
                 </span>
                 <Select
                   aria-label={t("sharing.levelFor", { name: person.name })}
@@ -120,13 +120,13 @@ function ShareForm({ sharedWith, onShare, kind }: Pick<ShareDialogProps, "shared
       </section>
 
       <section className="flex flex-col gap-2" aria-label={t("sharing.add")}>
-        <h3 className="text-[12px] font-bold tracking-wide text-muted uppercase">{t("sharing.add")}</h3>
+        <h3 className="text-caption font-bold tracking-wide text-muted uppercase">{t("sharing.add")}</h3>
         {picked ? (
           <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-line p-2 pl-3">
             <Avatar address={{ name: picked.name, email: picked.email }} size="sm" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13.5px] font-semibold">{picked.name}</span>
-              <span className="block truncate text-[12px] text-muted">{picked.email}</span>
+              <span className="block truncate text-body font-semibold">{picked.name}</span>
+              <span className="block truncate text-caption text-muted">{picked.email}</span>
             </span>
             <Select
               aria-label={t("sharing.levelFor", { name: picked.name })}
@@ -170,15 +170,15 @@ function ShareForm({ sharedWith, onShare, kind }: Pick<ShareDialogProps, "shared
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={t("sharing.search")}
                 aria-label={t("sharing.search")}
-                className="h-10 w-full rounded-full border border-transparent bg-canvas pr-4 pl-10 text-[13.5px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+                className="h-10 w-full rounded-full border border-transparent bg-canvas pr-4 pl-10 text-body placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
               />
             </div>
             {isPending ? (
-              <p className="px-1 text-[13px] text-muted">{t("sharing.loadingPeople")}</p>
+              <p className="px-1 text-meta text-muted">{t("sharing.loadingPeople")}</p>
             ) : isError ? (
-              <p className="px-1 text-[13px] text-danger">{t("sharing.peopleFailed")}</p>
+              <p className="px-1 text-meta text-danger">{t("sharing.peopleFailed")}</p>
             ) : candidates.length === 0 ? (
-              <p className="px-1 text-[13px] text-muted">{t("sharing.noPeople")}</p>
+              <p className="px-1 text-meta text-muted">{t("sharing.noPeople")}</p>
             ) : (
               <ul className="flex flex-col gap-0.5">
                 {candidates.map((person) => (
@@ -190,8 +190,8 @@ function ShareForm({ sharedWith, onShare, kind }: Pick<ShareDialogProps, "shared
                     >
                       <Avatar address={{ name: person.name, email: person.email }} size="sm" />
                       <span className="min-w-0">
-                        <span className="block truncate text-[13.5px] font-semibold">{person.name}</span>
-                        <span className="block truncate text-[12px] text-muted">{person.email}</span>
+                        <span className="block truncate text-body font-semibold">{person.name}</span>
+                        <span className="block truncate text-caption text-muted">{person.email}</span>
                       </span>
                     </button>
                   </li>

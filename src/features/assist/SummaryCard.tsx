@@ -63,7 +63,7 @@ export function SummaryCard({ kind, id, count }: SummaryCardProps) {
   return (
     <section
       aria-label={kind === "mail" ? t("assist.summary.mail") : t("assist.summary.thread")}
-      className="flex animate-fade flex-col rounded-[18px] border border-pink/25 bg-gradient-to-br from-pink-tint/60 to-surface px-4 py-3"
+      className="flex animate-fade flex-col rounded-2xl border border-pink/25 bg-gradient-to-br from-pink-tint/60 to-surface px-4 py-3"
     >
       <header className="flex items-center gap-2">
         <button
@@ -74,7 +74,7 @@ export function SummaryCard({ kind, id, count }: SummaryCardProps) {
           className="flex min-w-0 flex-1 items-center gap-2 rounded-lg text-left focus-visible:shadow-focus focus-visible:outline-none"
         >
           <Sparkles className="size-4 shrink-0 text-pink" aria-hidden />
-          <span className="truncate text-[13.5px] font-bold">
+          <span className="truncate text-body font-bold">
             {kind === "mail" ? t("assist.summary.mail") : t("assist.summary.threadCount", { count: count ?? 0 })}
           </span>
           <ChevronDown
@@ -83,7 +83,7 @@ export function SummaryCard({ kind, id, count }: SummaryCardProps) {
           />
         </button>
         {used && (
-          <span className="hidden min-w-0 truncate text-[11.5px] font-semibold text-muted sm:inline">
+          <span className="hidden min-w-0 truncate text-caption font-semibold text-muted sm:inline">
             {providerLabel(used)}
           </span>
         )}
@@ -95,7 +95,7 @@ export function SummaryCard({ kind, id, count }: SummaryCardProps) {
         <IconButton icon={X} size="sm" label={t("assist.summary.close")} onClick={() => hide(key)} />
       </header>
       {open && (
-        <div id={bodyId} role="status" aria-live="polite" aria-busy={working} className="selectable pt-2 text-[13.5px]">
+        <div id={bodyId} role="status" aria-live="polite" aria-busy={working} className="selectable pt-2 text-body">
           {!text && working && <Thinking />}
           {lead.length > 0 && <p className="leading-relaxed">{lead.join(" ")}</p>}
           {points.length > 0 && (
@@ -110,11 +110,11 @@ export function SummaryCard({ kind, id, count }: SummaryCardProps) {
           )}
           {working && text && <Caret />}
           {state.status === "error" && (
-            <div role="alert" className="mt-1 flex flex-wrap items-center gap-2 text-[13px] text-danger">
+            <div role="alert" className="mt-1 flex flex-wrap items-center gap-2 text-meta text-danger">
               <span className="min-w-0 flex-1">
                 {assistErrorText(state.error)}
                 {assistErrorDetail(state.error) && (
-                  <span className="block text-[12px] opacity-80">{assistErrorDetail(state.error)}</span>
+                  <span className="block text-caption opacity-80">{assistErrorDetail(state.error)}</span>
                 )}
               </span>
               <Button size="sm" variant="ghost" icon={RotateCcw} onClick={summarize}>
@@ -122,7 +122,7 @@ export function SummaryCard({ kind, id, count }: SummaryCardProps) {
               </Button>
             </div>
           )}
-          {used && <p className="pt-2 text-[11.5px] text-muted sm:hidden">{providerLabel(used)}</p>}
+          {used && <p className="pt-2 text-caption text-muted sm:hidden">{providerLabel(used)}</p>}
         </div>
       )}
     </section>

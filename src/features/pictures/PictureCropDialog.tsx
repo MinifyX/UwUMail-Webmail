@@ -161,7 +161,7 @@ function Cropper({
 
   if (!picture || !crop) {
     return (
-      <div className="grid h-[340px] place-items-center text-[13px] text-muted" role="status">
+      <div className="grid h-[340px] place-items-center text-meta text-muted" role="status">
         {t("picture.loading")}
       </div>
     );
@@ -268,10 +268,10 @@ function Cropper({
         {/* Everything outside the circle is dimmed; the circle is what people will see. */}
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_200px_rgb(28_20_32/0.55)] ring-2 ring-white/80"
+          className="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_200px_var(--uwu-backdrop)] ring-2 ring-white/80"
         />
       </div>
-      <p id={hintId} className="text-center text-[12.5px] text-muted">
+      <p id={hintId} className="text-center text-meta text-muted">
         {t("picture.crop.hint")}
       </p>
       <div className="flex w-full max-w-[280px] items-center gap-2">

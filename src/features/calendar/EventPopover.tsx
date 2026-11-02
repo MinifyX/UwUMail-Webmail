@@ -19,7 +19,7 @@ const SHOWN_PARTICIPANTS = 8;
 
 function Detail({ icon: Icon, children }: { icon: typeof Clock; children: React.ReactNode }) {
   return (
-    <div className="flex gap-3 text-[13.5px]">
+    <div className="flex gap-3 text-body">
       <Icon className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
       <div className="min-w-0 flex-1">{children}</div>
     </div>
@@ -69,14 +69,14 @@ export function EventPopover() {
         <div className="flex gap-3">
           <span className="mt-1.5 size-3.5 shrink-0 rounded-[5px]" style={{ background: color }} aria-hidden />
           <div className="min-w-0">
-            <h2 className="selectable text-[18px] leading-snug font-bold break-words">{title}</h2>
-            <p className="text-[13px] text-muted">{formatWhen(occurrence)}</p>
+            <h2 className="selectable text-section leading-snug font-bold break-words">{title}</h2>
+            <p className="text-meta text-muted">{formatWhen(occurrence)}</p>
           </div>
         </div>
         {birthday && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pink-tint/40 px-3 py-2.5">
             <BirthdayMark occurrence={occurrence} className="size-5 text-pink-ink" />
-            <span className="min-w-0 flex-1 text-[14px] font-semibold">
+            <span className="min-w-0 flex-1 text-body font-semibold">
               {birthday.age === null
                 ? birthday.name
                 : birthday.kind === "birth"
@@ -127,13 +127,13 @@ export function EventPopover() {
                 <li key={`${person.email}-${index}`} className="flex min-w-0 items-center gap-2">
                   <Avatar address={{ name: person.name, email: person.email || person.name }} size="xs" />
                   <span className="min-w-0 truncate">{person.name}</span>
-                  <span className="shrink-0 text-[12px] text-muted">
+                  <span className="shrink-0 text-caption text-muted">
                     {person.organizer ? t("calendar.organizer") : t(`calendar.answer.${person.status}`)}
                   </span>
                 </li>
               ))}
               {occurrence.participants!.length > SHOWN_PARTICIPANTS && (
-                <li className="text-[12px] text-muted">
+                <li className="text-caption text-muted">
                   {t("calendar.moreParticipants", { count: occurrence.participants!.length - SHOWN_PARTICIPANTS })}
                 </li>
               )}
@@ -242,17 +242,17 @@ export function QuickCreate() {
           aria-label={t("calendar.eventTitle")}
           maxLength={500}
         />
-        <p className="flex items-center gap-2 text-[13px] text-muted">
+        <p className="flex items-center gap-2 text-meta text-muted">
           <Clock className="size-4 shrink-0" aria-hidden />
           {formatWhen(quick)}
         </p>
         {target ? (
-          <p className="flex items-center gap-2 text-[13px] text-muted">
+          <p className="flex items-center gap-2 text-meta text-muted">
             <span className="size-3 rounded-[4px]" style={{ background: target.color ?? undefined }} aria-hidden />
             {target.name}
           </p>
         ) : (
-          <p className="text-[13px] text-danger">{t("calendar.noWritableCalendar")}</p>
+          <p className="text-meta text-danger">{t("calendar.noWritableCalendar")}</p>
         )}
         <div className="flex justify-end gap-2">
           <Button

@@ -15,6 +15,7 @@ import {
   Star,
   Trash,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Message } from "@/backend/types";
 import { Button, IconButton } from "@/components/ui/Button";
@@ -22,7 +23,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { inTrash, useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
+import { ListLabelChips } from "../assist/LabelChips";
 import { ThreadAssistButton, ThreadSummary } from "../assist/ReaderAssist";
+import { codeForMessages, useVerificationCodes } from "../codes/codes";
+import { CodeHint } from "../codes/VerificationCodeBar";
 import { MessageView } from "./MessageView";
 import { mailRights } from "./rights";
 import { requestMove } from "./selection";
@@ -51,6 +55,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
   const { data: accounts = [] } = useAccounts();
   const { data: folders = [] } = useFolders();
   const actions = useMessageActions();
+  const codes = useVerificationCodes();
   const { unsnooze } = useSnooze();
   const messages = data?.messages;
   const loadedThreadId = data?.thread.id;
@@ -87,7 +92,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
 
   if (!threadId) {
     return (
-      <section className={clsx("flex h-full items-center justify-center bg-canvas", className)}>
+      <section className={clsx("flex h-full items-center justify-center bg-surface", className)}>
         <EmptyState
           scene="pick"
           compact={variant === "pro"}
@@ -100,7 +105,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
 
   if (isError && !data) {
     return (
-      <section className={clsx("flex h-full items-center justify-center bg-canvas", className)}>
+      <section className={clsx("flex h-full items-center justify-center bg-surface", className)}>
         <EmptyState
           scene="loadError"
           compact={variant === "pro"}
@@ -118,7 +123,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
 
   if (isPending || !data) {
     return (
-      <section className={clsx("flex h-full items-center justify-center bg-canvas text-[13px] text-muted", className)}>
+      <section className={clsx("flex h-full items-center justify-center bg-surface text-meta text-muted", className)}>
         {t("reader.loading")}
       </section>
     );
@@ -135,34 +140,42 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
     all.map((m) => m.folderId),
     folders,
   );
+  const folder = folders.find((f) => f.id === latest.folderId);
+  const code = codeForMessages(all, data.thread.id, codes);
   const snoozed = someSnoozed(all, folders);
 
   return (
     <section
       data-reader
-      className={clsx("flex h-full min-w-0 flex-col bg-canvas", className)}
+      className={clsx("@container flex h-full min-w-0 flex-col bg-surface", className)}
       aria-label={data.thread.subject}
     >
       <header className="flex items-center gap-1 border-b border-hairline bg-surface px-3 py-2">
         {variant === "simple" && (
-          <IconButton icon={ArrowLeft} label={t("reader.back")} onClick={() => selectThread(null)} className="mr-1" />
+          <IconButton
+            icon={ArrowLeft}
+            label={t("reader.back")}
+            onClick={() => selectThread(null)}
+            className="mr-1 lg:hidden"
+          />
         )}
-        <IconButton
+        <ReplyButton
           icon={Reply}
           label={t("reader.reply")}
+          primary
           onClick={() => openCompose({ mode: "reply", source: latest })}
         />
-        <IconButton
+        <ReplyButton
           icon={ReplyAll}
           label={t("reader.replyAll")}
           onClick={() => openCompose({ mode: "replyAll", source: latest })}
         />
-        <IconButton
+        <ReplyButton
           icon={Forward}
           label={t("reader.forward")}
           onClick={() => openCompose({ mode: "forward", source: latest })}
         />
-        <span className="mx-1.5 h-5 w-px bg-line" aria-hidden />
+        <span className="min-w-2 flex-1" aria-hidden />
         {rights.archive && (
           <IconButton
             icon={Archive}
@@ -228,22 +241,36 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
           mine={new Set(accounts.map((account) => account.email.toLowerCase()))}
         />
         {rights.shared && !rights.flag && (
-          <span className="ml-2 truncate text-[12px] font-semibold text-muted">{t("sharing.readOnly")}</span>
+          <span className="ml-2 truncate text-caption font-semibold text-muted">{t("sharing.readOnly")}</span>
         )}
       </header>
 
       <div data-reader-scroll className="min-h-0 flex-1 overflow-y-auto">
         {/* The mail fills the reading pane; only very wide windows keep lines readable with a cap. */}
         <div className={clsx("mx-auto flex w-full max-w-[1400px] flex-col gap-3", variant === "pro" ? "p-4" : "p-3")}>
-          <h2 className="selectable px-1 pt-1 pb-2 text-[22px] leading-tight font-extrabold tracking-[-0.01em]">
+          <div className="flex flex-wrap items-center gap-1.5 px-1 pt-1">
+            {folder && (
+              <span className="inline-flex h-6 items-center rounded-full bg-elevated px-2.5 text-caption font-semibold text-muted">
+                {folder.name}
+              </span>
+            )}
+            <ListLabelChips keywords={data.thread.keywords} />
+            {code && (
+              <span className="inline-flex h-6 items-center rounded-full bg-pink-tint px-2.5 text-caption font-bold text-pink-ink">
+                {t("codes.tag")}
+              </span>
+            )}
+          </div>
+          <h2 className="selectable -mt-1 px-1 pb-2 text-title leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>
+          {code && <CodeHint code={code} />}
           <ThreadSummary threadId={latest.threadId} count={all.length} />
           {hiddenCount > 1 && (
             <button
               type="button"
               onClick={() => expand(ids)}
-              className="self-start rounded-full bg-pink-tint px-3 py-1 text-[12.5px] font-semibold text-pink-ink hover:bg-pink-tint-strong"
+              className="self-start rounded-full bg-pink-tint px-3 py-1 text-meta font-semibold text-pink-ink hover:bg-pink-tint-strong"
             >
               {t("reader.earlier", { count: hiddenCount })}
             </button>
@@ -260,5 +287,36 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
         </div>
       </div>
     </section>
+  );
+}
+
+/** Reply, reply all and forward: with their names where the reader has room, else just the icon. */
+function ReplyButton({
+  icon: Icon,
+  label,
+  primary,
+  onClick,
+}: {
+  icon: LucideIcon;
+  label: string;
+  primary?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className={clsx(
+        "inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-2.5 text-meta font-semibold transition-colors @[640px]:px-3.5",
+        primary
+          ? "bg-pink-tint text-pink-ink hover:bg-pink-tint-strong"
+          : "border border-line bg-surface text-ink hover:bg-elevated",
+      )}
+    >
+      <Icon className="size-4 shrink-0" strokeWidth={2.2} aria-hidden />
+      <span className="hidden @[640px]:inline">{label}</span>
+    </button>
   );
 }

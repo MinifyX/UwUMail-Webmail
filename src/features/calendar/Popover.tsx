@@ -69,8 +69,8 @@ export function Popover({ anchor, label, onClose, children }: PopoverProps) {
       className={clsx(
         "fixed z-40 flex animate-pop flex-col border border-line bg-surface text-ink shadow-float",
         phone
-          ? "inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-[24px] pb-[max(16px,env(safe-area-inset-bottom))]"
-          : "max-h-[calc(100vh-16px)] w-[360px] overflow-y-auto rounded-[20px]",
+          ? "inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-dialog pb-[max(16px,env(safe-area-inset-bottom))]"
+          : "max-h-[calc(100vh-16px)] w-[360px] overflow-y-auto rounded-2xl",
       )}
     >
       {children}

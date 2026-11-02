@@ -128,7 +128,7 @@ export function RuleEditor({ accountId, rule, isNew, busy, onSave, onCancel, onD
       </Field>
 
       <fieldset className="flex flex-col gap-2.5">
-        <legend className="mb-2 text-sm font-semibold">{t("rules.when")}</legend>
+        <legend className="mb-2 text-body font-semibold">{t("rules.when")}</legend>
         {draft.conditions.length > 1 && (
           <Segmented
             label={t("rules.when")}
@@ -140,7 +140,7 @@ export function RuleEditor({ accountId, rule, isNew, busy, onSave, onCancel, onD
             ]}
           />
         )}
-        {draft.conditions.length === 0 && <p className="text-[13px] text-muted">{t("rules.everyMessage")}</p>}
+        {draft.conditions.length === 0 && <p className="text-meta text-muted">{t("rules.everyMessage")}</p>}
         {draft.conditions.map((condition, index) => {
           const empty = has((p) => p.kind === "emptyValue" && p.condition === index);
           return (
@@ -196,7 +196,7 @@ export function RuleEditor({ accountId, rule, isNew, busy, onSave, onCancel, onD
                 />
               </div>
               {empty && (
-                <p role="alert" className="text-[13px] text-danger">
+                <p role="alert" className="text-meta text-danger">
                   {t("rules.problem.emptyValue")}
                 </p>
               )}
@@ -217,7 +217,7 @@ export function RuleEditor({ accountId, rule, isNew, busy, onSave, onCancel, onD
       </fieldset>
 
       <fieldset className="flex flex-col gap-2.5">
-        <legend className="mb-2 text-sm font-semibold">{t("rules.then")}</legend>
+        <legend className="mb-2 text-body font-semibold">{t("rules.then")}</legend>
         {draft.actions.map((action, index) => (
           <ActionRow
             key={`${action.type}-${index}`}
@@ -232,12 +232,12 @@ export function RuleEditor({ accountId, rule, isNew, busy, onSave, onCancel, onD
           />
         ))}
         {has((p) => p.kind === "noActions") && (
-          <p role="alert" className="text-[13px] text-danger">
+          <p role="alert" className="text-meta text-danger">
             {t("rules.problem.noActions")}
           </p>
         )}
         {has((p) => p.kind === "tooManyForwards" || p.kind === "tooManyFolders") && (
-          <p role="alert" className="text-[13px] text-danger">
+          <p role="alert" className="text-meta text-danger">
             {t("rules.problem.tooMany")}
           </p>
         )}
@@ -323,7 +323,7 @@ function ActionRow({
   return (
     <div className="flex flex-col gap-1 rounded-2xl border border-hairline px-3 py-2.5">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[13.5px] font-semibold">{t(`rules.action.${action.type}`)}</span>
+        <span className="text-body font-semibold">{t(`rules.action.${action.type}`)}</span>
         {action.type === "move" && (
           <Button size="sm" icon={FolderInput} onClick={onPickFolder} className="max-w-full min-w-0">
             <span className="truncate">
@@ -356,7 +356,7 @@ function ActionRow({
             value={action.address}
             onChange={(event) => onChange({ ...action, address: event.target.value })}
           />
-          <label className="flex items-center gap-2 text-[13px]">
+          <label className="flex items-center gap-2 text-meta">
             <input
               type="checkbox"
               checked={action.keepCopy}
@@ -365,11 +365,11 @@ function ActionRow({
             />
             {t("rules.keepCopy")}
           </label>
-          <p className="text-[12px] text-muted">{t("rules.forwardHint")}</p>
+          <p className="text-caption text-muted">{t("rules.forwardHint")}</p>
         </div>
       )}
       {problem && (
-        <p role="alert" className={clsx("text-[13px] text-danger")}>
+        <p role="alert" className={clsx("text-meta text-danger")}>
           {problem.kind === "badAddress"
             ? t("rules.problem.badAddress")
             : problem.kind === "noLabel"

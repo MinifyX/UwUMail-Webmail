@@ -25,8 +25,8 @@ function Question({ count, onCancel }: { count: number; onCancel: () => void }) 
   return (
     <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
       <NyuScene name="goodbye" className="w-40" />
-      <h2 className="text-[18px] font-extrabold text-balance">{t("deleteForever.title", { count })}</h2>
-      <p className="text-[13px] text-muted">{t("deleteForever.body", { count })}</p>
+      <h2 className="text-section font-extrabold text-balance">{t("deleteForever.title", { count })}</h2>
+      <p className="text-meta text-muted">{t("deleteForever.body", { count })}</p>
       <div className="flex flex-wrap justify-center gap-2 pt-1">
         <Button variant="danger" autoFocus {...armedActivation(shownAt, () => answerDeleteForever(true))}>
           {t("deleteForever.confirm")}

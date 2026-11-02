@@ -73,9 +73,54 @@ const MONOSPACE =
 const KEYWORDS =
   /^(inherit|initial|unset|revert|revert-layer|caption|icon|menu|message-box|small-caption|status-bar)$/i;
 
-/** The size (and line height) in a `font` shorthand; the family list follows it. */
+/**
+ * One whitespace-separated token of a `font` shorthand that is its size. Anchored and without
+ * nested repetition, so it runs in linear time on any token (security-audit F-1).
+ */
 const SHORTHAND_SIZE =
-  /^(.*?(?:^|\s)(?:[+-]?(?:\d+\.?\d*|\.\d+)(?:px|pt|pc|em|rem|ex|ch|%|vw|vh|vmin|vmax|cm|mm|in|q|lh|rlh)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger)(?:\s*\/\s*[^\s,]+)?\s+)(\S[\s\S]*)$/i;
+  /^(?:[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:px|pt|pc|em|rem|ex|ch|%|vw|vh|vmin|vmax|cm|mm|in|q|lh|rlh)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger)$/i;
+
+/** A line height after the `/` of a `font` shorthand. */
+const LINE_HEIGHT = /^[^\s,]+$/;
+
+/** Values longer than this are left as they are: no real font list needs that much. */
+const MAX_VALUE_LENGTH = 512;
+
+/**
+ * Splits a `font` shorthand into what comes up to and including its size (and line height) and the
+ * family list that follows, or returns null when there is no size followed by families.
+ */
+function splitShorthand(body: string): [string, string] | null {
+  const tokens = [...body.matchAll(/\S+/g)];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]![0];
+    const slash = token.indexOf("/");
+    if (!SHORTHAND_SIZE.test(slash === -1 ? token : token.slice(0, slash))) continue;
+    // The tokens the size (with its line height) takes: `14px/1.4`, `14px/ 1.4`, `14px /1.4`, `14px / 1.4`.
+    let last = i;
+    if (slash !== -1) {
+      const height = token.slice(slash + 1);
+      if (height === "" && LINE_HEIGHT.test(tokens[i + 1]?.[0] ?? "")) last = i + 1;
+      else if (!LINE_HEIGHT.test(height)) continue;
+    } else {
+      const next = tokens[i + 1]?.[0] ?? "";
+      if (next === "/" && LINE_HEIGHT.test(tokens[i + 2]?.[0] ?? "")) last = i + 2;
+      else if (next.startsWith("/") && LINE_HEIGHT.test(next.slice(1))) last = i + 1;
+    }
+    const families = tokens[last + 1];
+    if (!families) continue;
+    return [body.slice(0, families.index), body.slice(families.index)];
+  }
+  return null;
+}
+
+/** Splits a trailing `!important` off a value (without a regex, which scanned long values quadratically). */
+function splitImportant(value: string): [string, boolean] {
+  const trimmed = value.trimEnd();
+  if (trimmed.slice(-9).toLowerCase() !== "important") return [value, false];
+  const before = trimmed.slice(0, -9).trimEnd();
+  return before.endsWith("!") ? [before.slice(0, -1), true] : [value, false];
+}
 
 /** Splits a family list at its commas, but not at commas inside quotes. */
 function splitFamilies(list: string): string[] {
@@ -125,16 +170,17 @@ export function rewriteFamilies(list: string): string {
 
 /** Rewrites the value of a `font-family` (or, with `shorthand`, a `font`) declaration. */
 export function rewriteFontValue(value: string, shorthand = false): string {
-  const important = /\s*!\s*important\s*$/i.exec(value);
-  const body = (important ? value.slice(0, important.index) : value).trim();
+  // Long values are left alone: rewriting them buys nothing and only costs time (security-audit F-1).
+  if (value.length > MAX_VALUE_LENGTH) return value;
+  const [rest, important] = splitImportant(value);
+  const body = rest.trim();
   if (body === "" || KEYWORDS.test(body) || /var\(|env\(/i.test(body) || MONOSPACE.test(body)) return value;
   let prefix = "";
   let families = body;
   if (shorthand) {
-    const match = SHORTHAND_SIZE.exec(body);
-    if (!match) return value;
-    prefix = match[1]!;
-    families = match[2]!;
+    const split = splitShorthand(body);
+    if (!split) return value;
+    [prefix, families] = split;
   }
   return `${prefix}${rewriteFamilies(families)}${important ? " !important" : ""}`;
 }

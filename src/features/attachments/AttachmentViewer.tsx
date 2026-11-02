@@ -72,8 +72,8 @@ function ViewerBody({ attachments, index, sender, onIndexChange }: AttachmentVie
     >
       <header className="flex items-center gap-2 border-b border-hairline py-2 pr-2 pl-5">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-bold">{attachment.filename}</p>
-          <p className="text-[12px] text-muted">
+          <p className="truncate text-reading font-bold">{attachment.filename}</p>
+          <p className="text-caption text-muted">
             {formatSize(attachment.size, i18n.language)}
             {count > 1 && ` · ${t("attachment.counter", { current: index + 1, total: count })}`}
           </p>
@@ -92,11 +92,11 @@ function ViewerBody({ attachments, index, sender, onIndexChange }: AttachmentVie
 
       {dangerous && (
         <div role="note" className="border-b border-danger/30 bg-danger-tint px-5 py-3 text-danger">
-          <p className="flex items-center gap-2 text-[14px] font-bold">
+          <p className="flex items-center gap-2 text-body font-bold">
             <ShieldAlert className="size-5 shrink-0" aria-hidden />
             {t("attachment.dangerTitle")}
           </p>
-          <p className="pt-1 pl-7 text-[13px]">
+          <p className="pt-1 pl-7 text-meta">
             {t("attachment.dangerBody", {
               name: attachment.filename,
               sender: `${displayName(sender)} <${sender.email}>`,
@@ -114,9 +114,9 @@ function ViewerBody({ attachments, index, sender, onIndexChange }: AttachmentVie
             className="h-full"
           />
         ) : isPending ? (
-          <p className="grid h-full place-items-center text-[13px] text-muted">{t("attachment.loading")}</p>
+          <p className="grid h-full place-items-center text-meta text-muted">{t("attachment.loading")}</p>
         ) : error || !file ? (
-          <p className="grid h-full place-items-center px-6 text-center text-[13px] text-danger">
+          <p className="grid h-full place-items-center px-6 text-center text-meta text-danger">
             {t("attachment.failed", { reason: error instanceof Error ? error.message : "" })}
           </p>
         ) : (

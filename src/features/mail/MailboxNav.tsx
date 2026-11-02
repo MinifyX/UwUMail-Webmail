@@ -7,9 +7,6 @@ import {
   FolderOpen,
   FolderPlus,
   LoaderCircle,
-  PenLine,
-  Settings,
-  SlidersHorizontal,
   Users,
   WifiOff,
 } from "lucide-react";
@@ -19,8 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Account, Folder, FolderRights, MailboxView, SharedAccount } from "@/backend/types";
 import { AccountDot } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Wordmark } from "@/components/ui/Logo";
+import { IconButton } from "@/components/ui/Button";
 import { ContextMenu, type MenuItem } from "@/components/ui/Menu";
 import { Badge } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
@@ -39,10 +35,8 @@ import { openFolderDialog } from "@/state/folderDialog";
 import { toast } from "@/state/toasts";
 import { type FolderRef, useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
-import { PORTAL_URL } from "@/backend/server";
 import { ScheduledNavItem } from "../compose/ScheduledSends";
 import { LabelNavSection } from "../labels/LabelNav";
-import { AppSwitch } from "../shell/AppSwitch";
 import { ShareDialog } from "../sharing/ShareDialog";
 import { buildFolderTree, countsUnread, type FolderNode } from "./folderTree";
 import { draggedThreadIds, THREAD_DRAG_TYPE, useSelectionActions } from "./selection";
@@ -72,11 +66,11 @@ function NavItem({ icon: Icon, label, count, active, onClick, title, menu }: Nav
       title={title}
       aria-current={active ? "page" : undefined}
       className={clsx(
-        "group flex h-9 w-full min-w-0 items-center gap-3 rounded-xl px-3 text-left text-[13.5px] transition-colors",
+        "group flex h-9 w-full min-w-0 items-center gap-3 rounded-xl px-3 text-left text-body transition-colors",
         active ? "bg-pink-tint font-semibold text-pink-ink" : "text-ink/85 hover:bg-pink-tint/50",
       )}
     >
-      <Icon className={clsx("size-[17px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
+      <Icon className={clsx("size-[18px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {count !== undefined && count > 0 && (
         <Badge count={count} className={clsx(menu && menuAt === null && "pointer-fine:group-hover:invisible")} />
@@ -138,7 +132,7 @@ const INDENT = 16;
 
 function Glyph({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) {
   return (
-    <Icon className={clsx("size-[17px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
+    <Icon className={clsx("size-[18px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
   );
 }
 
@@ -361,7 +355,7 @@ function FolderItem({ node, accountId, owner }: { node: FolderNode; accountId: s
           type="button"
           onClick={() => (folder.selectable ? setView(target) : toggleFolder(folder.id))}
           aria-current={active ? "page" : undefined}
-          className="flex h-full min-w-0 flex-1 items-center gap-2.5 pr-3 pl-1 text-left text-[13.5px]"
+          className="flex h-full min-w-0 flex-1 items-center gap-2.5 pr-3 pl-1 text-left text-body"
         >
           <Glyph icon={icon} active={active} />
           <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -511,7 +505,7 @@ function AccountSection({
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           title={statusLabel}
-          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-[12px] font-bold tracking-wide text-muted uppercase hover:text-ink"
+          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-caption font-bold tracking-wide text-muted uppercase hover:text-ink"
         >
           <AccountDot color={account.color} />
           <span className="min-w-0 flex-1 truncate text-left tracking-normal normal-case">{account.email}</span>
@@ -589,11 +583,11 @@ function SharedSection({
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           title={owner.email}
-          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-[12px] font-bold text-muted hover:text-ink"
+          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-caption font-bold text-muted hover:text-ink"
         >
           <Users className="size-3.5 shrink-0" aria-hidden />
           <span className="min-w-0 flex-1 truncate text-left">{title}</span>
-          {owner.readOnly && <span className="shrink-0 text-[11px] font-semibold">{t("sharing.readOnlyShort")}</span>}
+          {owner.readOnly && <span className="shrink-0 text-badge font-semibold">{t("sharing.readOnlyShort")}</span>}
           <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
         </button>
         {menuItems.length > 0 && (
@@ -623,7 +617,7 @@ function SharedSection({
 }
 
 /** Counts arriving mail so Nyu in the logo hops once each time. Syncs without new mail don't count. */
-function useNewMailHops() {
+export function useNewMailHops() {
   const [hops, setHops] = useState(0);
   useEffect(
     () =>
@@ -637,14 +631,11 @@ function useNewMailHops() {
 
 export function MailboxNav({ className }: { className?: string }) {
   const { t } = useT();
-  const hops = useNewMailHops();
   const { accounts } = useVisibleAccounts();
   const { data: allFolders = [] } = useFolders();
   const { data: sharedAccounts = [] } = useSharedAccounts();
   const view = useUi((s) => s.view);
   const setView = useUi((s) => s.setView);
-  const openCompose = useUi((s) => s.openCompose);
-  const openSettings = useUi((s) => s.openSettings);
 
   const { mailboxes } = useMailboxes();
   const client = useQueryClient();
@@ -666,23 +657,7 @@ export function MailboxNav({ className }: { className?: string }) {
   };
 
   return (
-    <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-4 pb-3", className)}>
-      <div className="flex items-center justify-between px-2">
-        <Wordmark className="text-[19px]" hop={hops} />
-      </div>
-
-      <AppSwitch />
-
-      <Button
-        variant="primary"
-        size="lg"
-        icon={PenLine}
-        onClick={() => openCompose({ mode: "new" })}
-        className="w-full"
-      >
-        {t("nav.compose")}
-      </Button>
-
+    <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-3 pb-3", className)}>
       <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-1">
         <section className="flex flex-col gap-0.5">
           {UNIFIED_ROLES.map((role) => {
@@ -717,7 +692,7 @@ export function MailboxNav({ className }: { className?: string }) {
 
         {favorites.length > 0 && (
           <section className="flex flex-col gap-0.5" aria-label={t("nav.favorites")}>
-            <p className="px-3 pb-1 text-[12px] font-bold tracking-wide text-muted uppercase">{t("nav.favorites")}</p>
+            <p className="px-3 pb-1 text-caption font-bold tracking-wide text-muted uppercase">{t("nav.favorites")}</p>
             {favorites.map((folder) => {
               const mailbox = mailboxes.find((each) => each.id === folder.accountId)!;
               const target: MailboxView = { kind: "folder", accountId: folder.accountId, folderId: folder.id };
@@ -782,16 +757,6 @@ export function MailboxNav({ className }: { className?: string }) {
         })}
 
         <LabelNavSection />
-      </div>
-
-      <div className="flex flex-col gap-0.5 border-t border-hairline pt-3">
-        <NavItem icon={Settings} label={t("nav.settings")} active={false} onClick={() => openSettings()} />
-        <NavItem
-          icon={SlidersHorizontal}
-          label={t("nav.portal")}
-          active={false}
-          onClick={() => window.location.assign(PORTAL_URL)}
-        />
       </div>
     </nav>
   );

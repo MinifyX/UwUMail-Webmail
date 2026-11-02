@@ -442,13 +442,21 @@ function birthdayDate(date: string): Json | null {
   };
 }
 
+/**
+ * A key from the server's card as one segment of a patch path (RFC 8620 §5.3, JSON Pointer): `~`
+ * and `/` escaped, so a key can't address another path of the card (security-audit W-38).
+ */
+function segment(key: string): string {
+  return key.replace(/~/g, "~0").replace(/\//g, "~1");
+}
+
 /** A single text entry (organization, title, note): changed in place, added or removed. */
 function singleText(patch: Json, card: Json, property: string, field: string, value: string, prefix: string) {
   const first = firstText(card[property], field);
   const wanted = value.trim();
   if ((first?.value ?? "") === wanted) return;
-  if (first && wanted) patch[`${property}/${first.key}/${field}`] = wanted;
-  else if (first) patch[`${property}/${first.key}`] = null;
+  if (first && wanted) patch[`${property}/${segment(first.key)}/${field}`] = wanted;
+  else if (first) patch[`${property}/${segment(first.key)}`] = null;
   else if (isObject(card[property])) patch[`${property}/${prefix}1`] = { [field]: wanted };
   else patch[property] = { [`${prefix}1`]: { [field]: wanted } };
 }
@@ -471,13 +479,13 @@ function photoPatch(patch: Json, card: Json, photo: string | null) {
   const photos = entries(card.media).filter(([, entry]) => entry.kind === "photo");
   const shown = photoEntry(card);
   if (photo === null) {
-    for (const [key] of photos) patch[`media/${key}`] = null;
+    for (const [key] of photos) patch[`media/${segment(key)}`] = null;
     return;
   }
   if (shown?.uri === photo && photos.length === 1) return;
   const replaced = shown ? photos.find(([key]) => key === shown.key) : photos[0];
-  for (const [key] of photos) if (key !== replaced?.[0]) patch[`media/${key}`] = null;
-  if (replaced) patch[`media/${replaced[0]}`] = photoMedia(photo, replaced[1]);
+  for (const [key] of photos) if (key !== replaced?.[0]) patch[`media/${segment(key)}`] = null;
+  if (replaced) patch[`media/${segment(replaced[0])}`] = photoMedia(photo, replaced[1]);
   else if (isObject(card.media)) patch[`media/${freeKey(new Set(Object.keys(card.media)), "p")}`] = photoMedia(photo);
   else patch.media = { p1: photoMedia(photo) };
 }
@@ -550,8 +558,8 @@ export function patchFromInput(card: JmapCard, input: ContactInput): Json {
   const datePatch = (kind: "birth" | "wedding", wanted: string | null, prefix: string) => {
     const current = dateOf(card, kind);
     const date = wanted ? birthdayDate(wanted) : null;
-    if (current && date) patch[`anniversaries/${current.key}/date`] = date;
-    else if (current) patch[`anniversaries/${current.key}`] = null;
+    if (current && date) patch[`anniversaries/${segment(current.key)}/date`] = date;
+    else if (current) patch[`anniversaries/${segment(current.key)}`] = null;
     else if (date && hadDates) patch[`anniversaries/${freeKey(taken, prefix)}`] = { kind, date };
     else if (date) {
       // Both new at once go into one new map.

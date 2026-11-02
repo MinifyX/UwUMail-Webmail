@@ -51,11 +51,11 @@ function SendLaterForm({ maxDelay, onClose, onPick }: Omit<SendLaterDialogProps,
             <button
               type="button"
               onClick={() => onPick(at.toISOString())}
-              className="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[13.5px] hover:bg-pink-tint/60"
+              className="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-body hover:bg-pink-tint/60"
             >
               <Clock className="size-4 shrink-0 text-muted" aria-hidden />
               <span className="min-w-0 flex-1 truncate font-semibold">{t(`compose.later.${preset}`)}</span>
-              <span className="shrink-0 text-[12.5px] text-muted">{format(at)}</span>
+              <span className="shrink-0 text-meta text-muted">{format(at)}</span>
             </button>
           </li>
         ))}

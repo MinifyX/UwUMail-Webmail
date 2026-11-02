@@ -28,8 +28,8 @@ export function SearchHelp({ onInsert }: { onInsert: (term: string) => void }) {
         group,
         label: (
           <span className="flex min-w-0 flex-col">
-            <code className="font-mono text-[12.5px] font-semibold">{t(`searchHelp.example.${operator.key}`)}</code>
-            <span className="text-[12px] text-muted">{t(`searchHelp.desc.${operator.key}`)}</span>
+            <code className="font-mono text-meta font-semibold">{t(`searchHelp.example.${operator.key}`)}</code>
+            <span className="text-caption text-muted">{t(`searchHelp.desc.${operator.key}`)}</span>
           </span>
         ),
         onSelect: () => onInsert(operatorTerm(operator.key)),

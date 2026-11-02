@@ -25,7 +25,7 @@ export function MiniMonth({ onPick }: { onPick?: () => void }) {
   return (
     <div className="flex flex-col gap-1 px-1">
       <div className="flex items-center justify-between">
-        <span className="pl-2 text-[13px] font-bold">{formatMonthTitle(month)}</span>
+        <span className="pl-2 text-meta font-bold">{formatMonthTitle(month)}</span>
         <span className="flex">
           <IconButton
             icon={ChevronLeft}
@@ -41,7 +41,7 @@ export function MiniMonth({ onPick }: { onPick?: () => void }) {
           />
         </span>
       </div>
-      <table className="w-full table-fixed text-center text-[11.5px]" role="grid" aria-label={formatMonthTitle(month)}>
+      <table className="w-full table-fixed text-center text-caption" role="grid" aria-label={formatMonthTitle(month)}>
         <thead>
           <tr>
             {weeks[0]?.map((day) => (

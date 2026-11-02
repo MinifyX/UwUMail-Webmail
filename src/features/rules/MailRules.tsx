@@ -28,8 +28,8 @@ export function MailRules() {
   return (
     <div className="flex flex-col gap-4 py-4">
       <div>
-        <p className="text-sm font-semibold">{t("rules.title")}</p>
-        <p className="text-[13px] text-muted">{t("rules.description")}</p>
+        <p className="text-body font-semibold">{t("rules.title")}</p>
+        <p className="text-meta text-muted">{t("rules.description")}</p>
       </div>
       {accounts.length > 1 && (
         <Select
@@ -62,11 +62,11 @@ function AccountRules({ accountId }: { accountId: string }) {
     return () => setSettingsFormDirty(false);
   }, [editing, dirty, setSettingsFormDirty]);
 
-  if (query.isPending) return <p className="text-[13px] text-muted">{t("rules.loading")}</p>;
+  if (query.isPending) return <p className="text-meta text-muted">{t("rules.loading")}</p>;
   if (query.isError) {
     return (
       <div className="flex flex-col items-start gap-2">
-        <p className="text-[13px] text-danger">
+        <p className="text-meta text-danger">
           {t("rules.loadFailed", { reason: query.error instanceof Error ? query.error.message : "" })}
         </p>
         <Button size="sm" onClick={() => void query.refetch()}>
@@ -144,7 +144,7 @@ function AccountRules({ accountId }: { accountId: string }) {
       ) : (
         exists &&
         !active && (
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-[13px]">
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-meta">
             <CircleAlert className="size-4 shrink-0 text-warning" aria-hidden />
             <span className="min-w-0 flex-1">{t("rules.inactive")}</span>
             <Button size="sm" busy={saving} onClick={() => void save(set)}>
@@ -154,7 +154,7 @@ function AccountRules({ accountId }: { accountId: string }) {
         )
       )}
       {set.rules.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13px] text-muted">
+        <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-meta text-muted">
           {t("rules.empty")}
         </p>
       ) : (
@@ -173,7 +173,7 @@ function AccountRules({ accountId }: { accountId: string }) {
                 onClick={() => setEditing({ rule, index })}
                 className={clsx("min-w-0 flex-1 py-1 text-left", !rule.enabled && "opacity-60")}
               >
-                <span className="block truncate text-[13.5px] font-semibold">{rule.name}</span>
+                <span className="block truncate text-body font-semibold">{rule.name}</span>
                 <RuleSummary rule={rule} />
               </button>
               <IconButton
@@ -252,7 +252,7 @@ function RuleSummary({ rule }: { rule: MailRule }) {
     })
     .join(", ");
   return (
-    <span className="block truncate text-[12.5px] text-muted">
+    <span className="block truncate text-meta text-muted">
       {conditions} → {actions}
       {rule.stop ? ` · ${t("rules.summary.stop")}` : ""}
     </span>
@@ -264,7 +264,7 @@ function RuleSummary({ rule }: { rule: MailRule }) {
 function OtherScriptNote({ name, children }: { name: string; children?: ReactNode }) {
   const { t } = useT();
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-[13px]">
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-meta">
       <CircleAlert className="size-4 shrink-0 text-warning" aria-hidden />
       <span className="min-w-0 flex-1">
         {name.trim() ? t("rules.otherActive", { name: name.trim() }) : t("rules.otherActiveUnnamed")}
@@ -311,7 +311,7 @@ function ForeignScript({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-[13px]">
+      <div className="flex gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-meta">
         <CircleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
         <div>
           <p className="font-semibold">{t("rules.foreignTitle")}</p>
@@ -326,7 +326,7 @@ function ForeignScript({
         autoCorrect="off"
         aria-label={t("rules.scriptLabel")}
         rows={14}
-        className="w-full resize-y rounded-control border border-line bg-surface px-3.5 py-3 font-mono text-[12.5px] leading-relaxed text-ink focus:border-pink focus:shadow-focus focus:outline-none"
+        className="w-full resize-y rounded-control border border-line bg-surface px-3.5 py-3 font-mono text-meta leading-relaxed text-ink focus:border-pink focus:shadow-focus focus:outline-none"
       />
       <div className="flex flex-wrap gap-2">
         <Button variant="primary" busy={busy} disabled={draft === text} onClick={() => void onSaveText(draft)}>
@@ -355,7 +355,7 @@ function ForeignScript({
           </Button>
         )}
       </div>
-      {replacing && <p className="text-[13px] text-muted">{t("rules.replaceBody")}</p>}
+      {replacing && <p className="text-meta text-muted">{t("rules.replaceBody")}</p>}
     </div>
   );
 }

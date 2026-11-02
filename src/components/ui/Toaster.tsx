@@ -24,16 +24,11 @@ export function Toaster() {
           <div
             key={item.id}
             role={item.tone === "error" ? "alert" : "status"}
-            className="pointer-events-auto flex w-full animate-slide-up items-center gap-3 rounded-2xl bg-[#1c1420] py-2.5 pr-2 pl-4 text-[13px] font-medium text-white shadow-float dark:bg-[#f8f2f6] dark:text-[#1c1420]"
+            className="pointer-events-auto flex w-full animate-slide-up items-center gap-3 rounded-2xl bg-toast py-2.5 pr-2 pl-4 text-meta font-medium text-toast-ink shadow-float"
           >
             <span className="relative shrink-0">
               <Icon
-                className={clsx(
-                  "size-[18px]",
-                  item.tone === "error"
-                    ? "text-[#ff8096] dark:text-danger"
-                    : "text-(--uwu-toast-accent) dark:text-pink-solid",
-                )}
+                className={clsx("size-[18px]", item.tone === "error" ? "text-toast-danger" : "text-toast-accent")}
                 aria-hidden
               />
               {item.effect === "sent" && mascot && (
@@ -52,7 +47,7 @@ export function Toaster() {
                   dismiss(item.id);
                   item.action?.run();
                 }}
-                className="shrink-0 rounded-full px-3 py-1.5 text-[13px] font-bold text-(--uwu-toast-accent) hover:bg-white/10 dark:text-pink-ink dark:hover:bg-black/5"
+                className="shrink-0 rounded-full px-3 py-1.5 text-meta font-bold text-toast-accent hover:bg-white/10 dark:hover:bg-black/5"
               >
                 {item.action.label}
               </button>
@@ -86,5 +81,5 @@ function Countdown({ to }: { to: string }) {
   const text = new Intl.NumberFormat(i18n.language, { style: "unit", unit: "second", unitDisplay: "narrow" }).format(
     seconds,
   );
-  return <span className="shrink-0 text-[12px] tabular-nums opacity-70">{text}</span>;
+  return <span className="shrink-0 text-caption tabular-nums opacity-70">{text}</span>;
 }

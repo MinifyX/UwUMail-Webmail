@@ -18,6 +18,9 @@
       "contacts": "Contacts"
     },
     "scheduled": "Programmés",
+    "searchAll": "Rechercher dans toutes les boîtes",
+    "account": "Compte",
+    "tabs": "Sections",
     "favorites": "Favoris"
   },
   "filter": {
@@ -58,7 +61,11 @@
     "selected_one": "{{count}} sélectionné",
     "selected_many": "{{count}} sélectionnés",
     "selected_other": "{{count}} sélectionnés",
-    "clearSelection": "Effacer la sélection"
+    "clearSelection": "Effacer la sélection",
+    "filterMenu": "Filtre et affichage",
+    "filterGroup": "Filtre",
+    "viewGroup": "Affichage",
+    "clearFilter": "Retirer le filtre"
   },
   "reader": {
     "empty": {
@@ -445,7 +452,8 @@
     "retry": "Réessayer",
     "yesterday": "Hier",
     "save": "Enregistrer",
-    "ok": "OK"
+    "ok": "OK",
+    "today": "Aujourd’hui"
   },
   "folder": {
     "inbox": "Boîte de réception",
@@ -2106,5 +2114,34 @@
     "to": "à",
     "days": "Jours",
     "noDays": "Choisissez au moins un jour, sinon les heures calmes ne commencent jamais."
+  },
+  "codes": {
+    "bar": "Codes de vérification",
+    "tag": "Code",
+    "link": "Lien de connexion",
+    "open": "Ouvrir",
+    "copy": "Copier le code",
+    "copied": "Code {{code}} copié",
+    "copyFailed": "Impossible de copier le code.",
+    "remaining": "encore {{time}}",
+    "noAutofill": "Expéditeur non vérifié",
+    "noAutofillHint": "Expéditeur non vérifié (DMARC) : le code n'est jamais inséré automatiquement.",
+    "purpose": {
+      "login": "Connexion",
+      "signup": "Inscription",
+      "confirm-email": "Confirmer l’e-mail",
+      "reset-password": "Réinitialiser le mot de passe",
+      "confirm-action": "Confirmer une action",
+      "other": "Confirmation"
+    },
+    "hint": {
+      "title": "Code {{code}} pour {{origin}} · encore {{time}}",
+      "linkTitle": "Lien de connexion pour {{origin}} · encore {{time}}",
+      "signed": "Origine signée (Verification-Info, DKIM vérifié). Remplissage auto possible sur {{origin}}.",
+      "signedNoAutofill": "Signé (Verification-Info), mais l'expéditeur n'est pas vérifié (DMARC) : jamais inséré automatiquement.",
+      "heuristic": "Lu dans le texte. Origine non confirmée, donc pas d’insertion automatique.",
+      "link": "Origine signée. Tu ouvres les liens toi-même.",
+      "expired": "Ce code a expiré."
+    }
   }
 }

@@ -66,9 +66,9 @@ export function LinkAddress({ href, compact = false }: { href: string; compact?:
   );
   return (
     <span className="flex min-w-0 flex-col gap-1">
-      <span className="text-[14px]">{host}</span>
+      <span className="text-body">{host}</span>
       {parts.rest !== "/" && (
-        <span className="selectable block max-h-24 overflow-y-auto rounded-lg bg-surface px-2 py-1 font-mono text-[11.5px] break-all text-muted">
+        <span className="selectable block max-h-24 overflow-y-auto rounded-lg bg-surface px-2 py-1 font-mono text-caption break-all text-muted">
           {parts.rest}
         </span>
       )}
@@ -84,7 +84,7 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
   return (
     <>
       {check.misleading && (
-        <div className="w-full rounded-2xl bg-danger-tint px-4 py-3 text-left text-[13px]">
+        <div className="w-full rounded-2xl bg-danger-tint px-4 py-3 text-left text-meta">
           <p className="mb-1.5 font-bold text-danger">{t("link.warningBody")}</p>
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
             <dt className="text-muted">{t("link.shown")}</dt>
@@ -99,7 +99,7 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
       {check.unicodeHost && (
         <p
           className={clsx(
-            "flex w-full items-start gap-2 rounded-xl px-3 py-2 text-left text-[12.5px]",
+            "flex w-full items-start gap-2 rounded-xl px-3 py-2 text-left text-meta",
             check.lookalike ? "bg-danger-tint text-danger" : "bg-canvas text-muted",
           )}
         >
@@ -123,7 +123,7 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
       )}
       {check.safeLink && (
         <p
-          className="flex w-full items-start gap-2 rounded-xl bg-canvas px-3 py-2 text-left text-[12.5px] text-muted"
+          className="flex w-full items-start gap-2 rounded-xl bg-canvas px-3 py-2 text-left text-meta text-muted"
           title={visibleText(check.safeLink)}
         >
           <ShieldOff className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -135,7 +135,7 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
         </p>
       )}
       {redirect && (
-        <div className="flex w-full items-start gap-2 rounded-xl bg-canvas px-3 py-2 text-left text-[12.5px]">
+        <div className="flex w-full items-start gap-2 rounded-xl bg-canvas px-3 py-2 text-left text-meta">
           <Route className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
           <span className="flex min-w-0 flex-1 flex-col gap-1">
             {redirect.target && (
@@ -172,7 +172,7 @@ function Note({
   return (
     <p
       className={clsx(
-        "flex w-full items-start gap-2 rounded-xl px-3 py-2 text-left text-[12.5px]",
+        "flex w-full items-start gap-2 rounded-xl px-3 py-2 text-left text-meta",
         tone === "danger" ? "bg-danger-tint text-danger" : "bg-warning-tint text-warning",
       )}
     >
@@ -250,14 +250,12 @@ function LinkQuestion({ check, onDone }: { check: LinkCheck; onDone: () => void 
   return (
     <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
       <NyuScene name="search" className="w-36" />
-      <h2 className="text-[18px] font-extrabold text-balance break-keep">
+      <h2 className="text-section font-extrabold text-balance break-keep">
         {check.misleading ? t("link.warningTitle") : mail ? t("link.mailTitle") : t("link.confirmTitle")}
       </h2>
-      {!check.misleading && (
-        <p className="text-[13px] text-muted">{mail ? t("link.mailBody") : t("link.confirmBody")}</p>
-      )}
+      {!check.misleading && <p className="text-meta text-muted">{mail ? t("link.mailBody") : t("link.confirmBody")}</p>}
       {mail ? (
-        <dl className="grid w-full grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 rounded-2xl bg-canvas px-4 py-3 text-left text-[13px]">
+        <dl className="grid w-full grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 rounded-2xl bg-canvas px-4 py-3 text-left text-meta">
           <Recipients label={t("compose.to")} list={mail.to} />
           <Recipients label={t("compose.cc")} list={mail.cc} />
           <Recipients label={t("compose.bcc")} list={mail.bcc} />
@@ -275,7 +273,7 @@ function LinkQuestion({ check, onDone }: { check: LinkCheck; onDone: () => void 
       )}
       <LinkFacts check={check} />
       {check.rememberable && (
-        <label className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-1 text-left text-[13px]">
+        <label className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-1 text-left text-meta">
           <input
             type="checkbox"
             checked={remember}

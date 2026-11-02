@@ -18,6 +18,9 @@
       "contacts": "Contacts"
     },
     "scheduled": "Scheduled",
+    "searchAll": "Search all mailboxes",
+    "account": "Account",
+    "tabs": "Sections",
     "favorites": "Favorites"
   },
   "filter": {
@@ -56,7 +59,11 @@
     "count_other": "{{count}} messages",
     "selected_one": "{{count}} selected",
     "selected_other": "{{count}} selected",
-    "clearSelection": "Clear selection"
+    "clearSelection": "Clear selection",
+    "filterMenu": "Filter and view",
+    "filterGroup": "Filter",
+    "viewGroup": "View",
+    "clearFilter": "Remove filter"
   },
   "reader": {
     "empty": {
@@ -436,7 +443,8 @@
     "retry": "Try again",
     "yesterday": "Yesterday",
     "save": "Save",
-    "ok": "OK"
+    "ok": "OK",
+    "today": "Today"
   },
   "folder": {
     "inbox": "Inbox",
@@ -2038,5 +2046,34 @@
     "to": "to",
     "days": "Days",
     "noDays": "Pick at least one day, otherwise the quiet hours never start."
+  },
+  "codes": {
+    "bar": "Verification codes",
+    "tag": "Code",
+    "link": "Sign-in link",
+    "open": "Open",
+    "copy": "Copy code",
+    "copied": "Code {{code}} copied",
+    "copyFailed": "The code couldn't be copied.",
+    "remaining": "{{time}} left",
+    "noAutofill": "Unverified sender",
+    "noAutofillHint": "Sender not verified (DMARC): the code is never filled in automatically.",
+    "purpose": {
+      "login": "Sign-in",
+      "signup": "Sign-up",
+      "confirm-email": "Confirm email",
+      "reset-password": "Reset password",
+      "confirm-action": "Confirm action",
+      "other": "Confirmation"
+    },
+    "hint": {
+      "title": "Code {{code}} for {{origin}} · {{time}} left",
+      "linkTitle": "Sign-in link for {{origin}} · {{time}} left",
+      "signed": "Signed origin (Verification-Info, DKIM checked). Autofill on {{origin}} is possible.",
+      "signedNoAutofill": "Signed (Verification-Info), but the sender isn't verified (DMARC): never filled in automatically.",
+      "heuristic": "Read from the text. The origin isn't confirmed, so it's never filled in automatically.",
+      "link": "Signed origin. You open links yourself.",
+      "expired": "This code has expired."
+    }
   }
 }

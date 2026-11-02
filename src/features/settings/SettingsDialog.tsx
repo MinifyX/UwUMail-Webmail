@@ -173,10 +173,10 @@ function TrustedSenders() {
   return (
     <Row label={t("settings.trustedSenders")} description={t("settings.trustedSendersDesc")}>
       {remoteImages === "always" && entries.length > 0 && (
-        <p className="text-[12.5px] text-warning">{t("settings.trustedSendersInactive")}</p>
+        <p className="text-meta text-warning">{t("settings.trustedSendersInactive")}</p>
       )}
       {entries.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13px] text-muted">
+        <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-meta text-muted">
           {t("settings.trustedSendersEmpty")}
         </p>
       ) : (
@@ -189,7 +189,7 @@ function TrustedSenders() {
           {entries.map((entry) => (
             <li key={entry} className="flex items-center gap-3 rounded-xl py-1 pr-1 pl-3 hover:bg-elevated">
               <ImageIcon className="size-4 shrink-0 text-faint" aria-hidden />
-              <span className="selectable min-w-0 flex-1 truncate text-[13.5px]">
+              <span className="selectable min-w-0 flex-1 truncate text-body">
                 {isDomainEntry(entry) ? (
                   <>
                     <span className="text-muted">@</span>
@@ -312,7 +312,7 @@ function Reading() {
       {phone && (
         <Row label={t("settings.swipeRight")} description={t("settings.swipeDesc")}>
           <SwipeSelect value={settings.swipeRight} onChange={(swipeRight) => settings.update({ swipeRight })} />
-          <p className="pt-1 text-sm font-semibold">{t("settings.swipeLeft")}</p>
+          <p className="pt-1 text-body font-semibold">{t("settings.swipeLeft")}</p>
           <SwipeSelect value={settings.swipeLeft} onChange={(swipeLeft) => settings.update({ swipeLeft })} />
         </Row>
       )}
@@ -329,16 +329,14 @@ function About() {
     <div className="flex flex-col items-center gap-4 py-8 text-center">
       <LogoSymbol className="h-20 w-auto max-w-[240px]" title={brand} />
       <div>
-        <p className="text-[20px] font-extrabold">
+        <p className="text-title font-extrabold">
           <span className="text-pink">UwU</span>Mail
         </p>
-        <p className="text-[13px] text-muted">{t("settings.version", { version: pkg.version })}</p>
+        <p className="text-meta text-muted">{t("settings.version", { version: pkg.version })}</p>
       </div>
-      <p className="max-w-[360px] text-[13px] text-muted">{t("settings.license")}</p>
+      <p className="max-w-[360px] text-meta text-muted">{t("settings.license")}</p>
       {backend().kind === "demo" && (
-        <p className="rounded-full bg-pink-tint px-3 py-1 text-[12.5px] font-semibold text-pink-ink">
-          {t("status.demo")}
-        </p>
+        <p className="rounded-full bg-pink-tint px-3 py-1 text-meta font-semibold text-pink-ink">{t("status.demo")}</p>
       )}
       <div className="flex flex-wrap justify-center gap-2">
         <Button icon={SlidersHorizontal} onClick={() => window.location.assign(PORTAL_URL)}>
@@ -415,11 +413,11 @@ export function SettingsDialog() {
                 onClick={() => requestSection(id)}
                 aria-current={section === id ? "page" : undefined}
                 className={clsx(
-                  "flex h-10 shrink-0 items-center gap-3 rounded-xl px-3 text-left text-[13.5px] font-semibold transition-colors",
+                  "flex h-10 shrink-0 items-center gap-3 rounded-xl px-3 text-left text-body font-semibold transition-colors",
                   section === id ? "bg-pink-tint text-pink-ink" : "text-muted hover:bg-pink-tint/50 hover:text-ink",
                 )}
               >
-                <Icon className="size-[17px]" aria-hidden />
+                <Icon className="size-[18px]" aria-hidden />
                 {id === "templates" ? t("templates.title") : t(`settings.${id}`)}
               </button>
             ))}

@@ -17,7 +17,7 @@ export function isTyping(target: EventTarget | null) {
 }
 
 /**
- * Keys use the format "mod+k", "shift+i" or plain "j". "mod" is Cmd on macOS
+ * Keys use the format "mod+k", "mod+shift+k", "shift+i" or plain "j". "mod" is Cmd on macOS
  * and Ctrl elsewhere. Single keys are ignored while the user types. "g i" is
  * a sequence: g, then i within a second. A key held down runs its handler once,
  * so holding Delete can't delete one conversation after the other.
@@ -60,6 +60,9 @@ export function findHotkey(map: HotkeyMap, combos: string[], started: string | n
 
 const SEQUENCE_WAIT = 1000;
 
+/** ⌘⇧K opens the command palette; ⌘K goes to the search. */
+export const PALETTE_COMBO = "mod+shift+k";
+
 export function useHotkeys(map: HotkeyMap, { enabled = true, repeat = [] }: HotkeyOptions = {}) {
   const latest = useRef(map);
   const repeating = useRef(repeat);
@@ -76,7 +79,8 @@ export function useHotkeys(map: HotkeyMap, { enabled = true, repeat = [] }: Hotk
       const combos = combosOf(event);
       const plain = combos.at(-1) ?? "";
       if (!plain.startsWith("mod+") && isTyping(event.target)) return;
-      if (document.querySelector("dialog[open]") && plain !== "mod+k") return;
+      // The palette toggles over an open dialog, the palette itself included.
+      if (document.querySelector("dialog[open]") && combos[0] !== PALETTE_COMBO) return;
       // An open menu keeps the arrows and letters to itself.
       if (document.querySelector('[role="menu"]')) return;
       const started = pending && event.timeStamp - pending.at < SEQUENCE_WAIT ? pending.key : null;

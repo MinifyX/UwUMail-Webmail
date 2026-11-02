@@ -16,16 +16,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-pink-solid text-on-pink hover:bg-pink-solid-hover shadow-[0_2px_10px_rgb(225_29_116/0.25)]",
+  primary: "bg-pink-solid text-on-pink hover:bg-pink-solid-hover shadow-primary",
   secondary: "bg-surface text-ink border border-line hover:bg-elevated hover:border-faint/50",
   ghost: "text-ink hover:bg-pink-tint/60",
   danger: "bg-surface text-danger border border-line hover:bg-danger-tint",
 };
 
 const SIZES: Record<Size, string> = {
-  sm: "h-8 px-3 text-[13px] gap-1.5",
-  md: "h-10 px-4 text-sm gap-2",
-  lg: "h-12 px-6 text-[15px] gap-2",
+  sm: "h-8 px-3 text-meta gap-1.5",
+  md: "h-10 px-4 text-body gap-2",
+  lg: "h-12 px-6 text-reading gap-2",
 };
 
 /** The busy button's turning ring. */

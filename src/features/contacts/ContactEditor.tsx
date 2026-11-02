@@ -152,7 +152,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
             </Field>
           </div>
           {tried && nameless && (
-            <p role="alert" className="-mt-2 text-[13px] text-danger">
+            <p role="alert" className="-mt-2 text-meta text-danger">
               {t("contacts.problem.name")}
             </p>
           )}
@@ -310,7 +310,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
                 rows={3}
                 maxLength={10000}
                 onChange={(event) => setForm({ note: event.target.value })}
-                className="w-full resize-y rounded-control border border-line bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-faint focus:border-pink focus:shadow-focus focus:outline-none"
+                className="w-full resize-y rounded-control border border-line bg-surface px-3.5 py-2.5 text-body text-ink placeholder:text-faint focus:border-pink focus:shadow-focus focus:outline-none"
               />
             )}
           </Field>
@@ -392,7 +392,7 @@ function Rows<T>({
   }, [added]);
   return (
     <fieldset ref={ref} className="flex flex-col gap-2">
-      <legend className="mb-1.5 text-[13px] font-semibold text-muted">{legend}</legend>
+      <legend className="mb-1.5 text-meta font-semibold text-muted">{legend}</legend>
       {items.map((item, index) => (
         <div key={index} data-entry className="flex items-start gap-2">
           <div className="flex min-w-0 flex-1 gap-2">

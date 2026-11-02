@@ -99,7 +99,7 @@ function SignatureList({ perAddress }: { perAddress: boolean }) {
       ) : (
         <>
           {own.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13px] text-muted">
+            <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-meta text-muted">
               {t("settings.signaturesEmpty")}
             </p>
           ) : (
@@ -107,7 +107,7 @@ function SignatureList({ perAddress }: { perAddress: boolean }) {
               {own.map((signature) => (
                 <li key={signature.id} className="rounded-2xl border border-hairline p-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold">
+                    <span className="min-w-0 flex-1 truncate text-body font-semibold">
                       {perAddress ? signature.email : signature.name}
                     </span>
                     {!perAddress && signature.forNew && <Badge>{t("settings.signatureDefaultNew")}</Badge>}
@@ -126,7 +126,7 @@ function SignatureList({ perAddress }: { perAddress: boolean }) {
                     />
                   </div>
                   <div
-                    className="mt-2 text-[13px] text-muted [&_img]:max-h-16 [&_img]:w-auto [&_p]:m-0"
+                    className="mt-2 text-meta text-muted [&_img]:max-h-16 [&_img]:w-auto [&_p]:m-0"
                     // Written by any client of this account: cleaned like the composer's content.
                     dangerouslySetInnerHTML={{ __html: cleanSignatureHtml(signature.html) }}
                   />
@@ -162,7 +162,5 @@ function SignatureList({ perAddress }: { perAddress: boolean }) {
 }
 
 function Badge({ children }: { children: string }) {
-  return (
-    <span className="rounded-full bg-pink-tint px-2 py-0.5 text-[11.5px] font-bold text-pink-ink">{children}</span>
-  );
+  return <span className="rounded-full bg-pink-tint px-2 py-0.5 text-caption font-bold text-pink-ink">{children}</span>;
 }

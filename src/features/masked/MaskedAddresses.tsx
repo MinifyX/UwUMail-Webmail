@@ -50,11 +50,11 @@ export function MaskedAddresses() {
   return (
     <div className="flex flex-col gap-4 py-4">
       <div>
-        <p className="text-sm font-semibold">{t("masked.title")}</p>
-        <p className="text-[13px] text-muted">{t("masked.description")}</p>
+        <p className="text-body font-semibold">{t("masked.title")}</p>
+        <p className="text-meta text-muted">{t("masked.description")}</p>
       </div>
       {closed ? (
-        <div className="flex gap-2 rounded-2xl bg-canvas px-4 py-3 text-[13px]">
+        <div className="flex gap-2 rounded-2xl bg-canvas px-4 py-3 text-meta">
           <Info className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
           <div>
             <p className="font-semibold">{t("masked.closedTitle")}</p>
@@ -91,9 +91,9 @@ function NewMasked({ options, onDirty }: { options: MaskedOptions; onDirty: (dir
   if (made) {
     return (
       <div role="status" className="flex flex-col gap-2 rounded-2xl bg-pink-tint/50 px-4 py-3">
-        <p className="text-[13px] font-semibold">{t("masked.created")}</p>
+        <p className="text-meta font-semibold">{t("masked.created")}</p>
         <div className="flex min-w-0 items-center gap-2">
-          <span className="selectable min-w-0 text-[15px] font-bold break-all">{made.email}</span>
+          <span className="selectable min-w-0 text-reading font-bold break-all">{made.email}</span>
           <CopyButton email={made.email} />
         </div>
         <Button size="sm" className="self-start" onClick={() => setMade(null)}>
@@ -244,7 +244,7 @@ function CreateForm({
       aria-label={t("masked.new")}
       className="flex flex-col gap-3 rounded-2xl border border-hairline p-4"
     >
-      <p className="text-sm font-semibold">{t("masked.new")}</p>
+      <p className="text-body font-semibold">{t("masked.new")}</p>
       <DetailFields form={form} problems={problems} onChange={(patch) => setForm({ ...form, ...patch })} />
       <Field
         label={t("masked.field.prefix")}
@@ -278,11 +278,9 @@ function CreateForm({
           )}
         </Field>
       )}
-      {domains.length === 1 && (
-        <p className="text-[12.5px] text-muted">{t("masked.onDomain", { domain: domains[0] })}</p>
-      )}
+      {domains.length === 1 && <p className="text-meta text-muted">{t("masked.onDomain", { domain: domains[0] })}</p>}
       {error && (
-        <p role="alert" className="text-[13px] text-danger">
+        <p role="alert" className="text-meta text-danger">
           {error}
         </p>
       )}
@@ -307,11 +305,11 @@ function MaskedList({ onDirty }: { onDirty: (dirty: boolean) => void }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  if (query.isPending) return <p className="text-[13px] text-muted">{t("masked.loading")}</p>;
+  if (query.isPending) return <p className="text-meta text-muted">{t("masked.loading")}</p>;
   if (query.isError) {
     return (
       <div className="flex flex-col items-start gap-2">
-        <p className="text-[13px] text-danger">{t("masked.loadFailed", { reason: maskedErrorText(query.error) })}</p>
+        <p className="text-meta text-danger">{t("masked.loadFailed", { reason: maskedErrorText(query.error) })}</p>
         <Button size="sm" onClick={() => void query.refetch()}>
           {t("common.retry")}
         </Button>
@@ -322,9 +320,7 @@ function MaskedList({ onDirty }: { onDirty: (dirty: boolean) => void }) {
   const all = query.data;
   if (all.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13px] text-muted">
-        {t("masked.empty")}
-      </p>
+      <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-meta text-muted">{t("masked.empty")}</p>
     );
   }
   const counts = countByFilter(all);
@@ -397,7 +393,7 @@ function MaskedList({ onDirty }: { onDirty: (dirty: boolean) => void }) {
             }}
             placeholder={t("masked.search")}
             aria-label={t("masked.search")}
-            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-10 pl-10 text-[13.5px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="h-10 w-full rounded-full border border-transparent bg-canvas pr-10 pl-10 text-body placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {search && (
             <IconButton
@@ -411,7 +407,7 @@ function MaskedList({ onDirty }: { onDirty: (dirty: boolean) => void }) {
         </div>
       </div>
       {visible.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-[13px] text-muted">
+        <p className="rounded-2xl border border-dashed border-line px-4 py-3 text-meta text-muted">
           {search.trim() ? t("masked.noMatch") : t(`masked.emptyFilter.${filter}`)}
         </p>
       ) : (
@@ -486,13 +482,13 @@ function MaskedRow({
       {/* On a phone the buttons go under the text, which keeps the whole width. */}
       <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-start sm:gap-2">
         <div className={clsx("flex min-w-0 flex-1 flex-col gap-0.5", !on && "opacity-70")}>
-          <span className="selectable text-[13.5px] font-semibold break-all">{item.email}</span>
-          {about && <span className="text-[12.5px] break-words text-ink">{about}</span>}
-          <span className="text-[12px] text-muted">
+          <span className="selectable text-body font-semibold break-all">{item.email}</span>
+          {about && <span className="text-meta break-words text-ink">{about}</span>}
+          <span className="text-caption text-muted">
             {t("masked.createdAt", { date: date(item.createdAt) })} ·{" "}
             {item.lastMessageAt ? t("masked.lastMessage", { date: date(item.lastMessageAt) }) : t("masked.noMessage")}
           </span>
-          {item.state === "pending" && <span className="text-[12px] text-warning">{t("masked.pending")}</span>}
+          {item.state === "pending" && <span className="text-caption text-warning">{t("masked.pending")}</span>}
         </div>
         <div className="-ml-2 flex shrink-0 flex-wrap items-center sm:ml-0 sm:justify-end">
           <CopyButton email={item.email} />
@@ -563,7 +559,7 @@ function MaskedEditor({
         }}
         className="flex flex-col gap-3 rounded-xl bg-canvas p-3"
       >
-        <p className="text-[13.5px] font-semibold break-all">{item.email}</p>
+        <p className="text-body font-semibold break-all">{item.email}</p>
         <DetailFields form={form} problems={problems} onChange={(change) => setForm({ ...form, ...change })} />
         <div className="flex flex-wrap gap-2">
           <Button type="submit" variant="primary" size="sm" busy={busy} disabled={Object.keys(problems).length > 0}>

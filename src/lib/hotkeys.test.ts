@@ -38,7 +38,8 @@ describe("useHotkeys", () => {
     const map: HotkeyMap = {
       j: () => void calls.push("next"),
       k: () => void calls.push("previous"),
-      "mod+k": () => void calls.push("palette"),
+      "mod+k": () => void calls.push("search"),
+      "mod+shift+k": () => void calls.push("palette"),
       e: () => void calls.push("archive"),
       "g i": () => void calls.push("inbox"),
       "shift+i": () => void calls.push("markAllRead"),
@@ -63,6 +64,15 @@ describe("useHotkeys", () => {
     document.body.innerHTML = "<dialog open></dialog>";
     press({ key: "K", shiftKey: true, ctrlKey: true });
     expect(calls).toEqual(["palette", "palette", "palette"]);
+  });
+
+  it("goes to the search with Cmd/Ctrl+K, but not over a dialog", () => {
+    const calls = setup();
+    press({ key: "k", metaKey: true });
+    press({ key: "k", ctrlKey: true });
+    document.body.innerHTML = "<dialog open></dialog>";
+    press({ key: "k", ctrlKey: true });
+    expect(calls).toEqual(["search", "search"]);
   });
 
   it("gives Shift+I to mark all read, plain I stays unclaimed", () => {

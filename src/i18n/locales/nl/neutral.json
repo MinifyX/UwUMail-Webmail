@@ -18,6 +18,9 @@
       "contacts": "Contacten"
     },
     "scheduled": "Gepland",
+    "searchAll": "Zoeken in alle postvakken",
+    "account": "Account",
+    "tabs": "Onderdelen",
     "favorites": "Favorieten"
   },
   "filter": {
@@ -56,7 +59,11 @@
     "count_other": "{{count}} berichten",
     "selected_one": "{{count}} geselecteerd",
     "selected_other": "{{count}} geselecteerd",
-    "clearSelection": "Selectie opheffen"
+    "clearSelection": "Selectie opheffen",
+    "filterMenu": "Filter en weergave",
+    "filterGroup": "Filter",
+    "viewGroup": "Weergave",
+    "clearFilter": "Filter verwijderen"
   },
   "reader": {
     "empty": {
@@ -436,7 +443,8 @@
     "retry": "Opnieuw proberen",
     "yesterday": "Gisteren",
     "save": "Opslaan",
-    "ok": "OK"
+    "ok": "OK",
+    "today": "Vandaag"
   },
   "folder": {
     "inbox": "Inbox",
@@ -2038,5 +2046,34 @@
     "to": "tot",
     "days": "Dagen",
     "noDays": "Kies minstens één dag, anders beginnen de stille uren nooit."
+  },
+  "codes": {
+    "bar": "Verificatiecodes",
+    "tag": "Code",
+    "link": "Inloglink",
+    "open": "Openen",
+    "copy": "Code kopiëren",
+    "copied": "Code {{code}} gekopieerd",
+    "copyFailed": "De code kon niet worden gekopieerd.",
+    "remaining": "nog {{time}}",
+    "noAutofill": "Afzender onbevestigd",
+    "noAutofillHint": "Afzender niet bevestigd (DMARC): de code wordt nooit automatisch ingevuld.",
+    "purpose": {
+      "login": "Inloggen",
+      "signup": "Registratie",
+      "confirm-email": "E-mail bevestigen",
+      "reset-password": "Wachtwoord herstellen",
+      "confirm-action": "Actie bevestigen",
+      "other": "Bevestiging"
+    },
+    "hint": {
+      "title": "Code {{code}} voor {{origin}} · nog {{time}}",
+      "linkTitle": "Inloglink voor {{origin}} · nog {{time}}",
+      "signed": "Ondertekende herkomst (Verification-Info, DKIM gecontroleerd). Autofill op {{origin}} mogelijk.",
+      "signedNoAutofill": "Ondertekend (Verification-Info), maar de afzender is niet bevestigd (DMARC): wordt nooit automatisch ingevuld.",
+      "heuristic": "Uit de tekst gehaald. Herkomst niet bevestigd, dus geen automatisch invullen.",
+      "link": "Ondertekende herkomst. Links open je zelf.",
+      "expired": "Deze code is verlopen."
+    }
   }
 }

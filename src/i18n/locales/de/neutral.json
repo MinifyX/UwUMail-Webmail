@@ -18,6 +18,9 @@
       "contacts": "Kontakte"
     },
     "scheduled": "Geplant",
+    "searchAll": "In allen Postfächern suchen",
+    "account": "Konto",
+    "tabs": "Bereiche",
     "favorites": "Favoriten"
   },
   "filter": {
@@ -56,7 +59,11 @@
     "count_other": "{{count}} Mails",
     "selected_one": "{{count}} ausgewählt",
     "selected_other": "{{count}} ausgewählt",
-    "clearSelection": "Auswahl aufheben"
+    "clearSelection": "Auswahl aufheben",
+    "filterMenu": "Filter und Ansicht",
+    "filterGroup": "Filter",
+    "viewGroup": "Ansicht",
+    "clearFilter": "Filter entfernen"
   },
   "reader": {
     "empty": {
@@ -436,7 +443,8 @@
     "retry": "Nochmal versuchen",
     "yesterday": "Gestern",
     "save": "Speichern",
-    "ok": "OK"
+    "ok": "OK",
+    "today": "Heute"
   },
   "folder": {
     "inbox": "Posteingang",
@@ -2038,5 +2046,34 @@
     "to": "bis",
     "days": "Tage",
     "noDays": "Wähle mindestens einen Tag, sonst beginnen die Ruhezeiten nie."
+  },
+  "codes": {
+    "bar": "Bestätigungscodes",
+    "tag": "Code",
+    "link": "Anmeldelink",
+    "open": "Öffnen",
+    "copy": "Code kopieren",
+    "copied": "Code {{code}} kopiert",
+    "copyFailed": "Der Code ließ sich nicht kopieren.",
+    "remaining": "noch {{time}}",
+    "noAutofill": "Absender unbestätigt",
+    "noAutofillHint": "Absender nicht bestätigt (DMARC): der Code wird nie automatisch eingefügt.",
+    "purpose": {
+      "login": "Anmeldung",
+      "signup": "Registrierung",
+      "confirm-email": "E-Mail bestätigen",
+      "reset-password": "Passwort zurücksetzen",
+      "confirm-action": "Aktion bestätigen",
+      "other": "Bestätigung"
+    },
+    "hint": {
+      "title": "Code {{code}} für {{origin}} · noch {{time}}",
+      "linkTitle": "Anmeldelink für {{origin}} · noch {{time}}",
+      "signed": "Signierte Herkunft (Verification-Info, DKIM geprüft). Autofill auf {{origin}} möglich.",
+      "signedNoAutofill": "Signiert (Verification-Info), aber der Absender ist nicht bestätigt (DMARC): kein automatisches Einfügen.",
+      "heuristic": "Aus dem Text erkannt. Herkunft nicht bestätigt, darum kein automatisches Einfügen.",
+      "link": "Signierte Herkunft. Links öffnest du selbst.",
+      "expired": "Dieser Code ist abgelaufen."
+    }
   }
 }

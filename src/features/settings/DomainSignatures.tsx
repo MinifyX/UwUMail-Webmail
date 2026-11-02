@@ -63,7 +63,7 @@ function useSave() {
 
 function Note({ children }: { children: React.ReactNode }) {
   return (
-    <p className="flex gap-2 rounded-2xl bg-canvas px-3 py-2 text-[13px] text-muted">
+    <p className="flex gap-2 rounded-2xl bg-canvas px-3 py-2 text-meta text-muted">
       <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
       <span>{children}</span>
     </p>
@@ -80,10 +80,10 @@ function AddressOverride({ identity, fallback }: { identity: IdentitySignatureIn
   return (
     <li className="flex flex-col gap-2 py-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold">
+        <span className="min-w-0 flex-1 truncate text-body font-semibold">
           {identity.name ? `${identity.name} <${identity.email}>` : identity.email}
         </span>
-        <span className="text-[12px] text-muted">
+        <span className="text-caption text-muted">
           {own ? t("settings.signatureOwn") : t("settings.signatureFollowsDomain")}
         </span>
       </div>
@@ -154,8 +154,8 @@ function DomainEditor({ overview, domain }: { overview: DomainSignatureOverview;
         }}
       />
       <fieldset className="flex flex-col gap-1.5">
-        <legend className="mb-1 text-[13px] font-semibold text-muted">{t("settings.signatureAppliesTo")}</legend>
-        <label className="flex items-center gap-2 text-[13.5px]">
+        <legend className="mb-1 text-meta font-semibold text-muted">{t("settings.signatureAppliesTo")}</legend>
+        <label className="flex items-center gap-2 text-body">
           <input
             type="checkbox"
             checked={all}
@@ -165,7 +165,7 @@ function DomainEditor({ overview, domain }: { overview: DomainSignatureOverview;
         </label>
         {!all &&
           overview.domains.map((entry) => (
-            <label key={entry.domain} className="flex items-center gap-2 text-[13.5px]">
+            <label key={entry.domain} className="flex items-center gap-2 text-body">
               <input
                 type="checkbox"
                 checked={targets.includes(entry.domain)}
@@ -175,7 +175,7 @@ function DomainEditor({ overview, domain }: { overview: DomainSignatureOverview;
             </label>
           ))}
         {replaced.length > 0 && (
-          <p className="text-[12px] text-muted">{t("settings.signatureReplaces", { domains: replaced.join(", ") })}</p>
+          <p className="text-caption text-muted">{t("settings.signatureReplaces", { domains: replaced.join(", ") })}</p>
         )}
       </fieldset>
       {(start.origin === "domain" || start.origin === "allDomains") && (
@@ -198,7 +198,7 @@ function DomainEditor({ overview, domain }: { overview: DomainSignatureOverview;
       )}
       {identities.length > 0 && (
         <details className="rounded-2xl border border-hairline px-3 py-1.5" open={exceptions > 0}>
-          <summary className="cursor-pointer py-1 text-[13.5px] font-semibold">
+          <summary className="cursor-pointer py-1 text-body font-semibold">
             {t("settings.signatureExceptions", { count: exceptions })}
           </summary>
           <ul className="flex flex-col divide-y divide-hairline">
@@ -246,7 +246,7 @@ export function DomainSignatures() {
           <DomainEditor key={`${domain}:${overview.state}`} overview={overview} domain={domain} />
         </>
       ) : (
-        <p className="text-[13px] text-muted">{t("settings.signaturesEmpty")}</p>
+        <p className="text-meta text-muted">{t("settings.signaturesEmpty")}</p>
       )}
     </Row>
   );

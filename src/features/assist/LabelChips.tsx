@@ -21,7 +21,7 @@ function Chip({ label, size = "md" }: { label: AssistLabel; size?: "sm" | "md" }
       className={clsx(
         "inline-flex max-w-[12rem] min-w-0 items-center gap-1 rounded-full border font-semibold",
         !label.color && "border-line bg-canvas text-muted",
-        size === "sm" ? "h-[18px] px-1.5 text-[10.5px]" : "h-6 px-2 text-[11.5px]",
+        size === "sm" ? "h-[18px] px-1.5 text-badge" : "h-6 px-2 text-caption",
       )}
     >
       <span className="truncate">{label.name}</span>
@@ -43,7 +43,7 @@ export function ListLabelChips({ keywords }: { keywords: string[] | undefined })
       {on.slice(0, 2).map((label) => (
         <Chip key={label.id} label={label} size="sm" />
       ))}
-      {on.length > 2 && <span className="text-[10.5px] font-semibold text-muted">+{on.length - 2}</span>}
+      {on.length > 2 && <span className="text-badge font-semibold text-muted">+{on.length - 2}</span>}
     </span>
   );
 }
@@ -108,9 +108,9 @@ export function MessageLabels({ message, canEdit }: MessageLabelsProps) {
               aria-controls={menu["aria-controls"]}
               title={t("assist.labels.add")}
               aria-label={t("assist.labels.add")}
-              className="inline-flex h-6 items-center gap-1 rounded-full border border-dashed border-line px-2 text-[11.5px] font-semibold text-muted hover:border-pink hover:text-pink-ink focus-visible:shadow-focus focus-visible:outline-none"
+              className="inline-flex h-6 items-center gap-1 rounded-full border border-dashed border-line px-2 text-caption font-semibold text-muted hover:border-pink hover:text-pink-ink focus-visible:shadow-focus focus-visible:outline-none"
             >
-              {on.length === 0 ? <Tag className="size-3" aria-hidden /> : <Plus className="size-3" aria-hidden />}
+              {on.length === 0 ? <Tag className="size-3.5" aria-hidden /> : <Plus className="size-3.5" aria-hidden />}
               {on.length === 0 && t("assist.labels.addShort")}
             </button>
           )}
@@ -191,7 +191,7 @@ function LabelChip({
         <Chip label={label} />
         {entry && (
           <Sparkles
-            className="-ml-1.5 size-3 shrink-0 text-pink"
+            className="-ml-1.5 size-3.5 shrink-0 text-pink"
             aria-label={entry.source === "ai" ? t("assist.labels.byAssistant") : t(`labels.source.${entry.source}`)}
           />
         )}
@@ -214,15 +214,15 @@ function LabelChip({
               <X className="size-3.5" aria-hidden />
             </button>
           </div>
-          {label.description && <p className="text-[12.5px] text-muted">{label.description}</p>}
+          {label.description && <p className="text-meta text-muted">{label.description}</p>}
           {entry ? (
             <div className="flex flex-col gap-1 rounded-xl bg-pink-tint/40 px-3 py-2">
-              <p className="flex items-center gap-1.5 text-[12px] font-bold text-pink-ink">
+              <p className="flex items-center gap-1.5 text-caption font-bold text-pink-ink">
                 <Sparkles className="size-3.5" aria-hidden />
                 {entry.source === "ai" ? t("assist.labels.byAssistant") : t(`labels.source.${entry.source}`)}
               </p>
-              {entry.reason && <p className="selectable text-[13px]">{labelReasonText(entry, t, i18n.language)}</p>}
-              <p className="text-[11.5px] text-muted">
+              {entry.reason && <p className="selectable text-meta">{labelReasonText(entry, t, i18n.language)}</p>}
+              <p className="text-caption text-muted">
                 {[
                   entry.providerName ? providerLabel({ providerName: entry.providerName, model: entry.model }) : null,
                   formatLongDate(entry.createdAt, i18n.language),
@@ -232,7 +232,7 @@ function LabelChip({
               </p>
             </div>
           ) : (
-            <p className="flex items-center gap-1.5 text-[12px] text-muted">
+            <p className="flex items-center gap-1.5 text-caption text-muted">
               <Check className="size-3.5" aria-hidden />
               {t("assist.labels.byHand")}
             </p>

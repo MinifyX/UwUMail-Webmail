@@ -2,6 +2,7 @@
 
 import { cleanFilename } from "@/lib/filename";
 import type { JmapRights } from "./sharing";
+import { toVerificationCode } from "./verification";
 import type {
   Address,
   Attachment,
@@ -70,6 +71,8 @@ export interface JmapEmail {
   uwuHasRemoteContent?: boolean;
   "header:List-Unsubscribe:asURLs"?: string[] | null;
   "header:List-Unsubscribe-Post:asText"?: string | null;
+  /** UwUMail's verification extension: the code or sign-in link found in it, null without. */
+  verification?: unknown;
 }
 
 export interface JmapThread {
@@ -201,6 +204,7 @@ export function toMessage(
   const text = partText(email, email.textBody?.[0] ?? undefined);
   const unsubscribe = toUnsubscribe(email, serverOneClick);
   const keywords = ownKeywords(email.keywords);
+  const verification = toVerificationCode(email);
   return {
     id: email.id,
     threadId: email.threadId,
@@ -221,6 +225,7 @@ export function toMessage(
     attachments: toAttachments(email),
     ...(unsubscribe ? { unsubscribe } : {}),
     ...(keywords.length > 0 ? { keywords } : {}),
+    ...(verification ? { verification } : {}),
   };
 }
 

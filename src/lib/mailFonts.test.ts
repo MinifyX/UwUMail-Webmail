@@ -49,6 +49,29 @@ describe("sender fonts in HTML mail", () => {
     expect(rewriteFontValue("caption", true)).toBe("caption");
   });
 
+  it("finds the size of a font shorthand however its line height is spaced", () => {
+    for (const lh of ["14px/1.4", "14px / 1.4", "14px /1.4", "14px/ 1.4"]) {
+      expect(rewriteFontValue(`bold ${lh} Georgia`, true)).toBe(
+        `bold ${lh} var(--uwu-serif, Georgia), var(--uwu-font)`,
+      );
+    }
+    expect(rewriteFontValue("large Calibri ! IMPORTANT ", true)).toBe("large Calibri, var(--uwu-font) !important");
+    expect(rewriteFontValue("bold Georgia", true)).toBe("bold Georgia");
+    expect(rewriteFontValue("14px", true)).toBe("14px");
+  });
+
+  // Regression (security-audit F-1): the shorthand size and `!important` regexes backtracked
+  // quadratically on long values, so one style attribute froze the tab for minutes.
+  it("stays fast on very long font values", () => {
+    const started = performance.now();
+    const digits = `font:${"1".repeat(200_000)}`;
+    expect(rewriteFontDeclarations(digits)).toBe(digits);
+    const spaces = `font-family:Georgia${" ".repeat(200_000)}x`;
+    expect(rewriteFontDeclarations(spaces)).toBe(spaces);
+    expect(rewriteFontValue(`12px${" ".repeat(200_000)}`, true)).toBe(`12px${" ".repeat(200_000)}`);
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+
   it("rewrites declarations in style blocks and attributes, but not @font-face rules", () => {
     const css =
       '@font-face{font-family:"Georgia";src:url(data:font/woff2;base64,AA)} body{font-size:14px;font-family:Georgia} p{font:12px serif;color:red}';

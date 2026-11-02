@@ -29,9 +29,9 @@ export function ScheduledNavItem() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-[13.5px] text-ink/85 transition-colors hover:bg-pink-tint/50"
+        className="group flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-body text-ink/85 transition-colors hover:bg-pink-tint/50"
       >
-        <Clock className="size-[17px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
+        <Clock className="size-[18px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
         <span className="min-w-0 flex-1 truncate">{t("nav.scheduled")}</span>
         <Badge count={later.length} />
       </button>
@@ -48,7 +48,7 @@ function ScheduledList({ sends, onEdit }: { sends: ScheduledSend[]; onEdit: () =
   const [busy, setBusy] = useState<string | null>(null);
 
   if (sends.length === 0) {
-    return <p className="px-6 pt-2 pb-6 text-[13.5px] text-muted">{t("scheduled.empty")}</p>;
+    return <p className="px-6 pt-2 pb-6 text-body text-muted">{t("scheduled.empty")}</p>;
   }
 
   /** Stops it without opening it: it stays in Drafts. */
@@ -68,16 +68,16 @@ function ScheduledList({ sends, onEdit }: { sends: ScheduledSend[]; onEdit: () =
 
   return (
     <div className="flex flex-col gap-3 px-6 pt-1 pb-6">
-      <p className="text-[13px] text-muted">{t("scheduled.desc")}</p>
+      <p className="text-meta text-muted">{t("scheduled.desc")}</p>
       <ul className="flex flex-col gap-2">
         {sends.map((entry) => (
           <li key={entry.id} className="flex flex-col gap-2 rounded-2xl border border-hairline p-3">
             <div className="min-w-0">
-              <p className="truncate text-[13.5px] font-semibold">{entry.subject || t("reader.noSubject")}</p>
-              <p className="truncate text-[12.5px] text-muted">
+              <p className="truncate text-body font-semibold">{entry.subject || t("reader.noSubject")}</p>
+              <p className="truncate text-meta text-muted">
                 {t("scheduled.to", { names: entry.to.map(displayName).join(", ") })}
               </p>
-              <p className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-pink-ink">
+              <p className="mt-1 flex items-center gap-1.5 text-meta font-semibold text-pink-ink">
                 <Clock className="size-3.5" aria-hidden />
                 {new Date(entry.sendAt).toLocaleString(i18n.language, { dateStyle: "full", timeStyle: "short" })}
               </p>

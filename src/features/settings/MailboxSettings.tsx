@@ -43,11 +43,9 @@ export function MailboxSettings() {
                 <li key={mailbox.id} className="flex flex-col gap-2.5 rounded-2xl border border-hairline px-3 py-2.5">
                   <div className="flex items-center gap-2">
                     <span className="min-w-0 flex-1">
-                      <span className="selectable block truncate text-[13.5px] font-semibold">
-                        {name ?? mailbox.email}
-                      </span>
+                      <span className="selectable block truncate text-body font-semibold">{name ?? mailbox.email}</span>
                       {name && name !== mailbox.email && (
-                        <span className="selectable block truncate text-[12px] text-muted">{mailbox.email}</span>
+                        <span className="selectable block truncate text-caption text-muted">{mailbox.email}</span>
                       )}
                     </span>
                     <IconButton

@@ -28,7 +28,7 @@ export function LabelNavSection() {
           type="button"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
-          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-[12px] font-bold tracking-wide text-muted uppercase hover:text-ink"
+          className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-caption font-bold tracking-wide text-muted uppercase hover:text-ink"
         >
           <span className="min-w-0 flex-1 truncate text-left">{t("labels.nav.title")}</span>
           <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
@@ -88,7 +88,7 @@ function LabelItem({ label }: { label: AssistLabel }) {
           void set(threadIds, label, true);
         }}
         className={clsx(
-          "group flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-[13.5px] transition-colors",
+          "group flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-body transition-colors",
           dropping
             ? "bg-pink-tint-strong text-pink-ink ring-2 ring-pink"
             : active
@@ -96,7 +96,7 @@ function LabelItem({ label }: { label: AssistLabel }) {
               : "text-ink/85 hover:bg-pink-tint/50",
         )}
       >
-        <span className="grid size-[17px] shrink-0 place-items-center" aria-hidden>
+        <span className="grid size-[18px] shrink-0 place-items-center" aria-hidden>
           <LabelDot color={label.color} />
         </span>
         <span className="min-w-0 flex-1 truncate">{label.name}</span>

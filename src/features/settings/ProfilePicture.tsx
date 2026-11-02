@@ -84,7 +84,7 @@ export function ProfilePictureSettings() {
   if (!options) return null;
   if (!profile) {
     return (
-      <p role="status" className="py-8 text-center text-[13px] text-muted">
+      <p role="status" className="py-8 text-center text-meta text-muted">
         {isError ? t("profile.loadFailed") : t("profile.loading")}
       </p>
     );
@@ -102,7 +102,7 @@ export function ProfilePictureSettings() {
           busy={busy}
           placeholder={
             me ? (
-              <span className="text-[26px] font-bold" aria-hidden>
+              <span className="text-large font-bold" aria-hidden>
                 {initials({ name: me.displayName, email: me.email })}
               </span>
             ) : undefined
@@ -139,14 +139,14 @@ export function ProfilePictureSettings() {
                   {chosen && <span className="size-2 rounded-full bg-pink" />}
                 </span>
                 <span className="flex flex-col gap-0.5">
-                  <span className="text-[13.5px] font-semibold">{t(`profile.${visibility}.title`)}</span>
-                  <span className="text-[12.5px] text-muted">{t(`profile.${visibility}.body`)}</span>
+                  <span className="text-body font-semibold">{t(`profile.${visibility}.title`)}</span>
+                  <span className="text-meta text-muted">{t(`profile.${visibility}.body`)}</span>
                 </span>
               </button>
             );
           })}
         </div>
-        {!options.mayBePublic && <p className="text-[12.5px] text-muted">{t("profile.publicForbidden")}</p>}
+        {!options.mayBePublic && <p className="text-meta text-muted">{t("profile.publicForbidden")}</p>}
       </Row>
       <div className="border-b border-hairline py-4 last:border-0">
         <Toggle

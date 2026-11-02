@@ -106,19 +106,19 @@ export function PictureField({
         {src ? (
           <img src={src} alt="" draggable={false} className="size-full object-cover" />
         ) : (
-          (placeholder ?? <ImagePlus className="size-7" aria-hidden />)
+          (placeholder ?? <ImagePlus className="size-5" aria-hidden />)
         )}
         <span
           aria-hidden
           className={clsx(
-            "absolute inset-0 grid place-items-center bg-[#1c1420]/45 text-white opacity-0 transition-opacity group-hover:opacity-100",
+            "absolute inset-0 grid place-items-center bg-backdrop text-white opacity-0 transition-opacity group-hover:opacity-100",
             (over || busy) && "opacity-100",
           )}
         >
           {busy ? (
             <span className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
           ) : (
-            <Camera className="size-6" />
+            <Camera className="size-5" />
           )}
         </span>
       </button>
@@ -139,7 +139,7 @@ export function PictureField({
             </Button>
           )}
         </div>
-        <p className="text-[12.5px] text-muted">{t("picture.hint")}</p>
+        <p className="text-meta text-muted">{t("picture.hint")}</p>
       </div>
       <input ref={chooser} type="file" accept="image/*" hidden onChange={(event) => picked(event.target)} />
       <input

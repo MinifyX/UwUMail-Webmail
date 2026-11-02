@@ -117,7 +117,7 @@ export function PullToRefresh({ scrollRef, onRefresh, children }: PullToRefreshP
                 )}
               />
             </span>
-            <span className="text-[11.5px] font-semibold text-muted">{label}</span>
+            <span className="text-caption font-semibold text-muted">{label}</span>
           </>
         )}
       </div>

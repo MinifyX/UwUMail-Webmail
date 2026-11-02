@@ -97,7 +97,7 @@ function AppearanceToggle({ message, appearance, autoDark }: AppearanceTogglePro
         rememberAppearance(message.from.email, isDark ? "light" : "dark");
         toast(t("reader.appearanceRemembered", { email: message.from.email }), "info");
       }}
-      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-line px-2.5 text-[12px] font-semibold text-muted transition-colors hover:border-pink hover:bg-pink-tint hover:text-pink-ink"
+      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-line px-2.5 text-caption font-semibold text-muted transition-colors hover:border-pink hover:bg-pink-tint hover:text-pink-ink"
     >
       <Icon className="size-3.5" aria-hidden />
       {isDark ? t("reader.appearanceLight") : t("reader.appearanceDark")}
@@ -121,7 +121,7 @@ function RemoteImagesBanner({ email, onLoad }: { email: string; onLoad: () => vo
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pink-tint/70 px-4 py-2.5 text-[13px] text-pink-ink">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pink-tint/70 px-4 py-2.5 text-meta text-pink-ink">
       <ImageOff className="size-4 shrink-0" aria-hidden />
       <span className="min-w-[min(100%,14rem)] flex-1">{t("reader.remoteBlocked")}</span>
       <span className="ml-auto flex items-center gap-2">
@@ -166,7 +166,7 @@ function TrustedImagesNote({ entries, onUntrust }: { entries: string[]; onUntrus
   const key = isDomainEntry(entry) ? "Domain" : "Address";
 
   return (
-    <p className="-mt-1 flex flex-wrap items-center gap-x-1.5 px-1 text-[12px] text-muted">
+    <p className="-mt-1 flex flex-wrap items-center gap-x-1.5 px-1 text-caption text-muted">
       <ImageIcon className="size-3.5 shrink-0" aria-hidden />
       <span className="min-w-0 break-words">{t(`reader.remoteLoading${key}`, who)}</span>
       <span aria-hidden>·</span>
@@ -193,7 +193,7 @@ function TeamsMeetingBar({ message }: { message: Message }) {
   return (
     <section
       aria-label={t("reader.teamsMeeting")}
-      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-[13px]"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-meta"
     >
       <Video className="size-4 shrink-0 text-pink" aria-hidden />
       <p className="min-w-0 flex-1 font-semibold">{t("reader.teamsMeeting")}</p>
@@ -277,14 +277,12 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
         className="flex w-full items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3 text-left hover:bg-elevated"
       >
         <Avatar address={message.from} size="sm" />
-        <span
-          className={clsx("w-36 shrink-0 truncate text-[13.5px]", message.flags.seen ? "font-semibold" : "font-bold")}
-        >
+        <span className={clsx("w-36 shrink-0 truncate text-body", message.flags.seen ? "font-semibold" : "font-bold")}>
           {message.flags.draft ? <span className="text-danger">{t("reader.draft")}</span> : displayName(message.from)}
         </span>
-        <span className="min-w-0 flex-1 truncate text-[13px] text-muted">{message.snippet}</span>
+        <span className="min-w-0 flex-1 truncate text-meta text-muted">{message.snippet}</span>
         {message.flags.draft && <PenLine className="size-4 shrink-0 text-muted" aria-hidden />}
-        <span className="shrink-0 text-[12px] text-muted">
+        <span className="shrink-0 text-caption text-muted">
           {formatListDate(message.date, i18n.language, t("common.yesterday"))}
         </span>
       </button>
@@ -292,7 +290,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
   }
 
   return (
-    <article className="flex animate-fade flex-col gap-4 rounded-[20px] border border-hairline bg-surface p-5">
+    <article className="flex animate-fade flex-col gap-4 rounded-2xl border border-hairline bg-surface p-5">
       <header className="flex items-start gap-3">
         <Avatar address={message.from} />
         <div className="flex min-w-0 flex-1 flex-wrap items-start gap-x-3 gap-y-1">
@@ -301,13 +299,13 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
               <Tooltip
                 content={fullAddress(message.from)}
                 onActivate={toggleDetails}
-                className="min-w-0 text-[15px] font-bold break-words"
+                className="min-w-0 text-reading font-bold break-words"
               >
                 {displayName(message.from)}
               </Tooltip>
-              <span className="selectable min-w-0 truncate text-[12.5px] text-muted">{message.from.email}</span>
+              <span className="selectable min-w-0 truncate text-meta text-muted">{message.from.email}</span>
             </p>
-            <p className="flex min-w-0 items-center gap-0.5 text-[12.5px] text-muted">
+            <p className="flex min-w-0 items-center gap-0.5 text-meta text-muted">
               <span className="min-w-0 truncate">
                 <RecipientNames recipients={message.to} mine={myAddresses} onActivate={toggleDetails} />
               </span>
@@ -331,7 +329,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
           <div className="ml-auto flex shrink-0 items-center gap-3">
             {message.flags.draft && (
               <>
-                <span className="rounded-full bg-danger-tint px-2 py-0.5 text-[12px] font-bold text-danger">
+                <span className="rounded-full bg-danger-tint px-2 py-0.5 text-caption font-bold text-danger">
                   {t("reader.draft")}
                 </span>
                 <Button size="sm" icon={PenLine} onClick={() => void openDraftMessage(message.id)}>
@@ -350,7 +348,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
                 onPrint={() => printMessage(message, allowRemote, inlineImages.urls, imageProxy)}
               />
             )}
-            <time dateTime={message.date} className="text-[12.5px] text-muted">
+            <time dateTime={message.date} className="text-meta text-muted">
               {formatFullDate(message.date, i18n.language)}
             </time>
           </div>
@@ -453,7 +451,7 @@ function AddressDetails({ id, message }: { id: string; message: Message }) {
   return (
     <dl
       id={id}
-      className="-mt-1 grid animate-fade grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 rounded-2xl bg-canvas px-4 py-3 text-[12.5px]"
+      className="-mt-1 grid animate-fade grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 rounded-2xl bg-canvas px-4 py-3 text-meta"
     >
       {addressRows(message).map((row) => (
         <Fragment key={row.role}>
@@ -586,8 +584,9 @@ function printMessage(
     date: translate("reader.date"),
   };
   const frame = document.createElement("iframe");
-  // allow-modals lets the print dialog open. allow-scripts only so Safari calls the webmail's
-  // afterprint listener (see MAIL_FRAME_SANDBOX); the mail runs nothing under the document's policy.
+  // allow-modals lets the print dialog open. In WebKit the sandbox also has allow-scripts, only so
+  // Safari calls the webmail's afterprint listener (see MAIL_FRAME_SANDBOX); the mail runs nothing
+  // under the document's policy.
   frame.setAttribute("sandbox", `${MAIL_FRAME_SANDBOX} allow-modals`);
   frame.setAttribute("aria-hidden", "true");
   frame.style.cssText = "position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none";

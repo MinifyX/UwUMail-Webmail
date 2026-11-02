@@ -1,52 +1,29 @@
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { BookUser, Ellipsis, Plus, Settings, SlidersHorizontal, Star, UsersRound, UserPlus } from "lucide-react";
+import { BookUser, Ellipsis, Plus, Star, UsersRound, UserPlus } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AddressBookInfo } from "@/backend/types";
-import { PORTAL_URL } from "@/backend/server";
 import { NyuScene } from "@/components/nyu/scenes";
 import { Button, IconButton } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, TextInput } from "@/components/ui/Field";
-import { Wordmark } from "@/components/ui/Logo";
 import { ContextMenu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";
-import { useUi } from "@/state/ui";
-import { AppSwitch } from "../shell/AppSwitch";
 import { startNewContact, useContactsUi } from "./state";
 import { useAddressBooks, useContacts } from "./useContactsData";
 
 const reason = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
-function SidebarLink({ icon: Icon, label, onClick }: { icon: LucideIcon; label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-[13.5px] text-ink/85 transition-colors hover:bg-pink-tint/50"
-    >
-      <Icon className="size-[17px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-    </button>
-  );
-}
-
-/** Beside the contacts: the switch back to mail, a new contact and the address books. */
+/** Beside the contacts: a new contact and the address books. */
 export function ContactsSidebar({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
   const { t } = useT();
-  const openSettings = useUi((s) => s.openSettings);
   return (
-    <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-4 pb-3", className)} aria-label={t("contacts.title")}>
-      <div className="flex items-center justify-between px-2">
-        <Wordmark className="text-[19px]" />
-      </div>
-      <AppSwitch />
+    <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-3 pb-3", className)} aria-label={t("contacts.title")}>
       <Button
-        variant="primary"
         size="lg"
         icon={UserPlus}
         onClick={() => {
@@ -59,14 +36,6 @@ export function ContactsSidebar({ className, onNavigate }: { className?: string;
       </Button>
       <div className="-mx-1 flex min-h-0 flex-1 flex-col overflow-y-auto px-1">
         <AddressBookList onNavigate={onNavigate} />
-      </div>
-      <div className="flex flex-col gap-0.5 border-t border-hairline pt-3">
-        <SidebarLink icon={Settings} label={t("nav.settings")} onClick={() => openSettings()} />
-        <SidebarLink
-          icon={SlidersHorizontal}
-          label={t("nav.portal")}
-          onClick={() => window.location.assign(PORTAL_URL)}
-        />
       </div>
     </nav>
   );
@@ -126,9 +95,9 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
           type="button"
           aria-current={bookId === id ? "page" : undefined}
           onClick={() => pick(id)}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left text-[13.5px]"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left text-body"
         >
-          <Icon className="size-[17px] shrink-0 opacity-80" strokeWidth={2} aria-hidden />
+          <Icon className="size-[18px] shrink-0 opacity-80" strokeWidth={2} aria-hidden />
           <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
           {book?.isDefault && books.length > 1 && (
             <span className="shrink-0 text-muted" title={t("contacts.default")}>
@@ -136,7 +105,7 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
               <span className="sr-only">{t("contacts.default")}</span>
             </span>
           )}
-          <span className="shrink-0 text-[12px] text-muted tabular-nums">{count(id)}</span>
+          <span className="shrink-0 text-caption text-muted tabular-nums">{count(id)}</span>
         </button>
         {book && (
           <IconButton
@@ -159,7 +128,7 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
     <section className="flex flex-col gap-0.5" aria-labelledby="uwu-address-books">
       <ul className="flex flex-col gap-0.5">{entry(null, t("contacts.all"), UsersRound)}</ul>
       <div className="flex items-center justify-between pt-3 pr-1 pl-3">
-        <h2 id="uwu-address-books" className="text-[12px] font-bold tracking-wide text-muted uppercase">
+        <h2 id="uwu-address-books" className="text-caption font-bold tracking-wide text-muted uppercase">
           {t("contacts.addressBooks")}
         </h2>
         <IconButton icon={Plus} size="sm" label={t("contacts.newBook")} onClick={() => setEditing("new")} />
@@ -216,10 +185,10 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
         {deleting && (
           <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
             <NyuScene name="goodbye" className="w-36" />
-            <h2 className="text-[18px] font-extrabold text-balance">
+            <h2 className="text-section font-extrabold text-balance">
               {t("contacts.deleteBookTitle", { name: deleting.name })}
             </h2>
-            <p className="text-[13px] text-muted">{t("contacts.deleteBookBody", { count: count(deleting.id) })}</p>
+            <p className="text-meta text-muted">{t("contacts.deleteBookBody", { count: count(deleting.id) })}</p>
             <div className="flex flex-wrap justify-center gap-2 pt-1">
               <Button
                 variant="danger"
@@ -273,7 +242,7 @@ function BookForm({
         setBusy(false);
       }}
     >
-      <h2 className="text-lg font-bold">{book ? t("contacts.renameBook") : t("contacts.newBook")}</h2>
+      <h2 className="text-section font-bold">{book ? t("contacts.renameBook") : t("contacts.newBook")}</h2>
       <Field label={t("contacts.bookName")} error={tried && empty ? t("contacts.problem.bookName") : undefined}>
         {(id) => (
           <TextInput id={id} autoFocus value={name} maxLength={255} onChange={(event) => setName(event.target.value)} />

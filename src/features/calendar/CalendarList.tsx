@@ -63,7 +63,7 @@ export function CalendarList() {
   return (
     <section className="flex flex-col gap-0.5" aria-labelledby="uwu-calendars">
       <div className="flex items-center justify-between pr-1 pl-3">
-        <h2 id="uwu-calendars" className="text-[12px] font-bold tracking-wide text-muted uppercase">
+        <h2 id="uwu-calendars" className="text-caption font-bold tracking-wide text-muted uppercase">
           {t("calendar.calendars")}
         </h2>
         <IconButton icon={Plus} size="sm" label={t("calendar.newCalendar")} onClick={() => setEditing("new")} />
@@ -86,20 +86,20 @@ export function CalendarList() {
                 role="checkbox"
                 aria-checked={calendar.isVisible}
                 onClick={() => toggle(calendar)}
-                className="flex min-w-0 flex-1 items-center gap-2.5 text-left text-[13.5px]"
+                className="flex min-w-0 flex-1 items-center gap-2.5 text-left text-body"
               >
                 <span
                   className="grid size-[18px] shrink-0 place-items-center rounded-[6px] border-2"
                   style={{ borderColor: color, background: calendar.isVisible ? color : "transparent" }}
                   aria-hidden
                 >
-                  {calendar.isVisible && <Check className="size-3 text-white" strokeWidth={3.5} />}
+                  {calendar.isVisible && <Check className="size-3.5 text-white" strokeWidth={3.5} />}
                 </span>
                 {calendar.isBirthdays && <Cake className="size-3.5 shrink-0 text-muted" aria-hidden />}
                 <span className={clsx("min-w-0 flex-1 truncate", !calendar.isVisible && "text-muted")}>
                   {calendar.name}
                   {calendar.sharedBy && (
-                    <span className="block truncate text-[11.5px] text-muted">
+                    <span className="block truncate text-caption text-muted">
                       {t("sharing.sharedBy", { name: calendar.sharedBy.name })}
                     </span>
                   )}
@@ -111,7 +111,7 @@ export function CalendarList() {
                   />
                 )}
                 {calendar.isDefault && (
-                  <span className="shrink-0 text-[11px] font-semibold text-muted">{t("calendar.default")}</span>
+                  <span className="shrink-0 text-badge font-semibold text-muted">{t("calendar.default")}</span>
                 )}
               </button>
               <IconButton
@@ -212,12 +212,12 @@ export function CalendarList() {
         {deleting && (
           <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
             <NyuScene name="goodbye" className="w-36" />
-            <h2 className="text-[18px] font-extrabold text-balance">
+            <h2 className="text-section font-extrabold text-balance">
               {deleting.sharedBy
                 ? t("sharing.leaveCalendarTitle", { name: deleting.name })
                 : t("calendar.deleteCalendarTitle", { name: deleting.name })}
             </h2>
-            <p className="text-[13px] text-muted">
+            <p className="text-meta text-muted">
               {deleting.sharedBy
                 ? t("sharing.leaveCalendarBody", { name: deleting.sharedBy.name })
                 : t("calendar.deleteCalendarBody")}
@@ -276,7 +276,7 @@ function CalendarForm({
         setBusy(false);
       }}
     >
-      <h2 className="text-lg font-bold">{calendar ? t("calendar.editCalendar") : t("calendar.newCalendar")}</h2>
+      <h2 className="text-section font-bold">{calendar ? t("calendar.editCalendar") : t("calendar.newCalendar")}</h2>
       <Field label={t("calendar.calendarName")} error={tried && empty ? t("calendar.problem.name") : undefined}>
         {(id) => (
           <TextInput id={id} autoFocus value={name} maxLength={255} onChange={(event) => setName(event.target.value)} />

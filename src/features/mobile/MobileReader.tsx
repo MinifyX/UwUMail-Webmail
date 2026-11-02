@@ -24,7 +24,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
+import { ListLabelChips } from "../assist/LabelChips";
 import { ThreadAssistButton, ThreadSummary } from "../assist/ReaderAssist";
+import { codeForMessages, useVerificationCodes } from "../codes/codes";
+import { CodeHint } from "../codes/VerificationCodeBar";
 import { MessageView } from "../mail/MessageView";
 import { requestMove } from "../mail/selection";
 import { requestSnooze, someSnoozed, useSnooze } from "../mail/snooze";
@@ -46,8 +49,8 @@ function BarButton({ icon: Icon, label, onClick }: { icon: LucideIcon; label: st
       onClick={onClick}
       className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-muted active:bg-pink-tint active:text-pink-ink"
     >
-      <Icon className="size-[22px]" strokeWidth={2} aria-hidden />
-      <span className="max-w-full truncate text-[11px] font-semibold">{label}</span>
+      <Icon className="size-5" strokeWidth={2} aria-hidden />
+      <span className="max-w-full truncate text-badge font-semibold">{label}</span>
     </button>
   );
 }
@@ -61,6 +64,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
   const { data: accounts = [] } = useAccounts();
   const { data: folders = [] } = useFolders();
   const actions = useMessageActions();
+  const codes = useVerificationCodes();
   const [menuOpen, setMenuOpen] = useState(false);
   const [barHidden, setBarHidden] = useState(false);
   const lastScroll = useRef(0);
@@ -126,7 +130,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
         <header className="flex h-14 items-center px-2">
           <IconButton icon={ArrowLeft} label={t("reader.back")} onClick={back} />
         </header>
-        <p className="flex flex-1 items-center justify-center text-[13px] text-muted">{t("reader.loading")}</p>
+        <p className="flex flex-1 items-center justify-center text-meta text-muted">{t("reader.loading")}</p>
       </section>
     );
   }
@@ -142,12 +146,13 @@ export function MobileReader({ threadId }: { threadId: string }) {
     all.map((m) => m.folderId),
     folders,
   );
+  const code = codeForMessages(all, data.thread.id, codes);
 
   return (
     <section className="flex h-full min-w-0 flex-col bg-canvas" aria-label={data.thread.subject}>
       <header className="relative flex h-14 shrink-0 items-center gap-1 border-b border-hairline bg-surface px-1.5">
         <IconButton icon={ArrowLeft} label={t("reader.back")} onClick={back} />
-        <h1 className="min-w-0 flex-1 truncate px-1 text-[16px] font-bold">
+        <h1 className="min-w-0 flex-1 truncate px-1 text-reading font-bold">
           {data.thread.subject || t("reader.noSubject")}
         </h1>
         <ThreadAssistButton
@@ -187,7 +192,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
                     setMenuOpen(false);
                     requestMove(all, back);
                   }}
-                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
                   <FolderInput className="size-[18px] text-muted" aria-hidden />
                   {t("reader.move")}
@@ -200,7 +205,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
                     setMenuOpen(false);
                     requestSnooze(all, back);
                   }}
-                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
                   <AlarmClock className="size-[18px] text-muted" aria-hidden />
                   {t("snooze.action")}
@@ -213,7 +218,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
                     setMenuOpen(false);
                     leaveAfter(unsnooze(all, [data.thread.id]));
                   }}
-                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
                   <Inbox className="size-[18px] text-muted" aria-hidden />
                   {t("snooze.unsnooze")}
@@ -223,7 +228,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
                 <button
                   type="button"
                   onClick={() => leaveAfter(actions.spam(ids, !inJunk))}
-                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
                   {inJunk ? (
                     <ShieldCheck className="size-[18px] text-muted" aria-hidden />
@@ -237,14 +242,14 @@ export function MobileReader({ threadId }: { threadId: string }) {
                 <button
                   type="button"
                   onClick={() => leaveAfter(actions.setFlags([latest.id], { seen: false }))}
-                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-[14px] font-medium active:bg-pink-tint"
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
                   <MailOpen className="size-[18px] text-muted" aria-hidden />
                   {t("reader.markUnread")}
                 </button>
               )}
               {!rights.remove && !rights.spam && !rights.markSeen && (
-                <p className="px-4 py-3 text-[13px] text-muted">{t("sharing.readOnly")}</p>
+                <p className="px-4 py-3 text-meta text-muted">{t("sharing.readOnly")}</p>
               )}
             </div>
           </>
@@ -260,16 +265,27 @@ export function MobileReader({ threadId }: { threadId: string }) {
           lastScroll.current = top;
         }}
       >
-        <div className="flex flex-col gap-2.5 px-2.5 pt-3 pb-24">
-          <h2 className="selectable px-1.5 pb-1 text-[20px] leading-tight font-extrabold tracking-[-0.01em]">
+        <div className="flex flex-col gap-2.5 px-2.5 pt-3 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+          {(code || (data.thread.keywords?.length ?? 0) > 0) && (
+            <div className="flex flex-wrap items-center gap-1.5 px-1.5">
+              <ListLabelChips keywords={data.thread.keywords} />
+              {code && (
+                <span className="inline-flex h-6 items-center rounded-full bg-pink-tint px-2.5 text-caption font-bold text-pink-ink">
+                  {t("codes.tag")}
+                </span>
+              )}
+            </div>
+          )}
+          <h2 className="selectable px-1.5 pb-1 text-title leading-tight font-extrabold tracking-[-0.01em]">
             {data.thread.subject || t("reader.noSubject")}
           </h2>
+          {code && <CodeHint code={code} />}
           <ThreadSummary threadId={latest.threadId} count={all.length} />
           {hiddenCount > 1 && (
             <button
               type="button"
               onClick={() => expand(ids)}
-              className="self-start rounded-full bg-pink-tint px-3 py-1.5 text-[13px] font-semibold text-pink-ink"
+              className="self-start rounded-full bg-pink-tint px-3 py-1.5 text-meta font-semibold text-pink-ink"
             >
               {t("reader.earlier", { count: hiddenCount })}
             </button>
@@ -288,7 +304,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
 
       <nav
         className={clsx(
-          "fixed inset-x-0 bottom-0 z-10 flex border-t border-hairline bg-surface/95 px-1 pt-1 pb-1.5 backdrop-blur transition-transform duration-200",
+          "fixed inset-x-0 bottom-0 z-10 flex border-t border-hairline bg-surface/95 px-1 pt-1 pb-[calc(0.375rem+env(safe-area-inset-bottom))] backdrop-blur transition-transform duration-200",
           barHidden && "translate-y-full",
         )}
         aria-label={t("mobile.actions")}

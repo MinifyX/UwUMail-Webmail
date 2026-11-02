@@ -156,7 +156,8 @@ export function toCalendarInfo(calendar: JmapCalendar, accountId: string): Calen
   return {
     id: calendar.id,
     accountId,
-    name: calendar.name,
+    // A calendar without a name would break sorting the list (security-audit W-27).
+    name: typeof calendar.name === "string" ? calendar.name : "",
     color: safeColor(calendar.color),
     isDefault: calendar.isDefault === true,
     isVisible: calendar.isVisible !== false,

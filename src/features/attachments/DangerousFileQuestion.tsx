@@ -15,9 +15,9 @@ export function DangerousFileQuestion() {
       {pending && (
         <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
           <NyuScene name="loadError" className="w-40" />
-          <h2 className="text-[18px] font-extrabold text-balance">{t("attachment.dangerous.title")}</h2>
-          <p className="selectable text-[13.5px] font-semibold break-all">{pending.filename}</p>
-          <p className="text-[13px] text-muted">{t("attachment.dangerous.body")}</p>
+          <h2 className="text-section font-extrabold text-balance">{t("attachment.dangerous.title")}</h2>
+          <p className="selectable text-body font-semibold break-all">{pending.filename}</p>
+          <p className="text-meta text-muted">{t("attachment.dangerous.body")}</p>
           <div className="flex flex-wrap justify-center gap-2 pt-1">
             <Button variant="ghost" onClick={cancel}>
               {t("common.cancel")}

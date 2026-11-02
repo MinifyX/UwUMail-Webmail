@@ -22,7 +22,7 @@ export function UnsubscribeButton({ message }: { message: Message }) {
   if (!message.unsubscribe) return null;
   return (
     <>
-      <Button size="sm" variant="ghost" onClick={() => setAsking(true)} className="h-7 px-2.5 text-[12.5px]">
+      <Button size="sm" variant="ghost" onClick={() => setAsking(true)} className="h-7 px-2.5 text-meta">
         {t("reader.unsubscribe")}
       </Button>
       <Dialog open={asking} onClose={() => setAsking(false)} width="sm">
@@ -104,11 +104,11 @@ function UnsubscribeQuestion({ message, onDone }: { message: Message; onDone: ()
       // Its own key: the answer button is new, and arms anew.
       <div key="failed" className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
         <NyuScene name="loadError" className="w-40" />
-        <h2 className="text-[18px] font-extrabold text-balance">{t("unsubscribe.failedTitle")}</h2>
-        <p className="text-[13px] text-muted">
+        <h2 className="text-section font-extrabold text-balance">{t("unsubscribe.failedTitle")}</h2>
+        <p className="text-meta text-muted">
           {failed.reason ? t("unsubscribe.failed", { reason: failed.reason }) : t("unsubscribe.failedNoReason")}
         </p>
-        <p className="text-[13px] text-muted">
+        <p className="text-meta text-muted">
           {failed.fallback === "mail" && byMail
             ? t("unsubscribe.tryMail", { address: byMail.address })
             : failed.fallback === "page"
@@ -132,20 +132,20 @@ function UnsubscribeQuestion({ message, onDone }: { message: Message; onDone: ()
   return (
     <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
       <NyuScene name="pick" className="w-40" />
-      <h2 className="text-[18px] font-extrabold text-balance">{t("unsubscribe.title", { name })}</h2>
-      <p className="text-[13px] text-muted">
+      <h2 className="text-section font-extrabold text-balance">{t("unsubscribe.title", { name })}</h2>
+      <p className="text-meta text-muted">
         {oneClick ? t("unsubscribe.bodyOneClick") : pageOnly ? t("unsubscribe.bodyPage") : t("unsubscribe.body")}
       </p>
       {byMail && (
         // The address comes out of the newsletter's own header, and the mail goes out under the
         // reader's name. Whoever is about to send it gets to see where it lands.
-        <p className="text-[13px] text-muted">
+        <p className="text-meta text-muted">
           {oneClick
             ? t("unsubscribe.orMail", { address: byMail.address })
             : t("unsubscribe.mailTo", { address: byMail.address })}
         </p>
       )}
-      {oneClick && !byMail && options?.url && <p className="text-[13px] text-muted">{t("unsubscribe.orPage")}</p>}
+      {oneClick && !byMail && options?.url && <p className="text-meta text-muted">{t("unsubscribe.orPage")}</p>}
       <div className="w-full rounded-2xl bg-canvas px-4 py-1 text-left">
         <Toggle checked={archive} onChange={setArchive} label={t("unsubscribe.archive")} />
       </div>

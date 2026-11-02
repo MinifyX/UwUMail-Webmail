@@ -4,7 +4,6 @@ import {
   Check,
   FolderInput,
   MailCheck,
-  Menu,
   PenLine,
   RefreshCw,
   Search,
@@ -20,6 +19,9 @@ import { IconButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pill } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
+import { codeForThread, useVerificationCodes } from "../codes/codes";
+import { VerificationCodeBar } from "../codes/VerificationCodeBar";
+import { SEARCH_INPUT_ID } from "../shell/search";
 import { useBackLayer } from "@/lib/backStack";
 import {
   flattenThreads,
@@ -60,9 +62,7 @@ export function MobileList() {
   const view = useUi((s) => s.view);
   const filter = useUi((s) => s.filter);
   const search = useUi((s) => s.search);
-  const reading = useUi((s) => s.selectedThreadId !== null);
-  const { setFilter, setSearch, selectThread, setVisibleThreadIds, setFolderDrawerOpen, openCompose } =
-    useUi.getState();
+  const { setFilter, setSearch, selectThread, setVisibleThreadIds, openCompose } = useUi.getState();
   const density = useSettings((s) => s.listDensity);
   const swipeRight = useSettings((s) => s.swipeRight);
   const swipeLeft = useSettings((s) => s.swipeLeft);
@@ -78,9 +78,9 @@ export function MobileList() {
   const [draftSearch, setDraftSearch] = useState(search);
   // A selection belongs to one folder, filter, search and workspace; switching ends it.
   const [selection, setSelection] = useState<{ key: string; ids: Set<string> }>({ key: "", ids: new Set() });
-  const [compact, setCompact] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(search !== "");
   const scroller = useRef<HTMLDivElement>(null);
-  const lastScroll = useRef(0);
+  const codes = useVerificationCodes();
 
   useEffect(() => {
     const timer = setTimeout(() => setSearch(draftSearch), 180);
@@ -102,6 +102,8 @@ export function MobileList() {
 
   const selecting = selected.size > 0;
   useBackLayer(selecting, () => setSelected(new Set()));
+
+  const codeFor = (thread: { id: string }) => codeForThread(codes, thread.id);
 
   const toggle = (id: string) => {
     const next = new Set(selected);
@@ -135,7 +137,7 @@ export function MobileList() {
         {selecting ? (
           <div className="flex h-12 items-center gap-1 rounded-2xl bg-pink-tint px-1 text-pink-ink">
             <IconButton icon={X} label={t("mobile.selection.clear")} onClick={() => setSelected(new Set())} />
-            <p className="min-w-0 flex-1 truncate text-[15px] font-bold">
+            <p className="min-w-0 flex-1 truncate text-reading font-bold">
               {t("mobile.selected", { count: selected.size })}
             </p>
             {info.rights.markSeen && (
@@ -157,11 +159,10 @@ export function MobileList() {
             {info.rights.remove && <IconButton icon={FolderInput} label={t("reader.move")} onClick={moveSelection} />}
           </div>
         ) : (
-          <div className="flex h-12 items-center gap-1">
-            <IconButton icon={Menu} label={t("nav.menu")} onClick={() => setFolderDrawerOpen(true)} />
+          <div className="flex items-end gap-1 pt-2">
             <div className="min-w-0 flex-1 px-1">
-              <h1 className="truncate text-[20px] leading-tight font-extrabold tracking-[-0.01em]">{info.title}</h1>
-              {info.subtitle && <p className="truncate text-[12px] text-muted">{info.subtitle}</p>}
+              <h1 className="truncate text-large leading-tight font-extrabold tracking-[-0.02em]">{info.title}</h1>
+              {info.subtitle && <p className="truncate text-meta text-muted">{info.subtitle}</p>}
             </div>
             {(info.isTrash || info.isJunk) && info.folder && threads.length > 0 && (
               <IconButton
@@ -176,27 +177,46 @@ export function MobileList() {
               className={clsx(query.isFetching && "[&>svg]:animate-spin")}
               onClick={() => void refresh()}
             />
+            <IconButton
+              icon={Search}
+              label={t("list.search")}
+              active={searchOpen}
+              onClick={() => {
+                if (searchOpen) {
+                  setDraftSearch("");
+                  setSearchOpen(false);
+                } else setSearchOpen(true);
+              }}
+            />
+            {accounts.length > 0 && (
+              <IconButton icon={PenLine} label={t("nav.compose")} onClick={() => openCompose({ mode: "new" })} />
+            )}
           </div>
         )}
 
-        <div className="relative">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-            aria-hidden
-          />
-          <input
-            type="search"
-            value={draftSearch}
-            onChange={(event) => setDraftSearch(event.target.value)}
-            placeholder={t("list.search")}
-            enterKeyHint="search"
-            className="h-11 w-full rounded-full border border-transparent bg-canvas pr-[5.5rem] pl-10 text-[15px] placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
-          />
-          <div className="absolute top-1/2 right-1 flex -translate-y-1/2 items-center">
-            <SearchHelp onInsert={(term) => setDraftSearch(withSearchTerm(draftSearch, term))} />
-            {draftSearch && <IconButton icon={X} label={t("list.clearSearch")} onClick={() => setDraftSearch("")} />}
+        {searchOpen && (
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
+              aria-hidden
+            />
+            <input
+              id={SEARCH_INPUT_ID}
+              type="search"
+              value={draftSearch}
+              autoFocus={search === ""}
+              onChange={(event) => setDraftSearch(event.target.value)}
+              placeholder={t("nav.searchAll")}
+              aria-label={t("nav.searchAll")}
+              enterKeyHint="search"
+              className="h-11 w-full rounded-full border border-transparent bg-canvas pr-[5.5rem] pl-10 text-reading placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            />
+            <div className="absolute top-1/2 right-1 flex -translate-y-1/2 items-center">
+              <SearchHelp onInsert={(term) => setDraftSearch(withSearchTerm(draftSearch, term))} />
+              {draftSearch && <IconButton icon={X} label={t("list.clearSearch")} onClick={() => setDraftSearch("")} />}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="-mx-3 flex [scrollbar-width:none] gap-2 overflow-x-auto px-3 pb-0.5" role="toolbar">
           {FILTERS.map((item) => (
@@ -206,15 +226,13 @@ export function MobileList() {
           ))}
         </div>
       </header>
+      <VerificationCodeBar codes={codes} />
 
       <PullToRefresh scrollRef={scroller} onRefresh={refresh}>
         <div
           ref={scroller}
           onScroll={(event) => {
             const top = event.currentTarget.scrollTop;
-            // The write button shrinks while scrolling down and grows again going up.
-            if (Math.abs(top - lastScroll.current) > 6) setCompact(top > lastScroll.current && top > 24);
-            lastScroll.current = top;
             if (
               query.hasNextPage &&
               !query.isFetchingNextPage &&
@@ -223,10 +241,10 @@ export function MobileList() {
               void query.fetchNextPage();
             }
           }}
-          className="h-full overflow-y-auto overscroll-contain pb-28"
+          className="h-full overflow-y-auto overscroll-contain pb-4"
         >
           {query.isPending ? (
-            <p className="px-6 py-10 text-center text-[13px] text-muted">{t("list.loading")}</p>
+            <p className="px-6 py-10 text-center text-meta text-muted">{t("list.loading")}</p>
           ) : threads.length === 0 ? (
             <EmptyState
               scene={EMPTY_SCENES[empty]}
@@ -263,6 +281,7 @@ export function MobileList() {
                           inJunk={info.isJunk}
                           snoozedUntil={snoozedRows?.get(thread.id)}
                           rights={info.rights}
+                          code={codeFor(thread)}
                           onSelect={() =>
                             selecting
                               ? toggle(thread.id)
@@ -289,28 +308,13 @@ export function MobileList() {
                 );
               })}
               {query.isFetchingNextPage && (
-                <li className="py-4 text-center text-[12.5px] text-muted">{t("list.loading")}</li>
+                <li className="py-4 text-center text-meta text-muted">{t("list.loading")}</li>
               )}
               {serverButton && !query.hasNextPage && <li className="flex justify-center px-4 py-5">{serverButton}</li>}
             </ul>
           )}
         </div>
       </PullToRefresh>
-
-      {!selecting && !reading && accounts.length > 0 && (
-        <button
-          type="button"
-          onClick={() => openCompose({ mode: "new" })}
-          aria-label={t("nav.compose")}
-          className={clsx(
-            "fixed right-4 bottom-4 z-20 flex h-14 items-center justify-center gap-2 rounded-2xl bg-pink-solid font-bold text-on-pink shadow-[0_6px_20px_rgb(225_29_116/0.35)] transition-[width,padding] duration-200 active:scale-95",
-            compact ? "w-14" : "px-5",
-          )}
-        >
-          <PenLine className="size-5 shrink-0" strokeWidth={2.4} aria-hidden />
-          {!compact && <span className="text-[15px]">{t("nav.compose")}</span>}
-        </button>
-      )}
     </section>
   );
 }

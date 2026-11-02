@@ -1244,6 +1244,11 @@ export class DemoBackend implements Backend {
     return this.masked.options();
   }
 
+  /** The demo has no server that reads codes; `pnpm dev` with `?demoCodes` shows sample ones. */
+  async verificationCodes() {
+    return null;
+  }
+
   async maskedAddresses() {
     await wait(150);
     return this.masked.addresses();
