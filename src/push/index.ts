@@ -22,6 +22,7 @@ import {
 } from "./registration";
 import {
   CONFIG_KEY,
+  FILTER_KEY,
   MESSAGE_OPEN,
   MESSAGE_VERIFIED,
   WEBPUSH_VAPID,
@@ -34,6 +35,7 @@ import {
 import { PUSH_DEVICE_KEY } from "@/state/browserOwner";
 
 export { PushError };
+export { usePushFilterSync } from "./filterSync";
 
 /** Where the webmail and its service worker live: `/mail/`. */
 const BASE = import.meta.env.BASE_URL;
@@ -255,6 +257,8 @@ export async function forgetWebPush(): Promise<void> {
       pushManager,
       unregister,
     });
+    // Whoever signs in next brings their own muted mailboxes and quiet hours.
+    await idbKeyValue.delete(FILTER_KEY).catch(() => undefined);
   } catch {
     // Nothing to take down.
   }

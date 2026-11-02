@@ -241,5 +241,25 @@
     "overlap": {
       "title": "咦，这个好眼熟 (・・?)"
     }
+  },
+  "markAllRead": {
+    "done_other": "全部搞定，已读 {{count}} 封邮件 (^ω^)",
+    "nothing": "这里没有未读邮件，好舒服"
+  },
+  "templates": {
+    "none": "还没有模板 (・ω・)",
+    "saved": "已收好为模板“{{name}}” ✿"
+  },
+  "attachmentReminder": {
+    "title": "是不是忘了什么？ (・・;)",
+    "body": "你的邮件提到了附件，但还没有添加任何附件。"
+  },
+  "snooze": {
+    "title": "要睡到什么时候？ (˘ω˘)",
+    "done": "Nyu 把它哄睡到 {{time}} (˘ω˘)",
+    "back": "起床啦，邮件回来了 (｡･ω･｡)"
+  },
+  "notify": {
+    "quietDesc": "嘘，Nyu 在睡觉 (˘ω˘) 这些时段内不发送通知，可以跨越午夜。"
   }
 }

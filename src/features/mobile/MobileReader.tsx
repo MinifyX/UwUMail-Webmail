@@ -1,10 +1,12 @@
 import clsx from "clsx";
 import {
+  AlarmClock,
   Archive,
   ArrowLeft,
   EllipsisVertical,
   FolderInput,
   Forward,
+  Inbox,
   MailOpen,
   RefreshCw,
   Reply,
@@ -28,6 +30,7 @@ import { codeForMessages, useVerificationCodes } from "../codes/codes";
 import { CodeHint } from "../codes/VerificationCodeBar";
 import { MessageView } from "../mail/MessageView";
 import { requestMove } from "../mail/selection";
+import { requestSnooze, someSnoozed, useSnooze } from "../mail/snooze";
 import { mailRights } from "../mail/rights";
 import { useNyuOnOpen } from "../mail/nyuOnOpen";
 
@@ -98,6 +101,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
   }, [loadedThreadId]);
 
   const back = () => selectThread(null);
+  const { unsnooze } = useSnooze();
 
   if (isError && !data) {
     return (
@@ -192,6 +196,32 @@ export function MobileReader({ threadId }: { threadId: string }) {
                 >
                   <FolderInput className="size-[18px] text-muted" aria-hidden />
                   {t("reader.move")}
+                </button>
+              )}
+              {rights.remove && !rights.shared && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    requestSnooze(all, back);
+                  }}
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
+                >
+                  <AlarmClock className="size-[18px] text-muted" aria-hidden />
+                  {t("snooze.action")}
+                </button>
+              )}
+              {someSnoozed(all, folders) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    leaveAfter(unsnooze(all, [data.thread.id]));
+                  }}
+                  className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
+                >
+                  <Inbox className="size-[18px] text-muted" aria-hidden />
+                  {t("snooze.unsnooze")}
                 </button>
               )}
               {rights.spam && (

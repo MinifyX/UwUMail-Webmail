@@ -35,6 +35,9 @@ import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
 import { ThreadRow } from "../mail/ThreadRow";
 import { useViewInfo } from "../mail/view";
+import { SearchHelp } from "../mail/SearchHelp";
+import { useSnoozedRows } from "../mail/snooze";
+import { withSearchTerm } from "@/lib/searchQuery";
 import { openDraftThread } from "../compose/openDraft";
 import { useSelectionActions } from "../mail/selection";
 import { useListThreads } from "../labels/useLabels";
@@ -64,6 +67,7 @@ export function MobileList() {
   const swipeRight = useSettings((s) => s.swipeRight);
   const swipeLeft = useSettings((s) => s.swipeLeft);
   const info = useViewInfo(view);
+  const snoozedRows = useSnoozedRows(view);
   const { data: accounts = [] } = useAccounts();
   const { accounts: shown, accountIds } = useVisibleAccounts();
   const { refresh } = useMessageActions();
@@ -205,16 +209,12 @@ export function MobileList() {
               placeholder={t("nav.searchAll")}
               aria-label={t("nav.searchAll")}
               enterKeyHint="search"
-              className="h-11 w-full rounded-full border border-transparent bg-canvas pr-11 pl-10 text-reading placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+              className="h-11 w-full rounded-full border border-transparent bg-canvas pr-[5.5rem] pl-10 text-reading placeholder:text-muted focus:border-pink focus:bg-surface focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
             />
-            {draftSearch && (
-              <IconButton
-                icon={X}
-                label={t("list.clearSearch")}
-                onClick={() => setDraftSearch("")}
-                className="absolute top-1/2 right-1 -translate-y-1/2"
-              />
-            )}
+            <div className="absolute top-1/2 right-1 flex -translate-y-1/2 items-center">
+              <SearchHelp onInsert={(term) => setDraftSearch(withSearchTerm(draftSearch, term))} />
+              {draftSearch && <IconButton icon={X} label={t("list.clearSearch")} onClick={() => setDraftSearch("")} />}
+            </div>
           </div>
         )}
 
@@ -279,6 +279,7 @@ export function MobileList() {
                           actions={cardActions}
                           inTrash={info.isTrash}
                           inJunk={info.isJunk}
+                          snoozedUntil={snoozedRows?.get(thread.id)}
                           rights={info.rights}
                           code={codeFor(thread)}
                           onSelect={() =>
@@ -331,6 +332,9 @@ function swipeAllowed(action: SwipeAction, rights: MailRights): boolean {
       return rights.spam;
     case "trash":
       return rights.remove;
+    case "snooze":
+      // Snoozed mail waits in the account's own Snoozed folder.
+      return !rights.shared && rights.remove;
     case "none":
       return true;
   }

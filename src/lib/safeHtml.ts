@@ -77,6 +77,11 @@ export function quotableHtml(html: string, { foreign = false }: { foreign?: bool
   });
 }
 
+/** `quotableHtml` for markup from elsewhere (pasted, dropped, a signature), see there. */
+export function foreignHtml(html: string): string {
+  return quotableHtml(html, { foreign: true });
+}
+
 /** Plain text of some HTML, without loading anything it references. */
 export function htmlToPlainText(html: string): string {
   const withBreaks = html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n\n");

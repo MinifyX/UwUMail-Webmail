@@ -3,11 +3,13 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_TEXTS,
   deliveredTo,
+  inQuietHours,
   messageTarget,
   notificationName,
   notificationsFor,
   openUrl,
   parsePayload,
+  readFilter,
 } from "./shared";
 
 describe("what the server pushes", () => {
@@ -69,5 +71,68 @@ describe("sender names in notifications", () => {
     const long = notificationName("x".repeat(500));
     expect([...long]).toHaveLength(80);
     expect(long.endsWith("…")).toBe(true);
+  });
+});
+
+describe("quiet hours", () => {
+  // Local time, as the settings mean it: 18 October 2026 was a Sunday (day 0).
+  const at = (day: number, hours: number, minutes = 0) => new Date(2026, 9, 18 + day, hours, minutes);
+  const WEEKDAYS = [1, 2, 3, 4, 5];
+
+  it("covers the hours between on the listed days", () => {
+    const quiet = { from: "09:00", to: "17:30", days: WEEKDAYS };
+    expect(inQuietHours(quiet, at(1, 9, 0))).toBe(true);
+    expect(inQuietHours(quiet, at(1, 17, 29))).toBe(true);
+    expect(inQuietHours(quiet, at(1, 17, 30))).toBe(false);
+    expect(inQuietHours(quiet, at(1, 8, 59))).toBe(false);
+    expect(inQuietHours(quiet, at(0, 12))).toBe(false);
+    expect(inQuietHours(quiet, at(6, 12))).toBe(false);
+  });
+
+  it("spans midnight into the day after a listed one", () => {
+    const quiet = { from: "22:00", to: "07:00", days: [5] };
+    expect(inQuietHours(quiet, at(5, 22, 0))).toBe(true);
+    expect(inQuietHours(quiet, at(5, 23, 59))).toBe(true);
+    // Saturday morning still belongs to Friday night.
+    expect(inQuietHours(quiet, at(6, 0, 0))).toBe(true);
+    expect(inQuietHours(quiet, at(6, 6, 59))).toBe(true);
+    expect(inQuietHours(quiet, at(6, 7, 0))).toBe(false);
+    expect(inQuietHours(quiet, at(6, 22, 30))).toBe(false);
+    // Friday morning would belong to Thursday night, which isn't listed.
+    expect(inQuietHours(quiet, at(5, 3, 0))).toBe(false);
+    expect(inQuietHours(quiet, at(5, 21, 59))).toBe(false);
+  });
+
+  it("wraps from Saturday night into Sunday", () => {
+    const quiet = { from: "23:00", to: "01:00", days: [6] };
+    expect(inQuietHours(quiet, at(7, 0, 30))).toBe(true);
+    expect(inQuietHours(quiet, at(1, 0, 30))).toBe(false);
+  });
+
+  it("takes the whole listed day when from and to are the same", () => {
+    const quiet = { from: "08:00", to: "08:00", days: [0] };
+    expect(inQuietHours(quiet, at(0, 0, 0))).toBe(true);
+    expect(inQuietHours(quiet, at(0, 7, 59))).toBe(true);
+    expect(inQuietHours(quiet, at(0, 23, 59))).toBe(true);
+    expect(inQuietHours(quiet, at(1, 0, 0))).toBe(false);
+    expect(inQuietHours(quiet, at(6, 23, 59))).toBe(false);
+  });
+
+  it("never holds when off, without days, or for broken times", () => {
+    expect(inQuietHours(null, at(1, 12))).toBe(false);
+    expect(inQuietHours({ from: "00:00", to: "00:00", days: [] }, at(1, 12))).toBe(false);
+    expect(inQuietHours({ from: "25:00", to: "07:00", days: [1] }, at(1, 23))).toBe(false);
+    expect(inQuietHours({ from: "7:00", to: "09:00", days: [1] }, at(1, 8))).toBe(false);
+  });
+
+  it("reads a stored filter back, and nothing that isn't one", () => {
+    expect(
+      readFilter({ mutedAccounts: ["a3", 5], quietHours: { from: "22:00", to: "07:00", days: [1, "x"] } }),
+    ).toEqual({ mutedAccounts: ["a3"], quietHours: { from: "22:00", to: "07:00", days: [1] } });
+    expect(readFilter({ mutedAccounts: "a3", quietHours: { from: 1 } })).toEqual({
+      mutedAccounts: [],
+      quietHours: null,
+    });
+    for (const junk of [null, undefined, "filter", 5]) expect(readFilter(junk)).toBeNull();
   });
 });

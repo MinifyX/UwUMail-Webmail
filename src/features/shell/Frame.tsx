@@ -12,7 +12,9 @@ import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
 import { modKey } from "@/lib/platform";
 import { useAccounts } from "@/lib/queries";
 import { useBrand } from "@/state/brand";
+import { withSearchTerm } from "@/lib/searchQuery";
 import { useUi, type AppSection } from "@/state/ui";
+import { SearchHelp } from "../mail/SearchHelp";
 import { useNewMailHops } from "../mail/MailboxNav";
 import { focusSearch, SEARCH_INPUT_ID } from "./search";
 import { SECTIONS, useAvailableSections } from "./sections";
@@ -177,26 +179,25 @@ export function GlobalSearch({ className, autoFocus }: { className?: string; aut
         placeholder={t("nav.searchAll")}
         aria-label={t("nav.searchAll")}
         enterKeyHint="search"
-        className="h-10 w-full rounded-full border border-hairline bg-surface pr-16 pl-10 text-body placeholder:text-muted focus:border-pink focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+        className="h-10 w-full rounded-full border border-hairline bg-surface pr-22 pl-10 text-body placeholder:text-muted focus:border-pink focus:shadow-focus focus:outline-none [&::-webkit-search-cancel-button]:hidden"
       />
-      {draft ? (
-        <IconButton
-          icon={X}
-          size="sm"
-          label={t("list.clearSearch")}
-          onClick={() => setDraft("")}
-          className="absolute top-1/2 right-1 -translate-y-1/2"
-        />
-      ) : (
-        !focused && (
+      <div className="absolute top-1/2 right-1 flex -translate-y-1/2 items-center">
+        {!draft && !focused && (
           <kbd
             aria-hidden
-            className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded-small border border-line bg-canvas px-1.5 font-sans text-badge font-bold text-muted max-md:hidden"
+            className="pointer-events-none mr-1 rounded-small border border-line bg-canvas px-1.5 font-sans text-badge font-bold text-muted max-md:hidden"
           >
             {modKey} K
           </kbd>
-        )
-      )}
+        )}
+        <SearchHelp
+          onInsert={(term) => {
+            setDraft(withSearchTerm(draft, term));
+            document.getElementById(SEARCH_INPUT_ID)?.focus();
+          }}
+        />
+        {draft && <IconButton icon={X} size="sm" label={t("list.clearSearch")} onClick={() => setDraft("")} />}
+      </div>
     </div>
   );
 }

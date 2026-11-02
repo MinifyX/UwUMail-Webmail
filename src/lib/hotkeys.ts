@@ -17,23 +17,51 @@ export function isTyping(target: EventTarget | null) {
 }
 
 /**
- * Keys use the format "mod+k", "mod+shift+k" or plain "j". "mod" is Cmd on macOS
+ * Keys use the format "mod+k", "mod+shift+k", "shift+i" or plain "j". "mod" is Cmd on macOS
  * and Ctrl elsewhere. Single keys are ignored while the user types. "g i" is
  * a sequence: g, then i within a second. A key held down runs its handler once,
  * so holding Delete can't delete one conversation after the other.
  */
-function comboOf(event: KeyboardEvent) {
+export function comboOf(event: KeyboardEvent) {
   const parts: string[] = [];
-  const mod = event.metaKey || event.ctrlKey;
-  if (mod) parts.push("mod");
-  // Shift only counts beside mod: on its own it already changes the key, like ? or #.
-  if (mod && event.shiftKey) parts.push("shift");
+  if (event.metaKey || event.ctrlKey) parts.push("mod");
   if (event.altKey) parts.push("alt");
+  // Shift only counts with letters: "?" and "#" already tell it.
+  if (event.shiftKey && /^[a-z]$/i.test(event.key)) parts.push("shift");
   parts.push(event.key.length === 1 ? event.key.toLowerCase() : event.key);
   return parts.join("+");
 }
 
+/**
+ * The combos a key answers to, most specific first. Shift+letter falls back to the letter
+ * alone, so Shift+J still moves, Cmd+Shift+K still opens the palette and a sequence
+ * "g i" also takes "g", Shift+I. Only a map entry with "shift+" claims Shift for itself.
+ */
+export function combosOf(event: KeyboardEvent): string[] {
+  const combo = comboOf(event);
+  const plain = combo.replace(/(^|\+)shift\+(?=[a-z]$)/, "$1");
+  return plain === combo ? [combo] : [combo, plain];
+}
+
+/** The handler for a key, after an optional first key of a sequence. */
+export function findHotkey(map: HotkeyMap, combos: string[], started: string | null) {
+  if (started) {
+    for (const combo of combos) {
+      const handler = map[`${started} ${combo}`];
+      if (handler) return { combo, handler };
+    }
+  }
+  for (const combo of combos) {
+    const handler = map[combo];
+    if (handler) return { combo, handler };
+  }
+  return null;
+}
+
 const SEQUENCE_WAIT = 1000;
+
+/** ⌘⇧K opens the command palette; ⌘K goes to the search. */
+export const PALETTE_COMBO = "mod+shift+k";
 
 export function useHotkeys(map: HotkeyMap, { enabled = true, repeat = [] }: HotkeyOptions = {}) {
   const latest = useRef(map);
@@ -48,23 +76,27 @@ export function useHotkeys(map: HotkeyMap, { enabled = true, repeat = [] }: Hotk
     let pending: { key: string; at: number } | null = null;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing) return;
-      const combo = comboOf(event);
-      if (!combo.startsWith("mod+") && isTyping(event.target)) return;
-      if (document.querySelector("dialog[open]") && combo !== "mod+shift+k") return;
+      const combos = combosOf(event);
+      const plain = combos.at(-1) ?? "";
+      if (!plain.startsWith("mod+") && isTyping(event.target)) return;
+      // The palette toggles over an open dialog, the palette itself included.
+      if (document.querySelector("dialog[open]") && combos[0] !== PALETTE_COMBO) return;
       // An open menu keeps the arrows and letters to itself.
       if (document.querySelector('[role="menu"]')) return;
       const started = pending && event.timeStamp - pending.at < SEQUENCE_WAIT ? pending.key : null;
       pending = null;
-      const handler = (started && latest.current[`${started} ${combo}`]) || latest.current[combo];
-      if (!handler) {
+      const found = findHotkey(latest.current, combos, started);
+      if (!found) {
         // The first key of a sequence waits for the second one.
-        if (Object.keys(latest.current).some((key) => key.startsWith(`${combo} `))) {
-          pending = { key: combo, at: event.timeStamp };
+        const first = combos.find((combo) => Object.keys(latest.current).some((key) => key.startsWith(`${combo} `)));
+        if (first) {
+          pending = { key: first, at: event.timeStamp };
           event.preventDefault();
         }
         return;
       }
-      if (event.repeat && !repeating.current.includes(combo)) {
+      const { combo, handler } = found;
+      if (event.repeat && !repeating.current.includes(combo) && !repeating.current.includes(plain)) {
         event.preventDefault();
         return;
       }

@@ -1,9 +1,11 @@
 import clsx from "clsx";
 import {
+  AlarmClock,
   Archive,
   Check,
   FolderInput,
   ListFilter as FilterIcon,
+  Inbox,
   MailOpen,
   Menu as MenuIcon,
   ShieldAlert,
@@ -38,6 +40,7 @@ import { groupByLabel } from "../labels/logic";
 import { useListThreads } from "../labels/useLabels";
 import { useSelectionActions } from "./selection";
 import { formatDayHeading, groupByDay } from "./dayGroups";
+import { useSnoozedRows } from "./snooze";
 import { ThreadRow } from "./ThreadRow";
 import { useViewInfo } from "./view";
 
@@ -77,6 +80,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
   const selectedThreadId = useUi((s) => s.selectedThreadId);
   const { setFilter, selectThread, setVisibleThreadIds, setFolderDrawerOpen } = useUi.getState();
   const info = useViewInfo(view);
+  const snoozedRows = useSnoozedRows(view);
   const { data: accounts = [] } = useAccounts();
   const { accounts: shown } = useVisibleAccounts();
   const { refresh } = useMessageActions();
@@ -159,6 +163,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
       dragIds={checked.includes(thread.id) ? checked : [thread.id]}
       inTrash={info.isTrash}
       inJunk={info.isJunk}
+      snoozedUntil={snoozedRows?.get(thread.id)}
       rights={info.rights}
       code={codeFor(thread)}
       onContextMenu={(event) => openRowMenu(thread, event)}
@@ -313,6 +318,22 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
                 size="sm"
                 label={t("reader.move")}
                 onClick={() => runOnChecked(selection.move)}
+              />
+            )}
+            {!info.rights.shared && info.rights.remove && (
+              <IconButton
+                icon={AlarmClock}
+                size="sm"
+                label={t("snooze.action")}
+                onClick={() => runOnChecked(selection.snooze)}
+              />
+            )}
+            {info.isSnoozed && (
+              <IconButton
+                icon={Inbox}
+                size="sm"
+                label={t("snooze.unsnooze")}
+                onClick={() => runOnChecked(selection.unsnooze)}
               />
             )}
             {info.rights.flag && labels.length > 0 && (

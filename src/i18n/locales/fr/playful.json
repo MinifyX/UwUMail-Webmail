@@ -251,5 +251,26 @@
     "overlap": {
       "title": "Tiens, ça me dit quelque chose (・・?)"
     }
+  },
+  "markAllRead": {
+    "done_one": "Tout est à jour, {{count}} message lu (^ω^)",
+    "done_other": "Tout est à jour, {{count}} messages lus (^ω^)",
+    "nothing": "Rien de non lu ici, tout est douillet"
+  },
+  "templates": {
+    "none": "Aucun modèle pour l’instant (・ω・)",
+    "saved": "Rangé comme modèle « {{name}} » ✿"
+  },
+  "attachmentReminder": {
+    "title": "On a oublié quelque chose ? (・・;)",
+    "body": "Votre e-mail parle d’une pièce jointe, mais rien n’est encore joint."
+  },
+  "snooze": {
+    "title": "Une sieste jusqu’à quand ? (˘ω˘)",
+    "done": "Nyu l’a bordé jusqu’à {{time}} (˘ω˘)",
+    "back": "Debout, l’e-mail est de retour (｡･ω･｡)"
+  },
+  "notify": {
+    "quietDesc": "Chut, Nyu dort (˘ω˘) Aucune notification pendant ces heures, minuit compris."
   }
 }

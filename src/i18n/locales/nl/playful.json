@@ -246,5 +246,26 @@
     "overlap": {
       "title": "Hm, dat komt me bekend voor (・・?)"
     }
+  },
+  "markAllRead": {
+    "done_one": "Helemaal bij, {{count}} bericht gelezen (^ω^)",
+    "done_other": "Helemaal bij, {{count}} berichten gelezen (^ω^)",
+    "nothing": "Hier is niets ongelezen, lekker knus"
+  },
+  "templates": {
+    "none": "Nog geen sjablonen (・ω・)",
+    "saved": "Opgeborgen als sjabloon “{{name}}” ✿"
+  },
+  "attachmentReminder": {
+    "title": "Iets vergeten? (・・;)",
+    "body": "Je mail heeft het over een bijlage, maar er is nog niets bijgevoegd."
+  },
+  "snooze": {
+    "title": "Dutje tot wanneer? (˘ω˘)",
+    "done": "Nyu heeft hem ingestopt tot {{time}} (˘ω˘)",
+    "back": "Opstaan, de mail is terug (｡･ω･｡)"
+  },
+  "notify": {
+    "quietDesc": "Sst, Nyu slaapt (˘ω˘) Geen meldingen tijdens deze uren, ook over middernacht."
   }
 }

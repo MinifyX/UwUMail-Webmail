@@ -86,6 +86,76 @@ export function utcDate(date: Date): string {
 
 export const CONFIG_KEY = "config";
 export const PROGRESS_KEY = "progress";
+/** Where the page leaves which mail stays quiet: a `PushFilter`. */
+export const FILTER_KEY = "filter";
+
+/** The tag of the notification shown and taken away at once when everything a push brought stays quiet. */
+export const QUIET_TAG = "uwumail-quiet";
+
+/**
+ * Times without notifications, local time: from `from` to `to` ("HH:MM") on `days` (0 = Sunday).
+ * Past midnight belongs to the day it starts on; `from === to` is the whole day.
+ */
+export interface QuietTimes {
+  from: string;
+  to: string;
+  days: number[];
+}
+
+/**
+ * Which new mail the service worker keeps quiet about, as the synced settings say (the page
+ * writes it whenever they change): mail of muted accounts, and everything during quiet hours.
+ */
+export interface PushFilter {
+  /** JMAP account ids whose new mail is never announced. */
+  mutedAccounts: string[];
+  /** Null while quiet hours are off. */
+  quietHours: QuietTimes | null;
+}
+
+const CLOCK = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+function minuteOf(clock: string): number | null {
+  const match = CLOCK.exec(clock);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+}
+
+/**
+ * Whether `now` (local time) falls into the quiet hours. `from === to` is the whole of each listed
+ * day; `from < to` the time in between on a listed day; `from > to` spans midnight, so it counts
+ * from `from` on a listed day and until `to` on the day after a listed one.
+ */
+export function inQuietHours(quiet: QuietTimes | null | undefined, now: Date): boolean {
+  if (!quiet || !Array.isArray(quiet.days)) return false;
+  const from = minuteOf(quiet.from);
+  const to = minuteOf(quiet.to);
+  if (from === null || to === null) return false;
+  const today = now.getDay();
+  const yesterday = (today + 6) % 7;
+  const minute = now.getHours() * 60 + now.getMinutes();
+  const listed = (day: number) => quiet.days.includes(day);
+  if (from === to) return listed(today);
+  if (from < to) return listed(today) && minute >= from && minute < to;
+  return (listed(today) && minute >= from) || (listed(yesterday) && minute < to);
+}
+
+/** A filter read back from storage, or null for anything that isn't one. */
+export function readFilter(value: unknown): PushFilter | null {
+  if (typeof value !== "object" || value === null) return null;
+  const { mutedAccounts, quietHours } = value as Partial<PushFilter>;
+  const quiet =
+    typeof quietHours === "object" &&
+    quietHours !== null &&
+    typeof quietHours.from === "string" &&
+    typeof quietHours.to === "string" &&
+    Array.isArray(quietHours.days)
+      ? { from: quietHours.from, to: quietHours.to, days: quietHours.days.filter((day) => Number.isInteger(day)) }
+      : null;
+  return {
+    mutedAccounts: Array.isArray(mutedAccounts) ? mutedAccounts.filter((id) => typeof id === "string") : [],
+    quietHours: quiet,
+  };
+}
 
 /** A tiny key-value store; IndexedDB in the browser, a Map in tests. */
 export interface KeyValue {
@@ -248,6 +318,14 @@ export function notificationsFor(
  */
 export function genericNotification(config: Pick<PushConfig, "texts">): NotificationSpec {
   return { title: config.texts.newMail, options: { tag: "uwumail-new", body: config.texts.hidden, data: {} } };
+}
+
+/**
+ * For a push whose mail all stays quiet (muted mailboxes, quiet hours): browsers want a
+ * notification for every push, so this one is shown without a sound and taken away at once.
+ */
+export function quietNotification(config: Pick<PushConfig, "texts">): NotificationSpec {
+  return { title: config.texts.newMail, options: { tag: QUIET_TAG, silent: true, data: {} } };
 }
 
 function target(mail: NewMail): MessageTarget {

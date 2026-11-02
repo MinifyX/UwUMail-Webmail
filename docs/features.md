@@ -57,6 +57,28 @@ talks to it over JMAP.
   without it goes the old way: a mail to the list, whose address you see first,
   or the sender's own page.
 
+## Organising
+
+The same as in the UwUMail app, and synced with it through the server, so a
+choice made on one device holds on all of them.
+
+- **Mailboxes in your order.** Drag a mailbox in the sidebar, or move it up and
+  down under _Settings → Reading → Mailboxes_. Shared mailboxes take part.
+- **All mailboxes, your way.** Leave your own mailbox out of the unified views
+  and their counts, or take more of its folders into the unified inbox from the
+  folder menu.
+- **Favourite and hidden folders.** Favourites show on top of the sidebar;
+  hidden folders disappear until _Show hidden folders_ brings them back,
+  dimmed.
+- **Mark all as read.** For a folder, a mailbox or a unified view: from its
+  menu, the command palette or <kbd>Shift</kbd>+<kbd>I</kbd>, with undo.
+- **Snooze.** <kbd>B</kbd>, the reader or a swipe moves a conversation to the
+  _Snoozed_ folder until the chosen time; while the webmail or the app is open,
+  it comes back to where it was. Your own mail only, not shared mailboxes.
+- **Search operators.** `from:`, `to:`, `subject:`, `"exact words"`,
+  `has:attachment`, `is:unread`, `is:flagged`, `after:` and `before:` become a
+  real server-side search; the ? next to the search field lists them.
+
 ## Writing
 
 - **Held back by the server.** "Undo send" and "send later" are the server's: a
@@ -69,6 +91,14 @@ talks to it over JMAP.
   mandatory the composer says the server will add it. On servers without
   signatures per domain, signatures live on the sending addresses as before.
 - Recipients are suggested from the address books and the mail history.
+- **Templates.** Text you write often, with `{firstName}`, `{name}`, `{date}`
+  and `{myName}` filled in when it is inserted — from the composer's template
+  button or by typing `/` at the start of a line. _Save as template_ keeps the
+  current mail; _Settings → Templates_ manages them. Their HTML is cleaned like
+  a signature's.
+- **Attachment reminder.** A mail that mentions an attachment but has none asks
+  before it goes. Quoted text and signatures don't count; it can be switched
+  off under _Settings → Writing_.
 - **Masked addresses.** Where the server makes them, the settings list the
   account's masked addresses — random ones for single websites, the same the
   portal and password managers make — to copy, describe, switch off, delete and
@@ -157,3 +187,6 @@ left today. Setup, costs and privacy: [ai-assistant.md](ai-assistant.md).
   subscriptions). Only the news that something changed goes through the
   browser's push service, encrypted; sender and subject come from the server
   itself, and can be left out too.
+- **Muted mailboxes and quiet hours.** Notifications can be switched off per
+  mailbox and paused at set hours on set days, also across midnight. Both sync
+  with the app.

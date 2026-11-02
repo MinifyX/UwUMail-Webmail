@@ -45,6 +45,7 @@ export interface ServiceWorkerScope {
   registration: {
     scope: string;
     showNotification(title: string, options?: NotificationOptions): Promise<void>;
+    getNotifications(filter?: { tag?: string }): Promise<{ close(): void }[]>;
     pushManager: {
       getSubscription(): Promise<WorkerSubscription | null>;
       subscribe(options: { userVisibleOnly: boolean; applicationServerKey: ArrayBuffer }): Promise<WorkerSubscription>;
@@ -90,6 +91,9 @@ export function workerEnv(scope: ServiceWorkerScope, kv: KeyValue): WorkerEnv {
         icon: `${basePath(scope)}uwumail-app-icon.svg`,
         ...spec.options,
       }),
+    closeNotifications: async (tag) => {
+      for (const notification of await scope.registration.getNotifications({ tag })) notification.close();
+    },
     webmailInFront: async () =>
       (await webmailWindows(scope)).some((client) => client.focused && client.visibilityState === "visible"),
     postToClients: async (message) => {
