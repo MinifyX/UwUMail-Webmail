@@ -26,15 +26,36 @@ export function isActive(code: VerificationCode, now: number): boolean {
   return Date.parse(code.expiresAt) > now;
 }
 
-/** Only http(s) links open; anything else in `url` is ignored. */
-export function safeUrl(url: string | undefined): string | null {
+/** A host as compared: lower case, without the trailing dot of a fully qualified name. */
+function normalHost(host: string): string {
+  return host.toLowerCase().replace(/\.$/, "");
+}
+
+/**
+ * A sign-in link opens only over https, without a user name in front of the host, and only on
+ * the code's own origin or a subdomain of it (security review L-1). Anything else gives null.
+ */
+export function safeUrl(url: string | undefined, origin: string): string | null {
   if (!url) return null;
   try {
     const parsed = new URL(url);
-    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null;
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password) return null;
+    const host = normalHost(parsed.hostname);
+    const own = normalHost(origin);
+    if (!own || (host !== own && !host.endsWith(`.${own}`))) return null;
+    return parsed.href;
   } catch {
     return null;
   }
+}
+
+/**
+ * The link a code's "Open" may follow: only from signed headers, never one read from the text,
+ * and only where `safeUrl` lets it.
+ */
+export function openableUrl(code: Pick<VerificationCode, "kind" | "url" | "origin" | "source">): string | null {
+  if (code.kind !== "link" || code.source !== "header") return null;
+  return safeUrl(code.url, code.origin);
 }
 
 /** The current time, every second while `enabled`. */
@@ -48,13 +69,29 @@ export function useNow(enabled = true): number {
   return now;
 }
 
-/** Copies a code. The code itself never goes to the console or a log. */
+/** How long a copied code stays on the clipboard. */
+export const CLIPBOARD_CLEAR_MS = 60_000;
+
+/**
+ * Copies a code, and after a minute empties the clipboard if it still holds that code
+ * (best effort: reading the clipboard may be denied). The code never goes to a log.
+ */
 export async function copyCode(code: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(code);
-    return true;
   } catch {
     return false;
+  }
+  window.setTimeout(() => void clearCopiedCode(code), CLIPBOARD_CLEAR_MS);
+  return true;
+}
+
+/** Empties the clipboard when it still holds `code`; any error is ignored. */
+export async function clearCopiedCode(code: string): Promise<void> {
+  try {
+    if ((await navigator.clipboard.readText()) === code) await navigator.clipboard.writeText("");
+  } catch {
+    // Reading may be denied or the page not focused: then the code simply stays.
   }
 }
 

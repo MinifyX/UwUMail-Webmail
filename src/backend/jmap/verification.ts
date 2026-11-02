@@ -53,7 +53,37 @@ export interface JmapCodeEmail {
   threadId?: string;
   from?: { name?: string | null; email?: string | null }[] | null;
   subject?: string | null;
+  receivedAt?: string | null;
   verification?: unknown;
+}
+
+/** 4 to 16 letters, digits and dashes, at least one letter or digit (security review L-2). */
+const CODE_PATTERN = /^(?=.*[A-Za-z0-9])[A-Za-z0-9-]{4,16}$/;
+const LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+
+/** The longest a code may count as valid after its mail arrived, whatever the server says. */
+export const MAX_CODE_LIFETIME_MS = 24 * 60 * 60 * 1000;
+
+export function validCode(code: string): boolean {
+  return CODE_PATTERN.test(code);
+}
+
+/** A host name in lower case, without the trailing dot; null for anything else, IP addresses included. */
+export function validOrigin(origin: string): string | null {
+  const host = origin.toLowerCase().replace(/\.$/, "");
+  if (host.length === 0 || host.length > 253) return null;
+  const labels = host.split(".");
+  if (!labels.every((label) => LABEL_PATTERN.test(label))) return null;
+  // A last label of digits only is an IPv4 address (or no real name); IPv6 fails the labels already.
+  if (/^\d+$/.test(labels.at(-1)!)) return null;
+  return host;
+}
+
+/** `expiresAt`, but never later than a day after the mail came in (or a day from now without a date). */
+export function capExpiry(expiresAt: number, receivedAt: string | null | undefined, now = Date.now()): number {
+  const received = receivedAt ? Date.parse(receivedAt) : Number.NaN;
+  const base = Number.isNaN(received) ? now : received;
+  return Math.min(expiresAt, base + MAX_CODE_LIFETIME_MS);
 }
 
 function text(value: unknown): string | null {
@@ -64,15 +94,17 @@ function text(value: unknown): string | null {
  * The code of one mail, or null when it has none or what the server sent can't be shown. Anything
  * unknown falls to the careful side: an unknown source counts as a guess, autofill only on `true`.
  */
-export function toVerificationCode(email: JmapCodeEmail): VerificationCode | null {
+export function toVerificationCode(email: JmapCodeEmail, now = Date.now()): VerificationCode | null {
   const raw = email.verification;
   if (!raw || typeof raw !== "object") return null;
   const value = raw as Record<string, unknown>;
   const kind = value.kind === "otp" || value.kind === "link" ? value.kind : null;
-  const origin = text(value.origin);
+  const rawOrigin = text(value.origin);
+  const origin = rawOrigin ? validOrigin(rawOrigin) : null;
   const expiresAt = text(value.expiresAt);
   if (!kind || !origin || !expiresAt || Number.isNaN(Date.parse(expiresAt))) return null;
   const code = text(value.code);
+  if (code && !validCode(code)) return null;
   const url = kind === "link" ? text(value.url) : null;
   if (kind === "otp" && !code) return null;
   if (kind === "link" && !url && !code) return null;
@@ -91,7 +123,7 @@ export function toVerificationCode(email: JmapCodeEmail): VerificationCode | nul
     purpose: PURPOSES.includes(value.purpose as CodePurpose) ? (value.purpose as CodePurpose) : "other",
     source: value.source === "header" ? "header" : "heuristic",
     autofill: value.autofill === true,
-    expiresAt: new Date(Date.parse(expiresAt)).toISOString(),
+    expiresAt: new Date(capExpiry(Date.parse(expiresAt), email.receivedAt, now)).toISOString(),
   };
 }
 
@@ -100,7 +132,7 @@ export function activeCodes(ids: string[], emails: JmapCodeEmail[], now = Date.n
   const byId = new Map(emails.map((email) => [email.id, email]));
   return ids.flatMap((id) => {
     const email = byId.get(id);
-    const code = email ? toVerificationCode(email) : null;
+    const code = email ? toVerificationCode(email, now) : null;
     return code && Date.parse(code.expiresAt) > now ? [code] : [];
   });
 }

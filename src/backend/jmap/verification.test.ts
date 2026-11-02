@@ -2,9 +2,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Invocation } from "./client";
 import {
   VERIFICATION,
+  MAX_CODE_LIFETIME_MS,
   activeCodes,
+  capExpiry,
   codeCalls,
   toVerificationCode,
+  validCode,
+  validOrigin,
   verificationSupported,
   type JmapCodeEmail,
 } from "./verification";
@@ -35,7 +39,7 @@ const otp = {
 
 describe("Email.verification", () => {
   it("reads a signed code", () => {
-    expect(toVerificationCode(email(otp))).toEqual({
+    expect(toVerificationCode(email(otp), NOW)).toEqual({
       id: "e93",
       emailId: "e93",
       threadId: "t7",
@@ -89,6 +93,49 @@ describe("Email.verification", () => {
     expect(toVerificationCode(email({ ...otp, origin: "" }))).toBeNull();
     expect(toVerificationCode(email({ ...otp, expiresAt: "bald" }))).toBeNull();
     expect(toVerificationCode(email({ ...otp, kind: "link", code: null }))).toBeNull();
+  });
+
+  it("accepts only short codes of letters, digits and dashes", () => {
+    for (const ok of ["4829", "482913", "AB-12-CD", "a1b2c3d4e5f6g7h8"]) expect(validCode(ok)).toBe(true);
+    for (const bad of ["482", "12345678901234567", "----", "48 29 13", "482913<", "４８２９１３", "4829\n13"]) {
+      expect(validCode(bad)).toBe(false);
+    }
+    expect(toVerificationCode(email({ ...otp, code: "<b>4829</b>" }), NOW)).toBeNull();
+    expect(toVerificationCode(email({ ...otp, code: "----" }), NOW)).toBeNull();
+  });
+
+  it("accepts only host names as origin, in lower case and without IP addresses", () => {
+    expect(validOrigin("Login.Shop.Example.")).toBe("login.shop.example");
+    expect(validOrigin("xn--bcher-kva.example")).toBe("xn--bcher-kva.example");
+    for (const bad of [
+      "192.0.2.1",
+      "[2001:db8::1]",
+      "2001:db8::1",
+      "shop.example/login",
+      "user@shop.example",
+      "-shop.example",
+      "shop..example",
+      "shop example",
+      `${"a".repeat(64)}.example`,
+      `${"a.".repeat(127)}example`,
+    ]) {
+      expect(validOrigin(bad)).toBeNull();
+    }
+    expect(toVerificationCode(email({ ...otp, origin: "198.51.100.7" }), NOW)).toBeNull();
+    expect(toVerificationCode(email({ ...otp, origin: "LOGIN.shop.example" }), NOW)?.origin).toBe("login.shop.example");
+  });
+
+  it("lets a code count as valid for a day after its mail at most", () => {
+    const received = "2048-03-01T09:00:00Z";
+    const far = Date.parse("2049-01-01T00:00:00Z");
+    expect(capExpiry(far, received, NOW)).toBe(Date.parse(received) + MAX_CODE_LIFETIME_MS);
+    expect(capExpiry(far, null, NOW)).toBe(NOW + MAX_CODE_LIFETIME_MS);
+    expect(capExpiry(Date.parse(LATER), received, NOW)).toBe(Date.parse(LATER));
+    const code = toVerificationCode(
+      email({ ...otp, expiresAt: "2049-01-01T00:00:00Z" }, { receivedAt: received }),
+      NOW,
+    );
+    expect(code?.expiresAt).toBe("2048-03-02T09:00:00.000Z");
   });
 
   it("keeps the query's order and drops expired codes and missing mails", () => {

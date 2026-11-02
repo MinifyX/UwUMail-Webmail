@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, IconButton } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { requestOpenLink } from "@/state/links";
 import { toast } from "@/state/toasts";
 import {
   copyCode,
   formatCode,
   isActive,
+  openableUrl,
   remaining,
-  safeUrl,
   secondsLeft,
   useNow,
   type VerificationCode,
@@ -39,9 +40,10 @@ export function useCopyCode(): [string | null, (code: VerificationCode) => void]
   return [copied, copy];
 }
 
+/** Opens a signed sign-in link through the same checks and warning as links in a mail. */
 export function openCodeLink(code: VerificationCode) {
-  const url = safeUrl(code.url);
-  if (url) window.open(url, "_blank", "noopener,noreferrer");
+  const url = openableUrl(code);
+  if (url) requestOpenLink(url, url);
 }
 
 function NoAutofillTag() {
@@ -91,12 +93,14 @@ function CodeChip({ code, now, copied, onCopy }: ChipProps) {
         </span>
       </span>
       {code.kind === "otp" && !code.autofill && <NoAutofillTag />}
-      {code.kind === "link" ? (
+      {openableUrl(code) ? (
         <Button size="sm" icon={ExternalLink} onClick={() => openCodeLink(code)}>
           {t("codes.open")}
         </Button>
       ) : (
-        <IconButton size="sm" icon={copied ? Check : Copy} label={t("codes.copy")} active={copied} onClick={onCopy} />
+        code.code && (
+          <IconButton size="sm" icon={copied ? Check : Copy} label={t("codes.copy")} active={copied} onClick={onCopy} />
+        )
       )}
     </li>
   );
@@ -177,17 +181,19 @@ export function CodeHint({ code }: { code: VerificationCode }) {
         <p>{body}</p>
       </div>
       {!expired &&
-        (code.kind === "link" ? (
+        (openableUrl(code) ? (
           <Button size="sm" icon={ExternalLink} onClick={() => openCodeLink(code)}>
             {t("codes.open")}
           </Button>
         ) : (
-          <IconButton
-            size="sm"
-            icon={copied === code.id ? Check : Copy}
-            label={t("codes.copy")}
-            onClick={() => copy(code)}
-          />
+          code.code && (
+            <IconButton
+              size="sm"
+              icon={copied === code.id ? Check : Copy}
+              label={t("codes.copy")}
+              onClick={() => copy(code)}
+            />
+          )
         ))}
     </div>
   );

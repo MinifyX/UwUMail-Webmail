@@ -1,8 +1,18 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/i18n";
+import { useLinks } from "@/state/links";
+import { useSettings } from "@/state/settings";
 import { useToasts } from "@/state/toasts";
-import { formatCode, remaining, type VerificationCode } from "./codes";
+import {
+  clearCopiedCode,
+  CLIPBOARD_CLEAR_MS,
+  formatCode,
+  openableUrl,
+  remaining,
+  safeUrl,
+  type VerificationCode,
+} from "./codes";
 import { CodeHint, VerificationCodeBar } from "./VerificationCodeBar";
 
 const NOW = Date.parse("2048-03-01T10:00:00Z");
@@ -64,17 +74,104 @@ describe("verification codes", () => {
     expect(screen.getByRole("listitem").className).toContain("border-dashed");
   });
 
-  it("offers to open a sign-in link instead of copying", () => {
+  it("offers to open a signed sign-in link through the link checks", () => {
     const open = vi.spyOn(window, "open").mockReturnValue(null);
+    useSettings.setState({ linkConfirm: false });
     render(
       <VerificationCodeBar
-        codes={[code({ kind: "link", code: undefined, url: "https://forum.example.net/login", autofill: false })]}
+        codes={[
+          code({
+            kind: "link",
+            code: undefined,
+            url: "https://forum.example.net/login",
+            origin: "forum.example.net",
+            autofill: false,
+          }),
+        ]}
       />,
     );
     expect(screen.getByText("Anmeldelink")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Code kopieren" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Öffnen" }));
     expect(open).toHaveBeenCalledWith("https://forum.example.net/login", "_blank", "noopener,noreferrer");
+    open.mockRestore();
+  });
+
+  it("asks first when links from mail need confirming", () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    useSettings.setState({ linkConfirm: true, linkDomains: [] });
+    const link = code({
+      kind: "link",
+      code: undefined,
+      url: "https://forum.example.net/l",
+      origin: "forum.example.net",
+    });
+    render(<VerificationCodeBar codes={[link]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Öffnen" }));
+    expect(open).not.toHaveBeenCalled();
+    expect(useLinks.getState().pending?.href).toBe("https://forum.example.net/l");
+    useLinks.setState({ pending: null });
+    open.mockRestore();
+  });
+
+  it("offers no Open for a link read from the text or off the code's origin", () => {
+    const link = { kind: "link" as const, code: undefined, origin: "forum.example.net" };
+    render(
+      <VerificationCodeBar
+        codes={[
+          code({ ...link, id: "h", url: "https://forum.example.net/l", source: "heuristic" }),
+          code({ ...link, id: "o", url: "https://evil.example.com/l" }),
+        ]}
+      />,
+    );
+    expect(screen.getAllByText("Anmeldelink")).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: "Öffnen" })).toBeNull();
+  });
+
+  it("opens https links on the origin or its subdomains only", () => {
+    const origin = "Forum.Example.NET.";
+    expect(safeUrl("https://forum.example.net/l", origin)).toBe("https://forum.example.net/l");
+    expect(safeUrl("https://login.forum.example.net./l", origin)).toBe("https://login.forum.example.net./l");
+    for (const bad of [
+      "http://forum.example.net/l",
+      "https://user:pw@forum.example.net/l",
+      "https://user@forum.example.net/l",
+      "https://evilforum.example.net/l",
+      "https://forum.example.net.evil.example/l",
+      "https://example.net/l",
+      "javascript:alert(1)",
+      "not a url",
+      undefined,
+    ]) {
+      expect(safeUrl(bad, origin)).toBeNull();
+    }
+    const signed = code({ kind: "link", url: "https://forum.example.net/l", origin: "forum.example.net" });
+    expect(openableUrl(signed)).toBe("https://forum.example.net/l");
+    expect(openableUrl({ ...signed, source: "heuristic" })).toBeNull();
+    expect(openableUrl({ ...signed, kind: "otp" })).toBeNull();
+  });
+
+  it("empties the clipboard after a minute if it still holds the code", async () => {
+    let clip = "";
+    const writeText = vi.fn(async (value: string) => void (clip = value));
+    const readText = vi.fn(async () => clip);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText, readText }, configurable: true });
+    render(<VerificationCodeBar codes={[code()]} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Code kopieren" }));
+    });
+    expect(clip).toBe("482913");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CLIPBOARD_CLEAR_MS);
+    });
+    expect(clip).toBe("");
+
+    clip = "something else";
+    await clearCopiedCode("482913");
+    expect(clip).toBe("something else");
+
+    readText.mockRejectedValueOnce(new Error("denied"));
+    await expect(clearCopiedCode("482913")).resolves.toBeUndefined();
   });
 
   it("copies the code to the clipboard", async () => {
