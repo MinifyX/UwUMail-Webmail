@@ -975,3 +975,32 @@ branch; their tests pass.
   weighed.
 - **A held Enter in a real browser** (W-29) — driven with synthetic key and click events.
 - **A real server, login and forged mail** — as before.
+
+## Addendum — November 2026: the verification code bar (0.24.0)
+
+A review of the code bar (`src/features/codes/`, `src/backend/jmap/verification.ts`) before 0.24.0.
+The server is trusted, but what it hands out in `Email.verification` is read from mail the attacker
+wrote, so every field was treated as attacker-controlled. All four were fixed in 0.24.0.
+
+| ID   | Severity      | Finding                                                                       | Status          |
+| ---- | ------------- | ----------------------------------------------------------------------------- | --------------- |
+| W-39 | Low           | "Open" on a sign-in link allowed `http:` and any host, past the link question | fixed in 0.24.0 |
+| W-40 | Low           | `code` and `origin` were shown as sent, without checking their shape          | fixed in 0.24.0 |
+| W-41 | Informational | `expiresAt` was taken as sent, so a code could stay in the bar for years      | fixed in 0.24.0 |
+| W-42 | Informational | A copied code stayed on the clipboard indefinitely                            | fixed in 0.24.0 |
+
+- **W-39** (`codes.ts` `safeUrl`, `VerificationCodeBar.tsx` `openCodeLink`). _Cause:_ any `http(s)`
+  URL opened through `window.open`, also for links read from the text, and without the link
+  question. _Fix:_ only `https:` without user info, on the code's origin or a subdomain of it
+  (case-insensitive, trailing dot stripped); "Open" only for `source: "header"`; opened through
+  `requestOpenLink`, so the usual checks and `LinkWarning` apply.
+- **W-40** (`verification.ts` `toVerificationCode`). _Cause:_ no validation of `code` and `origin`.
+  _Fix:_ `code` must be 4–16 characters of `[A-Za-z0-9-]` with at least one letter or digit;
+  `origin` must be a host name (lower-cased, at most 253 characters, no IP literal); entries that
+  fail are dropped.
+- **W-41** (`verification.ts`). _Fix:_ `expiresAt` is capped at `receivedAt` + 24 h (now + 24 h
+  without a date).
+- **W-42** (`codes.ts` `copyCode`). _Fix:_ after 60 s the clipboard is emptied if it still holds the
+  code; best effort, a denied `readText` is ignored.
+
+Unit tests cover each fix (`verification.test.ts`, `VerificationCodeBar.test.tsx`).

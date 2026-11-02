@@ -24,6 +24,25 @@ talks to it over JMAP.
   blocking, keyboard shortcuts, dark mode, German, English, French, Dutch,
   Japanese and Simplified Chinese, playful or plain — the same Nyu, the same
   colours, or the name, logo and colour the server's admin chose.
+- **The UwUSuite 1.9 look.** An icon rail on the left switches between mail,
+  calendar and contacts; the bar on top holds the search over all mailboxes
+  and the compose button. The list is grouped by day with an All / Unread
+  switch, the reader answers with labelled buttons. On a phone there is a tab
+  bar, a large title with search and compose, and the folders get a tab of
+  their own. Text sizes, radii and colours come from the suite's tokens.
+- **Search and palette.** <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>K</kbd> (or
+  <kbd>/</kbd>) goes to the search from anywhere,
+  <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd> opens the command
+  palette, also over an open dialog.
+- **Verification codes.** With a server that offers the JMAP extension
+  `urn:uwumail:jmap:verification`, valid sign-in codes and links show in a
+  quiet bar above the list, as a chip on their row and as a hint in the reader,
+  with a countdown. A code copies with one click and leaves the clipboard again
+  after a minute. Codes from signed headers (Verification-Info, DKIM checked)
+  are marked as such; codes read from the text are marked as unconfirmed and
+  never filled in by themselves. "Open" exists only for signed sign-in links,
+  only over https on the code's own site, and goes through the usual link
+  question. Without the extension the bar stays hidden.
 - **Nyu animations.** Nyu reacts to what happens: peeks at an opened mail, waves
   a sent one goodbye, closes the box on archiving, thinks while the AI works,
   and puts on a party hat when the sender has their birthday today. Short,
