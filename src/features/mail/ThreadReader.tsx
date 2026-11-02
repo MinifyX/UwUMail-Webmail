@@ -23,7 +23,7 @@ import { inTrash, useAccounts, useFolders, useMessageActions, useThread } from "
 import { useUi } from "@/state/ui";
 import { ListLabelChips } from "../assist/LabelChips";
 import { ThreadAssistButton, ThreadSummary } from "../assist/ReaderAssist";
-import { useVerificationCodes } from "../codes/codes";
+import { codeForMessages, useVerificationCodes } from "../codes/codes";
 import { CodeHint } from "../codes/VerificationCodeBar";
 import { MessageView } from "./MessageView";
 import { mailRights } from "./rights";
@@ -137,9 +137,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
     folders,
   );
   const folder = folders.find((f) => f.id === latest.folderId);
-  const code =
-    codes.find((entry) => all.some((message) => message.id === entry.emailId)) ??
-    codes.find((entry) => entry.threadId === data.thread.id);
+  const code = codeForMessages(all, data.thread.id, codes);
 
   return (
     <section

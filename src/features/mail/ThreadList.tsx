@@ -30,7 +30,7 @@ import { useSettings } from "@/state/settings";
 import { useUi } from "@/state/ui";
 import { chipStyle } from "../assist/labels";
 import { useAssistLabels } from "../assist/useAssist";
-import { useVerificationCodes, isActive } from "../codes/codes";
+import { codeForThread, useVerificationCodes } from "../codes/codes";
 import { VerificationCodeBar } from "../codes/VerificationCodeBar";
 import { openDraftThread } from "../compose/openDraft";
 import { LabelDot, ThreadLabelMenu } from "../labels/LabelMenus";
@@ -97,8 +97,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
   const setAnchor = useUi((s) => s.setSelectionAnchor);
 
   const codes = useVerificationCodes();
-  const codeFor = (thread: ThreadSummary) =>
-    codes.find((code) => code.threadId === thread.id && isActive(code, Date.now()));
+  const codeFor = (thread: ThreadSummary) => codeForThread(codes, thread.id);
 
   const query = useListThreads(view, filter, search);
   const loaded = flattenThreads(query.data?.pages);

@@ -1927,8 +1927,8 @@
     "copied": "Code {{code}} kopiert",
     "copyFailed": "Der Code ließ sich nicht kopieren.",
     "remaining": "noch {{time}}",
-    "noAutofill": "Kein Autofill",
-    "noAutofillHint": "Aus dem Mailtext erkannt, Herkunft nicht bestätigt: kein automatisches Einfügen.",
+    "noAutofill": "Absender unbestätigt",
+    "noAutofillHint": "Absender nicht bestätigt (DMARC): der Code wird nie automatisch eingefügt.",
     "purpose": {
       "login": "Anmeldung",
       "signup": "Registrierung",
@@ -1941,7 +1941,7 @@
       "title": "Code {{code}} für {{origin}} · noch {{time}}",
       "linkTitle": "Anmeldelink für {{origin}} · noch {{time}}",
       "signed": "Signierte Herkunft (Verification-Info, DKIM geprüft). Autofill auf {{origin}} möglich.",
-      "signedNoAutofill": "Signierte Herkunft (Verification-Info, DKIM geprüft).",
+      "signedNoAutofill": "Signiert (Verification-Info), aber der Absender ist nicht bestätigt (DMARC): kein automatisches Einfügen.",
       "heuristic": "Aus dem Text erkannt. Herkunft nicht bestätigt, darum kein automatisches Einfügen.",
       "link": "Signierte Herkunft. Links öffnest du selbst.",
       "expired": "Dieser Code ist abgelaufen."

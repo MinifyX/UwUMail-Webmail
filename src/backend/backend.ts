@@ -72,6 +72,7 @@ import type {
   ThreadPage,
   ThreadQuery,
   UnsubscribeOutcome,
+  VerificationCode,
   ImageSizeProbe,
   ImageTextResult,
 } from "./types";
@@ -340,6 +341,12 @@ export interface Backend {
   createMaskedAddress(input: MaskedAddressInput): Promise<MaskedAddress>;
   /** Changes the state (a deleted one may come back) or what it says about itself. */
   updateMaskedAddress(id: string, patch: MaskedAddressPatch): Promise<void>;
+
+  /**
+   * The sign-in codes and links still valid, newest first (UwUMail's verification extension);
+   * null without it, and the code bar stays hidden.
+   */
+  verificationCodes(): Promise<VerificationCode[] | null>;
 
   /** Whether the account may have a profile picture here, and what the server allows; null without. */
   profilePictureOptions(): Promise<ProfilePictureOptions | null>;

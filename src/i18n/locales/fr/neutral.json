@@ -1994,8 +1994,8 @@
     "copied": "Code {{code}} copié",
     "copyFailed": "Impossible de copier le code.",
     "remaining": "encore {{time}}",
-    "noAutofill": "Pas de remplissage auto",
-    "noAutofillHint": "Lu dans le texte du mail, origine non confirmée : jamais inséré automatiquement.",
+    "noAutofill": "Expéditeur non vérifié",
+    "noAutofillHint": "Expéditeur non vérifié (DMARC) : le code n'est jamais inséré automatiquement.",
     "purpose": {
       "login": "Connexion",
       "signup": "Inscription",
@@ -2008,7 +2008,7 @@
       "title": "Code {{code}} pour {{origin}} · encore {{time}}",
       "linkTitle": "Lien de connexion pour {{origin}} · encore {{time}}",
       "signed": "Origine signée (Verification-Info, DKIM vérifié). Remplissage auto possible sur {{origin}}.",
-      "signedNoAutofill": "Origine signée (Verification-Info, DKIM vérifié).",
+      "signedNoAutofill": "Signé (Verification-Info), mais l'expéditeur n'est pas vérifié (DMARC) : jamais inséré automatiquement.",
       "heuristic": "Lu dans le texte. Origine non confirmée, donc pas d’insertion automatique.",
       "link": "Origine signée. Tu ouvres les liens toi-même.",
       "expired": "Ce code a expiré."

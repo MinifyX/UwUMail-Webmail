@@ -35,6 +35,7 @@ export const queryKeys = {
   people: ["people"] as const,
   maskedOptions: ["maskedOptions"] as const,
   maskedAddresses: ["maskedAddresses"] as const,
+  verificationCodes: ["verificationCodes"] as const,
   profilePicture: ["profilePicture"] as const,
   assistOptions: ["assistOptions"] as const,
   assistProviders: ["assistProviders"] as const,
@@ -397,6 +398,8 @@ export function useBackendEvents() {
           void client.invalidateQueries({ queryKey: queryKeys.thread });
           void client.invalidateQueries({ queryKey: queryKeys.folders });
           void client.invalidateQueries({ queryKey: queryKeys.assistLabels });
+          // A new mail may carry a code; the server has no changes for the list, so it is asked anew.
+          void client.invalidateQueries({ queryKey: queryKeys.verificationCodes });
           break;
         case "accounts:changed":
           void client.invalidateQueries({ queryKey: queryKeys.sharedAccounts });
@@ -407,6 +410,8 @@ export function useBackendEvents() {
           void client.invalidateQueries({ queryKey: ["profilePictureOptions"] });
           // And what the AI assistant may do: the session names its features.
           void client.invalidateQueries({ queryKey: queryKeys.assistOptions });
+          // And whether it reads verification codes at all.
+          void client.invalidateQueries({ queryKey: queryKeys.verificationCodes });
           break;
         case "scheduled:changed":
           void client.invalidateQueries({ queryKey: queryKeys.scheduled });

@@ -19,7 +19,7 @@ import { IconButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pill } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
-import { isActive, useVerificationCodes } from "../codes/codes";
+import { codeForThread, useVerificationCodes } from "../codes/codes";
 import { VerificationCodeBar } from "../codes/VerificationCodeBar";
 import { SEARCH_INPUT_ID } from "../shell/search";
 import { useBackLayer } from "@/lib/backStack";
@@ -99,8 +99,7 @@ export function MobileList() {
   const selecting = selected.size > 0;
   useBackLayer(selecting, () => setSelected(new Set()));
 
-  const codeFor = (thread: { id: string }) =>
-    codes.find((code) => code.threadId === thread.id && isActive(code, Date.now()));
+  const codeFor = (thread: { id: string }) => codeForThread(codes, thread.id);
 
   const toggle = (id: string) => {
     const next = new Set(selected);

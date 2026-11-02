@@ -1,32 +1,10 @@
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { backend } from "@/backend/backend";
+import type { Message, VerificationCode } from "@/backend/types";
+import { queryKeys } from "@/lib/queries";
 
-/** What a code or a sign-in link is for, as the server reads it from the mail. */
-export type CodePurpose = "login" | "signup" | "confirm-email" | "reset-password" | "confirm-action" | "other";
-
-/**
- * A one-time code or a sign-in link the server found in a mail. "header" means the sender stated
- * it in signed headers (Verification-Info, DKIM checked), "heuristic" that it was read from the
- * text, so the origin is a guess and the code is never filled in by itself.
- */
-export interface VerificationCode {
-  id: string;
-  emailId: string;
-  /** The conversation of the mail, so the list can mark its row. */
-  threadId?: string;
-  kind: "otp" | "link";
-  code?: string;
-  url?: string;
-  /** The site the code is for, e.g. login.bank.example. */
-  origin: string;
-  /** The sender's display name. */
-  sender: string;
-  purpose: CodePurpose;
-  source: "header" | "heuristic";
-  /** The browser extension or the apps may fill it in on `origin` by themselves. */
-  autofill: boolean;
-  /** ISO 8601. */
-  expiresAt: string;
-}
+export type { CodePurpose, VerificationCode } from "@/backend/types";
 
 /** "482913" → "482 913" with an en space, so the digits read in two groups; longer codes in threes. */
 export function formatCode(code: string): string {
@@ -138,12 +116,77 @@ function wantsDemoCodes(): boolean {
   return new URLSearchParams(window.location.search).has("demoCodes");
 }
 
+/** The longest a timer may wait (setTimeout counts in a signed 32-bit number). */
+const MAX_DELAY = 2 ** 31 - 1;
+
+/** When the first of these codes runs out after `now`, or null when none is left. */
+export function nextExpiry(codes: VerificationCode[], now: number): number | null {
+  let next: number | null = null;
+  for (const code of codes) {
+    const at = Date.parse(code.expiresAt);
+    if (at > now && (next === null || at < next)) next = at;
+  }
+  return next;
+}
+
 /**
- * The codes of the current mail, newest first.
- * TODO: wire to the server: JMAP `VerificationCode/query` + `/get` for the list and
- * `Email/get` with the `verification` property for the reader, refreshed on push.
+ * The codes still valid, newest first: `VerificationCode/query` and `Email/get` with the
+ * `verification` property, asked anew on every Email state change (push) and when the first
+ * one expires. Empty when the server has no verification extension, so the bar stays hidden.
  */
 export function useVerificationCodes(): VerificationCode[] {
-  const [codes] = useState<VerificationCode[]>(() => (wantsDemoCodes() ? demoCodes() : []));
-  return codes;
+  const demo = wantsDemoCodes();
+  const client = useQueryClient();
+  const query = useQuery({
+    queryKey: queryKeys.verificationCodes,
+    queryFn: () => backend().verificationCodes(),
+    enabled: !demo,
+    staleTime: 30_000,
+  });
+  const [fixtures] = useState(() => (demo ? demoCodes() : []));
+  const all = demo ? fixtures : (query.data ?? fixtures);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const next = nextExpiry(all, Date.now());
+    if (next === null) return;
+    const timer = window.setTimeout(
+      () => {
+        setNow(Date.now());
+        if (!demo) void client.invalidateQueries({ queryKey: queryKeys.verificationCodes });
+      },
+      Math.min(MAX_DELAY, Math.max(0, next - Date.now()) + 50),
+    );
+    return () => window.clearTimeout(timer);
+  }, [all, now, demo, client]);
+  return useMemo(() => all.filter((code) => isActive(code, now)), [all, now]);
+}
+
+/**
+ * The code for a row of the list: its conversation, or its mail when conversations are off.
+ * `useVerificationCodes` already hands out only valid ones; `now` checks again where given.
+ */
+export function codeForThread(codes: VerificationCode[], threadId: string, now?: number): VerificationCode | undefined {
+  return codes.find(
+    (code) =>
+      (code.threadId === threadId || `msg:${code.emailId}` === threadId) && (now === undefined || isActive(code, now)),
+  );
+}
+
+/**
+ * The code for the reader: what the newest mail of the conversation carries in
+ * `Email.verification` (expired ones too, the hint then says so), else one of the list's.
+ */
+export function codeForMessages(
+  messages: Pick<Message, "id" | "verification">[],
+  threadId: string,
+  codes: VerificationCode[],
+): VerificationCode | undefined {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const found = messages[i]!.verification;
+    if (found) return found;
+  }
+  return (
+    codes.find((entry) => messages.some((message) => message.id === entry.emailId)) ??
+    codes.find((entry) => entry.threadId === threadId)
+  );
 }

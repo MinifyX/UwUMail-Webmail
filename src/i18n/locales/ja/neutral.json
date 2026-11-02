@@ -1858,8 +1858,8 @@
     "copied": "コード {{code}} をコピーしました",
     "copyFailed": "コードをコピーできませんでした。",
     "remaining": "残り {{time}}",
-    "noAutofill": "自動入力なし",
-    "noAutofillHint": "メール本文から検出。送信元が未確認のため自動入力しません。",
+    "noAutofill": "送信元未確認",
+    "noAutofillHint": "送信元が確認されていません（DMARC）。コードは自動入力されません。",
     "purpose": {
       "login": "ログイン",
       "signup": "登録",
@@ -1872,7 +1872,7 @@
       "title": "{{origin}} のコード {{code}} · 残り {{time}}",
       "linkTitle": "{{origin}} のログインリンク · 残り {{time}}",
       "signed": "署名済みの送信元（Verification-Info、DKIM 確認済み）。{{origin}} で自動入力できます。",
-      "signedNoAutofill": "署名済みの送信元（Verification-Info、DKIM 確認済み）。",
+      "signedNoAutofill": "署名あり（Verification-Info）ですが、送信元は確認されていません（DMARC）。自動入力しません。",
       "heuristic": "本文から検出しました。送信元が未確認のため自動入力しません。",
       "link": "署名済みの送信元。リンクはご自身で開いてください。",
       "expired": "このコードは期限切れです。"

@@ -1927,8 +1927,8 @@
     "copied": "Code {{code}} gekopieerd",
     "copyFailed": "De code kon niet worden gekopieerd.",
     "remaining": "nog {{time}}",
-    "noAutofill": "Geen autofill",
-    "noAutofillHint": "Uit de mailtekst gehaald, herkomst niet bevestigd: wordt nooit automatisch ingevuld.",
+    "noAutofill": "Afzender onbevestigd",
+    "noAutofillHint": "Afzender niet bevestigd (DMARC): de code wordt nooit automatisch ingevuld.",
     "purpose": {
       "login": "Inloggen",
       "signup": "Registratie",
@@ -1941,7 +1941,7 @@
       "title": "Code {{code}} voor {{origin}} · nog {{time}}",
       "linkTitle": "Inloglink voor {{origin}} · nog {{time}}",
       "signed": "Ondertekende herkomst (Verification-Info, DKIM gecontroleerd). Autofill op {{origin}} mogelijk.",
-      "signedNoAutofill": "Ondertekende herkomst (Verification-Info, DKIM gecontroleerd).",
+      "signedNoAutofill": "Ondertekend (Verification-Info), maar de afzender is niet bevestigd (DMARC): wordt nooit automatisch ingevuld.",
       "heuristic": "Uit de tekst gehaald. Herkomst niet bevestigd, dus geen automatisch invullen.",
       "link": "Ondertekende herkomst. Links open je zelf.",
       "expired": "Deze code is verlopen."

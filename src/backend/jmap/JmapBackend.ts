@@ -95,6 +95,7 @@ import type {
   ThreadQuery,
   ThreadSummary,
   UnsubscribeOutcome,
+  VerificationCode,
   ImageSizeProbe,
   ImageTextResult,
 } from "../types";
@@ -223,6 +224,7 @@ import {
   type JmapMaskedEmail,
   type JmapSetError,
 } from "./masked";
+import { VERIFICATION, activeCodes, codeCalls, verificationSupported, type JmapCodeEmail } from "./verification";
 import {
   PROFILE,
   PROFILE_ID,
@@ -618,6 +620,19 @@ export class JmapBackend implements Backend {
 
   private messageProperties(): string[] {
     return supports(WEBMAIL) ? [...MESSAGE_PROPERTIES, ...SAFE_PROPERTIES] : MESSAGE_PROPERTIES;
+  }
+
+  /**
+   * The codes still valid, newest first; null when the server has no verification extension, and
+   * the bar stays hidden. Asked again on every Email state change and when the first one expires.
+   */
+  async verificationCodes(): Promise<VerificationCode[] | null> {
+    await this.start();
+    if (!verificationSupported(jmapSession())) return null;
+    const body = await call(codeCalls(this.accountId), [CORE, MAIL, VERIFICATION]);
+    const { ids } = responseOf<{ ids: string[] }>(body, "q");
+    const { list } = responseOf<GetResponse<JmapCodeEmail>>(body, "e");
+    return activeCodes(ids, list);
   }
 
   async listAccounts(): Promise<Account[]> {
@@ -1064,10 +1079,12 @@ export class JmapBackend implements Backend {
   async getThread(threadId: string, conversations: boolean): Promise<ThreadDetail> {
     await this.start();
     const own = this.accountId;
-    const properties = this.messageProperties();
     const single = threadId.startsWith(SINGLE);
     const target = unscopeId(single ? threadId.slice(SINGLE.length) : threadId, own);
     const accountId = target.accountId;
+    // The code hint in the reader: only the own account's mail has codes.
+    const codes = accountId === own && verificationSupported(jmapSession());
+    const properties = codes ? [...this.messageProperties(), "verification"] : this.messageProperties();
 
     const calls: [string, Record<string, unknown>, string][] = single
       ? [["Email/get", { accountId, ids: [target.id], properties, fetchAllBodyValues: true }, "e"]]
@@ -1084,7 +1101,8 @@ export class JmapBackend implements Backend {
             "e",
           ],
         ];
-    const body = await call(calls, supports(WEBMAIL) ? [CORE, MAIL, WEBMAIL] : [CORE, MAIL]);
+    const using = [CORE, MAIL, ...(supports(WEBMAIL) ? [WEBMAIL] : []), ...(codes ? [VERIFICATION] : [])];
+    const body = await call(calls, using);
     let emails = responseOf<GetResponse<JmapEmail>>(body, "e").list.map((email) => scopeEmail(email, accountId, own));
     if (emails.length === 0) throw new BackendError("not_found", "That mail is gone.");
     if (!conversations && !single) {

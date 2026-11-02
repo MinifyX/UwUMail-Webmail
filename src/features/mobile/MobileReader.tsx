@@ -24,7 +24,7 @@ import { useAccounts, useFolders, useMessageActions, useThread } from "@/lib/que
 import { useUi } from "@/state/ui";
 import { ListLabelChips } from "../assist/LabelChips";
 import { ThreadAssistButton, ThreadSummary } from "../assist/ReaderAssist";
-import { useVerificationCodes } from "../codes/codes";
+import { codeForMessages, useVerificationCodes } from "../codes/codes";
 import { CodeHint } from "../codes/VerificationCodeBar";
 import { MessageView } from "../mail/MessageView";
 import { requestMove } from "../mail/selection";
@@ -142,9 +142,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
     all.map((m) => m.folderId),
     folders,
   );
-  const code =
-    codes.find((entry) => all.some((message) => message.id === entry.emailId)) ??
-    codes.find((entry) => entry.threadId === data.thread.id);
+  const code = codeForMessages(all, data.thread.id, codes);
 
   return (
     <section className="flex h-full min-w-0 flex-col bg-canvas" aria-label={data.thread.subject}>

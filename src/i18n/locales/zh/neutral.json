@@ -1858,8 +1858,8 @@
     "copied": "已复制验证码 {{code}}",
     "copyFailed": "无法复制验证码。",
     "remaining": "剩余 {{time}}",
-    "noAutofill": "不自动填充",
-    "noAutofillHint": "从邮件正文识别，来源未确认：不会自动填入。",
+    "noAutofill": "发件人未验证",
+    "noAutofillHint": "发件人未经验证（DMARC）：验证码不会自动填入。",
     "purpose": {
       "login": "登录",
       "signup": "注册",
@@ -1872,7 +1872,7 @@
       "title": "{{origin}} 的验证码 {{code}} · 剩余 {{time}}",
       "linkTitle": "{{origin}} 的登录链接 · 剩余 {{time}}",
       "signed": "来源已签名（Verification-Info，DKIM 已验证）。可在 {{origin}} 上自动填充。",
-      "signedNoAutofill": "来源已签名（Verification-Info，DKIM 已验证）。",
+      "signedNoAutofill": "已签名（Verification-Info），但发件人未经验证（DMARC）：不会自动填入。",
       "heuristic": "从正文识别。来源未确认，因此不会自动填入。",
       "link": "来源已签名。链接请自行打开。",
       "expired": "此验证码已过期。"

@@ -60,7 +60,7 @@ describe("verification codes", () => {
 
   it("marks codes read from the text as not filled in", () => {
     render(<VerificationCodeBar codes={[code({ source: "heuristic", autofill: false })]} />);
-    expect(screen.getByText("Kein Autofill")).toBeTruthy();
+    expect(screen.getByText("Absender unbestätigt")).toBeTruthy();
     expect(screen.getByRole("listitem").className).toContain("border-dashed");
   });
 

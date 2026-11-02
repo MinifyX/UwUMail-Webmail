@@ -231,6 +231,38 @@ export interface Message {
   unsubscribe?: Unsubscribe;
   /** Its own keywords (lower case, without the `$` system ones), e.g. AI assistant labels. */
   keywords?: string[];
+  /** The sign-in code or link the server found in it (`Email.verification`), expired ones too. */
+  verification?: VerificationCode;
+}
+
+/** What a code or a sign-in link is for, as the server reads it from the mail. */
+export type CodePurpose = "login" | "signup" | "confirm-email" | "reset-password" | "confirm-action" | "other";
+
+/**
+ * A one-time code or a sign-in link the server found in a mail. "header" means the sender stated
+ * it in signed headers (Verification-Info, DKIM checked), "heuristic" that it was read from the
+ * text, so the origin is a guess and the code is never filled in by itself.
+ */
+export interface VerificationCode {
+  id: string;
+  emailId: string;
+  /** The conversation of the mail, so the list can mark its row. */
+  threadId?: string;
+  kind: "otp" | "link";
+  code?: string;
+  url?: string;
+  /** The site the code is for, e.g. login.bank.example. */
+  origin: string;
+  /** The sender's display name. */
+  sender: string;
+  /** The subject of the mail it came in. */
+  subject?: string;
+  purpose: CodePurpose;
+  source: "header" | "heuristic";
+  /** The browser extension or the apps may fill it in on `origin` by themselves (DMARC passed). */
+  autofill: boolean;
+  /** ISO 8601. */
+  expiresAt: string;
 }
 
 export interface ThreadDetail {
