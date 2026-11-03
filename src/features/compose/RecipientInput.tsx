@@ -1,11 +1,12 @@
 import clsx from "clsx";
-import { X } from "lucide-react";
+import { CircleAlert, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { backend } from "@/backend/backend";
-import type { Address, Contact } from "@/backend/types";
+import type { Address, Contact, SendPolicy } from "@/backend/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { useT } from "@/i18n";
 import { displayName, parseAddress } from "@/lib/format";
+import { canSendTo, OPEN_SEND_POLICY } from "@/lib/internalOnly";
 
 /** Milliseconds of quiet typing before suggestions are asked for. */
 const SUGGEST_DELAY = 180;
@@ -15,9 +16,20 @@ interface RecipientInputProps {
   value: Address[];
   onChange: (value: Address[]) => void;
   autoFocus?: boolean;
+  /** An account limited to its own server: other addresses are marked, and suggested last. */
+  policy?: SendPolicy;
+  /** A note about the recipients, e.g. that the account only sends within its server. */
+  describedBy?: string;
 }
 
-export function RecipientInput({ label, value, onChange, autoFocus }: RecipientInputProps) {
+export function RecipientInput({
+  label,
+  value,
+  onChange,
+  autoFocus,
+  policy = OPEN_SEND_POLICY,
+  describedBy,
+}: RecipientInputProps) {
   const { t } = useT();
   const id = useId();
   const [text, setText] = useState("");
@@ -35,7 +47,12 @@ export function RecipientInput({ label, value, onChange, autoFocus }: RecipientI
         .then((result) => {
           if (cancelled) return;
           const taken = new Set(value.map((a) => a.email.toLowerCase()));
-          setSuggestions(result.filter((c) => !taken.has(c.email.toLowerCase())));
+          const open = result.filter((c) => !taken.has(c.email.toLowerCase()));
+          // Addresses the account can't send to stay findable, but after those it can.
+          setSuggestions([
+            ...open.filter((c) => canSendTo(c.email, policy)),
+            ...open.filter((c) => !canSendTo(c.email, policy)),
+          ]);
           setActive(0);
         })
         .catch(() => {
@@ -46,7 +63,7 @@ export function RecipientInput({ label, value, onChange, autoFocus }: RecipientI
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [text, focused, value]);
+  }, [text, focused, value, policy]);
 
   const add = (address: Address) => {
     if (!value.some((a) => a.email.toLowerCase() === address.email.toLowerCase())) onChange([...value, address]);
@@ -75,24 +92,39 @@ export function RecipientInput({ label, value, onChange, autoFocus }: RecipientI
         {label}
       </label>
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-        {value.map((address) => (
-          <span
-            key={address.email}
-            title={address.email}
-            className="inline-flex h-7 items-center gap-1.5 rounded-full bg-pink-tint pr-1 pl-1 text-meta font-medium text-pink-ink"
-          >
-            <Avatar address={address} size="xs" />
-            {displayName(address)}
-            <button
-              type="button"
-              aria-label={t("compose.removeRecipient", { email: address.email })}
-              onClick={() => onChange(value.filter((a) => a !== address))}
-              className="grid size-5 place-items-center rounded-full hover:bg-pink-tint-strong"
+        {value.map((address) => {
+          const outside = !canSendTo(address.email, policy);
+          return (
+            <span
+              key={address.email}
+              title={outside ? t("compose.externalRecipient", { email: address.email }) : address.email}
+              data-undeliverable={outside || undefined}
+              className={clsx(
+                "inline-flex h-7 items-center gap-1.5 rounded-full pr-1 pl-1 text-meta font-medium",
+                outside ? "bg-danger-tint text-danger-ink ring-1 ring-danger ring-inset" : "bg-pink-tint text-pink-ink",
+              )}
             >
-              <X className="size-3.5" aria-hidden />
-            </button>
-          </span>
-        ))}
+              {outside ? (
+                <CircleAlert className="size-4 shrink-0" aria-hidden />
+              ) : (
+                <Avatar address={address} size="xs" />
+              )}
+              {displayName(address)}
+              {outside && <span className="sr-only">{t("compose.externalRecipient", { email: address.email })}</span>}
+              <button
+                type="button"
+                aria-label={t("compose.removeRecipient", { email: address.email })}
+                onClick={() => onChange(value.filter((a) => a !== address))}
+                className={clsx(
+                  "grid size-5 place-items-center rounded-full",
+                  outside ? "hover:bg-danger/15" : "hover:bg-pink-tint-strong",
+                )}
+              >
+                <X className="size-3.5" aria-hidden />
+              </button>
+            </span>
+          );
+        })}
         <input
           id={id}
           value={text}
@@ -101,6 +133,7 @@ export function RecipientInput({ label, value, onChange, autoFocus }: RecipientI
           aria-expanded={open}
           aria-controls={listId}
           aria-autocomplete="list"
+          aria-describedby={describedBy}
           onFocus={() => setFocused(true)}
           onBlur={() => {
             setFocused(false);
@@ -131,27 +164,36 @@ export function RecipientInput({ label, value, onChange, autoFocus }: RecipientI
           role="listbox"
           className="absolute top-full right-4 left-16 z-10 mt-1 animate-fade overflow-hidden rounded-2xl border border-line bg-surface p-1 shadow-float"
         >
-          {suggestions.map((contact, index) => (
-            <li
-              key={contact.email}
-              role="option"
-              aria-selected={index === active}
-              onMouseDown={(event) => {
-                event.preventDefault();
-                add({ name: contact.name, email: contact.email });
-              }}
-              className={clsx(
-                "flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2",
-                index === active ? "bg-pink-tint" : "hover:bg-elevated",
-              )}
-            >
-              <Avatar address={contact} size="sm" />
-              <span className="min-w-0">
-                <span className="block truncate text-body font-semibold">{displayName(contact)}</span>
-                <span className="block truncate text-caption text-muted">{contact.email}</span>
-              </span>
-            </li>
-          ))}
+          {suggestions.map((contact, index) => {
+            const outside = !canSendTo(contact.email, policy);
+            return (
+              <li
+                key={contact.email}
+                role="option"
+                aria-selected={index === active}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  add({ name: contact.name, email: contact.email });
+                }}
+                className={clsx(
+                  "flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2",
+                  index === active ? "bg-pink-tint" : "hover:bg-elevated",
+                )}
+              >
+                <Avatar address={contact} size="sm" />
+                <span className="min-w-0">
+                  <span className="block truncate text-body font-semibold">{displayName(contact)}</span>
+                  <span className="block truncate text-caption text-muted">{contact.email}</span>
+                  {outside && (
+                    <span className="flex items-center gap-1 text-caption font-semibold text-danger-ink">
+                      <CircleAlert className="size-3.5 shrink-0" aria-hidden />
+                      {t("compose.externalSuggestion")}
+                    </span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

@@ -110,6 +110,14 @@ choice made on one device holds on all of them.
   mandatory the composer says the server will add it. On servers without
   signatures per domain, signatures live on the sending addresses as before.
 - Recipients are suggested from the address books and the mail history.
+- **Only within the server.** Where an admin limited an account to addresses
+  on its own server (UwUMail 0.27, `uwuInternalOnly` in the submission
+  capability), the composer says so under the recipients. Recipients on other
+  domains are marked as not deliverable, with the reason as tooltip and for
+  screen readers; suggestions on the server come first, the others are marked.
+  Sending, sending later and Ctrl/⌘+Enter stop and name those recipients
+  instead of letting them bounce. A change of the limit arrives with the
+  session. In the demo, `?internal-only` plays such an account.
 - **Templates.** Text you write often, with `{firstName}`, `{name}`, `{date}`
   and `{myName}` filled in when it is inserted — from the composer's template
   button or by typing `/` at the start of a line. _Save as template_ keeps the

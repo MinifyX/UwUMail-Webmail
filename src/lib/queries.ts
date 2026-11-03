@@ -191,6 +191,18 @@ export function useMaxSendDelay() {
   return useQuery({ queryKey: ["maxSendDelay"], queryFn: () => backend().maxSendDelay(), staleTime: Infinity });
 }
 
+/**
+ * Whether the account may only send to addresses on its own server. Asked anew when the session
+ * changes, which is how the server tells that an administrator flipped the limit.
+ */
+export function useSendPolicy(accountId: string) {
+  return useQuery({
+    queryKey: ["sendPolicy", accountId],
+    queryFn: () => backend().sendPolicy(accountId || undefined),
+    staleTime: Infinity,
+  });
+}
+
 export function useFolders() {
   return useQuery({ queryKey: queryKeys.folders, queryFn: () => backend().listFolders() });
 }
@@ -487,6 +499,8 @@ export function useBackendEvents() {
           void client.invalidateQueries({ queryKey: queryKeys.assistOptions });
           // And whether it reads verification codes at all.
           void client.invalidateQueries({ queryKey: queryKeys.verificationCodes });
+          // And whether the account may only send to addresses on its own server.
+          void client.invalidateQueries({ queryKey: ["sendPolicy"] });
           break;
         case "scheduled:changed":
           void client.invalidateQueries({ queryKey: queryKeys.scheduled });

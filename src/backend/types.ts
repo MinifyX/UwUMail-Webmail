@@ -350,6 +350,16 @@ export interface SendReceipt {
   pending: boolean;
 }
 
+/**
+ * Where the account may send to. An administrator can limit an account to addresses on its own
+ * server (UwUMail's `uwuInternalOnly`); the server then refuses every other recipient.
+ */
+export interface SendPolicy {
+  internalOnly: boolean;
+  /** The domains on this server, lowercase. Empty when the account may send anywhere, or the server didn't say. */
+  internalDomains: string[];
+}
+
 export interface SendOptions {
   /** A later time to send at (ISO 8601), within `maxSendDelay`. Without it the undo window applies. */
   sendAt?: string;

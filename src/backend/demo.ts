@@ -12,6 +12,7 @@ import { rulesToSieve } from "@/lib/sieveRules";
 import { matchesSearch, parseSearch } from "@/lib/searchQuery";
 import { SNOOZED_FOLDER, isSnoozedFolder } from "@/lib/snooze";
 import { runUnsubscribe } from "@/lib/unsubscribe";
+import { OPEN_SEND_POLICY, undeliverableRecipients } from "@/lib/internalOnly";
 import { resolveLanguage } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import {
@@ -73,6 +74,7 @@ import type {
   ProfilePicturePatch,
   ScheduledSend,
   SendOptions,
+  SendPolicy,
   SendReceipt,
   SenderPicture,
   SenderPictureLookup,
@@ -131,6 +133,11 @@ function demoSieveProblem(script: string): string | null {
   if (depth !== 0) return "unbalanced braces";
   const unsupported = /\b(reject|ereject|vacation|notify|include)\b/.exec(code);
   return unsupported ? `the command "${unsupported[1]}" is not supported here` : null;
+}
+
+function demoInternalOnly(): boolean {
+  if (import.meta.env.VITE_DEMO_INTERNAL_ONLY === "1") return true;
+  return typeof window !== "undefined" && new URLSearchParams(window.location.search).has("internal-only");
 }
 
 /** In-memory engine with sample data. Used by `pnpm dev` in a normal browser. */
@@ -696,6 +703,16 @@ export class DemoBackend implements Backend {
     if (outgoing.to.length + outgoing.cc.length + outgoing.bcc.length === 0) {
       throw new BackendError("invalid_input", "No recipients");
     }
+    const outside = undeliverableRecipients(
+      [...outgoing.to, ...outgoing.cc, ...outgoing.bcc],
+      await this.sendPolicy(outgoing.accountId),
+    );
+    if (outside.length > 0) {
+      throw new BackendError(
+        "internal_only",
+        `This account may only send to addresses on this server: ${outside.map((a) => a.email).join(", ")}`,
+      );
+    }
     const messageId = this.deliver(outgoing);
     const delay = options.sendAt
       ? Date.parse(options.sendAt) - Date.now()
@@ -745,6 +762,17 @@ export class DemoBackend implements Backend {
 
   async maxSendDelay() {
     return 30 * 24 * 60 * 60;
+  }
+
+  /**
+   * The private mailbox plays an account limited to its own server with `?internal-only` in the
+   * address (or `VITE_DEMO_INTERNAL_ONLY=1`); leni@ and kai@uwumail.example are on that server.
+   */
+  async sendPolicy(accountId?: string): Promise<SendPolicy> {
+    const own = (accountId ?? DEMO_ACCOUNTS[0]?.id) === "acc-private";
+    return own && demoInternalOnly()
+      ? { internalOnly: true, internalDomains: ["uwumail.example", "mask.example"] }
+      : OPEN_SEND_POLICY;
   }
 
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {

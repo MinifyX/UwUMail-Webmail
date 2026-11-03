@@ -124,6 +124,7 @@ pnpm install
 cp .env.example .env.local   # point UWUMAIL_DEV_SERVER at a test server
 pnpm dev                     # http://localhost:1440/mail/
 pnpm dev:demo                # sample data, no server needed
+                             # add ?internal-only to the address for an account limited to its server
 pnpm build                   # typecheck, then dist/
 scripts/webkit-links.sh      # links in a demo mail, in real WebKit and Chromium (Docker)
 ```

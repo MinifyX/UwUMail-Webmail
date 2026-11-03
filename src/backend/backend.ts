@@ -64,6 +64,7 @@ import type {
   ProfilePictureOptions,
   ProfilePicturePatch,
   ScheduledSend,
+  SendPolicy,
   SendOptions,
   SendReceipt,
   SenderPicture,
@@ -97,6 +98,8 @@ export type BackendErrorCode =
   | "too_late"
   /** The folder's owner didn't allow this (a folder shared with the account). */
   | "forbidden"
+  /** The account may only send to addresses on its own server, and the mail names others. */
+  | "internal_only"
   /** Changed elsewhere since it was read (`ifInState` didn't match): read it again first. */
   | "state_mismatch";
 
@@ -276,6 +279,8 @@ export interface Backend {
   scheduledSends(): Promise<ScheduledSend[]>;
   /** How far ahead "send later" may go, in seconds; 0 where the server can't hold mail. */
   maxSendDelay(): Promise<number>;
+  /** Whether the account may only send to addresses on its own server, and which domains those are. */
+  sendPolicy(accountId?: string): Promise<SendPolicy>;
   /** Saves into the Drafts folder, replacing the draft's earlier version. */
   saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult>;
   deleteDraft(accountId: string, draftKey: string): Promise<void>;

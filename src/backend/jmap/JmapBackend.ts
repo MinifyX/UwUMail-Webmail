@@ -18,6 +18,7 @@ import { cleanFilename } from "@/lib/filename";
 import type { ImageProxy } from "@/lib/remoteImages";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { createLimiter } from "@/lib/concurrency";
+import { undeliverableRecipients } from "@/lib/internalOnly";
 import { oneClickResultOf, runUnsubscribe, type OneClickResult } from "@/lib/unsubscribe";
 import { AssistError, BackendError, type Backend, type SignatureStore } from "../backend";
 import type {
@@ -86,6 +87,7 @@ import type {
   ProfilePictureOptions,
   ProfilePicturePatch,
   ScheduledSend,
+  SendPolicy,
   SendOptions,
   SendReceipt,
   SenderPicture,
@@ -254,6 +256,7 @@ import {
 } from "./sharing";
 import {
   maxDelayOf,
+  sendPolicyOf,
   scheduledFrom,
   submissionReceipt,
   submissionSendAt,
@@ -399,7 +402,7 @@ const CALENDAR_PROPERTIES = [
 const RULES_SCRIPT = "UwUMail";
 const SIEVE_TYPE = "application/sieve";
 
-function firstError(response: SetResponse): BackendError | null {
+export function firstError(response: SetResponse): BackendError | null {
   const problem =
     Object.values(response.notCreated ?? {})[0] ??
     Object.values(response.notUpdated ?? {})[0] ??
@@ -408,6 +411,9 @@ function firstError(response: SetResponse): BackendError | null {
   const text = problem.description ?? problem.type;
   if (problem.type === "overQuota") return new BackendError("invalid_input", "The mailbox is full.");
   if (problem.type === "forbiddenFrom") return new BackendError("invalid_input", "You may not send from that address.");
+  if (problem.type === "forbiddenToSend" && /may only send to addresses/i.test(text)) {
+    return new BackendError("internal_only", "This account may only send to addresses on this server.");
+  }
   return new BackendError("internal", text);
 }
 
@@ -1669,6 +1675,14 @@ export class JmapBackend implements Backend {
       rcptTo: [...message.to, ...message.cc, ...message.bcc].map((address) => ({ email: address.email })),
     };
     if (envelope.rcptTo.length === 0) throw new BackendError("invalid_input", "There is nobody to send this to.");
+    // The server would refuse them one by one and send to the rest; nobody is left out quietly.
+    const outside = undeliverableRecipients([...message.to, ...message.cc, ...message.bcc], await this.sendPolicy());
+    if (outside.length > 0) {
+      throw new BackendError(
+        "internal_only",
+        `This account may only send to addresses on this server: ${outside.map((a) => a.email).join(", ")}`,
+      );
+    }
     const later = options.sendAt ? { sendAt: submissionSendAt(options.sendAt) } : {};
     if (later.sendAt && (await this.maxSendDelay()) === 0) {
       throw new BackendError("not_supported", "This server can't send mail later.");
@@ -1789,6 +1803,12 @@ export class JmapBackend implements Backend {
   async maxSendDelay(): Promise<number> {
     await this.start();
     return maxDelayOf(accountCapability(SUBMISSION));
+  }
+
+  /** Read from the session, which the server changes when an administrator flips the limit. */
+  async sendPolicy(): Promise<SendPolicy> {
+    await this.start();
+    return sendPolicyOf(accountCapability(SUBMISSION));
   }
 
   /** Every draft carrying this key, newest first. */

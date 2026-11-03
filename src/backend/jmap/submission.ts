@@ -7,7 +7,8 @@
  * from before that send at once and answer without `undoStatus`, which reads as sent.
  */
 
-import type { Address, ScheduledSend, SendReceipt } from "../types";
+import { MAX_INTERNAL_DOMAINS } from "@/lib/internalOnly";
+import type { Address, ScheduledSend, SendPolicy, SendReceipt } from "../types";
 import { toAddresses, type JmapAddress } from "./convert";
 
 export interface JmapCreatedSubmission {
@@ -38,6 +39,31 @@ export function submissionReceipt(created: JmapCreatedSubmission, now: Date = ne
 export function maxDelayOf(capability: { maxDelayedSend?: unknown } | null): number {
   const value = capability?.maxDelayedSend;
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+}
+
+/**
+ * Whether the account may only send to addresses on its server (`uwuInternalOnly` in the
+ * account's submission capability, UwUMail 0.27) and which domains those are. Older servers and
+ * other ones leave it out: then the account may send anywhere.
+ */
+export function sendPolicyOf(
+  capability: { uwuInternalOnly?: unknown; uwuInternalDomains?: unknown } | null,
+): SendPolicy {
+  if (capability?.uwuInternalOnly !== true) return { internalOnly: false, internalDomains: [] };
+  const domains = Array.isArray(capability.uwuInternalDomains)
+    ? capability.uwuInternalDomains.slice(0, MAX_INTERNAL_DOMAINS)
+    : [];
+  return {
+    internalOnly: true,
+    internalDomains: [
+      ...new Set(
+        domains
+          .filter((domain): domain is string => typeof domain === "string")
+          .map((domain) => domain.trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    ],
+  };
 }
 
 /**

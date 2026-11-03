@@ -5,6 +5,7 @@ import {
   Check,
   ChevronDown,
   Clock,
+  Info,
   Italic,
   Link,
   List,
@@ -17,8 +18,9 @@ import {
   Trash,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { backend } from "@/backend/backend";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { backend, BackendError } from "@/backend/backend";
 import type { Identity, OutgoingAttachment, Signature } from "@/backend/types";
 import { Menu } from "@/components/ui/Menu";
 import { defaultSignature, withSignature, withoutSignatureMarker } from "@/lib/signatures";
@@ -38,8 +40,10 @@ import {
   useIdentities,
   useMaxSendDelay,
   useMessageActions,
+  useSendPolicy,
   useSignatures,
 } from "@/lib/queries";
+import { OPEN_SEND_POLICY, undeliverableRecipients } from "@/lib/internalOnly";
 import { companyFooterFor } from "@/lib/domainSignatures";
 import { toast } from "@/state/toasts";
 import { useUi, type ComposeRequest } from "@/state/ui";
@@ -104,6 +108,23 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   const [sending, setSending] = useState(false);
   const [pickingTime, setPickingTime] = useState(false);
   const { data: maxSendDelay = 0 } = useMaxSendDelay();
+  // An account limited to its own server: other recipients are marked and block sending.
+  const queryClient = useQueryClient();
+  const { data: sendPolicy = OPEN_SEND_POLICY } = useSendPolicy(accountId);
+  const undeliverable = undeliverableRecipients([...draft.to, ...draft.cc, ...draft.bcc], sendPolicy);
+  const internalNoteId = useId();
+  /** Says which recipients stop the mail; true when there are none. */
+  const checkRecipients = () => {
+    if (draft.to.length + draft.cc.length + draft.bcc.length === 0) {
+      setError(t("compose.noRecipients"));
+      return false;
+    }
+    if (undeliverable.length > 0) {
+      setError(t("compose.externalBlocked", { list: undeliverable.map((a) => a.email).join(", ") }));
+      return false;
+    }
+    return true;
+  };
   /** Sending waits for an answer: the text speaks of an attachment, and there is none. */
   const [reminding, setReminding] = useState<{ sendAt?: string } | null>(null);
   /** The template menu, opened from the toolbar or by typing "/" in the text. */
@@ -423,10 +444,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
 
   /** Hands the mail to the server: it goes after the undo window, or at `sendAt`. */
   const send = async (sendAt?: string, remindedAlready = false) => {
-    if (draft.to.length + draft.cc.length + draft.bcc.length === 0) {
-      setError(t("compose.noRecipients"));
-      return;
-    }
+    if (!checkRecipients()) return;
     // Before the undo window too: undoing is for second thoughts, this is for a forgotten file.
     if (
       !remindedAlready &&
@@ -472,7 +490,13 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       void refresh();
     } catch (reason) {
       finished.current = false;
-      setError(t("toast.sendFailed", { reason: reason instanceof Error ? reason.message : String(reason) }));
+      // A refusal may come from a limit an administrator set after the composer looked: read it anew.
+      if (reason instanceof BackendError) void queryClient.invalidateQueries({ queryKey: ["sendPolicy"] });
+      if (reason instanceof BackendError && reason.code === "internal_only") {
+        setError(t("compose.internalOnlyRefused"));
+      } else {
+        setError(t("toast.sendFailed", { reason: reason instanceof Error ? reason.message : String(reason) }));
+      }
     } finally {
       setSending(false);
     }
@@ -691,6 +715,8 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           value={draft.to}
           onChange={(to) => update({ to })}
           autoFocus={request.mode !== "reply" && request.mode !== "replyAll"}
+          policy={sendPolicy}
+          describedBy={sendPolicy.internalOnly ? internalNoteId : undefined}
         />
         {!showCc && (
           <button
@@ -704,9 +730,31 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       </div>
       {showCc && (
         <>
-          <RecipientInput label={t("compose.cc")} value={draft.cc} onChange={(cc) => update({ cc })} />
-          <RecipientInput label={t("compose.bcc")} value={draft.bcc} onChange={(bcc) => update({ bcc })} />
+          <RecipientInput
+            label={t("compose.cc")}
+            value={draft.cc}
+            onChange={(cc) => update({ cc })}
+            policy={sendPolicy}
+            describedBy={sendPolicy.internalOnly ? internalNoteId : undefined}
+          />
+          <RecipientInput
+            label={t("compose.bcc")}
+            value={draft.bcc}
+            onChange={(bcc) => update({ bcc })}
+            policy={sendPolicy}
+            describedBy={sendPolicy.internalOnly ? internalNoteId : undefined}
+          />
         </>
+      )}
+      {sendPolicy.internalOnly && (
+        <p
+          id={internalNoteId}
+          className="flex items-center gap-2 border-b border-hairline px-4 py-1.5 text-caption text-muted"
+          data-testid="internal-only-note"
+        >
+          <Info className="size-3.5 shrink-0" aria-hidden />
+          {t("compose.internalOnly")}
+        </p>
       )}
       <div className="flex h-11 items-center gap-2 border-b border-hairline px-4">
         <label htmlFor="compose-subject" className="w-12 shrink-0 text-meta font-semibold text-muted">
@@ -860,11 +908,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
               label={t("compose.later.open")}
               disabled={sending}
               onClick={() => {
-                if (draft.to.length + draft.cc.length + draft.bcc.length === 0) {
-                  setError(t("compose.noRecipients"));
-                  return;
-                }
-                setPickingTime(true);
+                if (checkRecipients()) setPickingTime(true);
               }}
             />
             {/* Keys in the dialog are its own: Escape must not shrink the composer behind it. */}

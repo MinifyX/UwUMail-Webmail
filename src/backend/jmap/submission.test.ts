@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { maxDelayOf, scheduledFrom, submissionReceipt, submissionSendAt } from "./submission";
+import { maxDelayOf, scheduledFrom, sendPolicyOf, submissionReceipt, submissionSendAt } from "./submission";
 
 describe("what sending hands back", () => {
   it("keeps a held-back submission cancellable until its time", () => {
@@ -83,5 +83,34 @@ describe("the scheduled list", () => {
       [{ id: "e1", subject: "Hi", to: [] }],
     );
     expect(entry?.to).toEqual([{ email: "kai@example.org" }]);
+  });
+});
+
+describe("the internal-only limit", () => {
+  it("is off for older servers and accounts without it", () => {
+    expect(sendPolicyOf(null)).toEqual({ internalOnly: false, internalDomains: [] });
+    expect(sendPolicyOf({ maxDelayedSend: 60 } as never)).toEqual({ internalOnly: false, internalDomains: [] });
+    expect(sendPolicyOf({ uwuInternalOnly: false, uwuInternalDomains: ["uwumail.example"] })).toEqual({
+      internalOnly: false,
+      internalDomains: [],
+    });
+  });
+
+  it("names the server's domains, lowercase and once each", () => {
+    expect(
+      sendPolicyOf({
+        uwuInternalOnly: true,
+        uwuInternalDomains: ["UwUMail.example", "uwumail.example", 7, " team.test "],
+      }),
+    ).toEqual({ internalOnly: true, internalDomains: ["uwumail.example", "team.test"] });
+  });
+
+  it("stays on without a domain list", () => {
+    expect(sendPolicyOf({ uwuInternalOnly: true })).toEqual({ internalOnly: true, internalDomains: [] });
+  });
+
+  it("keeps at most 10000 domains", () => {
+    const many = Array.from({ length: 10_050 }, (_, i) => `d${i}.test`);
+    expect(sendPolicyOf({ uwuInternalOnly: true, uwuInternalDomains: many }).internalDomains).toHaveLength(10_000);
   });
 });
