@@ -402,7 +402,7 @@ const CALENDAR_PROPERTIES = [
 const RULES_SCRIPT = "UwUMail";
 const SIEVE_TYPE = "application/sieve";
 
-function firstError(response: SetResponse): BackendError | null {
+export function firstError(response: SetResponse): BackendError | null {
   const problem =
     Object.values(response.notCreated ?? {})[0] ??
     Object.values(response.notUpdated ?? {})[0] ??
@@ -411,6 +411,9 @@ function firstError(response: SetResponse): BackendError | null {
   const text = problem.description ?? problem.type;
   if (problem.type === "overQuota") return new BackendError("invalid_input", "The mailbox is full.");
   if (problem.type === "forbiddenFrom") return new BackendError("invalid_input", "You may not send from that address.");
+  if (problem.type === "forbiddenToSend" && /may only send to addresses/i.test(text)) {
+    return new BackendError("internal_only", "This account may only send to addresses on this server.");
+  }
   return new BackendError("internal", text);
 }
 

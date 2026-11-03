@@ -12,6 +12,9 @@ export const OPEN_SEND_POLICY: SendPolicy = { internalOnly: false, internalDomai
 export function normalizeDomain(domain: string): string {
   const trimmed = domain.trim().replace(/\.+$/, "").toLowerCase();
   if (!trimmed) return "";
+  // Anything URL parsing would reshape ("/", "\\", "?", "#", ":port", "@", spaces ...) can't be a
+  // hosted domain: keep it as it is, so it can't turn into one.
+  if (/[^a-z0-9.\-\u0080-\uffff]/.test(trimmed)) return trimmed;
   try {
     // The URL parser writes international names the way DNS has them (punycode).
     return new URL(`http://${trimmed}/`).hostname;
@@ -35,10 +38,20 @@ export function recipientDomain(address: string): string | null {
   return domain || null;
 }
 
-/** The server's domains, normalized once; empty where any address goes. */
+/** Most domains read from a server, like the Rust client. */
+export const MAX_INTERNAL_DOMAINS = 10_000;
+
+const normalizedSets = new WeakMap<SendPolicy, Set<string> | null>();
+
+/** The server's domains, normalized once per policy; null where any address goes. */
 function internalSet(policy: SendPolicy): Set<string> | null {
-  if (!policy.internalOnly || policy.internalDomains.length === 0) return null;
-  return new Set(policy.internalDomains.map(normalizeDomain).filter(Boolean));
+  if (normalizedSets.has(policy)) return normalizedSets.get(policy)!;
+  const set =
+    !policy.internalOnly || policy.internalDomains.length === 0
+      ? null
+      : new Set(policy.internalDomains.slice(0, MAX_INTERNAL_DOMAINS).map(normalizeDomain).filter(Boolean));
+  normalizedSets.set(policy, set);
+  return set;
 }
 
 /**

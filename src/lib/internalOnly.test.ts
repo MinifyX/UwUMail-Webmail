@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canSendTo, OPEN_SEND_POLICY, recipientDomain, undeliverableRecipients } from "./internalOnly";
+import { canSendTo, normalizeDomain, OPEN_SEND_POLICY, recipientDomain, undeliverableRecipients } from "./internalOnly";
 
 const internal = { internalOnly: true, internalDomains: ["uwumail.example", "team.example.org"] };
 
@@ -61,5 +61,40 @@ describe("undeliverableRecipients", () => {
 
   it("is empty without the limit", () => {
     expect(undeliverableRecipients([{ email: "leni@wanders.example" }], OPEN_SEND_POLICY)).toEqual([]);
+  });
+});
+
+describe("normalizeDomain", () => {
+  it("keeps text URL parsing would reshape, so it can't match a hosted domain", () => {
+    for (const raw of [
+      "uwumail.example/x",
+      "uwumail.example\\x",
+      "uwumail.example?a",
+      "uwumail.example#a",
+      "uwumail.example:25",
+      "x@uwumail.example",
+      "uwumail.example ",
+    ]) {
+      expect(normalizeDomain(raw)).not.toBe("uwumail.example");
+    }
+    expect(normalizeDomain("Evil.Test/UwUMail.Example")).toBe("evil.test/uwumail.example");
+    expect(canSendTo("a@uwumail.example:25", internal)).toBe(false);
+    expect(canSendTo("a@x@uwumail.example/", internal)).toBe(false);
+  });
+});
+
+describe("the domain set", () => {
+  it("reads the list only once per policy", () => {
+    let reads = 0;
+    const domains = new Proxy(["uwumail.example"], {
+      get(target, key, receiver) {
+        if (key === "slice") reads++;
+        return Reflect.get(target, key, receiver);
+      },
+    });
+    const policy = { internalOnly: true, internalDomains: domains };
+    canSendTo("a@uwumail.example", policy);
+    undeliverableRecipients([{ email: "b@wanders.example" }], policy);
+    expect(reads).toBe(1);
   });
 });

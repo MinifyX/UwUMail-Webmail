@@ -7,6 +7,7 @@
  * from before that send at once and answer without `undoStatus`, which reads as sent.
  */
 
+import { MAX_INTERNAL_DOMAINS } from "@/lib/internalOnly";
 import type { Address, ScheduledSend, SendPolicy, SendReceipt } from "../types";
 import { toAddresses, type JmapAddress } from "./convert";
 
@@ -49,7 +50,9 @@ export function sendPolicyOf(
   capability: { uwuInternalOnly?: unknown; uwuInternalDomains?: unknown } | null,
 ): SendPolicy {
   if (capability?.uwuInternalOnly !== true) return { internalOnly: false, internalDomains: [] };
-  const domains = Array.isArray(capability.uwuInternalDomains) ? capability.uwuInternalDomains : [];
+  const domains = Array.isArray(capability.uwuInternalDomains)
+    ? capability.uwuInternalDomains.slice(0, MAX_INTERNAL_DOMAINS)
+    : [];
   return {
     internalOnly: true,
     internalDomains: [

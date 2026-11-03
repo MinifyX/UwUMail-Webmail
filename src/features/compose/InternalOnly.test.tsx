@@ -134,6 +134,17 @@ describe("an account limited to its own server", () => {
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain("The server didn't take the mail");
   });
+
+  it("reads the policy again after any refused send", async () => {
+    const { BackendError } = await import("@/backend/backend");
+    known.send.mockRejectedValueOnce(new BackendError("internal", "this account is disabled"));
+    openComposer([{ email: "leni@uwumail.example" }]);
+    await screen.findByTestId("internal-only-note");
+    const before = known.sendPolicy.mock.calls.length;
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByRole("alert");
+    await waitFor(() => expect(known.sendPolicy.mock.calls.length).toBeGreaterThan(before));
+  });
 });
 
 describe("an account without the limit", () => {

@@ -108,4 +108,9 @@ describe("the internal-only limit", () => {
   it("stays on without a domain list", () => {
     expect(sendPolicyOf({ uwuInternalOnly: true })).toEqual({ internalOnly: true, internalDomains: [] });
   });
+
+  it("keeps at most 10000 domains", () => {
+    const many = Array.from({ length: 10_050 }, (_, i) => `d${i}.test`);
+    expect(sendPolicyOf({ uwuInternalOnly: true, uwuInternalDomains: many }).internalDomains).toHaveLength(10_000);
+  });
 });

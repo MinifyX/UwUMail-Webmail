@@ -490,9 +490,9 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       void refresh();
     } catch (reason) {
       finished.current = false;
+      // A refusal may come from a limit an administrator set after the composer looked: read it anew.
+      if (reason instanceof BackendError) void queryClient.invalidateQueries({ queryKey: ["sendPolicy"] });
       if (reason instanceof BackendError && reason.code === "internal_only") {
-        // The limit came in after the composer looked: read it anew, so the chips show it.
-        void queryClient.invalidateQueries({ queryKey: ["sendPolicy"] });
         setError(t("compose.internalOnlyRefused"));
       } else {
         setError(t("toast.sendFailed", { reason: reason instanceof Error ? reason.message : String(reason) }));

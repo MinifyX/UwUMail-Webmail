@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { answeredMail, bareMessageId } from "./JmapBackend";
+import { answeredMail, bareMessageId, firstError } from "./JmapBackend";
 
 describe("bareMessageId", () => {
   /**
@@ -47,5 +47,20 @@ describe("answeredMail", () => {
     expect(answeredMail({ id: "d1", inReplyTo: null }, conversation)).toBeNull();
     expect(answeredMail({ id: "d1", inReplyTo: ["gone@shop.example"] }, conversation)).toBeNull();
     expect(answeredMail({ id: "d1", inReplyTo: ["uwu-1@webmail.local"] }, conversation)).toBeNull();
+  });
+});
+
+describe("firstError", () => {
+  it("reads the server's internal-only refusal", () => {
+    const error = firstError({
+      notCreated: {
+        s: { type: "forbiddenToSend", description: "this account may only send to addresses on this server" },
+      },
+    } as never);
+    expect(error?.code).toBe("internal_only");
+    expect(
+      firstError({ notCreated: { s: { type: "forbiddenToSend", description: "the account is disabled" } } } as never)
+        ?.code,
+    ).toBe("internal");
   });
 });
