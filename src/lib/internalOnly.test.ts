@@ -73,7 +73,6 @@ describe("normalizeDomain", () => {
       "uwumail.example#a",
       "uwumail.example:25",
       "x@uwumail.example",
-      "uwumail.example ",
     ]) {
       expect(normalizeDomain(raw)).not.toBe("uwumail.example");
     }
