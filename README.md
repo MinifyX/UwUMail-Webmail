@@ -17,20 +17,22 @@
 
 ## Why this exists
 
-I build UwUMail for myself: an [app](https://github.com/MinifyX/UwUMail-Client)
-for my own machines and a [server](https://github.com/MinifyX/UwUMail-Server)
-for my own mail. What was missing is the case where the app isn't there — a
+UwUMail is an [app](https://github.com/MinifyX/UwUMail-Client) and a
+[server](https://github.com/MinifyX/UwUMail-Server) that runs my mail in
+production, both actively developed. What was missing is the case where the app isn't there — a
 borrowed laptop, someone else's phone, a quick look from work. That's what this
 is.
 
-- **Just for fun.** No company, no team, no schedule, no promises. I work on it
-  when I have time and feel like it.
-- **Written with AI.** Almost all of the code is written with Claude, because
-  I'm honestly not a great programmer. Not your thing? No hard feelings.
+- **Actively developed.** It ships with UwUMail Server and gets bug fixes and
+  new features with it.
+- **Bugs get fixed.** Found one? [Open an issue](https://github.com/MinifyX/UwUMail-Webmail/issues/new/choose)
+  and I'll fix it. One person, best effort, no guaranteed response times;
+  security problems go privately through
+  [UwUMail Server's SECURITY.md](https://github.com/MinifyX/UwUMail-Server/blob/main/SECURITY.md).
+- **Written with AI.** Almost all of the code is written with Claude, backed by
+  automated tests. Not your thing? No hard feelings.
 - **Use it, fork it, do what you want with it.** The license only asks one
   thing: changed versions stay open, even when you only run them as a service.
-- **No support.** Issues and pull requests are okay, but I might answer late or
-  not at all.
 
 ## What it is
 
