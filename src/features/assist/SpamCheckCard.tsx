@@ -296,7 +296,7 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
     <div className="flex flex-col gap-2">
       <p className="text-badge font-bold tracking-wide text-muted uppercase">{t("assist.spam.serverTitle")}</p>
       <dl className="grid gap-2 text-meta sm:grid-cols-2">
-        <Signal icon={ICONS.signIn} label={t("assist.spam.auth")}>
+        <Signal icon={ICONS.secret} label={t("assist.spam.auth")}>
           {noAuth ? (
             <span className="text-muted">{t("assist.spam.authNone")}</span>
           ) : (

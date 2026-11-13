@@ -1,6 +1,6 @@
 import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import type { LucideIcon } from "lucide-react";
+import { MailCheck, type LucideIcon } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { mobile } from "@/backend/mobile";
 import { LogoSymbol } from "@/components/ui/Logo";
@@ -14,7 +14,7 @@ export const EDGE_ZONE = 28;
 const LONG_PRESS_MS = 450;
 
 const LOOKS: Record<Exclude<SwipeAction, "none">, { icon: LucideIcon; className: string }> = {
-  read: { icon: ICONS.unread, className: "bg-[var(--uwu-account-violet)]" },
+  read: { icon: MailCheck, className: "bg-[var(--uwu-account-violet)]" },
   archive: { icon: ICONS.archive, className: "bg-pink-solid" },
   spam: { icon: ICONS.spam, className: "bg-[var(--uwu-account-coral)]" },
   trash: { icon: ICONS.delete, className: "bg-danger" },

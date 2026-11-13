@@ -28,7 +28,6 @@ import { useViewInfo } from "./view";
 const SEGMENTS: ListFilter[] = ["all", "unread"];
 const MORE_FILTERS: ListFilter[] = ["flagged", "attachments"];
 
-/** A menu entry with a check mark in front when it is on. */
 /** The menu draws plain items, so the state is said in words too. */
 function Checked({ on, children }: { on: boolean; children: ReactNode }) {
   const { t } = useT();
@@ -241,12 +240,12 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
                 },
               },
             ]}
-            trigger={({ open, toggle, ...aria }) => (
+            trigger={({ open: _open, toggle, ...aria }) => (
               <IconButton
                 {...aria}
                 icon={ICONS.rules}
                 label={t("list.filterMenu")}
-                active={MORE_FILTERS.includes(filter) || open}
+                active={MORE_FILTERS.includes(filter)}
                 className={clsx(refreshing && "animate-pulse")}
                 onClick={toggle}
               />

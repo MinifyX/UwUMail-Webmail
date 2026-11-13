@@ -1,6 +1,7 @@
 import { NyuScene } from "@/components/nyu/scenes";
 import { EmptyState, Icon, IconButton, ICONS, Pill } from "@uwusuite/design";
 import clsx from "clsx";
+import { MailCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ListFilter } from "@/backend/types";
 import type { SceneName } from "@/components/nyu/scenes";
@@ -125,7 +126,7 @@ export function MobileList() {
               {t("mobile.selected", { count: selected.size })}
             </p>
             {info.rights.markSeen && (
-              <IconButton icon={ICONS.unread} label={t("mobile.swipe.read")} onClick={() => runOnSelection("read")} />
+              <IconButton icon={MailCheck} label={t("mobile.swipe.read")} onClick={() => runOnSelection("read")} />
             )}
             {info.rights.flag && (
               <IconButton icon={ICONS.favorite} label={t("reader.flag")} onClick={() => runOnSelection("flag")} />
