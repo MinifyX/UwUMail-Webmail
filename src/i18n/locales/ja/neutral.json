@@ -61,7 +61,8 @@
     "filterMenu": "フィルターと表示",
     "filterGroup": "フィルター",
     "viewGroup": "表示",
-    "clearFilter": "フィルターを解除"
+    "clearFilter": "フィルターを解除",
+    "chosen": "選択中"
   },
   "reader": {
     "empty": {

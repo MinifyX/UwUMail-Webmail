@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useEffect, useId, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AssistLabel, ThreadSummary } from "@/backend/types";
-import { ContextMenu } from "@/components/ui/Menu";
+import { ContextMenu } from "@/components/ui/ContextMenu";
 import { useT } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";

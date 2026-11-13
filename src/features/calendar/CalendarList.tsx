@@ -5,7 +5,7 @@ import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { CalendarInfo } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
-import { ContextMenu } from "@/components/ui/Menu";
+import { ContextMenu } from "@/components/ui/ContextMenu";
 import { useT } from "@/i18n";
 import { queryKeys, useSharingAvailable } from "@/lib/queries";
 import { ShareDialog } from "../sharing/ShareDialog";

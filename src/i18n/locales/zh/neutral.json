@@ -61,7 +61,8 @@
     "filterMenu": "筛选和视图",
     "filterGroup": "筛选",
     "viewGroup": "视图",
-    "clearFilter": "移除筛选"
+    "clearFilter": "移除筛选",
+    "chosen": "已选择"
   },
   "reader": {
     "empty": {

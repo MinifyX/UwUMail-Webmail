@@ -63,7 +63,8 @@
     "filterMenu": "Filter and view",
     "filterGroup": "Filter",
     "viewGroup": "View",
-    "clearFilter": "Remove filter"
+    "clearFilter": "Remove filter",
+    "chosen": "selected"
   },
   "reader": {
     "empty": {

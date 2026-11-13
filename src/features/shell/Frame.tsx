@@ -1,11 +1,10 @@
-import { Button, Icon, IconButton, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, Menu } from "@uwusuite/design";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { PORTAL_URL } from "@/backend/server";
 import { Avatar } from "@/components/ui/Avatar";
 import { LogoSymbol } from "@/components/ui/Logo";
-import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
 import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
 import { modKey } from "@/lib/platform";
@@ -42,17 +41,10 @@ function AccountMenu({ side = "above" }: { side?: "above" | "below" }) {
     <Menu
       side={side}
       items={[
-        {
-          label: t("nav.portal"),
-          onSelect: () => window.location.assign(PORTAL_URL),
-          group: account?.email ?? t("nav.account"),
-        },
-        { label: t("nav.settings"), onSelect: () => ui.openSettings(), group: account?.email ?? t("nav.account") },
-        {
-          label: t("settings.shortcuts"),
-          onSelect: () => ui.setShortcutsOpen(true),
-          group: account?.email ?? t("nav.account"),
-        },
+        { heading: account?.email ?? t("nav.account") },
+        { label: t("nav.portal"), onSelect: () => window.location.assign(PORTAL_URL) },
+        { label: t("nav.settings"), onSelect: () => ui.openSettings() },
+        { label: t("settings.shortcuts"), onSelect: () => ui.setShortcutsOpen(true) },
       ]}
       trigger={({ open, toggle, ...aria }) => (
         <button

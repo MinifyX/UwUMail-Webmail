@@ -1,5 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { cloneElement, useEffect, useId, useRef, useState, type HTMLAttributes, type ReactElement } from "react";
+import {
+  cloneElement,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type HTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { backend } from "@/backend/backend";
 import type { AssistCost, AssistEstimate, AssistEstimateRequest } from "@/backend/types";
@@ -197,11 +206,18 @@ interface EstimateTipProps {
   beside?: boolean;
 }
 
-/**
- * A tooltip on an AI button with about what it costs: shown on hover, keyboard focus or a long
- * press, the estimate asked for only then. A long press never also presses the button.
- */
-export function EstimateTip({ request, hint, children, beside = false }: EstimateTipProps) {
+/** What the tooltip listens to, from React on a wrapper or natively on a menu item. */
+interface TipEvent {
+  type: string;
+  pointerType?: string;
+  key?: string;
+  target: EventTarget | null;
+  preventDefault(): void;
+  stopPropagation(): void;
+}
+
+/** The tooltip's state and one handler for every event of the element it belongs to. */
+function useEstimateTip(request: AssistEstimateRequest | null, hint: string | undefined, beside: boolean) {
   const id = useId();
   const [place, setPlace] = useState<Place | null>(null);
   const press = useRef<{ timer: ReturnType<typeof setTimeout> | null; fired: boolean }>({ timer: null, fired: false });
@@ -220,14 +236,101 @@ export function EstimateTip({ request, hint, children, beside = false }: Estimat
     [],
   );
 
-  // The wrapper has no box of its own: the tooltip goes by the button inside it.
-  const show = (wrapper: Element) => setPlace(placeFor(wrapper.firstElementChild ?? wrapper, beside));
+  const show = (anchor: Element) => setPlace(placeFor(anchor, beside));
   const hide = () => setPlace(null);
   const endPress = () => {
     if (press.current.timer) clearTimeout(press.current.timer);
     press.current.timer = null;
   };
+  /** `anchor` is the button the tooltip goes by. */
+  const handle = (anchor: Element, event: TipEvent) => {
+    switch (event.type) {
+      case "pointerenter":
+      case "pointerover":
+        if (event.pointerType !== "touch") show(anchor);
+        break;
+      case "pointerleave":
+      case "pointerout":
+        endPress();
+        if (event.pointerType !== "touch") hide();
+        break;
+      case "pointerdown":
+        press.current.fired = false;
+        if (event.pointerType !== "touch") return;
+        endPress();
+        press.current.timer = setTimeout(() => {
+          press.current.fired = true;
+          show(anchor);
+          if (hideTimer.current) clearTimeout(hideTimer.current);
+          hideTimer.current = setTimeout(hide, TOUCH_TIP_MS);
+        }, LONG_PRESS_MS);
+        break;
+      case "pointerup":
+      case "pointercancel":
+        endPress();
+        break;
+      case "click":
+        // The finger rested to read the tooltip, not to press.
+        if (!press.current.fired) return;
+        press.current.fired = false;
+        event.preventDefault();
+        event.stopPropagation();
+        break;
+      case "contextmenu":
+        if (press.current.timer || press.current.fired) event.preventDefault();
+        break;
+      case "focus":
+        if (event.target instanceof Element && focusVisible(event.target)) show(anchor);
+        break;
+      case "blur":
+        hide();
+        break;
+      case "keydown":
+        if (event.key === "Escape") hide();
+        break;
+    }
+  };
   const visible = place !== null && lines.length > 0;
+  const tooltip =
+    visible &&
+    createPortal(
+      <span
+        id={id}
+        role="tooltip"
+        style={place}
+        className="pointer-events-none fixed z-50 flex w-max max-w-[min(280px,calc(100vw-16px))] animate-fade flex-col gap-0.5 rounded-lg bg-ink px-2.5 py-1.5 text-caption font-medium text-canvas shadow-float"
+      >
+        {lines.map((line, index) => (
+          <span key={index} className={index < lines.length - 1 ? "opacity-80" : undefined}>
+            {line}
+          </span>
+        ))}
+        {breakdown.length > 0 && (
+          <span className="mt-1 grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-px border-t border-canvas/20 pt-1 text-caption">
+            {breakdown.map((line) => (
+              <span key={line.key} className="contents">
+                <span className="opacity-70">{line.label}</span>
+                <span>{line.value}</span>
+              </span>
+            ))}
+          </span>
+        )}
+        {estimate?.calibrated && <span className="text-badge opacity-70">{t("assist.estimate.calibrated")}</span>}
+      </span>,
+      document.body,
+    );
+  return { id, visible, handle, tooltip };
+}
+
+/**
+ * A tooltip on an AI button with about what it costs: shown on hover, keyboard focus or a long
+ * press, the estimate asked for only then. A long press never also presses the button.
+ */
+export function EstimateTip({ request, hint, children, beside = false }: EstimateTipProps) {
+  const tip = useEstimateTip(request, hint, beside);
+  // The wrapper has no box of its own: the tooltip goes by the button inside it.
+  const on = (event: TipEvent & { currentTarget: Element }) =>
+    tip.handle(event.currentTarget.firstElementChild ?? event.currentTarget, event);
 
   return (
     <>
@@ -235,76 +338,78 @@ export function EstimateTip({ request, hint, children, beside = false }: Estimat
       <span
         role="presentation"
         className="contents"
-        onPointerEnter={(event) => {
-          if (event.pointerType !== "touch") show(event.currentTarget);
-        }}
-        onPointerLeave={(event) => {
-          endPress();
-          if (event.pointerType !== "touch") hide();
-        }}
-        onPointerDown={(event) => {
-          press.current.fired = false;
-          if (event.pointerType !== "touch") return;
-          const target = event.currentTarget;
-          endPress();
-          press.current.timer = setTimeout(() => {
-            press.current.fired = true;
-            show(target);
-            if (hideTimer.current) clearTimeout(hideTimer.current);
-            hideTimer.current = setTimeout(hide, TOUCH_TIP_MS);
-          }, LONG_PRESS_MS);
-        }}
-        onPointerUp={endPress}
-        onPointerCancel={endPress}
-        onClickCapture={(event) => {
-          // The finger rested to read the tooltip, not to press.
-          if (!press.current.fired) return;
-          press.current.fired = false;
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-        onContextMenu={(event) => {
-          if (press.current.timer || press.current.fired) event.preventDefault();
-        }}
-        onFocus={(event) => {
-          if (focusVisible(event.target)) show(event.currentTarget);
-        }}
-        onBlur={hide}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") hide();
-        }}
+        onPointerEnter={on}
+        onPointerLeave={on}
+        onPointerDown={on}
+        onPointerUp={on}
+        onPointerCancel={on}
+        onClickCapture={on}
+        onContextMenu={on}
+        onFocus={on}
+        onBlur={on}
+        onKeyDown={on}
       >
-        {visible
-          ? cloneElement(children as ReactElement<HTMLAttributes<HTMLElement>>, { "aria-describedby": id })
+        {tip.visible
+          ? cloneElement(children as ReactElement<HTMLAttributes<HTMLElement>>, { "aria-describedby": tip.id })
           : children}
       </span>
-      {visible &&
-        createPortal(
-          <span
-            id={id}
-            role="tooltip"
-            style={place}
-            className="pointer-events-none fixed z-50 flex w-max max-w-[min(280px,calc(100vw-16px))] animate-fade flex-col gap-0.5 rounded-lg bg-ink px-2.5 py-1.5 text-caption font-medium text-canvas shadow-float"
-          >
-            {lines.map((line, index) => (
-              <span key={index} className={index < lines.length - 1 ? "opacity-80" : undefined}>
-                {line}
-              </span>
-            ))}
-            {breakdown.length > 0 && (
-              <span className="mt-1 grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-px border-t border-canvas/20 pt-1 text-caption">
-                {breakdown.map((line) => (
-                  <span key={line.key} className="contents">
-                    <span className="opacity-70">{line.label}</span>
-                    <span>{line.value}</span>
-                  </span>
-                ))}
-              </span>
-            )}
-            {estimate?.calibrated && <span className="text-badge opacity-70">{t("assist.estimate.calibrated")}</span>}
-          </span>,
-          document.body,
-        )}
+      {tip.tooltip}
     </>
+  );
+}
+
+// over/out, not enter/leave: they bubble from the label's children and are what React's own onPointerEnter uses.
+const ITEM_EVENTS = [
+  "pointerover",
+  "pointerout",
+  "pointerdown",
+  "pointerup",
+  "pointercancel",
+  "contextmenu",
+  "focus",
+  "blur",
+  "keydown",
+];
+
+/**
+ * A menu item's label with the estimate. The menu draws the item itself, so this listens on the
+ * whole item it sits in (hover, focus, long press), and the tooltip goes beside it.
+ */
+export function EstimateLabel({ request, children }: { request: AssistEstimateRequest | null; children: ReactNode }) {
+  const tip = useEstimateTip(request, undefined, true);
+  const anchor = useRef<HTMLSpanElement>(null);
+  const handle = useRef(tip.handle);
+  useEffect(() => {
+    handle.current = tip.handle;
+  });
+  useEffect(() => {
+    const item = anchor.current?.closest<HTMLElement>("[role=menuitem]");
+    if (!item) return;
+    const listener = (event: Event) => {
+      // Moving between the item's own children is not entering or leaving it.
+      if (
+        (event.type === "pointerover" || event.type === "pointerout") &&
+        item.contains((event as PointerEvent).relatedTarget as Node | null)
+      )
+        return;
+      handle.current(item, event);
+    };
+    for (const type of ITEM_EVENTS) item.addEventListener(type, listener);
+    item.addEventListener("click", listener, true);
+    return () => {
+      for (const type of ITEM_EVENTS) item.removeEventListener(type, listener);
+      item.removeEventListener("click", listener, true);
+    };
+  }, []);
+  useEffect(() => {
+    const item = anchor.current?.closest<HTMLElement>("[role=menuitem]");
+    if (tip.visible) item?.setAttribute("aria-describedby", tip.id);
+    else item?.removeAttribute("aria-describedby");
+  }, [tip.visible, tip.id]);
+  return (
+    <span ref={anchor} className="contents">
+      {children}
+      {tip.tooltip}
+    </span>
   );
 }

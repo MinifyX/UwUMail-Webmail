@@ -1,7 +1,6 @@
-import { Button, Field, IconButton, ICONS, Segmented, Select, TextInput, Toggle } from "@uwusuite/design";
+import { Button, Field, IconButton, ICONS, Menu, Segmented, Select, TextInput, Toggle } from "@uwusuite/design";
 import clsx from "clsx";
 import { useState } from "react";
-import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
 import { useFolders } from "@/lib/queries";
 import {

@@ -65,7 +65,8 @@
     "filterMenu": "Filtre et affichage",
     "filterGroup": "Filtre",
     "viewGroup": "Affichage",
-    "clearFilter": "Retirer le filtre"
+    "clearFilter": "Retirer le filtre",
+    "chosen": "sélectionné"
   },
   "reader": {
     "empty": {

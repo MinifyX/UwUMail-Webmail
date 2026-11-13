@@ -6,7 +6,7 @@ import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AddressBookInfo } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
-import { ContextMenu } from "@/components/ui/Menu";
+import { ContextMenu } from "@/components/ui/ContextMenu";
 import { useT } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";

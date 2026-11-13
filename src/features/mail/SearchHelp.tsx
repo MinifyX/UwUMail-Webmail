@@ -1,5 +1,4 @@
-import { IconButton, ICONS } from "@uwusuite/design";
-import { Menu } from "@/components/ui/Menu";
+import { IconButton, ICONS, Menu } from "@uwusuite/design";
 import { useT } from "@/i18n";
 import { SEARCH_OPERATORS, type SearchOperatorKey } from "@/lib/searchQuery";
 

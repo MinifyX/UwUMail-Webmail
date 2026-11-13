@@ -63,7 +63,8 @@
     "filterMenu": "Filter en weergave",
     "filterGroup": "Filter",
     "viewGroup": "Weergave",
-    "clearFilter": "Filter verwijderen"
+    "clearFilter": "Filter verwijderen",
+    "chosen": "geselecteerd"
   },
   "reader": {
     "empty": {

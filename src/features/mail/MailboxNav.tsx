@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Account, Folder, FolderRights, MailboxView, SharedAccount } from "@/backend/types";
 import { AccountDot } from "@/components/ui/Avatar";
-import { ContextMenu, type MenuItem } from "@/components/ui/Menu";
+import type { MenuItem } from "@uwusuite/design";
+import { ContextMenu } from "@/components/ui/ContextMenu";
 import { useT } from "@/i18n";
 import { accountAddress, folderRefOf, hasRef, hiddenFromUnified, orderAccounts, resolveRefs } from "@/lib/arrangement";
 import {

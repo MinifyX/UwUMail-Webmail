@@ -1,12 +1,11 @@
-import { Button, Icon, IconButton, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, Menu } from "@uwusuite/design";
 import clsx from "clsx";
 import { useEffect, useId, useMemo, useState, type FormEvent, type ReactElement, type ReactNode } from "react";
 import { NyuThinking } from "@/components/nyu/NyuThinking";
 import { backend } from "@/backend/backend";
 import { ASSIST_PRESETS, type AssistComposeRequest, type AssistPreset } from "@/backend/types";
-import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
-import { EstimateTip } from "./Estimate";
+import { EstimateLabel, EstimateTip } from "./Estimate";
 import {
   assistErrorDetail,
   assistErrorText,
@@ -57,11 +56,9 @@ export function presetRequest(
 }
 
 /** A button with the tooltip of about what asking `request` costs. */
-function withEstimate(request: AssistComposeRequest | null, beside = false) {
+function withEstimate(request: AssistComposeRequest | null) {
   return (button: ReactElement): ReactElement => (
-    <EstimateTip request={request && { method: "Assist/compose", request }} beside={beside}>
-      {button}
-    </EstimateTip>
+    <EstimateTip request={request && { method: "Assist/compose", request }}>{button}</EstimateTip>
   );
 }
 
@@ -74,7 +71,6 @@ interface ComposeAssistButtonProps {
 /** The ✨ button in the composer's toolbar with what the assistant can do there. */
 export function ComposeAssistButton({ onPick, context }: ComposeAssistButtonProps) {
   const { t } = useT();
-  const rewrite = t("assist.compose.rewriteGroup");
   // Taken when the menu opens: the draft can't change while it is open.
   const [snapshot, setSnapshot] = useState<ComposeAssistContext | null>(null);
   return (
@@ -86,19 +82,26 @@ export function ComposeAssistButton({ onPick, context }: ComposeAssistButtonProp
           label: <MenuLabel icon={ICONS.ai} text={t("assist.compose.write")} />,
           onSelect: () => onPick({ kind: "write" }),
         },
-        ...ASSIST_PRESETS.map((preset) => ({
-          group: rewrite,
-          label: (
+        { heading: t("assist.compose.rewriteGroup") },
+        ...ASSIST_PRESETS.map((preset) => {
+          const label = (
             <MenuLabel
               icon={preset === "translate" ? ICONS.language : preset === "proofread" ? ICONS.done : ICONS.rewrite}
               text={t(`assist.preset.${preset}`)}
             />
-          ),
-          onSelect: () => onPick({ kind: "rewrite", preset }),
-          ...(snapshot ? { wrap: withEstimate(presetRequest(preset, snapshot), true) } : {}),
-        })),
+          );
+          const request = snapshot && presetRequest(preset, snapshot);
+          return {
+            label: snapshot ? (
+              <EstimateLabel request={request && { method: "Assist/compose", request }}>{label}</EstimateLabel>
+            ) : (
+              label
+            ),
+            onSelect: () => onPick({ kind: "rewrite", preset }),
+          };
+        }),
+        { heading: t("assist.compose.moreGroup") },
         {
-          group: t("assist.compose.moreGroup"),
           label: <MenuLabel icon={ICONS.adjust} text={t("assist.compose.adjust")} />,
           onSelect: () => onPick({ kind: "adjust" }),
         },

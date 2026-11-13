@@ -1,9 +1,8 @@
-import { Button, Icon, IconButton, ICONS, Tooltip } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, Menu, Tooltip } from "@uwusuite/design";
 import clsx from "clsx";
 import { Fragment, useId, useMemo, useState } from "react";
 import type { Account, Message } from "@/backend/types";
 import { Avatar } from "@/components/ui/Avatar";
-import { Menu } from "@/components/ui/Menu";
 import { translate, useT } from "@/i18n";
 import { addressRows, fullAddress, type AddressRole } from "@/lib/addresses";
 import { displayName, formatFullDate, formatListDate, formatLongDate } from "@/lib/format";

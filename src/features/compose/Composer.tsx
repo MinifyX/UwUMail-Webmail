@@ -1,10 +1,9 @@
-import { Button, Icon, IconButton, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, Menu } from "@uwusuite/design";
 import clsx from "clsx";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { backend, BackendError } from "@/backend/backend";
 import type { Identity, OutgoingAttachment, Signature } from "@/backend/types";
-import { Menu } from "@/components/ui/Menu";
 import { defaultSignature, withSignature, withoutSignatureMarker } from "@/lib/signatures";
 import { useBackLayer } from "@/lib/backStack";
 import { useIsPhone } from "@/lib/device";

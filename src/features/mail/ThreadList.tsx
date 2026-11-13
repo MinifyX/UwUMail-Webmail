@@ -1,11 +1,10 @@
 import { NyuScene } from "@/components/nyu/scenes";
-import { Button, EmptyState, Icon, IconButton, ICONS, Pill, Segmented } from "@uwusuite/design";
+import { Button, EmptyState, Icon, IconButton, ICONS, Menu, Pill, Segmented } from "@uwusuite/design";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { ListFilter, ThreadSummary } from "@/backend/types";
 import type { SceneName } from "@/components/nyu/scenes";
-import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
 import { flattenThreads, useAccounts, useMessageActions, useThreadActions, useVisibleAccounts } from "@/lib/queries";
 import { openFolderDialog } from "@/state/folderDialog";
@@ -30,11 +29,14 @@ const SEGMENTS: ListFilter[] = ["all", "unread"];
 const MORE_FILTERS: ListFilter[] = ["flagged", "attachments"];
 
 /** A menu entry with a check mark in front when it is on. */
+/** The menu draws plain items, so the state is said in words too. */
 function Checked({ on, children }: { on: boolean; children: ReactNode }) {
+  const { t } = useT();
   return (
     <span className="flex items-center gap-2">
       <Icon icon={ICONS.done} className={clsx("size-4 shrink-0 text-pink", !on && "invisible")} />
       {children}
+      {on && <span className="sr-only">, {t("list.chosen")}</span>}
     </span>
   );
 }
@@ -211,19 +213,17 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
           <Menu
             align="end"
             items={[
+              { heading: t("list.filterGroup") },
               ...MORE_FILTERS.map((item) => ({
                 label: <Checked on={filter === item}>{t(`filter.${item}`)}</Checked>,
                 onSelect: () => setFilter(filter === item ? "all" : item),
-                checked: filter === item,
-                group: t("list.filterGroup"),
               })),
+              { heading: t("list.viewGroup") },
               ...(labels.length > 0
                 ? [
                     {
                       label: <Checked on={grouped}>{t("labels.group.on")}</Checked>,
                       onSelect: () => updateSettings({ groupByLabel: !grouped }),
-                      checked: grouped,
-                      group: t("list.viewGroup"),
                     },
                   ]
                 : []),
@@ -239,7 +239,6 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
                   await refresh();
                   setRefreshing(false);
                 },
-                group: t("list.viewGroup"),
               },
             ]}
             trigger={({ open, toggle, ...aria }) => (

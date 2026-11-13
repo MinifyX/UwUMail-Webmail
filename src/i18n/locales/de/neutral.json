@@ -63,7 +63,8 @@
     "filterMenu": "Filter und Ansicht",
     "filterGroup": "Filter",
     "viewGroup": "Ansicht",
-    "clearFilter": "Filter entfernen"
+    "clearFilter": "Filter entfernen",
+    "chosen": "ausgewählt"
   },
   "reader": {
     "empty": {
