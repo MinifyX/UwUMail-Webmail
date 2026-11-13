@@ -194,6 +194,8 @@ export interface Attachment {
   mimeType: string;
   size: number;
   inline: boolean;
+  /** The server's blob, so a forward can send it on without a download. */
+  blobId?: string;
   /** For images the HTML shows through `cid:`. */
   contentId?: string;
 }
@@ -289,8 +291,8 @@ export interface OutgoingAttachment {
   filename: string;
   mimeType: string;
   size: number;
-  /** Base64 content, or a local path when running in the desktop shell. */
-  source: { kind: "base64"; data: string };
+  /** Base64 content, or a blob already on the server (uploaded, or part of a stored mail). */
+  source: { kind: "base64"; data: string } | { kind: "blob"; blobId: string };
 }
 
 export interface OutgoingMessage {
@@ -380,6 +382,8 @@ export interface DraftSaveResult {
   savedAt: string;
   /** The saved draft's id in the Drafts folder, to open it again (see `openDraft`). */
   emailId?: string;
+  /** The attachments as the server now keeps them, in the same order: the next save sends these. */
+  attachments?: OutgoingAttachment[];
 }
 
 /** A draft from the Drafts folder, ready to continue writing. */

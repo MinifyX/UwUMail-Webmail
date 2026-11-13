@@ -764,6 +764,10 @@ export class DemoBackend implements Backend {
     return 30 * 24 * 60 * 60;
   }
 
+  async maxUploadSize() {
+    return 50 * 1024 * 1024;
+  }
+
   /**
    * The private mailbox plays an account limited to its own server with `?internal-only` in the
    * address (or `VITE_DEMO_INTERNAL_ONLY=1`); leni@ and kai@uwumail.example are on that server.

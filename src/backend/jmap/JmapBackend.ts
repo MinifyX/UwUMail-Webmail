@@ -1591,10 +1591,16 @@ export class JmapBackend implements Backend {
 
     const attachments: Record<string, unknown>[] = [];
     for (const attachment of message.attachments) {
-      const bytes = Uint8Array.from(atob(attachment.source.data), (char) => char.charCodeAt(0));
-      const uploaded = await uploadBlob(new Blob([bytes], { type: attachment.mimeType }), attachment.mimeType);
+      // A blob the server already has (saved before, or forwarded) is not uploaded again.
+      let blobId: string;
+      if (attachment.source.kind === "blob") {
+        blobId = attachment.source.blobId;
+      } else {
+        const bytes = Uint8Array.from(atob(attachment.source.data), (char) => char.charCodeAt(0));
+        blobId = (await uploadBlob(new Blob([bytes], { type: attachment.mimeType }), attachment.mimeType)).blobId;
+      }
       attachments.push({
-        blobId: uploaded.blobId,
+        blobId,
         name: attachment.filename,
         type: attachment.mimeType,
         disposition: "attachment",
@@ -1791,6 +1797,12 @@ export class JmapBackend implements Backend {
     return maxDelayOf(accountCapability(SUBMISSION));
   }
 
+  async maxUploadSize(): Promise<number> {
+    await this.start();
+    const limit = (jmapSession().capabilities[CORE] as { maxSizeUpload?: unknown } | undefined)?.maxSizeUpload;
+    return typeof limit === "number" && limit > 0 ? limit : 0;
+  }
+
   /** Read from the session, which the server changes when an administrator flips the limit. */
   async sendPolicy(): Promise<SendPolicy> {
     await this.start();
@@ -1836,7 +1848,26 @@ export class JmapBackend implements Backend {
 
   async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
     const saved = await this.storeDraft(draft);
-    return { draftKey: saved.draftKey, savedAt: new Date().toISOString(), emailId: saved.emailId };
+    const result: DraftSaveResult = {
+      draftKey: saved.draftKey,
+      savedAt: new Date().toISOString(),
+      emailId: saved.emailId,
+    };
+    if (draft.attachments.length === 0) return result;
+    // From now on the draft's own parts: uploads expire, and the older draft is removed on the next save.
+    const stored = await one<GetResponse<JmapEmail>>("Email/get", {
+      ids: [saved.emailId],
+      properties: ["attachments"],
+    });
+    const parts = (stored.list[0]?.attachments ?? []).filter((part) => !!part.blobId);
+    if (parts.length !== draft.attachments.length) return result;
+    return {
+      ...result,
+      attachments: draft.attachments.map((attachment, index) => ({
+        ...attachment,
+        source: { kind: "blob" as const, blobId: parts[index]!.blobId! },
+      })),
+    };
   }
 
   /** Writes the newest version of a draft and removes every older one with the same key. */
@@ -1872,16 +1903,15 @@ export class JmapBackend implements Backend {
     const email = response.list[0];
     if (!email) throw new BackendError("not_found", "That draft is gone.");
     const message = toMessage(email, this.accountId, this.folderMap);
-    const attachments = [];
-    for (const attachment of message.attachments.filter((part) => !part.inline)) {
-      const blob = await this.attachmentBlob(attachment.id, attachment.filename);
-      attachments.push({
+    // The draft's own parts, used as they are: the next save stores them without a download.
+    const attachments = message.attachments
+      .filter((part) => !part.inline)
+      .map((attachment) => ({
         filename: attachment.filename,
         mimeType: attachment.mimeType,
         size: attachment.size,
-        source: { kind: "base64" as const, data: await blobToBase64(blob) },
-      });
-    }
+        source: { kind: "blob" as const, blobId: this.splitAttachmentId(attachment.id).blobId },
+      }));
     return {
       accountId: this.accountId,
       fromEmail: message.from.email || null,
@@ -3180,13 +3210,4 @@ function fingerprint(bytes: Uint8Array): string {
   let hash = 0x811c9dc5;
   for (const byte of bytes) hash = Math.imul(hash ^ byte, 0x01000193);
   return (hash >>> 0).toString(16);
-}
-
-async function blobToBase64(blob: Blob): Promise<string> {
-  const buffer = new Uint8Array(await blob.arrayBuffer());
-  let binary = "";
-  for (let index = 0; index < buffer.length; index += 8192) {
-    binary += String.fromCharCode(...buffer.subarray(index, index + 8192));
-  }
-  return btoa(binary);
 }

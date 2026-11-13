@@ -1,4 +1,4 @@
-import type { Account, Address, Identity, Message } from "@/backend/types";
+import type { Account, Address, Identity, Message, OutgoingAttachment } from "@/backend/types";
 import { escapeHtml, formatAddress, formatFullDate, textToHtml } from "@/lib/format";
 import { quotableHtml } from "@/lib/safeHtml";
 import type { ComposeRequest } from "@/state/ui";
@@ -34,6 +34,22 @@ function quoted(message: Message) {
  * The address a reply comes from: the one of the mailbox's addresses the mail was sent to.
  * Empty means the mailbox's own address.
  */
+/** A forward sends the mail's files on, straight from the server's copy. */
+export function forwardedAttachments(source: Message): OutgoingAttachment[] {
+  return source.attachments.flatMap((attachment) =>
+    !attachment.inline && attachment.blobId
+      ? [
+          {
+            filename: attachment.filename,
+            mimeType: attachment.mimeType,
+            size: attachment.size,
+            source: { kind: "blob" as const, blobId: attachment.blobId },
+          },
+        ]
+      : [],
+  );
+}
+
 export function replyFrom(source: Message, identities: Identity[]): string {
   const addressed = new Set([...source.to, ...source.cc].map((a) => a.email.toLowerCase()));
   const match = identities.find(

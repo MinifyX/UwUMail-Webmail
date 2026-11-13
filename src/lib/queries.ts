@@ -202,6 +202,11 @@ export function useScheduledSends() {
   });
 }
 
+/** The largest file the server takes, in bytes; 0 when it doesn't say. */
+export function useMaxUploadSize() {
+  return useQuery({ queryKey: ["maxUploadSize"], queryFn: () => backend().maxUploadSize(), staleTime: Infinity });
+}
+
 /** How far ahead "send later" may go, in seconds; 0 where the server can't hold mail. */
 export function useMaxSendDelay() {
   return useQuery({ queryKey: ["maxSendDelay"], queryFn: () => backend().maxSendDelay(), staleTime: Infinity });

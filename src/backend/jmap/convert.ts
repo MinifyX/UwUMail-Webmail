@@ -173,6 +173,7 @@ export function toAttachments(email: JmapEmail): Attachment[] {
       mimeType: part.type ?? "application/octet-stream",
       size: part.size ?? 0,
       inline: part.disposition === "inline" || !!part.cid,
+      blobId: part.blobId!,
       ...(part.cid ? { contentId: part.cid } : {}),
     }));
 }

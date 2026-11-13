@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const jmap = vi.hoisted(() => ({ load: vi.fn(), one: vi.fn() }));
+const jmap = vi.hoisted(() => ({ load: vi.fn(), one: vi.fn(), upload: vi.fn() }));
 
 vi.mock("./client", async (original) => {
   const actual = await original<typeof import("./client")>();
@@ -20,13 +20,18 @@ vi.mock("./client", async (original) => {
     jmapSession: session,
     whenSessionChanges: () => {},
     watchPush: () => () => {},
-    call: async () => ({
-      methodResponses: [["Mailbox/get", { list: [], notFound: [], state: "1" }, "m0"]],
+    call: async (batch: [string][]) => ({
+      methodResponses:
+        batch[0]![0] === "Mailbox/get"
+          ? [["Mailbox/get", { list: [{ id: "d", name: "Drafts", role: "drafts" }], notFound: [], state: "1" }, "m0"]]
+          : [["Email/get", { list: [] }, "e"]],
       sessionState: "s1",
     }),
     one: jmap.one,
+    uploadBlob: jmap.upload,
   };
 });
+vi.mock("../server", () => ({ currentSession: () => ({ account: { login: "mini@uwumail.example" } }) }));
 
 const load = async () => new (await import("./JmapBackend")).JmapBackend();
 
@@ -34,13 +39,14 @@ describe("JmapBackend and the server's per-call limits", () => {
   afterEach(() => {
     jmap.load.mockReset();
     jmap.one.mockReset();
+    jmap.upload.mockReset();
   });
 
   it("tries the start again after it failed once", async () => {
     jmap.load.mockRejectedValueOnce(new Error("503")).mockResolvedValue({});
     const backend = await load();
     await expect(backend.listFolders()).rejects.toThrow("503");
-    await expect(backend.listFolders()).resolves.toEqual([]);
+    await expect(backend.listFolders()).resolves.toHaveLength(1);
   });
 
   it("moves 600 mails in calls the server accepts", async () => {
@@ -59,5 +65,36 @@ describe("JmapBackend and the server's per-call limits", () => {
       expect(size).toBeLessThanOrEqual(500);
     }
     expect(jmap.one.mock.calls.filter(([name]) => name === "Email/get")).toHaveLength(2);
+  });
+
+  it("uploads a draft's attachment once, not on every save", async () => {
+    jmap.load.mockResolvedValue({});
+    jmap.upload.mockResolvedValue({ blobId: "upload1" });
+    const created: { attachments?: { blobId: string }[] }[] = [];
+    jmap.one.mockImplementation(async (name: string, args: { create?: { draft: (typeof created)[0] } }) => {
+      if (name === "Identity/get") return { list: [{ id: "i1", email: "mini@uwumail.example", name: "Mini" }] };
+      if (name === "Email/set") {
+        created.push(args.create!.draft);
+        return { created: { draft: { id: `draft${created.length}` } } };
+      }
+      return { list: [{ id: "draft1", attachments: [{ blobId: `part${created.length}` }] }] };
+    });
+    const backend = await load();
+    const draft = {
+      accountId: "a1",
+      to: [],
+      cc: [],
+      bcc: [],
+      subject: "Plan",
+      html: "",
+      text: "",
+      attachments: [
+        { filename: "plan.txt", mimeType: "text/plain", size: 2, source: { kind: "base64" as const, data: "aGk=" } },
+      ],
+    };
+    const first = await backend.saveDraft(draft);
+    await backend.saveDraft({ ...draft, draftKey: first.draftKey, attachments: first.attachments! });
+    expect(jmap.upload).toHaveBeenCalledTimes(1);
+    expect(created.map((email) => email.attachments![0]!.blobId)).toEqual(["upload1", "part1"]);
   });
 });
