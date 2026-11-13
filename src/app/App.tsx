@@ -123,8 +123,6 @@ export function App() {
         if (!session) {
           // The subscription belonged to the session that ended; the browser's goes too, and so
           // does an unsent draft on a shared computer.
-          void forgetWebPush();
-          clearLocalDraft();
           setBoot({ state: "signedOut" });
           return;
         }
@@ -147,8 +145,6 @@ export function App() {
       } catch (error) {
         if (cancelled) return;
         if (error instanceof BackendError && error.code === "signed_out") {
-          void forgetWebPush();
-          clearLocalDraft();
           setBoot({ state: "signedOut" });
           return;
         }
@@ -163,6 +159,13 @@ export function App() {
       cancelled = true;
     };
   }, []);
+
+  // Signed out: after the shell is gone, so a composer's last local copy is cleared too.
+  useEffect(() => {
+    if (boot.state !== "signedOut") return;
+    void forgetWebPush();
+    clearLocalDraft();
+  }, [boot.state]);
 
   // A session that ends while the tab is open leads back to the login, not to error toasts.
   const client = useQueryClient();
