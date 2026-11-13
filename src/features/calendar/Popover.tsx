@@ -38,7 +38,10 @@ export function Popover({ anchor, label, onClose, children }: PopoverProps) {
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
-    const first = card.current?.querySelector<HTMLElement>("[data-autofocus], input, button");
+    // The marked field first, wherever it sits: a close button above it comes first in page order.
+    const first =
+      card.current?.querySelector<HTMLElement>("[data-autofocus]") ??
+      card.current?.querySelector<HTMLElement>("input, button");
     first?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || document.querySelector("dialog[open]")) return;
