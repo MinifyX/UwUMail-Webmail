@@ -2,7 +2,7 @@
  * The font the webmail and the mails use (Settings → Appearance → Font). Kept in this browser only.
  *
  * The interface gets the font through `--font-ui` on <html>; the web fonts are declared in
- * styles/fonts.css. Mails are shown in a sandboxed frame that can't see the page's fonts. The
+ * @uwusuite/design/fonts.css (UwU Sans) and main.tsx (Rubik, DM Sans). Mails are shown in a sandboxed frame that can't see the page's fonts. The
  * server's policy only lets fonts come from our own origin, and a mail must never reach our own
  * origin (security audit W-40), so the frame's policy names the chosen font's files exactly and
  * nothing else (see `mailFontFaces`).
@@ -12,7 +12,7 @@ import dmSansLatinExt from "@fontsource-variable/dm-sans/files/dm-sans-latin-ext
 import dmSansLatin from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url";
 import rubikLatinExt from "@fontsource-variable/rubik/files/rubik-latin-ext-wght-normal.woff2?url";
 import rubikLatin from "@fontsource-variable/rubik/files/rubik-latin-wght-normal.woff2?url";
-import uwuSans from "@/assets/fonts/UwUSans[wght].woff2?url";
+import uwuSans from "@uwusuite/design/fonts/UwUSans[wght].woff2?url";
 
 export const FONT_CHOICES = ["uwu", "rubik", "dmsans", "system"] as const;
 export type FontChoice = (typeof FONT_CHOICES)[number];

@@ -34,7 +34,7 @@ export function Toaster() {
               {item.effect === "sent" && mascot && (
                 <LogoSymbol
                   mood="happy"
-                  className="nyu-flyer pointer-events-none absolute -top-2 -left-2 h-8 w-auto animate-nyu-fly"
+                  className="nyu-flyer pointer-events-none absolute -top-2 -left-2 h-8 w-auto"
                 />
               )}
             </span>
