@@ -432,8 +432,16 @@ export class DemoBackend implements Backend {
   }
 
   async selectionMessages(threadIds: string[], conversations: boolean): Promise<Message[]> {
-    const details = await Promise.all(threadIds.map((id) => this.getThread(id, conversations)));
-    return details.flatMap((detail) => detail.messages);
+    // A conversation that is gone meanwhile is left out, like the server does.
+    const details = await Promise.all(
+      threadIds.map((id) =>
+        this.getThread(id, conversations).catch((error: unknown) => {
+          if (error instanceof BackendError && error.code === "not_found") return null;
+          throw error;
+        }),
+      ),
+    );
+    return details.flatMap((detail) => detail?.messages ?? []);
   }
 
   /** Like a server with shared folders: what the folder's owner didn't allow is refused. */
