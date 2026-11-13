@@ -53,6 +53,16 @@ describe("sender pictures", () => {
     for (const picture of pictures) expect(picture.className).toContain("object-cover");
   });
 
+  it("draws the same blob for the same address, whatever its case, and no initials", async () => {
+    const { container } = renderAvatars(new QueryClient(), ["Kai@Example.net ", "kai@example.net", "noa@example.net"]);
+    const [first, second, other] = [...container.querySelectorAll("svg")];
+    expect(first).toBeDefined();
+    expect(first!.outerHTML).toBe(second!.outerHTML);
+    expect(other!.outerHTML).not.toBe(first!.outerHTML);
+    expect(container.textContent).toBe("");
+    await waitFor(() => expect(fake.getSenderPicture).toHaveBeenCalledTimes(2));
+  });
+
   it("only asks for what the server has itself while sender pictures are off", async () => {
     useSettings.setState({ senderPictures: false });
     renderAvatars(new QueryClient(), ["mina@example.org"]);

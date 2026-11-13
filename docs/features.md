@@ -147,7 +147,9 @@ choice made on one device holds on all of them.
   small square that lives in the card. The own profile picture is set in the
   settings, for nobody, the people on the server, or everyone (Libravatar). Next
   to mail, a contact's photo or a person's own picture comes first, then a
-  company's logo; the server fetches them, never the browser.
+  company's logo; the server fetches them, never the browser. Without any, the
+  sender gets a blob ([blobatar](https://blobatar.dev), MIT) drawn in the
+  browser from the address, the same one as in the UwUMail app.
 
 ## Appointments in mail
 

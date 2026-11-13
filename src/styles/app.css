@@ -53,19 +53,6 @@
   --color-success-ink: var(--uwu-success-ink);
   --color-warning-ink: var(--uwu-warning-ink);
 
-  --color-avatar-pink: var(--uwu-avatar-pink);
-  --color-avatar-pink-ink: var(--uwu-avatar-pink-ink);
-  --color-avatar-violet: var(--uwu-avatar-violet);
-  --color-avatar-violet-ink: var(--uwu-avatar-violet-ink);
-  --color-avatar-sky: var(--uwu-avatar-sky);
-  --color-avatar-sky-ink: var(--uwu-avatar-sky-ink);
-  --color-avatar-mint: var(--uwu-avatar-mint);
-  --color-avatar-mint-ink: var(--uwu-avatar-mint-ink);
-  --color-avatar-amber: var(--uwu-avatar-amber);
-  --color-avatar-amber-ink: var(--uwu-avatar-amber-ink);
-  --color-avatar-coral: var(--uwu-avatar-coral);
-  --color-avatar-coral-ink: var(--uwu-avatar-coral-ink);
-
   --shadow-float: var(--uwu-shadow-float);
   --shadow-focus: var(--uwu-focus);
   --shadow-primary: var(--uwu-shadow-primary);
