@@ -63,20 +63,6 @@
   --uwu-account-amber: #f59e0b;
   --uwu-account-coral: #f97360;
 
-  /* Avatars and account chips: a tint with readable initials per account colour. */
-  --uwu-avatar-pink: #ffe4ef;
-  --uwu-avatar-pink-ink: #a3154f;
-  --uwu-avatar-violet: #ede5ff;
-  --uwu-avatar-violet-ink: #5b32c7;
-  --uwu-avatar-sky: #dff3fc;
-  --uwu-avatar-sky-ink: #0b6591;
-  --uwu-avatar-mint: #d8f5e8;
-  --uwu-avatar-mint-ink: #0b6e4c;
-  --uwu-avatar-amber: #fdf0d6;
-  --uwu-avatar-amber-ink: #8a5606;
-  --uwu-avatar-coral: #fde6e2;
-  --uwu-avatar-coral-ink: #a8392a;
-
   /* The toast is inverted: dark on a light app, light on a dark app. */
   --uwu-toast: #1c1420;
   --uwu-toast-ink: #ffffff;
@@ -318,19 +304,6 @@
   --uwu-warning-ink: #d8a25c;
   --uwu-warning-tint: #3a2a0c;
   --uwu-offline: #6d6474;
-
-  --uwu-avatar-pink: #3a1a2a;
-  --uwu-avatar-pink-ink: #ffa3c4;
-  --uwu-avatar-violet: #2a2142;
-  --uwu-avatar-violet-ink: #c4b1ff;
-  --uwu-avatar-sky: #10293a;
-  --uwu-avatar-sky-ink: #8fd6f8;
-  --uwu-avatar-mint: #123a2a;
-  --uwu-avatar-mint-ink: #6ee7b7;
-  --uwu-avatar-amber: #3a2a0c;
-  --uwu-avatar-amber-ink: #f5c453;
-  --uwu-avatar-coral: #3d1d18;
-  --uwu-avatar-coral-ink: #ffab9d;
 
   --uwu-toast: #f8f2f6;
   --uwu-toast-ink: #1c1420;

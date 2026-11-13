@@ -1,41 +1,17 @@
+import { Blobatar } from "@blobatar/react";
 import clsx from "clsx";
 import { useState } from "react";
 import type { AccountColor, Address } from "@/backend/types";
-import { colorFor, initials } from "@/lib/format";
 import { cachedLook, lookOfImage } from "@/lib/pictureLook";
 import { useSenderPicture } from "@/lib/queries";
 
-export const COLOR_CLASSES: Record<AccountColor, { bg: string; text: string; dot: string }> = {
-  pink: {
-    bg: "bg-avatar-pink",
-    text: "text-avatar-pink-ink",
-    dot: "bg-[var(--uwu-account-pink)]",
-  },
-  violet: {
-    bg: "bg-avatar-violet",
-    text: "text-avatar-violet-ink",
-    dot: "bg-[var(--uwu-account-violet)]",
-  },
-  sky: {
-    bg: "bg-avatar-sky",
-    text: "text-avatar-sky-ink",
-    dot: "bg-[var(--uwu-account-sky)]",
-  },
-  mint: {
-    bg: "bg-avatar-mint",
-    text: "text-avatar-mint-ink",
-    dot: "bg-[var(--uwu-account-mint)]",
-  },
-  amber: {
-    bg: "bg-avatar-amber",
-    text: "text-avatar-amber-ink",
-    dot: "bg-[var(--uwu-account-amber)]",
-  },
-  coral: {
-    bg: "bg-avatar-coral",
-    text: "text-avatar-coral-ink",
-    dot: "bg-[var(--uwu-account-coral)]",
-  },
+const DOTS: Record<AccountColor, string> = {
+  pink: "bg-[var(--uwu-account-pink)]",
+  violet: "bg-[var(--uwu-account-violet)]",
+  sky: "bg-[var(--uwu-account-sky)]",
+  mint: "bg-[var(--uwu-account-mint)]",
+  amber: "bg-[var(--uwu-account-amber)]",
+  coral: "bg-[var(--uwu-account-coral)]",
 };
 
 interface AvatarProps {
@@ -45,7 +21,6 @@ interface AvatarProps {
 }
 
 export function Avatar({ address, size = "md", className }: AvatarProps) {
-  const color = COLOR_CLASSES[colorFor(address.email)];
   const picture = useSenderPicture(address.email);
   const [loaded, setLoaded] = useState<string | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
@@ -64,18 +39,20 @@ export function Avatar({ address, size = "md", className }: AvatarProps) {
     <span
       aria-hidden
       className={clsx(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold",
-        // Initials wait underneath until the picture is there, and come back if it can't load.
-        !ready && [color.bg, color.text],
-        size === "xs" && "size-5 text-badge",
-        size === "list" && "size-9 text-caption",
-        size === "sm" && "size-7 text-badge",
-        size === "md" && "size-10 text-meta",
-        size === "lg" && "size-12 text-reading",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full",
+        size === "xs" && "size-5",
+        size === "list" && "size-9",
+        size === "sm" && "size-7",
+        size === "md" && "size-10",
+        size === "lg" && "size-12",
         className,
       )}
     >
-      {!ready && initials(address)}
+      {/* The blob (blobatar.dev) waits underneath until the picture is there, and comes back if it
+          can't load. Same seed as the app's, so a person looks the same in both. */}
+      {!ready && (
+        <Blobatar aria-hidden="true" animate="hover" className="size-full" name={address.email.trim().toLowerCase()} />
+      )}
       {shown && (
         <span
           className={clsx(
@@ -109,10 +86,5 @@ export function Avatar({ address, size = "md", className }: AvatarProps) {
 }
 
 export function AccountDot({ color, className }: { color: AccountColor; className?: string }) {
-  return (
-    <span
-      aria-hidden
-      className={clsx("inline-block size-2 shrink-0 rounded-full", COLOR_CLASSES[color].dot, className)}
-    />
-  );
+  return <span aria-hidden className={clsx("inline-block size-2 shrink-0 rounded-full", DOTS[color], className)} />;
 }

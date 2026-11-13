@@ -78,6 +78,6 @@ describe("a contact's picture", () => {
     const { container } = renderAvatar("https://photos.example.org/gone.jpg");
     fireEvent.error(container.querySelector("img")!);
     expect(container.querySelector("img[src^='/jmap/image']")).toBeNull();
-    expect(container.textContent).toContain("MS");
+    expect(container.querySelector("svg")).not.toBeNull();
   });
 });
