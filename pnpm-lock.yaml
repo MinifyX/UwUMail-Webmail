@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@blobatar/react':
-        specifier: 2.7.0
-        version: 2.7.0(blobatar@2.7.0(react@19.3.0))(react@19.3.0)
       '@fontsource-variable/dm-sans':
         specifier: ^5.3.0
         version: 5.3.0
@@ -23,9 +20,6 @@ importers:
       '@uwusuite/design':
         specifier: https://github.com/MinifyX/UwUSuite-Design/releases/download/v1.14.0/uwusuite-design-1.14.0.tgz
         version: https://github.com/MinifyX/UwUSuite-Design/releases/download/v1.14.0/uwusuite-design-1.14.0.tgz(lucide-react@1.47.0(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(tailwindcss@4.3.3)
-      blobatar:
-        specifier: 2.7.0
-        version: 2.7.0(react@19.3.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
