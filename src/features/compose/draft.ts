@@ -56,10 +56,13 @@ export function forwardedAttachments(source: Message): OutgoingAttachment[] {
 }
 
 export function replyFrom(source: Message, identities: Identity[]): string {
+  const own = identities.filter((i) => i.accountId === source.accountId && !i.primary);
+  // My own mail (from Sent) is answered from the alias it went out from.
+  const sender = source.from.email.toLowerCase();
+  const sentFrom = own.find((i) => i.email.toLowerCase() === sender);
+  if (sentFrom) return sentFrom.email;
   const addressed = new Set([...source.to, ...source.cc].map((a) => a.email.toLowerCase()));
-  const match = identities.find(
-    (i) => i.accountId === source.accountId && !i.primary && addressed.has(i.email.toLowerCase()),
-  );
+  const match = own.find((i) => addressed.has(i.email.toLowerCase()));
   return match?.email ?? "";
 }
 
