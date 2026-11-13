@@ -1,4 +1,4 @@
-import { Building2 } from "lucide-react";
+import { ICONS } from "@uwusuite/design";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import { Button } from "@/components/ui/Button";
@@ -58,7 +58,7 @@ export function ContactPictureField({
       onRemove={() => onChange(null)}
       extra={(open) =>
         domain && (
-          <Button size="sm" icon={Building2} busy={logoBusy} onClick={() => void takeLogo(open)}>
+          <Button size="sm" icon={ICONS.organization} busy={logoBusy} onClick={() => void takeLogo(open)}>
             {t("contacts.picture.logo")}
           </Button>
         )

@@ -1,4 +1,4 @@
-import { AlertTriangle, Route, ShieldOff } from "lucide-react";
+import { Icon, ICONS } from "@uwusuite/design";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
@@ -17,7 +17,7 @@ function StatusExtra({ check }: { check: LinkCheck }) {
   if (check.misleading) {
     return (
       <span className="flex shrink-0 items-center gap-1 font-bold">
-        <AlertTriangle className="size-3.5" aria-hidden />
+        <Icon icon={ICONS.warning} size="xs" />
         {t("link.otherTarget")}
       </span>
     );
@@ -27,7 +27,7 @@ function StatusExtra({ check }: { check: LinkCheck }) {
     if (!check.safeLink) return null;
     return (
       <span className="flex min-w-0 items-center gap-1 text-muted">
-        <ShieldOff className="size-3.5 shrink-0" aria-hidden />
+        <Icon icon={ICONS.securityOff} size="xs" className="shrink-0" />
         <span className="truncate">{t("link.safeLink")}</span>
       </span>
     );
@@ -39,7 +39,7 @@ function StatusExtra({ check }: { check: LinkCheck }) {
       });
   return (
     <span className="flex min-w-0 items-center gap-1 text-muted">
-      <Route className="size-3.5 shrink-0" aria-hidden />
+      <Icon icon={ICONS.redirect} size="xs" className="shrink-0" />
       <span className="truncate">{text}</span>
     </span>
   );

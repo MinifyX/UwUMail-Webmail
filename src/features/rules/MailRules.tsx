@@ -1,5 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { ArrowDown, ArrowUp, CircleAlert, Pencil, Plus, Trash } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { backend } from "@/backend/backend";
 import { Button, IconButton } from "@/components/ui/Button";
@@ -145,7 +145,7 @@ function AccountRules({ accountId }: { accountId: string }) {
         exists &&
         !active && (
           <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-meta">
-            <CircleAlert className="size-4 shrink-0 text-warning" aria-hidden />
+            <Icon icon={ICONS.warning} className="shrink-0 text-warning" />
             <span className="min-w-0 flex-1">{t("rules.inactive")}</span>
             <Button size="sm" busy={saving} onClick={() => void save(set)}>
               {t("rules.activate")}
@@ -177,28 +177,28 @@ function AccountRules({ accountId }: { accountId: string }) {
                 <RuleSummary rule={rule} />
               </button>
               <IconButton
-                icon={ArrowUp}
+                icon={ICONS.moveUp}
                 size="sm"
                 label={t("rules.moveUp", { name: rule.name })}
                 disabled={saving || locked || index === 0}
                 onClick={() => move(index, -1)}
               />
               <IconButton
-                icon={ArrowDown}
+                icon={ICONS.moveDown}
                 size="sm"
                 label={t("rules.moveDown", { name: rule.name })}
                 disabled={saving || locked || index === set.rules.length - 1}
                 onClick={() => move(index, 1)}
               />
               <IconButton
-                icon={Pencil}
+                icon={ICONS.edit}
                 size="sm"
                 label={t("rules.editRule", { name: rule.name })}
                 disabled={locked}
                 onClick={() => setEditing({ rule, index })}
               />
               <IconButton
-                icon={Trash}
+                icon={ICONS.delete}
                 size="sm"
                 label={t("rules.deleteRule", { name: rule.name })}
                 disabled={saving || locked}
@@ -209,7 +209,7 @@ function AccountRules({ accountId }: { accountId: string }) {
         </ol>
       )}
       <Button
-        icon={Plus}
+        icon={ICONS.add}
         className="self-start"
         disabled={locked}
         onClick={() => setEditing({ rule: newRule(), index: null })}
@@ -265,7 +265,7 @@ function OtherScriptNote({ name, children }: { name: string; children?: ReactNod
   const { t } = useT();
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-meta">
-      <CircleAlert className="size-4 shrink-0 text-warning" aria-hidden />
+      <Icon icon={ICONS.warning} className="shrink-0 text-warning" />
       <span className="min-w-0 flex-1">
         {name.trim() ? t("rules.otherActive", { name: name.trim() }) : t("rules.otherActiveUnnamed")}
       </span>
@@ -312,7 +312,7 @@ function ForeignScript({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-2 rounded-2xl bg-warning-tint px-4 py-3 text-meta">
-        <CircleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+        <Icon icon={ICONS.warning} className="mt-0.5 shrink-0 text-warning" />
         <div>
           <p className="font-semibold">{t("rules.foreignTitle")}</p>
           <p className="text-muted">{t("rules.foreignBody")}</p>

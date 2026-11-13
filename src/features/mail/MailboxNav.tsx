@@ -1,15 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import {
-  ChevronDown,
-  ChevronRight,
-  CircleAlert,
-  Ellipsis,
-  FolderOpen,
-  FolderPlus,
-  LoaderCircle,
-  Users,
-  WifiOff,
-} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -57,7 +47,7 @@ interface NavItemProps {
   menu?: { label: string; items: MenuItem[] };
 }
 
-function NavItem({ icon: Icon, label, count, active, onClick, title, menu }: NavItemProps) {
+function NavItem({ icon: Glyph, label, count, active, onClick, title, menu }: NavItemProps) {
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const button = (
     <button
@@ -70,7 +60,7 @@ function NavItem({ icon: Icon, label, count, active, onClick, title, menu }: Nav
         active ? "bg-pink-tint font-semibold text-pink-ink" : "text-ink/85 hover:bg-pink-tint/50",
       )}
     >
-      <Icon className={clsx("size-[18px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
+      <Icon icon={Glyph} className={clsx("size-[18px] shrink-0", active ? "text-pink" : "text-muted")} />
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {count !== undefined && count > 0 && (
         <Badge count={count} className={clsx(menu && menuAt === null && "pointer-fine:group-hover:invisible")} />
@@ -123,17 +113,15 @@ function MoreButton({
         open ? "opacity-100" : "opacity-0 group-hover:opacity-100",
       )}
     >
-      <Ellipsis className="size-4" aria-hidden />
+      <Icon icon={ICONS.more} />
     </button>
   );
 }
 
 const INDENT = 16;
 
-function Glyph({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) {
-  return (
-    <Icon className={clsx("size-[18px] shrink-0", active ? "text-pink" : "text-muted")} strokeWidth={2} aria-hidden />
-  );
+function NavGlyph({ icon: Glyph, active }: { icon: LucideIcon; active: boolean }) {
+  return <Icon icon={Glyph} className={clsx("size-[18px] shrink-0", active ? "text-pink" : "text-muted")} />;
 }
 
 /**
@@ -240,7 +228,7 @@ function FolderItem({ node, accountId, owner }: { node: FolderNode; accountId: s
   const hasChildren = children.length > 0;
   const target: MailboxView = { kind: "folder", accountId, folderId: folder.id };
   const active = sameView(view, target);
-  const icon = folder.selectable ? folderIcon(folder) : FolderOpen;
+  const icon = folder.selectable ? folderIcon(folder) : ICONS.folderOpen;
   // A collapsed folder also shows what's unread inside it.
   const count = hasChildren && collapsed ? node.unreadInside : countsUnread(folder) ? folder.unread : 0;
   const label = folderLabel(folder, t);
@@ -342,11 +330,7 @@ function FolderItem({ node, accountId, owner }: { node: FolderNode; accountId: s
             title={t("nav.toggleFolder", { name: label })}
             className="grid size-5 shrink-0 place-items-center rounded-md text-muted hover:bg-pink-tint-strong hover:text-ink"
           >
-            {collapsed ? (
-              <ChevronRight className="size-3.5" aria-hidden />
-            ) : (
-              <ChevronDown className="size-3.5" aria-hidden />
-            )}
+            {collapsed ? <Icon icon={ICONS.next} size="xs" /> : <Icon icon={ICONS.expand} size="xs" />}
           </button>
         ) : (
           <span className="size-5 shrink-0" aria-hidden />
@@ -357,11 +341,13 @@ function FolderItem({ node, accountId, owner }: { node: FolderNode; accountId: s
           aria-current={active ? "page" : undefined}
           className="flex h-full min-w-0 flex-1 items-center gap-2.5 pr-3 pl-1 text-left text-body"
         >
-          <Glyph icon={icon} active={active} />
+          <NavGlyph icon={icon} active={active} />
           <span className="min-w-0 flex-1 truncate">{label}</span>
           {sharedCount > 0 && (
-            <Users
-              className="size-3.5 shrink-0 text-muted"
+            <Icon
+              icon={ICONS.people}
+              size="xs"
+              className="shrink-0 text-muted"
               aria-label={t("sharing.sharedWithCount", { count: sharedCount })}
             />
           )}
@@ -510,14 +496,18 @@ function AccountSection({
           <AccountDot color={account.color} />
           <span className="min-w-0 flex-1 truncate text-left tracking-normal normal-case">{account.email}</span>
           {status.state === "syncing" && (
-            <LoaderCircle className="size-3.5 animate-spin text-pink" aria-label={statusLabel} />
+            <Icon icon={ICONS.loading} size="xs" className="animate-spin text-pink" aria-label={statusLabel} />
           )}
-          {status.state === "offline" && <WifiOff className="size-3.5 text-warning" aria-label={statusLabel} />}
-          {status.state === "error" && <CircleAlert className="size-3.5 text-danger" aria-label={statusLabel} />}
-          <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
+          {status.state === "offline" && (
+            <Icon icon={ICONS.offline} size="xs" className="text-warning" aria-label={statusLabel} />
+          )}
+          {status.state === "error" && (
+            <Icon icon={ICONS.error} size="xs" className="text-danger" aria-label={statusLabel} />
+          )}
+          <Icon icon={ICONS.expand} className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} />
         </button>
         <IconButton
-          icon={FolderPlus}
+          icon={ICONS.newFolder}
           size="sm"
           label={t("folders.new")}
           onClick={() => openFolderDialog({ kind: "create", accountId: account.id, parent: null })}
@@ -585,10 +575,10 @@ function SharedSection({
           title={owner.email}
           className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-caption font-bold text-muted hover:text-ink"
         >
-          <Users className="size-3.5 shrink-0" aria-hidden />
+          <Icon icon={ICONS.people} size="xs" className="shrink-0" />
           <span className="min-w-0 flex-1 truncate text-left">{title}</span>
           {owner.readOnly && <span className="shrink-0 text-badge font-semibold">{t("sharing.readOnlyShort")}</span>}
-          <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
+          <Icon icon={ICONS.expand} className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} />
         </button>
         {menuItems.length > 0 && (
           <MoreButton

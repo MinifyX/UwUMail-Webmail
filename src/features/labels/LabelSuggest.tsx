@@ -1,6 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Check, Plus, RotateCcw, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AssistLabel, LabelSuggestions, LabelVerdict, NewLabelSuggestion } from "@/backend/types";
@@ -64,7 +64,7 @@ export function SuggestBody({ emailId, onClose }: { emailId: string; onClose: ()
           <Button variant="ghost" onClick={onClose}>
             {t("common.close")}
           </Button>
-          <Button icon={RotateCcw} onClick={() => void query.refetch()}>
+          <Button icon={ICONS.refresh} onClick={() => void query.refetch()}>
             {t("labels.suggest.retry")}
           </Button>
         </div>
@@ -132,7 +132,7 @@ function Verdicts({
       {result.newLabels.length > 0 && (
         <section className="flex flex-col gap-2" aria-labelledby="label-suggest-new">
           <h3 id="label-suggest-new" className="flex items-center gap-1.5 text-meta font-bold">
-            <Sparkles className="size-4 text-pink" aria-hidden />
+            <Icon icon={ICONS.ai} className="text-pink" />
             {t("labels.suggest.newTitle")}
           </h3>
           {result.newLabels.map((suggestion) => (
@@ -146,7 +146,13 @@ function Verdicts({
         <Button variant="ghost" onClick={onClose}>
           {t("common.cancel")}
         </Button>
-        <Button variant="primary" icon={Check} busy={busy} disabled={known.length === 0} onClick={() => void apply()}>
+        <Button
+          variant="primary"
+          icon={ICONS.done}
+          busy={busy}
+          disabled={known.length === 0}
+          onClick={() => void apply()}
+        >
           {changeCount > 0 ? t("labels.suggest.apply", { count: changeCount }) : t("labels.suggest.keep")}
         </Button>
       </div>
@@ -253,13 +259,13 @@ function NewLabelCard({
         <span className="flex-1" />
         {state === "done" || taken ? (
           <span className="flex items-center gap-1 text-caption font-semibold text-success">
-            <Check className="size-3.5" aria-hidden />
+            <Icon icon={ICONS.done} size="xs" />
             {state === "done" ? t("labels.suggest.createdShort") : t("labels.suggest.exists")}
           </span>
         ) : (
           <Button
             size="sm"
-            icon={Plus}
+            icon={ICONS.add}
             busy={state === "busy"}
             onClick={() => void create()}
             aria-label={t("labels.suggest.createNamed", { name: suggestion.name })}

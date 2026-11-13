@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { ICONS } from "@uwusuite/design";
 import { useId, useState } from "react";
 import type { BirthdayReminder } from "@/backend/types";
 import { IconButton } from "@/components/ui/Button";
@@ -120,7 +120,12 @@ export function DayField({
           className="w-36"
         />
         {(parts.day || parts.month || parts.year) && (
-          <IconButton icon={X} size="sm" label={clearLabel} onClick={() => change({ day: "", month: "", year: "" })} />
+          <IconButton
+            icon={ICONS.close}
+            size="sm"
+            label={clearLabel}
+            onClick={() => change({ day: "", month: "", year: "" })}
+          />
         )}
       </div>
       {invalid ? (

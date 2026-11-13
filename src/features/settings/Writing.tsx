@@ -1,4 +1,4 @@
-import { SlidersHorizontal } from "lucide-react";
+import { ICONS } from "@uwusuite/design";
 import { PORTAL_URL } from "@/backend/server";
 import { Button } from "@/components/ui/Button";
 import { Segmented, Toggle } from "@/components/ui/Field";
@@ -65,7 +65,7 @@ function Senders() {
       <Button
         size="sm"
         variant="ghost"
-        icon={SlidersHorizontal}
+        icon={ICONS.adjust}
         className="self-start"
         onClick={() => window.location.assign(`${PORTAL_URL}account/addresses`)}
       >

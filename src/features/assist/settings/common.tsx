@@ -1,6 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Info, TriangleAlert } from "lucide-react";
 import { useId, useState, type ReactNode } from "react";
 import { backend } from "@/backend/backend";
 import { TextInput } from "@/components/ui/Field";
@@ -33,7 +33,7 @@ export function Section({
 
 /** A quiet note, or a warning. */
 export function Note({ tone = "info", children }: { tone?: "info" | "warning"; children: ReactNode }) {
-  const Icon = tone === "warning" ? TriangleAlert : Info;
+  const Glyph = tone === "warning" ? ICONS.warning : ICONS.info;
   return (
     <div
       className={clsx(
@@ -41,7 +41,7 @@ export function Note({ tone = "info", children }: { tone?: "info" | "warning"; c
         tone === "warning" ? "bg-warning-tint text-warning" : "bg-canvas text-muted",
       )}
     >
-      <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />
+      <Icon icon={Glyph} className="mt-0.5 shrink-0" />
       <div className="min-w-0">{children}</div>
     </div>
   );

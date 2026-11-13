@@ -1,6 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Cake, Trash, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { BirthdayCandidate, BirthdayImportEntry, ContactRecord } from "@/backend/types";
@@ -68,7 +68,7 @@ export function BirthdayHint({ onOpen }: { onOpen: () => void }) {
       className="relative flex flex-col gap-2 rounded-2xl border border-line bg-pink-tint/35 px-3.5 pt-3 pb-3"
     >
       <IconButton
-        icon={X}
+        icon={ICONS.close}
         size="sm"
         label={t("calendar.birthdays.hintDismiss")}
         className="absolute top-1.5 right-1.5 size-7"
@@ -78,7 +78,7 @@ export function BirthdayHint({ onOpen }: { onOpen: () => void }) {
         }}
       />
       <p className="flex items-center gap-2 pr-7 text-meta font-bold">
-        <Cake className="size-4 shrink-0 text-pink-ink" aria-hidden />
+        <Icon icon={ICONS.birthday} className="shrink-0 text-pink-ink" />
         {t("calendar.birthdays.hintTitle", { count: open.length })}
       </p>
       <p className="text-meta text-muted">{t("calendar.birthdays.hintBody")}</p>
@@ -283,7 +283,7 @@ function ImportBody({ onClose }: { onClose: () => void }) {
       <div className="flex flex-col gap-3 border-t border-hairline pt-4">
         {deleting > 0 && (
           <p role="note" className="flex gap-2 text-meta font-semibold text-danger">
-            <Trash className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <Icon icon={ICONS.delete} className="mt-0.5 shrink-0" />
             {t("calendar.birthdays.deleteWarning", { count: deleting })}
           </p>
         )}
@@ -307,7 +307,7 @@ function EventFate({ candidate }: { candidate: BirthdayCandidate }) {
   const { t } = useT();
   return candidate.mayDeleteEvent ? (
     <span className="mt-1 flex items-center gap-1.5 text-caption font-semibold text-danger">
-      <Trash className="size-3.5 shrink-0" aria-hidden />
+      <Icon icon={ICONS.delete} size="xs" className="shrink-0" />
       {t("calendar.birthdays.willDelete")}
     </span>
   ) : (
@@ -362,7 +362,7 @@ function UnclearEntry({
     <li className="flex flex-col gap-2.5 rounded-2xl border border-line px-3.5 py-3">
       <div className="text-body">
         <span className="flex items-center gap-1.5 font-semibold break-words">
-          <Cake className="size-3.5 shrink-0 text-muted" aria-hidden />
+          <Icon icon={ICONS.birthday} size="xs" className="shrink-0 text-muted" />
           {candidate.title} · {date(candidate.birthday)}
         </span>
         <span className="block text-meta text-muted">{why}</span>

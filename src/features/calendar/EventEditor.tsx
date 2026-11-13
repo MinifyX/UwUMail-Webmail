@@ -1,5 +1,5 @@
+import { ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { Trash } from "lucide-react";
 import { useState } from "react";
 import type { CalendarOccurrence, EventInput, Recurrence, Weekday } from "@/backend/types";
 import { Button } from "@/components/ui/Button";
@@ -418,7 +418,7 @@ function EditorDialog({ request, onClose }: { request: EditorRequest | null; onC
             {occurrence && !occurrence.readOnly && (
               <Button
                 variant="danger"
-                icon={Trash}
+                icon={ICONS.delete}
                 onClick={() =>
                   void actions.remove(occurrence).then((removed) => {
                     if (removed) onClose();

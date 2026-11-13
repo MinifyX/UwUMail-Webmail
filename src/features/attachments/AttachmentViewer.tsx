@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Download, ShieldAlert, X } from "lucide-react";
+import { Icon, ICONS } from "@uwusuite/design";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Address, Attachment } from "@/backend/types";
@@ -80,20 +80,20 @@ function ViewerBody({ attachments, index, sender, onIndexChange }: AttachmentVie
         </div>
         {count > 1 && (
           <>
-            <IconButton icon={ChevronLeft} label={t("attachment.previous")} onClick={() => go(-1)} />
-            <IconButton icon={ChevronRight} label={t("attachment.next")} onClick={() => go(1)} />
+            <IconButton icon={ICONS.previous} label={t("attachment.previous")} onClick={() => go(-1)} />
+            <IconButton icon={ICONS.next} label={t("attachment.next")} onClick={() => go(1)} />
           </>
         )}
-        <Button icon={Download} size="sm" busy={busy === "save"} onClick={() => void run("save")}>
+        <Button icon={ICONS.download} size="sm" busy={busy === "save"} onClick={() => void run("save")}>
           {t("attachment.save")}
         </Button>
-        <IconButton icon={X} label={t("common.close")} onClick={() => onIndexChange(null)} />
+        <IconButton icon={ICONS.close} label={t("common.close")} onClick={() => onIndexChange(null)} />
       </header>
 
       {dangerous && (
         <div role="note" className="border-b border-danger/30 bg-danger-tint px-5 py-3 text-danger">
           <p className="flex items-center gap-2 text-body font-bold">
-            <ShieldAlert className="size-5 shrink-0" aria-hidden />
+            <Icon icon={ICONS.warning} size="lg" className="shrink-0" />
             {t("attachment.dangerTitle")}
           </p>
           <p className="pt-1 pl-7 text-meta">

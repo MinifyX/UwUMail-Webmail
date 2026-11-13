@@ -1,5 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
-import { Clock, PenLine, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { backend, BackendError } from "@/backend/backend";
 import type { ScheduledSend } from "@/backend/types";
@@ -31,7 +31,7 @@ export function ScheduledNavItem() {
         onClick={() => setOpen(true)}
         className="group flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-body text-ink/85 transition-colors hover:bg-pink-tint/50"
       >
-        <Clock className="size-[18px] shrink-0 text-muted" strokeWidth={2} aria-hidden />
+        <Icon icon={ICONS.sendLater} size="md" className="shrink-0 text-muted" />
         <span className="min-w-0 flex-1 truncate">{t("nav.scheduled")}</span>
         <Badge count={later.length} />
       </button>
@@ -78,14 +78,14 @@ function ScheduledList({ sends, onEdit }: { sends: ScheduledSend[]; onEdit: () =
                 {t("scheduled.to", { names: entry.to.map(displayName).join(", ") })}
               </p>
               <p className="mt-1 flex items-center gap-1.5 text-meta font-semibold text-pink-ink">
-                <Clock className="size-3.5" aria-hidden />
+                <Icon icon={ICONS.time} size="xs" />
                 {new Date(entry.sendAt).toLocaleString(i18n.language, { dateStyle: "full", timeStyle: "short" })}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
-                icon={PenLine}
+                icon={ICONS.edit}
                 disabled={busy !== null}
                 onClick={() => {
                   onEdit();
@@ -97,7 +97,7 @@ function ScheduledList({ sends, onEdit }: { sends: ScheduledSend[]; onEdit: () =
               <Button
                 size="sm"
                 variant="ghost"
-                icon={Undo2}
+                icon={ICONS.undo}
                 busy={busy === entry.id}
                 disabled={busy !== null}
                 onClick={() => void stop(entry)}

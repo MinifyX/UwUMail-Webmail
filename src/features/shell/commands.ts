@@ -1,32 +1,5 @@
+import { ICONS } from "@uwusuite/design";
 import type { LucideIcon } from "lucide-react";
-import {
-  AlarmClock,
-  Archive,
-  CalendarDays,
-  CalendarPlus,
-  CheckCheck,
-  CheckSquare,
-  FolderInput,
-  Forward,
-  Keyboard,
-  ListChecks,
-  Mailbox,
-  MailOpen,
-  Moon,
-  PenLine,
-  Reply,
-  ReplyAll,
-  Search,
-  Settings,
-  ShieldAlert,
-  Sparkles,
-  Star,
-  Tag,
-  Trash,
-  Undo2,
-  UserPlus,
-  UsersRound,
-} from "lucide-react";
 import { backend } from "@/backend/backend";
 import { playNyu } from "@/components/nyu/cameo";
 import { i18n } from "@/i18n";
@@ -93,21 +66,21 @@ export function buildCommands(
     {
       id: "compose",
       title: t("shortcuts.compose"),
-      icon: PenLine,
+      icon: ICONS.compose,
       keys: ["c"],
       run: () => ui.openCompose({ mode: "new" }),
     },
     {
       id: "search",
       title: t("shortcuts.search"),
-      icon: Search,
+      icon: ICONS.search,
       keys: ["/"],
       run: focusSearch,
     },
     {
       id: "reply",
       title: t("shortcuts.reply"),
-      icon: Reply,
+      icon: ICONS.reply,
       keys: ["r"],
       needsThread: true,
       run: withThread((thread) => ui.openCompose({ mode: "reply", source: replySource(thread.messages) })),
@@ -115,7 +88,7 @@ export function buildCommands(
     {
       id: "replyAll",
       title: t("shortcuts.replyAll"),
-      icon: ReplyAll,
+      icon: ICONS.replyAll,
       keys: ["a"],
       needsThread: true,
       run: withThread((thread) => ui.openCompose({ mode: "replyAll", source: replySource(thread.messages) })),
@@ -123,7 +96,7 @@ export function buildCommands(
     {
       id: "forward",
       title: t("shortcuts.forward"),
-      icon: Forward,
+      icon: ICONS.forward,
       keys: ["f"],
       needsThread: true,
       run: withThread((thread) => ui.openCompose({ mode: "forward", source: replySource(thread.messages) })),
@@ -131,7 +104,7 @@ export function buildCommands(
     {
       id: "archive",
       title: t("shortcuts.archive"),
-      icon: Archive,
+      icon: ICONS.archive,
       keys: ["e"],
       needsThread: true,
       run: withThread(async (thread) => {
@@ -144,7 +117,7 @@ export function buildCommands(
     {
       id: "trash",
       title: t("shortcuts.trash"),
-      icon: Trash,
+      icon: ICONS.delete,
       keys: ["#", "Delete"],
       needsThread: true,
       // In the trash this deletes for good, after Nyu asked.
@@ -155,7 +128,7 @@ export function buildCommands(
     {
       id: "move",
       title: t("shortcuts.move"),
-      icon: FolderInput,
+      icon: ICONS.move,
       keys: ["v"],
       needsThread: true,
       run: withThread((thread) => requestMove(thread.messages, () => ui.selectThread(null))),
@@ -163,7 +136,7 @@ export function buildCommands(
     {
       id: "snooze",
       title: t("shortcuts.snooze"),
-      icon: AlarmClock,
+      icon: ICONS.reminder,
       keys: ["b"],
       needsThread: true,
       run: withThread((thread) => requestSnooze(thread.messages, () => ui.selectThread(null))),
@@ -171,7 +144,7 @@ export function buildCommands(
     {
       id: "spam",
       title: t("shortcuts.spam"),
-      icon: ShieldAlert,
+      icon: ICONS.spam,
       keys: ["!"],
       needsThread: true,
       run: withThread(async (thread) => {
@@ -183,7 +156,7 @@ export function buildCommands(
     {
       id: "select",
       title: t("shortcuts.select"),
-      icon: CheckSquare,
+      icon: ICONS.select,
       keys: ["x"],
       needsThread: true,
       run: () => {
@@ -199,7 +172,7 @@ export function buildCommands(
     {
       id: "selectAll",
       title: t("shortcuts.selectAll"),
-      icon: ListChecks,
+      icon: ICONS.review,
       // The shell only takes Ctrl+A where no text is meant; see MailShell.
       keys: ["mod+a"],
       run: () => useUi.getState().checkAllVisible(),
@@ -209,7 +182,7 @@ export function buildCommands(
           {
             id: "label",
             title: t("shortcuts.label"),
-            icon: Tag,
+            icon: ICONS.label,
             keys: ["l"],
             needsThread: true,
             // The ticked conversations, or else the open one.
@@ -225,14 +198,14 @@ export function buildCommands(
     {
       id: "markAllRead",
       title: t("shortcuts.markAllRead"),
-      icon: CheckCheck,
+      icon: ICONS.selectAll,
       keys: ["shift+i"],
       run: () => markAllRead(client, viewScope(client, useUi.getState().view)),
     },
     {
       id: "undo",
       title: t("shortcuts.undo"),
-      icon: Undo2,
+      icon: ICONS.undo,
       keys: ["z"],
       run: () => {
         runLastUndo();
@@ -241,7 +214,7 @@ export function buildCommands(
     {
       id: "flag",
       title: t("shortcuts.flag"),
-      icon: Star,
+      icon: ICONS.favorite,
       keys: ["s"],
       needsThread: true,
       run: withThread(async (thread) => {
@@ -252,7 +225,7 @@ export function buildCommands(
     {
       id: "unread",
       title: t("shortcuts.unread"),
-      icon: MailOpen,
+      icon: ICONS.unread,
       keys: ["u"],
       needsThread: true,
       run: withThread(async (thread) => {
@@ -264,28 +237,28 @@ export function buildCommands(
     {
       id: "inbox",
       title: t("shortcuts.goInbox"),
-      icon: Mailbox,
+      icon: ICONS.allMailboxes,
       keys: ["g i"],
       run: () => ui.setView({ kind: "unified", role: "inbox" }),
     },
     {
       id: "goSent",
       title: t("shortcuts.goSent"),
-      icon: Mailbox,
+      icon: ICONS.allMailboxes,
       keys: ["g s"],
       run: () => ui.setView({ kind: "unified", role: "sent" }),
     },
     {
       id: "goDrafts",
       title: t("shortcuts.goDrafts"),
-      icon: Mailbox,
+      icon: ICONS.allMailboxes,
       keys: ["g d"],
       run: () => ui.setView({ kind: "unified", role: "drafts" }),
     },
     {
       id: "goFlagged",
       title: t("shortcuts.goFlagged"),
-      icon: Star,
+      icon: ICONS.favorite,
       keys: ["g f"],
       run: () => ui.setView({ kind: "unified", role: "flagged" }),
     },
@@ -294,14 +267,14 @@ export function buildCommands(
           {
             id: "goCalendar",
             title: t("shortcuts.goCalendar"),
-            icon: CalendarDays,
+            icon: ICONS.calendar,
             keys: ["g c"],
             run: () => ui.setSection("calendar"),
           },
           {
             id: "newEvent",
             title: t("calendar.newEvent"),
-            icon: CalendarPlus,
+            icon: ICONS.addEvent,
             run: () => {
               ui.setSection("calendar");
               startNewEvent();
@@ -314,14 +287,14 @@ export function buildCommands(
           {
             id: "goContacts",
             title: t("shortcuts.goContacts"),
-            icon: UsersRound,
+            icon: ICONS.contacts,
             keys: ["g p"],
             run: () => ui.setSection("contacts"),
           },
           {
             id: "newContact",
             title: t("contacts.newContact"),
-            icon: UserPlus,
+            icon: ICONS.addContact,
             run: () => {
               ui.setSection("contacts");
               startNewContact();
@@ -332,20 +305,20 @@ export function buildCommands(
     {
       id: "tone",
       title: `${t("settings.tone")}: ${i18n.t(`tone.${settings.tone === "playful" ? "neutral" : "playful"}.name`)}`,
-      icon: Sparkles,
+      icon: ICONS.ai,
       run: () => settings.update({ tone: settings.tone === "playful" ? "neutral" : "playful" }),
     },
     {
       id: "theme",
       title: `${t("settings.theme")}: ${i18n.t(document.documentElement.dataset.theme === "dark" ? "theme.light" : "theme.dark")}`,
-      icon: Moon,
+      icon: ICONS.darkTheme,
       run: () => settings.update({ theme: document.documentElement.dataset.theme === "dark" ? "light" : "dark" }),
     },
-    { id: "settings", title: t("nav.settings"), icon: Settings, keys: ["mod+,"], run: () => ui.openSettings() },
+    { id: "settings", title: t("nav.settings"), icon: ICONS.settings, keys: ["mod+,"], run: () => ui.openSettings() },
     {
       id: "shortcuts",
       title: t("settings.shortcuts"),
-      icon: Keyboard,
+      icon: ICONS.keyboard,
       keys: ["?"],
       run: () => ui.setShortcutsOpen(true),
     },

@@ -1,5 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { AlertTriangle, Copy, LockOpen, Route, ShieldOff } from "lucide-react";
 import { useState, type KeyboardEvent } from "react";
 import type { Address } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
@@ -103,7 +103,7 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
             check.lookalike ? "bg-danger-tint text-danger" : "bg-canvas text-muted",
           )}
         >
-          {check.lookalike && <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />}
+          {check.lookalike && <Icon icon={ICONS.warning} className="mt-0.5 shrink-0" />}
           <span className="min-w-0">
             {t("link.unicodeHost")}:{" "}
             <span className={clsx("font-bold break-all", EXACT)}>{visibleText(check.unicodeHost)}</span>
@@ -112,12 +112,12 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
         </p>
       )}
       {check.userinfo && (
-        <Note tone="danger" icon={AlertTriangle}>
+        <Note tone="danger" icon={ICONS.warning}>
           {t("link.userinfo", { domain })}
         </Note>
       )}
       {check.insecure && (
-        <Note tone="warning" icon={LockOpen}>
+        <Note tone="warning" icon={ICONS.unlocked}>
           {t("link.insecure")}
         </Note>
       )}
@@ -126,7 +126,7 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
           className="flex w-full items-start gap-2 rounded-xl bg-canvas px-3 py-2 text-left text-meta text-muted"
           title={visibleText(check.safeLink)}
         >
-          <ShieldOff className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <Icon icon={ICONS.securityOff} className="mt-0.5 shrink-0" />
           <span className="min-w-0">
             <span className="font-semibold">{t("link.safeLink")}</span>
             {". "}
@@ -136,7 +136,7 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
       )}
       {redirect && (
         <div className="flex w-full items-start gap-2 rounded-xl bg-canvas px-3 py-2 text-left text-meta">
-          <Route className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
+          <Icon icon={ICONS.redirect} className="mt-0.5 shrink-0 text-muted" />
           <span className="flex min-w-0 flex-1 flex-col gap-1">
             {redirect.target && (
               <>
@@ -162,11 +162,11 @@ export function LinkFacts({ check }: { check: LinkCheck }) {
 
 function Note({
   tone,
-  icon: Icon,
+  icon: Glyph,
   children,
 }: {
   tone: "danger" | "warning";
-  icon: typeof AlertTriangle;
+  icon: typeof ICONS.warning;
   children: string;
 }) {
   return (
@@ -176,7 +176,7 @@ function Note({
         tone === "danger" ? "bg-danger-tint text-danger" : "bg-warning-tint text-warning",
       )}
     >
-      <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />
+      <Icon icon={Glyph} className="mt-0.5 shrink-0" />
       <span className="min-w-0">{children}</span>
     </p>
   );
@@ -304,7 +304,7 @@ function LinkQuestion({ check, onDone }: { check: LinkCheck; onDone: () => void 
           </>
         )}
         {!mail && (
-          <Button variant="ghost" icon={Copy} onClick={() => copyLink(check, t("link.copied"))}>
+          <Button variant="ghost" icon={ICONS.copy} onClick={() => copyLink(check, t("link.copied"))}>
             {t("link.copy")}
           </Button>
         )}

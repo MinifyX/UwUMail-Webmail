@@ -1,16 +1,4 @@
-import {
-  FileText,
-  Folder as FolderIcon,
-  Inbox,
-  Mailbox,
-  Send,
-  ShieldAlert,
-  Archive,
-  Trash,
-  Star,
-  MailOpen,
-  AlarmClock,
-} from "lucide-react";
+import { ICONS } from "@uwusuite/design";
 import type { LucideIcon } from "lucide-react";
 import type { Account, AssistLabel, Folder, FolderRole, MailboxView } from "@/backend/types";
 import { useT } from "@/i18n";
@@ -20,20 +8,20 @@ import { useAssistLabels } from "../assist/useAssist";
 import { folderRights, type MailRights } from "./rights";
 
 export const ROLE_ICONS: Record<FolderRole, LucideIcon> = {
-  inbox: Inbox,
-  drafts: FileText,
-  sent: Send,
-  archive: Archive,
-  junk: ShieldAlert,
-  trash: Trash,
+  inbox: ICONS.inbox,
+  drafts: ICONS.drafts,
+  sent: ICONS.send,
+  archive: ICONS.archive,
+  junk: ICONS.spam,
+  trash: ICONS.delete,
 };
 
 export const UNIFIED_ICONS = {
-  inbox: Mailbox,
-  unread: MailOpen,
-  flagged: Star,
-  drafts: FileText,
-  sent: Send,
+  inbox: ICONS.allMailboxes,
+  unread: ICONS.unread,
+  flagged: ICONS.favorite,
+  drafts: ICONS.drafts,
+  sent: ICONS.send,
 } as const;
 
 /** A folder's name as the app shows it: the roles and the Snoozed folder in the app's language. */
@@ -44,7 +32,7 @@ export function folderLabel(folder: Folder, t: (key: string) => string): string 
 
 export function folderIcon(folder: Folder): LucideIcon {
   if (folder.role) return ROLE_ICONS[folder.role];
-  return isSnoozedFolder(folder) ? AlarmClock : FolderIcon;
+  return isSnoozedFolder(folder) ? ICONS.reminder : ICONS.folder;
 }
 
 export function sameView(a: MailboxView, b: MailboxView): boolean {

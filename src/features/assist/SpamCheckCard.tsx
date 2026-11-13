@@ -1,25 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
+import type { LucideIcon } from "lucide-react";
 import clsx from "clsx";
-import {
-  BookUser,
-  Bot,
-  ClipboardList,
-  CircleCheck,
-  CircleHelp,
-  CircleX,
-  Clock,
-  Gauge,
-  Inbox,
-  KeyRound,
-  Mail,
-  Quote,
-  RotateCcw,
-  Send,
-  ShieldAlert,
-  ShieldCheck,
-  ShieldQuestion,
-  X,
-  type LucideIcon,
-} from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { backend } from "@/backend/backend";
 import type { AssistSpamCheck, AssistSpamFacts, AssistVerdict, Message } from "@/backend/types";
@@ -33,16 +14,16 @@ import { authTone, certainty, percent, scoreShare, useAssistReader, type SignalT
 import { assistErrorDetail, assistErrorText, isAbort, providerLabel } from "./useAssist";
 
 const VERDICT_LOOK: Record<AssistVerdict, { icon: LucideIcon; className: string; bar: string }> = {
-  legitimate: { icon: ShieldCheck, className: "bg-success-tint text-success", bar: "bg-success" },
-  suspicious: { icon: ShieldQuestion, className: "bg-warning-tint text-warning", bar: "bg-warning" },
-  spam: { icon: ShieldAlert, className: "bg-danger-tint text-danger", bar: "bg-danger" },
-  phishing: { icon: ShieldAlert, className: "bg-danger text-white", bar: "bg-danger" },
+  legitimate: { icon: ICONS.notSpam, className: "bg-success-tint text-success", bar: "bg-success" },
+  suspicious: { icon: ICONS.spamCheck, className: "bg-warning-tint text-warning", bar: "bg-warning" },
+  spam: { icon: ICONS.spam, className: "bg-danger-tint text-danger", bar: "bg-danger" },
+  phishing: { icon: ICONS.spam, className: "bg-danger text-white", bar: "bg-danger" },
 };
 
 const TONE_LOOK: Record<SignalTone, { icon: LucideIcon; className: string }> = {
-  good: { icon: CircleCheck, className: "text-success" },
-  bad: { icon: CircleX, className: "text-danger" },
-  neutral: { icon: CircleHelp, className: "text-muted" },
+  good: { icon: ICONS.success, className: "text-success" },
+  bad: { icon: ICONS.error, className: "text-danger" },
+  neutral: { icon: ICONS.help, className: "text-muted" },
 };
 
 interface SpamCheckCardProps {
@@ -108,15 +89,15 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
       className="flex animate-fade flex-col gap-3 rounded-2xl border border-line bg-canvas px-4 py-3"
     >
       <header className="flex items-center gap-2">
-        <ShieldQuestion className="size-4 shrink-0 text-pink" aria-hidden />
+        <Icon icon={ICONS.spamCheck} className="shrink-0 text-pink" />
         <h3 className="min-w-0 flex-1 truncate text-body font-bold">{t("assist.spam.title")}</h3>
         {saved && !state.working && (
           <span className="hidden min-w-0 truncate text-caption font-semibold text-muted sm:inline">
             {providerLabel(saved)}
           </span>
         )}
-        {!state.working && <IconButton icon={RotateCcw} size="sm" label={t("assist.spam.again")} onClick={check} />}
-        <IconButton icon={X} size="sm" label={t("assist.spam.close")} onClick={() => hide(message.id)} />
+        {!state.working && <IconButton icon={ICONS.refresh} size="sm" label={t("assist.spam.again")} onClick={check} />}
+        <IconButton icon={ICONS.close} size="sm" label={t("assist.spam.close")} onClick={() => hide(message.id)} />
       </header>
 
       {state.working && (
@@ -132,7 +113,7 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
               <span className="block text-caption opacity-80">{assistErrorDetail(state.error)}</span>
             )}
           </span>
-          <Button size="sm" variant="ghost" icon={RotateCcw} onClick={check}>
+          <Button size="sm" variant="ghost" icon={ICONS.refresh} onClick={check}>
             {t("assist.retry")}
           </Button>
         </div>
@@ -148,7 +129,7 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
           variant={
             saved && (saved.verdict === "spam" || saved.verdict === "phishing") && !inJunk ? "primary" : "secondary"
           }
-          icon={ShieldAlert}
+          icon={ICONS.spam}
           disabled={inJunk}
           onClick={() => report(true)}
         >
@@ -157,7 +138,7 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
         <Button
           size="sm"
           variant={saved?.verdict === "legitimate" && inJunk ? "primary" : "secondary"}
-          icon={ShieldCheck}
+          icon={ICONS.notSpam}
           onClick={() => report(false)}
         >
           {t("reader.notSpam")}
@@ -171,7 +152,7 @@ export function SpamCheckCard({ message, inJunk }: SpamCheckCardProps) {
 function Verdict({ result }: { result: AssistSpamCheck }) {
   const { t } = useT();
   const look = VERDICT_LOOK[result.verdict];
-  const Icon = look.icon;
+  const Glyph = look.icon;
   const share = percent(result.confidence);
   const sure = t(`assist.spam.certainty.${certainty(result.confidence)}`);
   // Older servers send the reasons only as text.
@@ -188,7 +169,7 @@ function Verdict({ result }: { result: AssistSpamCheck }) {
             look.className,
           )}
         >
-          <Icon className="size-4" aria-hidden />
+          <Icon icon={Glyph} />
           {t(`assist.spam.verdict.${result.verdict}`)}
         </span>
         <span className="flex min-w-[9rem] flex-1 items-center gap-2 text-caption text-muted">
@@ -216,7 +197,7 @@ function Verdict({ result }: { result: AssistSpamCheck }) {
         // The model's own words, kept apart from what the server found: they are not checked facts.
         <div className="flex flex-col gap-1.5 rounded-xl border border-dashed border-line px-3 py-2">
           <p className="flex items-center gap-1.5 text-badge font-bold tracking-wide text-muted uppercase">
-            <Bot className="size-3.5" aria-hidden />
+            <Icon icon={ICONS.bot} size="xs" />
             <span>{t("assist.spam.modelWordsTitle")}</span>
           </p>
           <p className="text-caption text-muted">{t("assist.spam.modelWordsHint")}</p>
@@ -228,7 +209,7 @@ function Verdict({ result }: { result: AssistSpamCheck }) {
                   {reason.text}
                   {reason.quote ? (
                     <span className="mt-0.5 flex items-start gap-1 text-caption text-muted">
-                      <Quote className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                      <Icon icon={ICONS.quote} size="xs" className="mt-0.5 shrink-0" />
                       <span className="min-w-0 break-words italic">
                         <QuotedIn text={t("assist.spam.reasonQuote", { quote: QUOTE_SLOT })} quote={reason.quote} />
                       </span>
@@ -265,7 +246,7 @@ function Facts({ facts, language }: { facts: AssistSpamFacts; language: string }
   return (
     <div className="flex flex-col gap-2">
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-badge font-bold tracking-wide text-muted uppercase">
-        <ClipboardList className="size-3.5" aria-hidden />
+        <Icon icon={ICONS.summary} size="xs" />
         <span>{t("assist.spam.factsTitle")}</span>
         <span
           className={clsx(
@@ -280,10 +261,10 @@ function Facts({ facts, language }: { facts: AssistSpamFacts; language: string }
         <ul className="flex flex-col gap-1 text-meta" aria-label={t("assist.spam.factsTitle")}>
           {evidence.map((item) => {
             const look = TONE_LOOK[item.tone];
-            const Icon = look.icon;
+            const Glyph = look.icon;
             return (
               <li key={item.code} className="flex min-w-0 items-start gap-2 rounded-xl bg-surface px-3 py-1.5">
-                <Icon className={clsx("mt-0.5 size-3.5 shrink-0", look.className)} aria-hidden />
+                <Icon icon={Glyph} className={clsx("mt-0.5 size-3.5 shrink-0", look.className)} />
                 <span className="min-w-0 flex-1">
                   <span className="block">{t(`assist.spam.evidence.${item.code}`, { defaultValue: item.code })}</span>
                   {item.detail && (
@@ -316,7 +297,7 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
     <div className="flex flex-col gap-2">
       <p className="text-badge font-bold tracking-wide text-muted uppercase">{t("assist.spam.serverTitle")}</p>
       <dl className="grid gap-2 text-meta sm:grid-cols-2">
-        <Signal icon={KeyRound} label={t("assist.spam.auth")}>
+        <Signal icon={ICONS.signIn} label={t("assist.spam.auth")}>
           {noAuth ? (
             <span className="text-muted">{t("assist.spam.authNone")}</span>
           ) : (
@@ -332,7 +313,7 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
             </span>
           )}
         </Signal>
-        <Signal icon={Gauge} label={t("assist.spam.score")}>
+        <Signal icon={ICONS.score} label={t("assist.spam.score")}>
           {result.signals.spamScore === null ? (
             <span className="text-muted">{t("assist.spam.scoreNone")}</span>
           ) : (
@@ -371,10 +352,10 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
             </span>
           )}
         </Signal>
-        <Signal icon={Inbox} label={t("assist.spam.folder")}>
+        <Signal icon={ICONS.inbox} label={t("assist.spam.folder")}>
           {result.signals.inJunk ? t("assist.spam.inJunk") : t("assist.spam.notInJunk")}
         </Signal>
-        <Signal icon={Mail} label={t("assist.spam.sender")}>
+        <Signal icon={ICONS.mail} label={t("assist.spam.sender")}>
           <span className="selectable block break-all">{sender.address}</span>
           <span className="block text-muted">
             {sender.earlierMessages === 0
@@ -384,16 +365,16 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
                 : t("assist.spam.earlier", { count: sender.earlierMessages })}
           </span>
         </Signal>
-        <Signal icon={Send} label={t("assist.spam.writtenToLabel")}>
+        <Signal icon={ICONS.send} label={t("assist.spam.writtenToLabel")}>
           {sender.writtenTo === 0
             ? t("assist.spam.neverWritten")
             : t("assist.spam.writtenTo", { count: sender.writtenTo })}
         </Signal>
-        <Signal icon={BookUser} label={t("assist.spam.contactsLabel")}>
+        <Signal icon={ICONS.contacts} label={t("assist.spam.contactsLabel")}>
           {sender.inContacts ? t("assist.spam.inContacts") : t("assist.spam.notInContacts")}
         </Signal>
         {sender.firstSeen && (
-          <Signal icon={Clock} label={t("assist.spam.firstSeen")}>
+          <Signal icon={ICONS.time} label={t("assist.spam.firstSeen")}>
             {formatLongDate(sender.firstSeen, language)}
           </Signal>
         )}
@@ -402,10 +383,10 @@ function Signals({ result, language }: { result: AssistSpamCheck; language: stri
   );
 }
 
-function Signal({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
+function Signal({ icon: Glyph, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 gap-2 rounded-xl bg-surface px-3 py-2">
-      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted" aria-hidden />
+      <Icon icon={Glyph} size="xs" className="mt-0.5 shrink-0 text-muted" />
       <div className="min-w-0 flex-1">
         <dt className="text-badge font-semibold text-muted">{label}</dt>
         <dd className="min-w-0">{children}</dd>
@@ -417,10 +398,10 @@ function Signal({ icon: Icon, label, children }: { icon: LucideIcon; label: stri
 function AuthResult({ name, value }: { name: string; value: string | null }) {
   const { t } = useT();
   const look = TONE_LOOK[authTone(value)];
-  const Icon = look.icon;
+  const Glyph = look.icon;
   return (
     <span className="inline-flex items-center gap-1">
-      <Icon className={clsx("size-3.5", look.className)} aria-hidden />
+      <Icon icon={Glyph} className={clsx("size-3.5", look.className)} />
       <span className="font-semibold">{name}</span>
       <span className={look.className}>{value ?? t("assist.spam.authMissing")}</span>
     </span>

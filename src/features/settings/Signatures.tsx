@@ -1,5 +1,5 @@
+import { ICONS } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Signature } from "@/backend/types";
@@ -113,13 +113,13 @@ function SignatureList({ perAddress }: { perAddress: boolean }) {
                     {!perAddress && signature.forNew && <Badge>{t("settings.signatureDefaultNew")}</Badge>}
                     {!perAddress && signature.forReplies && <Badge>{t("settings.signatureDefaultReplies")}</Badge>}
                     <IconButton
-                      icon={Pencil}
+                      icon={ICONS.edit}
                       size="sm"
                       label={t("settings.editSignature", { name: signature.name })}
                       onClick={() => setEditing(signature)}
                     />
                     <IconButton
-                      icon={Trash}
+                      icon={ICONS.delete}
                       size="sm"
                       label={t("settings.deleteSignature", { name: signature.name })}
                       onClick={() => void backend().deleteSignature(signature.id).then(refresh, failed)}
@@ -138,7 +138,7 @@ function SignatureList({ perAddress }: { perAddress: boolean }) {
             <Button
               size="sm"
               variant="ghost"
-              icon={Plus}
+              icon={ICONS.add}
               className="self-start"
               disabled={!email}
               onClick={() =>

@@ -1,5 +1,5 @@
+import { ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
@@ -28,13 +28,13 @@ export function MiniMonth({ onPick }: { onPick?: () => void }) {
         <span className="pl-2 text-meta font-bold">{formatMonthTitle(month)}</span>
         <span className="flex">
           <IconButton
-            icon={ChevronLeft}
+            icon={ICONS.previous}
             size="sm"
             label={t("calendar.previousMonth")}
             onClick={() => setShown({ month: addMonths(month, -1), for: date })}
           />
           <IconButton
-            icon={ChevronRight}
+            icon={ICONS.next}
             size="sm"
             label={t("calendar.nextMonth")}
             onClick={() => setShown({ month: addMonths(month, 1), for: date })}

@@ -1,5 +1,5 @@
+import { ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { FolderInput, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Button, IconButton } from "@/components/ui/Button";
 import { Field, Segmented, Select, TextInput, Toggle } from "@/components/ui/Field";
@@ -189,7 +189,7 @@ export function RuleEditor({ accountId, rule, isNew, busy, onSave, onCancel, onD
                   />
                 )}
                 <IconButton
-                  icon={X}
+                  icon={ICONS.close}
                   size="sm"
                   label={t("rules.removeCondition")}
                   onClick={() => setDraft({ ...draft, conditions: draft.conditions.filter((_, i) => i !== index) })}
@@ -206,7 +206,7 @@ export function RuleEditor({ accountId, rule, isNew, busy, onSave, onCancel, onD
         <Button
           size="sm"
           variant="ghost"
-          icon={Plus}
+          icon={ICONS.add}
           className="self-start"
           onClick={() =>
             setDraft({ ...draft, conditions: [...draft.conditions, { field: "subject", op: "contains", value: "" }] })
@@ -255,7 +255,7 @@ export function RuleEditor({ accountId, rule, isNew, busy, onSave, onCancel, onD
               <Button
                 size="sm"
                 variant="ghost"
-                icon={Plus}
+                icon={ICONS.add}
                 onClick={menu.toggle}
                 aria-haspopup={menu["aria-haspopup"]}
                 aria-expanded={menu["aria-expanded"]}
@@ -325,7 +325,7 @@ function ActionRow({
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-body font-semibold">{t(`rules.action.${action.type}`)}</span>
         {action.type === "move" && (
-          <Button size="sm" icon={FolderInput} onClick={onPickFolder} className="max-w-full min-w-0">
+          <Button size="sm" icon={ICONS.move} onClick={onPickFolder} className="max-w-full min-w-0">
             <span className="truncate">
               {action.mailboxId ? folderLabel(action.mailboxId, action.mailboxName) : t("rules.chooseFolder")}
             </span>
@@ -342,7 +342,7 @@ function ActionRow({
           />
         )}
         <span className="flex-1" />
-        <IconButton icon={X} size="sm" label={t("rules.removeAction")} onClick={onRemove} />
+        <IconButton icon={ICONS.close} size="sm" label={t("rules.removeAction")} onClick={onRemove} />
       </div>
       {action.type === "forward" && (
         <div className="flex flex-col gap-2">

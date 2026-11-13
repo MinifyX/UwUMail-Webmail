@@ -1,21 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import {
-  AlarmClock,
-  Archive,
-  Check,
-  FolderInput,
-  ListFilter as FilterIcon,
-  Inbox,
-  MailOpen,
-  Menu as MenuIcon,
-  ShieldAlert,
-  ShieldCheck,
-  Star,
-  Tag,
-  Trash,
-  Trash2,
-  X,
-} from "lucide-react";
 import type { ReactNode } from "react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { ListFilter, ThreadSummary } from "@/backend/types";
@@ -52,7 +36,7 @@ const MORE_FILTERS: ListFilter[] = ["flagged", "attachments"];
 function Checked({ on, children }: { on: boolean; children: ReactNode }) {
   return (
     <span className="flex items-center gap-2">
-      <Check className={clsx("size-4 shrink-0 text-pink", !on && "invisible")} aria-hidden />
+      <Icon icon={ICONS.done} className={clsx("size-4 shrink-0 text-pink", !on && "invisible")} />
       {children}
     </span>
   );
@@ -200,7 +184,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
         <div className="flex items-center gap-2">
           {showMenu && (
             <IconButton
-              icon={MenuIcon}
+              icon={ICONS.menu}
               label={t("nav.menu")}
               onClick={() => setFolderDrawerOpen(true)}
               className="-ml-1"
@@ -214,7 +198,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             <Button
               size="sm"
               variant="ghost"
-              icon={Trash2}
+              icon={ICONS.delete}
               title={t(`folders.empty.${info.isJunk ? "junk" : "trash"}`)}
               onClick={() => openFolderDialog({ kind: "empty", folder: info.folder! })}
             >
@@ -264,7 +248,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             trigger={({ open, toggle, ...aria }) => (
               <IconButton
                 {...aria}
-                icon={FilterIcon}
+                icon={ICONS.rules}
                 label={t("list.filterMenu")}
                 active={MORE_FILTERS.includes(filter) || open}
                 className={clsx(refreshing && "animate-pulse")}
@@ -280,13 +264,13 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             role="toolbar"
             aria-label={t("list.selected", { count: checkedIds.length })}
           >
-            <IconButton icon={X} size="sm" label={t("list.clearSelection")} onClick={() => setChecked([])} />
+            <IconButton icon={ICONS.close} size="sm" label={t("list.clearSelection")} onClick={() => setChecked([])} />
             <span className="min-w-0 flex-1 truncate px-1 text-meta font-bold">
               {t("list.selected", { count: checkedIds.length })}
             </span>
             {info.rights.archive && (
               <IconButton
-                icon={Archive}
+                icon={ICONS.archive}
                 size="sm"
                 label={t("reader.archive")}
                 onClick={() => runOnChecked(selection.archive)}
@@ -294,7 +278,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             )}
             {info.rights.remove && (
               <IconButton
-                icon={Trash}
+                icon={ICONS.delete}
                 size="sm"
                 label={info.isTrash ? t("reader.deleteForever") : t("reader.trash")}
                 onClick={() => runOnChecked(selection.trash)}
@@ -302,7 +286,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             )}
             {info.rights.markSeen && (
               <IconButton
-                icon={MailOpen}
+                icon={ICONS.unread}
                 size="sm"
                 label={anyUnread ? t("list.markRead") : t("reader.markUnread")}
                 onClick={() => runOnChecked((ids) => selection.read(ids, anyUnread))}
@@ -310,7 +294,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             )}
             {info.rights.flag && (
               <IconButton
-                icon={Star}
+                icon={ICONS.favorite}
                 size="sm"
                 label={t("reader.flag")}
                 onClick={() => runOnChecked((ids) => selection.flag(ids, !allFlagged))}
@@ -318,7 +302,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             )}
             {info.rights.remove && (
               <IconButton
-                icon={FolderInput}
+                icon={ICONS.move}
                 size="sm"
                 label={t("reader.move")}
                 onClick={() => runOnChecked(selection.move)}
@@ -326,7 +310,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             )}
             {!info.rights.shared && info.rights.remove && (
               <IconButton
-                icon={AlarmClock}
+                icon={ICONS.reminder}
                 size="sm"
                 label={t("snooze.action")}
                 onClick={() => runOnChecked(selection.snooze)}
@@ -334,7 +318,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             )}
             {info.isSnoozed && (
               <IconButton
-                icon={Inbox}
+                icon={ICONS.inbox}
                 size="sm"
                 label={t("snooze.unsnooze")}
                 onClick={() => runOnChecked(selection.unsnooze)}
@@ -342,7 +326,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             )}
             {info.rights.flag && labels.length > 0 && (
               <IconButton
-                icon={Tag}
+                icon={ICONS.label}
                 size="sm"
                 label={t("labels.quick.button")}
                 onClick={() => useUi.getState().openLabelPicker(checkedIds)}
@@ -350,7 +334,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             )}
             {info.rights.spam && (
               <IconButton
-                icon={info.isJunk ? ShieldCheck : ShieldAlert}
+                icon={info.isJunk ? ICONS.notSpam : ICONS.spam}
                 size="sm"
                 label={info.isJunk ? t("reader.notSpam") : t("reader.spam")}
                 onClick={() => runOnChecked((ids) => selection.spam(ids, !info.isJunk))}
@@ -367,7 +351,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
               {MORE_FILTERS.includes(filter) && (
                 <Pill active onClick={() => setFilter("all")} title={t("list.clearFilter")}>
                   {t(`filter.${filter}`)}
-                  <X className="size-3.5" aria-hidden />
+                  <Icon icon={ICONS.close} size="xs" />
                 </Pill>
               )}
               {chipLabels.map((label) => {
@@ -426,11 +410,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
               <Fragment key={section.label === undefined ? "all" : (section.label?.id ?? "none")}>
                 {section.label !== undefined && (
                   <h2 className="sticky top-0 z-10 flex items-center gap-2 bg-surface/95 px-3 pt-3 pb-1.5 text-caption font-bold tracking-wide text-muted uppercase backdrop-blur-sm">
-                    {section.label ? (
-                      <LabelDot color={section.label.color} />
-                    ) : (
-                      <Tag className="size-3.5" aria-hidden />
-                    )}
+                    {section.label ? <LabelDot color={section.label.color} /> : <Icon icon={ICONS.label} size="xs" />}
                     <span className="min-w-0 truncate normal-case">
                       {section.label ? section.label.name : t("labels.group.none")}
                     </span>

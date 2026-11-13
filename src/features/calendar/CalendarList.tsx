@@ -1,6 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Cake, Check, Ellipsis, Plus, Users } from "lucide-react";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { CalendarInfo } from "@/backend/types";
@@ -66,7 +66,7 @@ export function CalendarList() {
         <h2 id="uwu-calendars" className="text-caption font-bold tracking-wide text-muted uppercase">
           {t("calendar.calendars")}
         </h2>
-        <IconButton icon={Plus} size="sm" label={t("calendar.newCalendar")} onClick={() => setEditing("new")} />
+        <IconButton icon={ICONS.add} size="sm" label={t("calendar.newCalendar")} onClick={() => setEditing("new")} />
       </div>
       <BirthdayHint onOpen={() => setImporting(true)} />
       <ul className="flex flex-col gap-0.5">
@@ -93,9 +93,9 @@ export function CalendarList() {
                   style={{ borderColor: color, background: calendar.isVisible ? color : "transparent" }}
                   aria-hidden
                 >
-                  {calendar.isVisible && <Check className="size-3.5 text-white" strokeWidth={3.5} />}
+                  {calendar.isVisible && <Icon icon={ICONS.done} size="xs" className="text-white" />}
                 </span>
-                {calendar.isBirthdays && <Cake className="size-3.5 shrink-0 text-muted" aria-hidden />}
+                {calendar.isBirthdays && <Icon icon={ICONS.birthday} size="xs" className="shrink-0 text-muted" />}
                 <span className={clsx("min-w-0 flex-1 truncate", !calendar.isVisible && "text-muted")}>
                   {calendar.name}
                   {calendar.sharedBy && (
@@ -105,8 +105,10 @@ export function CalendarList() {
                   )}
                 </span>
                 {Object.keys(calendar.sharedWith ?? {}).length > 0 && (
-                  <Users
-                    className="size-3.5 shrink-0 text-muted"
+                  <Icon
+                    icon={ICONS.people}
+                    size="xs"
+                    className="shrink-0 text-muted"
                     aria-label={t("sharing.sharedWithCount", { count: Object.keys(calendar.sharedWith ?? {}).length })}
                   />
                 )}
@@ -115,7 +117,7 @@ export function CalendarList() {
                 )}
               </button>
               <IconButton
-                icon={Ellipsis}
+                icon={ICONS.more}
                 size="sm"
                 label={t("calendar.calendarActions", { name: calendar.name })}
                 aria-haspopup="menu"
@@ -297,7 +299,7 @@ function CalendarForm({
             )}
             style={{ background: swatch }}
           >
-            {color === swatch && <Check className="size-4 text-white" strokeWidth={3} aria-hidden />}
+            {color === swatch && <Icon icon={ICONS.done} className="text-white" />}
           </button>
         ))}
       </div>

@@ -1,5 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { CircleAlert, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Address, Contact, SendPolicy } from "@/backend/types";
@@ -104,11 +104,7 @@ export function RecipientInput({
                 outside ? "bg-danger-tint text-danger-ink ring-1 ring-danger ring-inset" : "bg-pink-tint text-pink-ink",
               )}
             >
-              {outside ? (
-                <CircleAlert className="size-4 shrink-0" aria-hidden />
-              ) : (
-                <Avatar address={address} size="xs" />
-              )}
+              {outside ? <Icon icon={ICONS.error} className="shrink-0" /> : <Avatar address={address} size="xs" />}
               {displayName(address)}
               {outside && <span className="sr-only">{t("compose.externalRecipient", { email: address.email })}</span>}
               <button
@@ -120,7 +116,7 @@ export function RecipientInput({
                   outside ? "hover:bg-danger/15" : "hover:bg-pink-tint-strong",
                 )}
               >
-                <X className="size-3.5" aria-hidden />
+                <Icon icon={ICONS.close} size="xs" />
               </button>
             </span>
           );
@@ -186,7 +182,7 @@ export function RecipientInput({
                   <span className="block truncate text-caption text-muted">{contact.email}</span>
                   {outside && (
                     <span className="flex items-center gap-1 text-caption font-semibold text-danger-ink">
-                      <CircleAlert className="size-3.5 shrink-0" aria-hidden />
+                      <Icon icon={ICONS.error} size="xs" className="shrink-0" />
                       {t("compose.externalSuggestion")}
                     </span>
                   )}

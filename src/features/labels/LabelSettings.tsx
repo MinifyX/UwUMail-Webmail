@@ -1,18 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import {
-  ArrowRight,
-  Check,
-  ChevronDown,
-  Pencil,
-  Plus,
-  RotateCcw,
-  Sparkles,
-  Tags,
-  Trash,
-  TriangleAlert,
-  X,
-} from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AssistError, backend } from "@/backend/backend";
 import {
@@ -85,7 +73,7 @@ export function LabelsSettingsPage() {
     <div className="flex flex-col gap-5 py-4">
       <div className="flex gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-pink-tint text-pink">
-          <Tags className="size-5" aria-hidden />
+          <Icon icon={ICONS.labels} size="lg" />
         </span>
         <div>
           <p className="text-body font-semibold">{t("labels.settings.title")}</p>
@@ -121,11 +109,11 @@ function AutomaticSettings({ options }: { options: AssistOptions }) {
       )}
       {options.features.autoLabels && assist && (
         <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-canvas px-3.5 py-2.5">
-          <Sparkles className="size-4 shrink-0 text-pink" aria-hidden />
+          <Icon icon={ICONS.ai} className="shrink-0 text-pink" />
           <p className="min-w-[min(100%,14rem)] flex-1 text-meta text-muted">
             {assist.autoLabels ? t("labels.settings.aiOn") : t("labels.settings.aiOff")}
           </p>
-          <Button size="sm" variant="ghost" icon={ArrowRight} onClick={() => openSettings("assistant")}>
+          <Button size="sm" variant="ghost" icon={ICONS.next} onClick={() => openSettings("assistant")}>
             {t("labels.settings.toAi")}
           </Button>
         </div>
@@ -162,7 +150,7 @@ export function AiLabelSettings({ options }: { options: AssistOptions }) {
       title={t("assist.labels.title")}
       description={t("assist.labels.description")}
       action={
-        <Button size="sm" variant="ghost" icon={ArrowRight} onClick={() => openSettings("labels")}>
+        <Button size="sm" variant="ghost" icon={ICONS.next} onClick={() => openSettings("labels")}>
           {t("labels.settings.manage")}
         </Button>
       }
@@ -185,7 +173,7 @@ export function AiLabelSettings({ options }: { options: AssistOptions }) {
           <p className="min-w-[min(100%,14rem)] flex-1 text-meta text-muted">
             {t("assist.labels.applyDesc", { count: APPLY_COUNT })}
           </p>
-          <Button size="sm" icon={Sparkles} busy={applying} onClick={() => void applyNow()}>
+          <Button size="sm" icon={ICONS.ai} busy={applying} onClick={() => void applyNow()}>
             {t("assist.labels.apply")}
           </Button>
         </div>
@@ -256,7 +244,7 @@ export function LabelSettings({ options }: { options: AssistOptions }) {
         action={
           room &&
           editing !== "new" && (
-            <Button size="sm" icon={Plus} onClick={() => startNew("")}>
+            <Button size="sm" icon={ICONS.add} onClick={() => startNew("")}>
               {t("assist.labels.new")}
             </Button>
           )
@@ -310,7 +298,7 @@ function MissingBases({ missing }: { missing: LabelBase[] }) {
             key={base}
             size="sm"
             variant="ghost"
-            icon={RotateCcw}
+            icon={ICONS.reset}
             busy={busy === base}
             disabled={busy !== null && busy !== base}
             onClick={() => restore(base)}
@@ -403,9 +391,9 @@ function LabelRow({
                 onClick={() => setDefinition((open) => !open)}
                 className="inline-flex items-center gap-1 rounded text-caption font-semibold text-muted hover:text-ink focus-visible:shadow-focus focus-visible:outline-none"
               >
-                <ChevronDown
+                <Icon
+                  icon={ICONS.expand}
                   className={clsx("size-3.5 transition-transform", definition && "rotate-180")}
-                  aria-hidden
                 />
                 {definition ? t("labels.base.hideDefinition") : t("labels.base.showDefinition")}
               </button>
@@ -419,11 +407,11 @@ function LabelRow({
                   <p className="text-caption text-muted">{t("labels.base.previousHint")}</p>
                   <div className="flex flex-wrap gap-1">
                     {onUsePrevious && (
-                      <Button size="sm" variant="ghost" icon={Plus} onClick={onUsePrevious}>
+                      <Button size="sm" variant="ghost" icon={ICONS.add} onClick={onUsePrevious}>
                         {t("labels.base.usePrevious")}
                       </Button>
                     )}
-                    <Button size="sm" variant="ghost" icon={X} busy={forgetting} onClick={forgetPrevious}>
+                    <Button size="sm" variant="ghost" icon={ICONS.close} busy={forgetting} onClick={forgetPrevious}>
                       {t("labels.base.forgetPrevious")}
                     </Button>
                   </div>
@@ -450,9 +438,14 @@ function LabelRow({
             />
           </div>
         )}
-        <IconButton icon={Pencil} size="sm" label={t("assist.labels.edit", { name: label.name })} onClick={onEdit} />
         <IconButton
-          icon={Trash}
+          icon={ICONS.edit}
+          size="sm"
+          label={t("assist.labels.edit", { name: label.name })}
+          onClick={onEdit}
+        />
+        <IconButton
+          icon={ICONS.delete}
           size="sm"
           label={t("assist.labels.delete", { name: label.name })}
           onClick={() => setConfirm(true)}
@@ -464,7 +457,7 @@ function LabelRow({
           <Button size="sm" variant="ghost" onClick={() => setConfirm(false)}>
             {t("common.cancel")}
           </Button>
-          <Button size="sm" variant="danger" icon={Trash} busy={busy} onClick={remove}>
+          <Button size="sm" variant="danger" icon={ICONS.delete} busy={busy} onClick={remove}>
             {t("assist.labels.deleteShort")}
           </Button>
         </div>
@@ -597,7 +590,7 @@ export function LabelEditor({
       className="flex flex-col gap-3 rounded-2xl border border-pink/30 bg-pink-tint/20 px-4 py-3.5"
     >
       <p className="flex items-center gap-1.5 text-body font-bold">
-        <Tags className="size-4 text-pink" aria-hidden />
+        <Icon icon={ICONS.labels} className="text-pink" />
         {label ? t("assist.labels.editTitle", { name: label.name }) : t("assist.labels.newTitle")}
       </p>
       <Field label={t("assist.labels.name")} error={problemText("name")}>
@@ -657,7 +650,7 @@ export function LabelEditor({
               style={color ? { backgroundColor: color } : undefined}
             >
               {form.color === color && (
-                <Check className={clsx("size-3.5", color ? "text-white" : "text-muted")} strokeWidth={3} aria-hidden />
+                <Icon icon={ICONS.done} className={clsx("size-3.5", color ? "text-white" : "text-muted")} />
               )}
             </button>
           ))}
@@ -748,7 +741,7 @@ export function OverlapWarning({ overlaps }: { overlaps: LabelOverlap[] }) {
   if (lines.length === 0) return null;
   return (
     <div role="status" className="flex gap-2 rounded-xl bg-warning-tint px-3 py-2 text-meta text-warning">
-      <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+      <Icon icon={ICONS.warning} className="mt-0.5 shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{t("labels.overlap.title")}</p>
         <ul className="list-disc pl-4">
@@ -849,7 +842,7 @@ function ConditionsEditor({
                 />
               )}
               <IconButton
-                icon={X}
+                icon={ICONS.close}
                 size="sm"
                 label={t("labels.settings.removeCondition")}
                 onClick={() => set(conditions.filter((_, i) => i !== index))}
@@ -867,7 +860,7 @@ function ConditionsEditor({
         <Button
           size="sm"
           variant="ghost"
-          icon={Plus}
+          icon={ICONS.add}
           className="self-start"
           onClick={() => set([...conditions, { field: conditions.length === 0 ? "from" : "subject", value: "" }])}
         >

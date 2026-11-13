@@ -1,5 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { IconButton } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -58,7 +58,7 @@ function PaletteBody({
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-3 border-b border-hairline px-5">
-        <Search className="size-[18px] text-muted" aria-hidden />
+        <Icon icon={ICONS.search} size="md" className="text-muted" />
         <input
           autoFocus
           value={query}
@@ -78,12 +78,12 @@ function PaletteBody({
           }}
           className="h-14 flex-1 bg-transparent text-reading outline-none"
         />
-        <IconButton icon={X} label={closeLabel} onClick={onClose} />
+        <IconButton icon={ICONS.close} label={closeLabel} onClick={onClose} />
       </div>
       <ul className="max-h-[360px] overflow-y-auto p-2" role="listbox">
         {results.length === 0 && <li className="px-4 py-6 text-center text-meta text-muted">{empty}</li>}
         {results.map((command, index) => {
-          const Icon = command.icon;
+          const Glyph = command.icon;
           return (
             <li
               key={command.id}
@@ -96,7 +96,7 @@ function PaletteBody({
                 index === active && "bg-pink-tint",
               )}
             >
-              <Icon className={clsx("size-[18px]", index === active ? "text-pink" : "text-muted")} aria-hidden />
+              <Icon icon={Glyph} className={clsx("size-[18px]", index === active ? "text-pink" : "text-muted")} />
               <span className="flex-1 text-body font-medium">{command.title}</span>
               {command.keys?.[0] && <KeyHint combo={command.keys[0]} />}
             </li>

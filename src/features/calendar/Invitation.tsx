@@ -1,6 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { CalendarCheck, Check, CircleHelp, ShieldAlert, X } from "lucide-react";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Invitation, MailScheduling, Message, ParticipationStatus } from "@/backend/types";
@@ -11,10 +11,10 @@ import { errorText, queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";
 import { useCalendarsAvailable } from "./useCalendarData";
 
-const ANSWERS: { status: Exclude<ParticipationStatus, "needs-action">; icon: typeof Check }[] = [
-  { status: "accepted", icon: Check },
-  { status: "tentative", icon: CircleHelp },
-  { status: "declined", icon: X },
+const ANSWERS: { status: Exclude<ParticipationStatus, "needs-action">; icon: typeof ICONS.done }[] = [
+  { status: "accepted", icon: ICONS.done },
+  { status: "tentative", icon: ICONS.help },
+  { status: "declined", icon: ICONS.close },
 ];
 
 /** The key of a mail's invitation query, so answering elsewhere refreshes it too. */
@@ -54,7 +54,7 @@ export function InvitationAnswer({
 
   return (
     <div role="group" aria-label={t("invitation.answer")} className="flex flex-wrap gap-1.5">
-      {ANSWERS.map(({ status, icon: Icon }) => {
+      {ANSWERS.map(({ status, icon: Glyph }) => {
         const chosen = invitation.status === status;
         return (
           <button
@@ -71,7 +71,7 @@ export function InvitationAnswer({
                 : "border-line bg-surface text-ink hover:bg-pink-tint/60",
             )}
           >
-            <Icon className="size-3.5" aria-hidden />
+            <Icon icon={Glyph} size="xs" />
             {t(`invitation.${status}`)}
           </button>
         );
@@ -140,7 +140,7 @@ export function MailInvitationCard({ message }: { message: Message }) {
         {person ? (
           <Avatar address={person} size="sm" />
         ) : (
-          <CalendarCheck className="mt-0.5 size-5 shrink-0 text-pink" aria-hidden />
+          <Icon icon={ICONS.invitation} size="lg" className="mt-0.5 shrink-0 text-pink" />
         )}
         <div className="min-w-0">
           <p className="text-caption font-bold tracking-wide text-muted uppercase">{heading}</p>
@@ -181,7 +181,7 @@ function Unverified({ found, sender }: { found: MailScheduling; sender: string }
   // either would let one read as the other, so they are shown, not obeyed (security-audit W-34).
   return (
     <div role="note" className="flex gap-2.5 rounded-xl bg-warning-tint px-3 py-2.5 text-meta text-warning">
-      <ShieldAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+      <Icon icon={ICONS.warning} className="mt-0.5 shrink-0" />
       <div className="flex min-w-0 flex-col gap-1">
         <p className="font-semibold">{text}</p>
         <p className="break-words">

@@ -1,5 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { ChevronDown, Settings2 } from "lucide-react";
 import { useState } from "react";
 import type { AssistLabel, MailboxView } from "@/backend/types";
 import { IconButton } from "@/components/ui/Button";
@@ -31,10 +31,10 @@ export function LabelNavSection() {
           className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg pr-1 pl-3 text-caption font-bold tracking-wide text-muted uppercase hover:text-ink"
         >
           <span className="min-w-0 flex-1 truncate text-left">{t("labels.nav.title")}</span>
-          <ChevronDown className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
+          <Icon icon={ICONS.expand} className={clsx("size-3.5 transition-transform", !open && "-rotate-90")} />
         </button>
         <IconButton
-          icon={Settings2}
+          icon={ICONS.settings}
           size="sm"
           label={t("labels.nav.manage")}
           onClick={() => useUi.getState().openSettings("labels")}

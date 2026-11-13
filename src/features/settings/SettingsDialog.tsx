@@ -1,21 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import {
-  CircleUserRound,
-  ExternalLink,
-  FileText,
-  ImageIcon,
-  Info,
-  Keyboard,
-  ListFilter,
-  Mail,
-  Palette,
-  PenLine,
-  SlidersHorizontal,
-  Sparkles,
-  Tags,
-  VenetianMask,
-  X,
-} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import pkg from "../../../package.json";
@@ -63,16 +47,16 @@ import { useUi, type SettingsSection } from "@/state/ui";
  * addresses, which are made while signing up somewhere, next to the mail.
  */
 const SECTIONS: { id: SettingsSection; icon: LucideIcon }[] = [
-  { id: "appearance", icon: Palette },
-  { id: "mail", icon: Mail },
-  { id: "compose", icon: PenLine },
-  { id: "templates", icon: FileText },
-  { id: "profile", icon: CircleUserRound },
-  { id: "rules", icon: ListFilter },
-  { id: "masked", icon: VenetianMask },
-  { id: "labels", icon: Tags },
-  { id: "assistant", icon: Sparkles },
-  { id: "about", icon: Info },
+  { id: "appearance", icon: ICONS.appearance },
+  { id: "mail", icon: ICONS.mail },
+  { id: "compose", icon: ICONS.compose },
+  { id: "templates", icon: ICONS.document },
+  { id: "profile", icon: ICONS.profile },
+  { id: "rules", icon: ICONS.rules },
+  { id: "masked", icon: ICONS.maskedAddress },
+  { id: "labels", icon: ICONS.labels },
+  { id: "assistant", icon: ICONS.ai },
+  { id: "about", icon: ICONS.info },
 ];
 
 function Appearance() {
@@ -188,7 +172,7 @@ function TrustedSenders() {
         >
           {entries.map((entry) => (
             <li key={entry} className="flex items-center gap-3 rounded-xl py-1 pr-1 pl-3 hover:bg-elevated">
-              <ImageIcon className="size-4 shrink-0 text-faint" aria-hidden />
+              <Icon icon={ICONS.image} className="shrink-0 text-faint" />
               <span className="selectable min-w-0 flex-1 truncate text-body">
                 {isDomainEntry(entry) ? (
                   <>
@@ -200,7 +184,7 @@ function TrustedSenders() {
                 )}
               </span>
               <IconButton
-                icon={X}
+                icon={ICONS.close}
                 size="sm"
                 label={t("settings.untrustSender", { sender: entry })}
                 onClick={() => untrustSenders([entry])}
@@ -339,13 +323,16 @@ function About() {
         <p className="rounded-full bg-pink-tint px-3 py-1 text-meta font-semibold text-pink-ink">{t("status.demo")}</p>
       )}
       <div className="flex flex-wrap justify-center gap-2">
-        <Button icon={SlidersHorizontal} onClick={() => window.location.assign(PORTAL_URL)}>
+        <Button icon={ICONS.adjust} onClick={() => window.location.assign(PORTAL_URL)}>
           {t("nav.portal")}
         </Button>
-        <Button icon={ExternalLink} onClick={() => void openLinkNow("https://github.com/MinifyX/UwUMail-Webmail")}>
+        <Button
+          icon={ICONS.openExternal}
+          onClick={() => void openLinkNow("https://github.com/MinifyX/UwUMail-Webmail")}
+        >
           {t("settings.source")}
         </Button>
-        <Button icon={Keyboard} onClick={() => setShortcutsOpen(true)}>
+        <Button icon={ICONS.keyboard} onClick={() => setShortcutsOpen(true)}>
           {t("settings.shortcuts")}
         </Button>
       </div>
@@ -400,7 +387,7 @@ export function SettingsDialog() {
       <Dialog open={section !== null} onClose={requestClose} title={t("settings.title")} width="lg">
         <div className="flex min-h-[460px] flex-col gap-2 px-4 pb-5 sm:flex-row sm:gap-6 sm:px-6">
           <nav className="flex shrink-0 gap-1 overflow-x-auto sm:w-48 sm:flex-col" aria-label={t("settings.title")}>
-            {sections.map(({ id, icon: Icon }) => (
+            {sections.map(({ id, icon: Glyph }) => (
               <button
                 key={id}
                 type="button"
@@ -411,7 +398,7 @@ export function SettingsDialog() {
                   section === id ? "bg-pink-tint text-pink-ink" : "text-muted hover:bg-pink-tint/50 hover:text-ink",
                 )}
               >
-                <Icon className="size-[18px]" aria-hidden />
+                <Icon icon={Glyph} size="md" />
                 {id === "templates" ? t("templates.title") : t(`settings.${id}`)}
               </button>
             ))}

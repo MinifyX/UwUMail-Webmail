@@ -1,5 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { Camera, ImagePlus, Trash } from "lucide-react";
 import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { useT } from "@/i18n";
@@ -106,7 +106,7 @@ export function PictureField({
         {src ? (
           <img src={src} alt="" draggable={false} className="size-full object-cover" />
         ) : (
-          (placeholder ?? <ImagePlus className="size-5" aria-hidden />)
+          (placeholder ?? <Icon icon={ICONS.addImage} size="lg" />)
         )}
         <span
           aria-hidden
@@ -118,23 +118,23 @@ export function PictureField({
           {busy ? (
             <span className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
           ) : (
-            <Camera className="size-5" />
+            <Icon icon={ICONS.camera} size="lg" />
           )}
         </span>
       </button>
       <div className="flex min-w-0 flex-col gap-1.5">
         <div className="flex flex-wrap gap-1.5">
-          <Button size="sm" icon={ImagePlus} disabled={busy} onClick={() => chooser.current?.click()}>
+          <Button size="sm" icon={ICONS.addImage} disabled={busy} onClick={() => chooser.current?.click()}>
             {t("picture.choose")}
           </Button>
           {touch && (
-            <Button size="sm" icon={Camera} disabled={busy} onClick={() => camera.current?.click()}>
+            <Button size="sm" icon={ICONS.camera} disabled={busy} onClick={() => camera.current?.click()}>
               {t("picture.camera")}
             </Button>
           )}
           {extra?.(setFile)}
           {hasPicture && (
-            <Button size="sm" variant="ghost" icon={Trash} disabled={busy} onClick={onRemove}>
+            <Button size="sm" variant="ghost" icon={ICONS.delete} disabled={busy} onClick={onRemove}>
               {t("picture.remove")}
             </Button>
           )}

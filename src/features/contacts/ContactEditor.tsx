@@ -1,4 +1,4 @@
-import { Plus, Trash, X } from "lucide-react";
+import { ICONS } from "@uwusuite/design";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type {
   ContactEmail,
@@ -318,7 +318,7 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
             {contact && (
               <Button
                 variant="danger"
-                icon={Trash}
+                icon={ICONS.delete}
                 onClick={() => {
                   onClose();
                   useContactsUi.getState().askDelete(contact);
@@ -398,7 +398,7 @@ function Rows<T>({
             {render(item, (changed) => onChange(items.map((old, i) => (i === index ? changed : old))))}
           </div>
           <IconButton
-            icon={X}
+            icon={ICONS.close}
             size="sm"
             label={t("contacts.removeEntry")}
             onClick={() => onChange(items.filter((_, i) => i !== index))}
@@ -409,7 +409,7 @@ function Rows<T>({
       <Button
         variant="ghost"
         size="sm"
-        icon={Plus}
+        icon={ICONS.add}
         onClick={() => {
           onChange([...items, blank()]);
           setAdded((count) => count + 1);

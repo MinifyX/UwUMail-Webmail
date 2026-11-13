@@ -1,20 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import {
-  CircleCheck,
-  CircleDashed,
-  Copy,
-  ExternalLink,
-  FlaskConical,
-  KeyRound,
-  LogIn,
-  Pencil,
-  Plus,
-  Server,
-  Trash,
-  UserRound,
-  Zap,
-} from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AssistError, backend } from "@/backend/backend";
 import type { AssistOptions, AssistProvider, AssistProviderKind, ChatgptLogin } from "@/backend/types";
@@ -64,7 +50,7 @@ export function ProviderSettings({ options }: { options: AssistOptions }) {
       action={
         options.mayAddProviders &&
         editing !== "new" && (
-          <Button size="sm" icon={Plus} disabled={!room} onClick={() => setEditing("new")}>
+          <Button size="sm" icon={ICONS.add} disabled={!room} onClick={() => setEditing("new")}>
             {t("assist.providers.add")}
           </Button>
         )
@@ -112,10 +98,10 @@ export function ProviderSettings({ options }: { options: AssistOptions }) {
 }
 
 function ProviderIcon({ provider }: { provider: AssistProvider }) {
-  const Icon = provider.scope === "server" ? Server : UserRound;
+  const Glyph = provider.scope === "server" ? ICONS.server : ICONS.contact;
   return (
     <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-canvas text-muted">
-      <Icon className="size-4" aria-hidden />
+      <Icon icon={Glyph} />
     </span>
   );
 }
@@ -232,7 +218,7 @@ function OwnProvider({
             <span className="rounded-full bg-canvas px-2 py-px text-badge font-semibold text-muted">{kind.label}</span>
             {provider.experimental && (
               <span className="inline-flex items-center gap-1 rounded-full bg-warning-tint px-2 py-px text-badge font-semibold text-warning">
-                <FlaskConical className="size-3.5" aria-hidden />
+                <Icon icon={ICONS.experimental} size="xs" />
                 {t("assist.providers.experimental")}
               </span>
             )}
@@ -242,16 +228,12 @@ function OwnProvider({
             <span
               className={clsx("inline-flex items-center gap-1", provider.connected ? "text-success" : "text-warning")}
             >
-              {provider.connected ? (
-                <CircleCheck className="size-3.5" aria-hidden />
-              ) : (
-                <CircleDashed className="size-3.5" aria-hidden />
-              )}
+              {provider.connected ? <Icon icon={ICONS.success} size="xs" /> : <Icon icon={ICONS.maybe} size="xs" />}
               {status}
             </span>
             {kind.key !== "none" && (
               <span className="inline-flex items-center gap-1">
-                <KeyRound className="size-3.5" aria-hidden />
+                <Icon icon={ICONS.signIn} size="xs" />
                 {provider.hasKey
                   ? t("assist.providers.keyStored", { hint: provider.keyHint ?? "…" })
                   : t("assist.providers.noKey")}
@@ -262,13 +244,13 @@ function OwnProvider({
         </div>
         <div className="flex shrink-0 items-start gap-0.5">
           <IconButton
-            icon={Pencil}
+            icon={ICONS.edit}
             size="sm"
             label={t("assist.providers.edit", { name: provider.name })}
             onClick={onEdit}
           />
           <IconButton
-            icon={Trash}
+            icon={ICONS.delete}
             size="sm"
             label={t("assist.providers.delete", { name: provider.name })}
             onClick={() => setConfirmDelete(true)}
@@ -281,7 +263,7 @@ function OwnProvider({
           <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>
             {t("common.cancel")}
           </Button>
-          <Button size="sm" variant="danger" icon={Trash} busy={deleting} onClick={remove}>
+          <Button size="sm" variant="danger" icon={ICONS.delete} busy={deleting} onClick={remove}>
             {t("assist.providers.deleteShort")}
           </Button>
         </div>
@@ -291,14 +273,14 @@ function OwnProvider({
             <Button
               size="sm"
               variant={provider.connected ? "ghost" : "primary"}
-              icon={LogIn}
+              icon={ICONS.signIn}
               onClick={() => onSignIn(true)}
             >
               {provider.connected ? t("assist.chatgpt.again") : t("assist.chatgpt.signIn")}
             </Button>
           )}
           {(provider.connected || provider.kind !== "chatgpt") && (
-            <Button size="sm" variant="ghost" icon={Zap} busy={testing} onClick={test}>
+            <Button size="sm" variant="ghost" icon={ICONS.automatic} busy={testing} onClick={test}>
               {t("assist.providers.test")}
             </Button>
           )}
@@ -481,7 +463,7 @@ function ProviderEditor({
               onClick={() => void openLinkNow(kind.keyUrl!)}
               className="inline-flex items-center gap-1 rounded font-semibold text-pink-ink hover:underline focus-visible:shadow-focus focus-visible:outline-none"
             >
-              <ExternalLink className="size-3.5" aria-hidden />
+              <Icon icon={ICONS.openExternal} size="xs" />
               {t("assist.providers.getKey", { provider: kind.label })}
             </button>
           )}
@@ -651,7 +633,7 @@ function ChatgptSignIn({ provider, onClose }: { provider: AssistProvider; onClos
               {login.userCode}
             </code>
             <IconButton
-              icon={Copy}
+              icon={ICONS.copy}
               size="sm"
               label={t("assist.chatgpt.copyCode")}
               onClick={() =>
@@ -664,7 +646,7 @@ function ChatgptSignIn({ provider, onClose }: { provider: AssistProvider; onClos
             <Button
               size="sm"
               variant="primary"
-              icon={ExternalLink}
+              icon={ICONS.openExternal}
               onClick={() => void openLinkNow(login.verificationUri)}
             >
               {t("assist.chatgpt.open")}
@@ -687,7 +669,7 @@ function ChatgptSignIn({ provider, onClose }: { provider: AssistProvider; onClos
       )}
       <div className="flex flex-wrap gap-2">
         {(state === "expired" || state === "failed") && (
-          <Button size="sm" icon={LogIn} onClick={again}>
+          <Button size="sm" icon={ICONS.signIn} onClick={again}>
             {t("assist.chatgpt.again")}
           </Button>
         )}

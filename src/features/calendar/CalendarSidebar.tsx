@@ -1,5 +1,5 @@
+import { ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { addMinutes, localWall, withClock } from "@/lib/calendarDates";
@@ -25,7 +25,7 @@ export function CalendarSidebar({ className, onNavigate }: { className?: string;
     <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-3 pb-3", className)} aria-label={t("calendar.title")}>
       <Button
         size="lg"
-        icon={Plus}
+        icon={ICONS.add}
         onClick={() => {
           onNavigate?.();
           startNewEvent();
