@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const jmap = vi.hoisted(() => ({ load: vi.fn(), one: vi.fn(), upload: vi.fn(), drafts: [] as object[] }));
+const jmap = vi.hoisted(() => ({
+  load: vi.fn(),
+  one: vi.fn(),
+  upload: vi.fn(),
+  download: vi.fn(),
+  drafts: [] as object[],
+}));
 
 vi.mock("./client", async (original) => {
   const actual = await original<typeof import("./client")>();
@@ -29,6 +35,7 @@ vi.mock("./client", async (original) => {
     }),
     one: jmap.one,
     uploadBlob: jmap.upload,
+    downloadBlob: jmap.download,
     supports: () => false,
   };
 });
@@ -41,6 +48,7 @@ describe("JmapBackend and the server's per-call limits", () => {
     jmap.load.mockReset();
     jmap.one.mockReset();
     jmap.upload.mockReset();
+    jmap.download.mockReset();
   });
 
   it("tries the start again after it failed once", async () => {
@@ -97,6 +105,36 @@ describe("JmapBackend and the server's per-call limits", () => {
     await backend.saveDraft({ ...draft, draftKey: first.draftKey, attachments: first.attachments! });
     expect(jmap.upload).toHaveBeenCalledTimes(1);
     expect(created.map((email) => email.attachments![0]!.blobId)).toEqual(["upload1", "part1"]);
+  });
+  it("copies a shared mailbox's forwarded file into the account, and reuses its own", async () => {
+    jmap.load.mockResolvedValue({});
+    jmap.download.mockResolvedValue(new Blob(["hi"]));
+    jmap.upload.mockResolvedValue({ blobId: "copy1" });
+    const created: { attachments: { blobId: string }[] }[] = [];
+    jmap.one.mockImplementation(async (name: string, args: { create?: { draft: (typeof created)[0] } }) => {
+      if (name === "Identity/get") return { list: [{ id: "i1", email: "mini@uwumail.example", name: "Mini" }] };
+      if (name === "Email/set") created.push(args.create!.draft);
+      return { created: { draft: { id: "draft1" } }, list: [] };
+    });
+    const file = (blobId: string, accountId: string) => ({
+      filename: "plan.txt",
+      mimeType: "text/plain",
+      size: 2,
+      source: { kind: "blob" as const, blobId, accountId },
+    });
+    const backend = await load();
+    await backend.saveDraft({
+      accountId: "a1",
+      to: [],
+      cc: [],
+      bcc: [],
+      subject: "Fwd: Plan",
+      html: "",
+      text: "",
+      attachments: [file("theirs", "team"), file("mine", "a1")],
+    });
+    expect(jmap.download).toHaveBeenCalledWith("theirs", "plan.txt", "team");
+    expect(created[0]!.attachments.map((part) => part.blobId)).toEqual(["copy1", "mine"]);
   });
   it("reads a selection of conversations with one Thread/get and one Email/get, without bodies", async () => {
     jmap.load.mockResolvedValue({});

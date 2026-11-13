@@ -291,8 +291,11 @@ export interface OutgoingAttachment {
   filename: string;
   mimeType: string;
   size: number;
-  /** Base64 content, or a blob already on the server (uploaded, or part of a stored mail). */
-  source: { kind: "base64"; data: string } | { kind: "blob"; blobId: string };
+  /**
+   * Base64 content, or a blob already on the server (uploaded, or part of a stored mail). `accountId`
+   * names the account that holds the blob when it may not be the sending one (a shared mailbox's mail).
+   */
+  source: { kind: "base64"; data: string } | { kind: "blob"; blobId: string; accountId?: string };
 }
 
 export interface OutgoingMessage {

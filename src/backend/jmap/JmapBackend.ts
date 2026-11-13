@@ -1633,10 +1633,14 @@ export class JmapBackend implements Backend {
 
     const attachments: Record<string, unknown>[] = [];
     for (const attachment of message.attachments) {
-      // A blob the server already has (saved before, or forwarded) is not uploaded again.
+      // A blob the account already has (saved before, or forwarded) is not uploaded again; one from
+      // another account (a shared mailbox's mail) can't be used in this one's mail, so it is copied.
       let blobId: string;
-      if (attachment.source.kind === "blob") {
+      if (attachment.source.kind === "blob" && (attachment.source.accountId ?? this.accountId) === this.accountId) {
         blobId = attachment.source.blobId;
+      } else if (attachment.source.kind === "blob") {
+        const blob = await downloadBlob(attachment.source.blobId, attachment.filename, attachment.source.accountId);
+        blobId = (await uploadBlob(blob, attachment.mimeType)).blobId;
       } else {
         const bytes = Uint8Array.from(atob(attachment.source.data), (char) => char.charCodeAt(0));
         blobId = (await uploadBlob(new Blob([bytes], { type: attachment.mimeType }), attachment.mimeType)).blobId;

@@ -48,7 +48,7 @@ export function forwardedAttachments(source: Message): OutgoingAttachment[] {
             filename: attachment.filename,
             mimeType: attachment.mimeType,
             size: attachment.size,
-            source: { kind: "blob" as const, blobId: attachment.blobId },
+            source: { kind: "blob" as const, blobId: attachment.blobId, accountId: source.accountId },
           },
         ]
       : [],
