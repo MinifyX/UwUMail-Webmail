@@ -42,6 +42,7 @@ import { markAllRead, viewScope } from "../mail/markAllRead";
 import { requestMove } from "../mail/selection";
 import { requestSnooze } from "../mail/snooze";
 import { focusSearch } from "./search";
+import { replySource } from "@/features/compose/draft";
 
 export interface Command {
   id: string;
@@ -109,7 +110,7 @@ export function buildCommands(
       icon: Reply,
       keys: ["r"],
       needsThread: true,
-      run: withThread((thread) => ui.openCompose({ mode: "reply", source: latest(thread) })),
+      run: withThread((thread) => ui.openCompose({ mode: "reply", source: replySource(thread.messages) })),
     },
     {
       id: "replyAll",
@@ -117,7 +118,7 @@ export function buildCommands(
       icon: ReplyAll,
       keys: ["a"],
       needsThread: true,
-      run: withThread((thread) => ui.openCompose({ mode: "replyAll", source: latest(thread) })),
+      run: withThread((thread) => ui.openCompose({ mode: "replyAll", source: replySource(thread.messages) })),
     },
     {
       id: "forward",
@@ -125,7 +126,7 @@ export function buildCommands(
       icon: Forward,
       keys: ["f"],
       needsThread: true,
-      run: withThread((thread) => ui.openCompose({ mode: "forward", source: latest(thread) })),
+      run: withThread((thread) => ui.openCompose({ mode: "forward", source: replySource(thread.messages) })),
     },
     {
       id: "archive",

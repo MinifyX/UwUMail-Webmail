@@ -34,6 +34,11 @@ function quoted(message: Message) {
  * The address a reply comes from: the one of the mailbox's addresses the mail was sent to.
  * Empty means the mailbox's own address.
  */
+/** The mail Reply and Forward answer: the newest one in the conversation that isn't an unsent draft. */
+export function replySource(messages: Message[]): Message {
+  return messages.findLast((message) => !message.flags.draft) ?? messages.at(-1)!;
+}
+
 /** A forward sends the mail's files on, straight from the server's copy. */
 export function forwardedAttachments(source: Message): OutgoingAttachment[] {
   return source.attachments.flatMap((attachment) =>
@@ -115,7 +120,9 @@ export function initialDraft(
   }
 
   const replyTo = source.replyTo.length > 0 ? source.replyTo : [source.from];
-  const to = request.mode === "replyAll" ? withoutMe([...replyTo, ...source.to], accounts, identities) : replyTo;
+  // A reply to one's own sent mail goes to the people it went to, not back to oneself.
+  const answered = withoutMe(replyTo, accounts, identities).length > 0 ? replyTo : source.to;
+  const to = request.mode === "replyAll" ? withoutMe([...replyTo, ...source.to], accounts, identities) : answered;
   const cc = request.mode === "replyAll" ? withoutMe(source.cc, accounts, identities) : [];
   const header = escapeHtml(t("compose.quoteHeader", { date, name: "%%NAME%%" })).replace("%%NAME%%", name);
   return {
