@@ -66,6 +66,11 @@ describe("links", () => {
       shown: "bank.example",
       actual: "phish.example",
     });
+    // The compose window also splits on ";", so the check must too.
+    expect(misleadingLink("mailto:x@phish.example;service@bank.example", "service@bank.example")).toEqual({
+      shown: "bank.example",
+      actual: "phish.example",
+    });
     // Every recipient is the claimed site: nothing to warn about.
     expect(misleadingLink("mailto:sales@bank.example?cc=help@bank.example", "bank.example")).toBeNull();
   });
