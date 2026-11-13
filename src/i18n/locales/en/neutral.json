@@ -189,7 +189,9 @@
         "tooFar": "Your server holds mail for at most {{days}} days."
       }
     },
-    "companyFooter": "The server adds your organisation's footer when sending."
+    "companyFooter": "The server adds your organisation's footer when sending.",
+    "attachFailed": "The file couldn't be read, so nothing was attached.",
+    "attachTooBig": "{{name}} is larger than the server accepts ({{limit}})."
   },
   "toast": {
     "sent": "Message sent",
@@ -2080,5 +2082,19 @@
       "link": "Signed origin. You open links yourself.",
       "expired": "This code has expired."
     }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "authFailed": "Signing in didn't work.",
+    "connectionFailed": "The mail server can't be reached. Check your connection.",
+    "notFound": "That isn't there any more.",
+    "invalidInput": "The server didn't accept that.",
+    "notSupported": "This server can't do that.",
+    "internal": "The mail server ran into a problem. Please try again.",
+    "signedOut": "Your session ended. Please sign in again.",
+    "webmailDisabled": "The webmail is switched off for this account.",
+    "tooLate": "The mail is already on its way and can't be taken back.",
+    "internalOnly": "This account may only send to addresses on its own server.",
+    "stateMismatch": "That changed elsewhere in the meantime. Please try again."
   }
 }
