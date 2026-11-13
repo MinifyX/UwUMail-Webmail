@@ -302,6 +302,7 @@ export class DemoBackend implements Backend {
     for (const account of targets) {
       account.status = { state: "idle" };
       this.emit({ type: "account:status", accountId: account.id, status: account.status });
+      this.emit({ type: "mail:changed", accountId: account.id });
     }
   }
 
