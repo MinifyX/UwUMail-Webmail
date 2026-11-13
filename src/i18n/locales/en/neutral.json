@@ -441,10 +441,7 @@
   },
   "palette": {
     "placeholder": "Type a command",
-    "empty": "No matching command",
-    "title": "Commands",
-    "results": "Results: {{n}}",
-    "hints": "↑ ↓ choose · Enter run · Esc close"
+    "empty": "No matching command"
   },
   "common": {
     "cancel": "Cancel",

@@ -110,18 +110,13 @@ export function useApplyLanguage() {
   }, [setting]);
 }
 
-/** The words the suite's components say themselves (close buttons, the command palette), in the page's language. */
+/** The words the suite's components say themselves (the close buttons), in the page's language. */
 export function useSuiteLabels(): Labels {
   const { t, i18n: active } = useT();
   return {
     // English for the few words the webmail never shows, German only in German.
     ...(active.language === "de" ? LABELS_DE : LABELS_EN),
     close: t("common.close"),
-    commands: t("palette.title"),
-    commandPlaceholder: t("palette.placeholder"),
-    noResults: t("palette.empty"),
-    resultCount: t("palette.results", { n: "{count}" }),
-    commandHints: t("palette.hints"),
   };
 }
 

@@ -441,10 +441,7 @@
   },
   "palette": {
     "placeholder": "Typ een opdracht",
-    "empty": "Geen passende opdracht",
-    "title": "Opdrachten",
-    "results": "Resultaten: {{n}}",
-    "hints": "↑ ↓ kiezen · Enter uitvoeren · Esc sluiten"
+    "empty": "Geen passende opdracht"
   },
   "common": {
     "cancel": "Annuleren",

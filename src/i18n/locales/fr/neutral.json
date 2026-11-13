@@ -450,10 +450,7 @@
   },
   "palette": {
     "placeholder": "Tapez une commande",
-    "empty": "Aucune commande correspondante",
-    "title": "Commandes",
-    "results": "Résultats : {{n}}",
-    "hints": "↑ ↓ choisir · Entrée exécuter · Échap fermer"
+    "empty": "Aucune commande correspondante"
   },
   "common": {
     "cancel": "Annuler",

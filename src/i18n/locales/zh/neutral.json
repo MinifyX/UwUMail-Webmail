@@ -432,10 +432,7 @@
   },
   "palette": {
     "placeholder": "输入命令",
-    "empty": "没有匹配的命令",
-    "title": "命令",
-    "results": "{{n}} 个结果",
-    "hints": "↑ ↓ 选择 · Enter 执行 · Esc 关闭"
+    "empty": "没有匹配的命令"
   },
   "common": {
     "cancel": "取消",

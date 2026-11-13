@@ -441,10 +441,7 @@
   },
   "palette": {
     "placeholder": "Befehl eingeben",
-    "empty": "Kein passender Befehl",
-    "title": "Befehle",
-    "results": "Treffer: {{n}}",
-    "hints": "↑ ↓ wählen · Enter ausführen · Esc schließen"
+    "empty": "Kein passender Befehl"
   },
   "common": {
     "cancel": "Abbrechen",
