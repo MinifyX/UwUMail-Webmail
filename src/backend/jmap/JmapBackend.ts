@@ -81,6 +81,7 @@ import type {
   MovedMessage,
   SnoozedMessage,
   UnsnoozeOutcome,
+  OutgoingAttachment,
   OutgoingMessage,
   ParticipationStatus,
   Person,
@@ -1887,32 +1888,8 @@ export class JmapBackend implements Backend {
     if (destroy.length > 0) await one<SetResponse>("Email/set", { destroy });
   }
 
-  async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
-    const saved = await this.storeDraft(draft);
-    const result: DraftSaveResult = {
-      draftKey: saved.draftKey,
-      savedAt: new Date().toISOString(),
-      emailId: saved.emailId,
-    };
-    if (draft.attachments.length === 0) return result;
-    // From now on the draft's own parts: uploads expire, and the older draft is removed on the next save.
-    const stored = await one<GetResponse<JmapEmail>>("Email/get", {
-      ids: [saved.emailId],
-      properties: ["attachments"],
-    });
-    const parts = (stored.list[0]?.attachments ?? []).filter((part) => !!part.blobId);
-    if (parts.length !== draft.attachments.length) return result;
-    return {
-      ...result,
-      attachments: draft.attachments.map((attachment, index) => ({
-        ...attachment,
-        source: { kind: "blob" as const, blobId: parts[index]!.blobId! },
-      })),
-    };
-  }
-
   /** Writes the newest version of a draft and removes every older one with the same key. */
-  private async storeDraft(draft: OutgoingMessage): Promise<{ draftKey: string; emailId: string }> {
+  async saveDraft(draft: OutgoingMessage): Promise<DraftSaveResult> {
     await this.start();
     const drafts = this.folderOrFail("drafts");
     const key = draft.draftKey ?? `uwu-${crypto.randomUUID()}@webmail.local`;
@@ -1921,9 +1898,32 @@ export class JmapBackend implements Backend {
     throwOnError(response);
     const created = response.created?.draft;
     if (!created) throw new BackendError("internal", "The server didn't keep the draft.");
-    await this.destroyDrafts(key, drafts.id, created.id);
+    const attachments = await this.storedAttachments(created.id, draft.attachments);
+    // A part's blob lives only as long as its mail: the older drafts go once nothing points at them.
+    // shortcut: while the new parts can't be read, older drafts stay (one per save), cleaned up on the next good save.
+    if (attachments || !draft.attachments.some((attachment) => attachment.source.kind === "blob")) {
+      await this.destroyDrafts(key, drafts.id, created.id);
+    }
     this.emit({ type: "mail:changed", accountId: this.accountId });
-    return { draftKey: key, emailId: created.id };
+    return { draftKey: key, savedAt: new Date().toISOString(), emailId: created.id, attachments };
+  }
+
+  /** The saved draft's own parts in place of the uploads, which expire; undefined if they can't be matched. */
+  private async storedAttachments(
+    emailId: string,
+    attachments: OutgoingAttachment[],
+  ): Promise<OutgoingAttachment[] | undefined> {
+    if (attachments.length === 0) return undefined;
+    const stored = await one<GetResponse<JmapEmail>>("Email/get", {
+      ids: [emailId],
+      properties: ["attachments"],
+    }).catch(() => null);
+    const parts = (stored?.list[0]?.attachments ?? []).filter((part) => !!part.blobId);
+    if (parts.length !== attachments.length) return undefined;
+    return attachments.map((attachment, index) => ({
+      ...attachment,
+      source: { kind: "blob" as const, blobId: parts[index]!.blobId! },
+    }));
   }
 
   async deleteDraft(_accountId: string, draftKey: string): Promise<void> {

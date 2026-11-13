@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const jmap = vi.hoisted(() => ({ load: vi.fn(), one: vi.fn(), upload: vi.fn() }));
+const jmap = vi.hoisted(() => ({ load: vi.fn(), one: vi.fn(), upload: vi.fn(), drafts: [] as object[] }));
 
 vi.mock("./client", async (original) => {
   const actual = await original<typeof import("./client")>();
@@ -24,7 +24,7 @@ vi.mock("./client", async (original) => {
       methodResponses:
         batch[0]![0] === "Mailbox/get"
           ? [["Mailbox/get", { list: [{ id: "d", name: "Drafts", role: "drafts" }], notFound: [], state: "1" }, "m0"]]
-          : [["Email/get", { list: [] }, "e"]],
+          : [["Email/get", { list: jmap.drafts }, "e"]],
       sessionState: "s1",
     }),
     one: jmap.one,
@@ -98,7 +98,7 @@ describe("JmapBackend and the server's per-call limits", () => {
     expect(jmap.upload).toHaveBeenCalledTimes(1);
     expect(created.map((email) => email.attachments![0]!.blobId)).toEqual(["upload1", "part1"]);
   });
-  it("reads a selection of conversations in one request, without bodies", async () => {
+  it("reads a selection of conversations with one Thread/get and one Email/get, without bodies", async () => {
     jmap.load.mockResolvedValue({});
     jmap.one.mockImplementation(async (name: string, args: { ids: string[] }) => {
       if (name === "Thread/get") return { list: args.ids.map((id) => ({ id, emailIds: [`${id}-a`, `${id}-b`] })) };
@@ -117,5 +117,46 @@ describe("JmapBackend and the server's per-call limits", () => {
     const calls = jmap.one.mock.calls as [string, Record<string, unknown>][];
     expect(calls.map(([name]) => name)).toEqual(["Thread/get", "Email/get"]);
     expect(calls[1]![1].fetchAllBodyValues).toBeUndefined();
+  });
+  it("keeps the older draft while the new draft's parts can't be read, since its blobs go with it", async () => {
+    jmap.load.mockResolvedValue({});
+    jmap.drafts.splice(0, jmap.drafts.length, { id: "old", messageId: ["k@webmail.local"] });
+    let readable = false;
+    jmap.one.mockImplementation(async (name: string, args: { create?: object; destroy?: string[] }) => {
+      if (name === "Identity/get") return { list: [{ id: "i1", email: "mini@uwumail.example", name: "Mini" }] };
+      if (name === "Email/set")
+        return args.create ? { created: { draft: { id: "new" } } } : { destroyed: args.destroy };
+      if (!readable) throw new Error("503");
+      return { list: [{ id: "new", attachments: [{ blobId: "part-new" }] }] };
+    });
+    const backend = await load();
+    const draft = {
+      accountId: "a1",
+      draftKey: "k@webmail.local",
+      to: [],
+      cc: [],
+      bcc: [],
+      subject: "Plan",
+      html: "",
+      text: "",
+      attachments: [
+        {
+          filename: "plan.txt",
+          mimeType: "text/plain",
+          size: 2,
+          source: { kind: "blob" as const, blobId: "part-old" },
+        },
+      ],
+    };
+    const destroyed = () =>
+      (jmap.one.mock.calls as [string, { destroy?: string[] }][])
+        .filter(([, args]) => args.destroy)
+        .map(([, args]) => args.destroy);
+    expect((await backend.saveDraft(draft)).attachments).toBeUndefined();
+    expect(destroyed()).toEqual([]);
+    readable = true;
+    expect((await backend.saveDraft(draft)).attachments![0]!.source).toEqual({ kind: "blob", blobId: "part-new" });
+    expect(destroyed()).toEqual([["old"]]);
+    jmap.drafts.length = 0;
   });
 });
