@@ -54,6 +54,7 @@ import type {
   MaskedAddressPatch,
   MaskedOptions,
   MailtoDraft,
+  Message,
   MovedMessage,
   SnoozedMessage,
   UnsnoozeOutcome,
@@ -227,6 +228,8 @@ export interface Backend {
   emptyFolder(folderId: string): Promise<number>;
   listThreads(query: ThreadQuery): Promise<ThreadPage>;
   getThread(threadId: string, conversations: boolean): Promise<ThreadDetail>;
+  /** The mails of several conversations without bodies, for actions on a selection. */
+  selectionMessages(threadIds: string[], conversations: boolean): Promise<Message[]>;
 
   setFlags(messageIds: string[], change: FlagChange): Promise<void>;
   /**

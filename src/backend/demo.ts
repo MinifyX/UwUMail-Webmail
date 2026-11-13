@@ -431,6 +431,11 @@ export class DemoBackend implements Backend {
     return { thread: this.summarize(threadId, list), messages: structuredClone(messages) };
   }
 
+  async selectionMessages(threadIds: string[], conversations: boolean): Promise<Message[]> {
+    const details = await Promise.all(threadIds.map((id) => this.getThread(id, conversations)));
+    return details.flatMap((detail) => detail.messages);
+  }
+
   /** Like a server with shared folders: what the folder's owner didn't allow is refused. */
   private allowed(messages: Message[], right: keyof FolderRights) {
     for (const message of messages) {

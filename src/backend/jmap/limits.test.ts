@@ -29,6 +29,7 @@ vi.mock("./client", async (original) => {
     }),
     one: jmap.one,
     uploadBlob: jmap.upload,
+    supports: () => false,
   };
 });
 vi.mock("../server", () => ({ currentSession: () => ({ account: { login: "mini@uwumail.example" } }) }));
@@ -96,5 +97,25 @@ describe("JmapBackend and the server's per-call limits", () => {
     await backend.saveDraft({ ...draft, draftKey: first.draftKey, attachments: first.attachments! });
     expect(jmap.upload).toHaveBeenCalledTimes(1);
     expect(created.map((email) => email.attachments![0]!.blobId)).toEqual(["upload1", "part1"]);
+  });
+  it("reads a selection of conversations in one request, without bodies", async () => {
+    jmap.load.mockResolvedValue({});
+    jmap.one.mockImplementation(async (name: string, args: { ids: string[] }) => {
+      if (name === "Thread/get") return { list: args.ids.map((id) => ({ id, emailIds: [`${id}-a`, `${id}-b`] })) };
+      return {
+        list: args.ids.map((id) => ({
+          id,
+          threadId: id.split("-")[0],
+          mailboxIds: {},
+          keywords: {},
+          receivedAt: "2026-11-13T10:00:00Z",
+        })),
+      };
+    });
+    const messages = await (await load()).selectionMessages(["t1", "t2"], true);
+    expect(messages.map((message) => message.id)).toEqual(["t1-a", "t1-b", "t2-a", "t2-b"]);
+    const calls = jmap.one.mock.calls as [string, Record<string, unknown>][];
+    expect(calls.map(([name]) => name)).toEqual(["Thread/get", "Email/get"]);
+    expect(calls[1]![1].fetchAllBodyValues).toBeUndefined();
   });
 });

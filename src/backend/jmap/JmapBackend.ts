@@ -77,6 +77,7 @@ import type {
   MaskedAddressInput,
   MaskedAddressPatch,
   MaskedOptions,
+  Message,
   MovedMessage,
   SnoozedMessage,
   UnsnoozeOutcome,
@@ -1132,6 +1133,46 @@ export class JmapBackend implements Backend {
       thread: toThreadSummary(threadId, emails, accountId),
       messages,
     };
+  }
+
+  async selectionMessages(threadIds: string[], conversations: boolean): Promise<Message[]> {
+    await this.start();
+    const own = this.accountId;
+    const byAccount = new Map<string, { threads: string[]; emails: string[] }>();
+    for (const threadId of threadIds) {
+      const single = threadId.startsWith(SINGLE);
+      const target = unscopeId(single ? threadId.slice(SINGLE.length) : threadId, own);
+      const entry = byAccount.get(target.accountId) ?? { threads: [], emails: [] };
+      (single ? entry.emails : entry.threads).push(target.id);
+      byAccount.set(target.accountId, entry);
+    }
+    const messages: Message[] = [];
+    for (const [accountId, { threads, emails: ids }] of byAccount) {
+      const newest = new Set<string>();
+      for (let start = 0; start < threads.length; start += QUERY_PAGE) {
+        const found = await one<GetResponse<JmapThread>>("Thread/get", {
+          accountId,
+          ids: threads.slice(start, start + QUERY_PAGE),
+        });
+        for (const thread of found.list) {
+          ids.push(...thread.emailIds);
+          if (!conversations) newest.add(thread.id);
+        }
+      }
+      let emails = await this.getEmails(accountId, ids, { properties: this.messageProperties() });
+      if (newest.size > 0) {
+        // Like getThread: without conversations a thread stands for its newest mail only.
+        const kept = new Set<string>();
+        emails = [...emails]
+          .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))
+          .filter((email) => !newest.has(email.threadId) || (!kept.has(email.threadId) && !!kept.add(email.threadId)));
+      }
+      const oneClick = this.oneClickFor(accountId);
+      messages.push(
+        ...emails.map((email) => toMessage(scopeEmail(email, accountId, own), accountId, this.folderMap, oneClick)),
+      );
+    }
+    return messages;
   }
 
   async setFlags(messageIds: string[], change: FlagChange): Promise<void> {

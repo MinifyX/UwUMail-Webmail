@@ -1,8 +1,7 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { backend } from "@/backend/backend";
 import type { Message } from "@/backend/types";
 import { translate } from "@/i18n";
-import { queryKeys, useMessageActions } from "@/lib/queries";
+import { useMessageActions } from "@/lib/queries";
 import { useSettings } from "@/state/settings";
 import { toast } from "@/state/toasts";
 import { moveBack, rememberUndo } from "@/state/undo";
@@ -62,23 +61,12 @@ export async function blockSender(entry: string, accountId: string, messageIds: 
 
 /** Actions on several conversations of the list at once. */
 export function useSelectionActions() {
-  const client = useQueryClient();
   const actions = useMessageActions();
   const conversations = useSettings((s) => s.conversations);
   const snoozing = useSnooze();
 
-  const messagesOf = async (threadIds: string[]) => {
-    const details = await Promise.all(
-      threadIds.map((id) =>
-        client.fetchQuery({
-          queryKey: [...queryKeys.thread, id, conversations],
-          queryFn: () => backend().getThread(id, conversations),
-          staleTime: 30_000,
-        }),
-      ),
-    );
-    return details.flatMap((detail) => detail.messages);
-  };
+  // One request for the whole selection, without bodies: the actions need only ids, folders and flags.
+  const messagesOf = (threadIds: string[]) => backend().selectionMessages(threadIds, conversations);
 
   return {
     messagesOf,
