@@ -1,7 +1,5 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, IconButton, ICONS, TextInput } from "@uwusuite/design";
 import { useEffect, useRef, useState } from "react";
-import { Button, IconButton } from "@/components/ui/Button";
-import { TextInput } from "@/components/ui/Field";
 import { insertDroppedHtml } from "@/features/compose/droppedHtml";
 import { useT } from "@/i18n";
 import { foreignHtml, htmlToPlainText, isSafeLinkTarget } from "@/lib/safeHtml";

@@ -1,6 +1,4 @@
-import { Icon, ICONS } from "@uwusuite/design";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
+import { Button, Dialog, Icon, ICONS } from "@uwusuite/design";
 import { useT } from "@/i18n";
 import { urlParts, visibleText, type LinkCheck } from "@/lib/links";
 import { requestOpenChecked, useLinks } from "@/state/links";

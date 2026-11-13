@@ -1,8 +1,6 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Dialog, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useMemo, useState } from "react";
-import { IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
 import { useUi } from "@/state/ui";
 import type { Command } from "./commands";

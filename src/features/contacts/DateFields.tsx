@@ -1,8 +1,6 @@
-import { ICONS } from "@uwusuite/design";
+import { IconButton, ICONS, Select, TextInput } from "@uwusuite/design";
 import { useId, useState } from "react";
 import type { BirthdayReminder } from "@/backend/types";
-import { IconButton } from "@/components/ui/Button";
-import { Select, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import {
   ageOn,

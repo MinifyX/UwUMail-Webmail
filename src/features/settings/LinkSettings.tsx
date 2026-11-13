@@ -1,7 +1,5 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Icon, IconButton, ICONS, Toggle } from "@uwusuite/design";
 import clsx from "clsx";
-import { IconButton } from "@/components/ui/Button";
-import { Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import { Row } from "./Row";

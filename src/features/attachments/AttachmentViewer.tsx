@@ -1,10 +1,8 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { NyuScene } from "@/components/nyu/scenes";
+import { Button, Dialog, EmptyState, Icon, IconButton, ICONS } from "@uwusuite/design";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Address, Attachment } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { attachmentKind, isDangerous } from "@/lib/attachments";
 import { displayName, formatSize } from "@/lib/format";
@@ -108,7 +106,7 @@ function ViewerBody({ attachments, index, sender, onIndexChange }: AttachmentVie
       <div className="min-h-0 flex-1 bg-canvas">
         {!needsFile ? (
           <EmptyState
-            scene="noPreview"
+            art={<NyuScene name="noPreview" />}
             title={t("attachment.noPreview")}
             body={t("attachment.noPreviewBody")}
             className="h-full"

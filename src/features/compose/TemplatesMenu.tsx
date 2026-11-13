@@ -1,8 +1,5 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Dialog, Field, Icon, IconButton, ICONS, TextInput } from "@uwusuite/design";
 import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { foreignHtml } from "@/lib/safeHtml";
 import { MAX_VALUE_BYTES, valueBytes } from "@/lib/settingsSync";

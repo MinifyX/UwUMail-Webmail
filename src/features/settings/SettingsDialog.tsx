@@ -1,14 +1,11 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Dialog, Icon, IconButton, ICONS, Segmented, Select, Toggle } from "@uwusuite/design";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import pkg from "../../../package.json";
 import { backend } from "@/backend/backend";
 import { PORTAL_URL } from "@/backend/server";
-import { Button, IconButton } from "@/components/ui/Button";
 import { ConfirmDiscardDialog } from "@/components/ui/ConfirmDiscardDialog";
-import { Dialog } from "@/components/ui/Dialog";
-import { Segmented, Select, Toggle } from "@/components/ui/Field";
 import { LogoSymbol } from "@/components/ui/Logo";
 import { HTML_LANG, i18n, LANGUAGE_NAMES, LANGUAGES, useT } from "@/i18n";
 import { useIsPhone } from "@/lib/device";

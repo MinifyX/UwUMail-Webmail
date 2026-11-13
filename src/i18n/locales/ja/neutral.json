@@ -432,7 +432,10 @@
   },
   "palette": {
     "placeholder": "コマンドを入力",
-    "empty": "一致するコマンドはありません"
+    "empty": "一致するコマンドはありません",
+    "title": "コマンド",
+    "results": "{{n}} 件",
+    "hints": "↑ ↓ 選択 · Enter 実行 · Esc 閉じる"
   },
   "common": {
     "cancel": "キャンセル",

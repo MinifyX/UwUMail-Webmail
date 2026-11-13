@@ -1,8 +1,5 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Dialog, Field, Icon, ICONS, TextInput } from "@uwusuite/design";
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { fromLocalInput, sendLaterPresets, sendLaterProblem, toLocalInput } from "@/lib/sendLater";
 

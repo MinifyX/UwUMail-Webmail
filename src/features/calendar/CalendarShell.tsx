@@ -1,8 +1,6 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, IconButton, ICONS, Segmented } from "@uwusuite/design";
 import clsx from "clsx";
 import { useMemo } from "react";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Segmented } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { useBackLayer } from "@/lib/backStack";
 import { monthWeeks } from "@/lib/calendarDates";

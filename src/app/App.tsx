@@ -1,16 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { Button, UwuLabels } from "@uwusuite/design";
 import { useEffect, useState } from "react";
 import { useApplyNyuLevel } from "@/components/nyu/level";
 import { NyuStage } from "@/components/nyu/NyuStage";
 import { NyuScene } from "@/components/nyu/scenes";
-import { Button } from "@/components/ui/Button";
 import { Toaster } from "@/components/ui/Toaster";
 import { DangerousFileQuestion } from "@/features/attachments/DangerousFileQuestion";
 import { DeleteForeverQuestion } from "@/features/mail/DeleteForeverQuestion";
 import { LinkSheet, LinkStatus } from "@/features/mail/LinkPreview";
 import { LinkWarning } from "@/features/mail/LinkWarning";
 import { MailShell } from "@/features/shell/MailShell";
-import { useApplyLanguage, useT } from "@/i18n";
+import { useApplyLanguage, useSuiteLabels, useT } from "@/i18n";
 import { BackendError, isDemo, loadBackend } from "@/backend/backend";
 import { clearLocalDraft } from "@/features/compose/localDraft";
 import { PORTAL_URL, loadSession, webmailAccess } from "@/backend/server";
@@ -103,6 +103,7 @@ export function App() {
   useApplyTheme();
   useApplyNyuLevel();
   useApplyLanguage();
+  const labels = useSuiteLabels();
   // Name, logo and colour of the server; UwUMail until the session says otherwise, and in the demo.
   useApplyBrand();
 
@@ -183,7 +184,7 @@ export function App() {
   }, [client]);
 
   return (
-    <>
+    <UwuLabels labels={labels}>
       {boot.state === "ready" ? <MailShell /> : <BootScreen boot={boot} />}
       <LinkWarning />
       <LinkSheet />
@@ -192,6 +193,6 @@ export function App() {
       <DangerousFileQuestion />
       <NyuStage />
       <Toaster />
-    </>
+    </UwuLabels>
   );
 }

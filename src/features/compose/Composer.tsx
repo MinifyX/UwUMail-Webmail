@@ -1,4 +1,4 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
@@ -11,7 +11,6 @@ import { useIsPhone } from "@/lib/device";
 import { insertDroppedHtml } from "./droppedHtml";
 import { clearLocalDraft, markLocalDraftSaved, saveLocalDraft } from "./localDraft";
 import { AccountDot } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { escapeHtml, formatSize } from "@/lib/format";
 import { modKey } from "@/lib/platform";

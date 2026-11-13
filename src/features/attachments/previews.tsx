@@ -1,9 +1,8 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import type { AttachmentContent } from "@/backend/types";
 import { useT } from "@/i18n";
-import { Button } from "@/components/ui/Button";
 import { parseCsv, parseIcs, parseVcf, type AttachmentKind } from "@/lib/attachments";
 import { draftFromCard } from "../contacts/format";
 import { startNewContact } from "../contacts/state";

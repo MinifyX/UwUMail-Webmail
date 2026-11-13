@@ -1,7 +1,6 @@
-import { ICONS } from "@uwusuite/design";
+import { IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useState } from "react";
-import { IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { addMonths, monthWeeks, startOfWeek, todayKey, type DateKey } from "@/lib/calendarDates";
 import { formatDayLong, formatMonthTitle, formatWeekdayNarrow, weekStart } from "./format";

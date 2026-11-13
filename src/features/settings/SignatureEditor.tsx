@@ -1,8 +1,6 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, IconButton, ICONS, TextInput, Toggle } from "@uwusuite/design";
 import { useRef, useState } from "react";
 import type { Signature } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { TextInput, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { PLACEHOLDERS } from "@/lib/domainSignatures";
 import { pictureAsDataUrl } from "@/lib/images";

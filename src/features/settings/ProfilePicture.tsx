@@ -1,9 +1,9 @@
+import { Toggle } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useState } from "react";
 import { backend, BackendError } from "@/backend/backend";
 import type { PictureVisibility } from "@/backend/types";
-import { Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { initials } from "@/lib/format";
 import { PROFILE_PICTURE, renderPictureBlob, type Crop, type Picture } from "@/lib/pictures";

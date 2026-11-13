@@ -1,11 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Field, Icon, IconButton, ICONS, Select, TextInput } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AssistError, backend } from "@/backend/backend";
 import type { AssistOptions, AssistProvider, AssistProviderKind, ChatgptLogin } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Field, Select, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { ASSIST_KINDS, assistKind } from "@/lib/assistKinds";
 import { queryKeys } from "@/lib/queries";

@@ -1,5 +1,5 @@
+import { TextInput, Toggle } from "@uwusuite/design";
 import clsx from "clsx";
-import { TextInput, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { accountAddress } from "@/lib/arrangement";
 import { useMailboxes, useSharedAccounts } from "@/lib/queries";

@@ -1,10 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Dialog, Icon, IconButton, ICONS, Select } from "@uwusuite/design";
 import { useState } from "react";
 import type { Person, ShareLevel } from "@/backend/types";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Select } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { errorText, usePeople } from "@/lib/queries";
 import { toast } from "@/state/toasts";

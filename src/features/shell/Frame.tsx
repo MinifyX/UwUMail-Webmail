@@ -1,10 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { PORTAL_URL } from "@/backend/server";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
 import { LogoSymbol } from "@/components/ui/Logo";
 import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";

@@ -1,4 +1,4 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, Dialog, Field, IconButton, ICONS, Select, TextInput } from "@uwusuite/design";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type {
   ContactEmail,
@@ -8,10 +8,7 @@ import type {
   ContactPostal,
   ContactRecord,
 } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
 import { ConfirmDiscardDialog } from "@/components/ui/ConfirmDiscardDialog";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, Select, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import { contactPhotoSrc } from "./ContactAvatar";

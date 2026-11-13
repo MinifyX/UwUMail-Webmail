@@ -1,4 +1,4 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Field, Icon, ICONS, Select, Toggle } from "@uwusuite/design";
 import { backend } from "@/backend/backend";
 import {
   ASSIST_FEATURES,
@@ -9,7 +9,6 @@ import {
   type AssistSettings,
   type AssistSettingsPatch,
 } from "@/backend/types";
-import { Field, Select, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { CURRENCY_CHOICES, useSettings, type CurrencyChoice } from "@/state/settings";
 import { toast } from "@/state/toasts";

@@ -1,12 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Field, Icon, IconButton, ICONS, Segmented, Select, Switch, TextInput } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState, type FormEvent } from "react";
 import { backend } from "@/backend/backend";
 import type { MaskedAddress, MaskedAddressPatch, MaskedOptions } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Field, Segmented, Select, TextInput } from "@/components/ui/Field";
-import { Switch } from "@/components/ui/Switch";
 import { translate, useT } from "@/i18n";
 import {
   countByFilter,
@@ -477,8 +474,14 @@ function MaskedRow({
   return (
     <li className="flex items-start gap-2 rounded-xl py-2 pr-1 pl-3 hover:bg-elevated" aria-label={item.email}>
       {!deleted && (
-        <span className="pt-1">
-          <Switch checked={on} disabled={busy} label={t("masked.onOff", { email: item.email })} onChange={onToggle} />
+        <span className="pt-1" title={t("masked.onOff", { email: item.email })}>
+          <Switch
+            size="sm"
+            checked={on}
+            disabled={busy}
+            label={t("masked.onOff", { email: item.email })}
+            onChange={onToggle}
+          />
         </span>
       )}
       {/* On a phone the buttons go under the text, which keeps the whole width. */}

@@ -1,9 +1,8 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Icon, ICONS, TextInput } from "@uwusuite/design";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useId, useState, type ReactNode } from "react";
 import { backend } from "@/backend/backend";
-import { TextInput } from "@/components/ui/Field";
 
 /** A part of the assistant's settings: a small heading, what it is about, and its content. */
 export function Section({

@@ -1,11 +1,8 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, Dialog, Field, ICONS, Segmented, Select, TextInput, Toggle } from "@uwusuite/design";
 import clsx from "clsx";
 import { useState } from "react";
 import type { CalendarOccurrence, EventInput, Recurrence, Weekday } from "@/backend/types";
-import { Button } from "@/components/ui/Button";
 import { ConfirmDiscardDialog } from "@/components/ui/ConfirmDiscardDialog";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, Segmented, Select, TextInput, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import {
   addDays,

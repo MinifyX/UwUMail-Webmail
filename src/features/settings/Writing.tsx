@@ -1,7 +1,5 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, ICONS, Segmented, Toggle } from "@uwusuite/design";
 import { PORTAL_URL } from "@/backend/server";
-import { Button } from "@/components/ui/Button";
-import { Segmented, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { useIdentities } from "@/lib/queries";
 import { UNDO_SEND_CHOICES, useSettings, type UndoSendSeconds } from "@/state/settings";

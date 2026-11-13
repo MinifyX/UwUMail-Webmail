@@ -1,10 +1,8 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, IconButton, ICONS, Select } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Signature } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { queryKeys, useDomainSignatures, useIdentities, useSignatureStore, useSignatures } from "@/lib/queries";
 import { DomainSignatures } from "./DomainSignatures";

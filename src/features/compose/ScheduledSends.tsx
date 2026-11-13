@@ -1,11 +1,8 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Badge, Button, Dialog, Icon, ICONS } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { backend, BackendError } from "@/backend/backend";
 import type { ScheduledSend } from "@/backend/types";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Badge } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
 import { displayName } from "@/lib/format";
 import { queryKeys, useScheduledSends } from "@/lib/queries";

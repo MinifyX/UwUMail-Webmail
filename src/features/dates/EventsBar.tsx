@@ -1,8 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, Spinner } from "@uwusuite/design";
 import clsx from "clsx";
 import { useId, useState } from "react";
 import { NyuThinking } from "@/components/nyu/NyuThinking";
-import { Button, IconButton, Spinner } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import type { DetectedEvent } from "@/lib/dates";
 import { toast } from "@/state/toasts";

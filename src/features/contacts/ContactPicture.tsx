@@ -1,7 +1,6 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, ICONS } from "@uwusuite/design";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
-import { Button } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { CONTACT_PHOTO, renderPicture, type Crop, type Picture } from "@/lib/pictures";
 import { toast } from "@/state/toasts";

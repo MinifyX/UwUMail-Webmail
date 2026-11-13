@@ -1,6 +1,4 @@
-import { ICONS } from "@uwusuite/design";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
+import { Button, Dialog, ICONS } from "@uwusuite/design";
 import { useT } from "@/i18n";
 
 /** Asked before sending when the text speaks of an attachment and none is there. */

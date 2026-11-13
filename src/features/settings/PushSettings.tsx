@@ -1,5 +1,5 @@
+import { Toggle } from "@uwusuite/design";
 import { useState } from "react";
-import { Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { PushError, pushAvailable, serverOffersPush, setPushShowContent, switchPushOff, switchPushOn } from "@/push";
 import { useSettings } from "@/state/settings";

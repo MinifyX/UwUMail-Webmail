@@ -1,9 +1,8 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useEffect, useId, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AssistLabel, AssistLabelLogEntry, Message } from "@/backend/types";
-import { Button } from "@/components/ui/Button";
 import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
 import { formatLongDate } from "@/lib/format";

@@ -1,10 +1,8 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Dialog, Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useState, type KeyboardEvent } from "react";
 import type { Address } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
 import { formatAddress } from "@/lib/format";
 import { urlParts, visibleText, type LinkCheck } from "@/lib/links";

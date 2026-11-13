@@ -1,9 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Badge, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useState } from "react";
 import type { AssistLabel, MailboxView } from "@/backend/types";
-import { IconButton } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
 import { useUi } from "@/state/ui";
 import { useAssistLabels } from "../assist/useAssist";

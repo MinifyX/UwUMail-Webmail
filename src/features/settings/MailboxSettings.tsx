@@ -1,6 +1,4 @@
-import { ICONS } from "@uwusuite/design";
-import { IconButton } from "@/components/ui/Button";
-import { Toggle } from "@/components/ui/Field";
+import { IconButton, ICONS, Toggle } from "@uwusuite/design";
 import { useT } from "@/i18n";
 import { accountAddress, hiddenFromUnified, orderAccounts } from "@/lib/arrangement";
 import { useAccounts, useMailboxes, useSharedAccounts } from "@/lib/queries";

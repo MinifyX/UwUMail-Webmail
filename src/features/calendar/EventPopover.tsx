@@ -1,8 +1,6 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, TextInput } from "@uwusuite/design";
 import { useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
-import { TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { deviceTimeZone } from "@/lib/calendarDates";
 import { showContact } from "../contacts/state";

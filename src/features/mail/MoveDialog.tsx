@@ -1,8 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Dialog, Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useMemo, useState } from "react";
 import type { Folder } from "@/backend/types";
-import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
 import { useFolders, useMessageActions } from "@/lib/queries";
 import { useUi, type MoveRequest } from "@/state/ui";

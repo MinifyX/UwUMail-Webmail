@@ -1,10 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { NyuScene } from "@/components/nyu/scenes";
+import { Button, EmptyState, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ContactRecord } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { useUi } from "@/state/ui";
 import { ContactAvatar } from "./ContactAvatar";
@@ -60,7 +59,7 @@ export function ContactDetail({
   if (!contact) {
     return (
       <section className={clsx("flex items-center justify-center bg-surface", className)}>
-        <EmptyState scene="pick" title={t("contacts.pick")} />
+        <EmptyState art={<NyuScene name="pick" />} title={t("contacts.pick")} />
       </section>
     );
   }

@@ -1,13 +1,10 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Dialog, Field, Icon, IconButton, ICONS, TextInput } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { CalendarInfo } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, TextInput } from "@/components/ui/Field";
 import { ContextMenu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
 import { queryKeys, useSharingAvailable } from "@/lib/queries";

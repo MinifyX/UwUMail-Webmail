@@ -1,11 +1,9 @@
+import { Button, Dialog, Field, TextInput } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Folder } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { queryKeys, useFolders } from "@/lib/queries";
 import { closeFolderDialog, useFolderDialog, type FolderDialog } from "@/state/folderDialog";

@@ -1,8 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Icon, IconButton, ICONS } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { backend } from "@/backend/backend";
 import type { BlockedSender } from "@/backend/types";
-import { IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { useAccounts } from "@/lib/queries";
 import { toast } from "@/state/toasts";

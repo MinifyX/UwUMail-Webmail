@@ -1,10 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, Select, Switch } from "@uwusuite/design";
 import clsx from "clsx";
 import { useEffect, useState, type ReactNode } from "react";
 import { backend } from "@/backend/backend";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Field";
-import { Switch } from "@/components/ui/Switch";
 import { useT } from "@/i18n";
 import { emptyRuleSet, newRule, type MailRule, type RuleSet } from "@/lib/sieveRules";
 import { useFolders } from "@/lib/queries";
@@ -161,12 +158,16 @@ function AccountRules({ accountId }: { accountId: string }) {
         <ol className="flex flex-col gap-1 rounded-2xl border border-hairline p-1" aria-label={t("rules.title")}>
           {set.rules.map((rule, index) => (
             <li key={rule.id} className={clsx("flex items-center gap-2 rounded-xl py-1.5 pr-1 pl-3 hover:bg-elevated")}>
-              <Switch
-                checked={rule.enabled}
-                disabled={saving || locked}
-                label={t("rules.enabled", { name: rule.name })}
-                onChange={(enabled) => change(set.rules.map((r, i) => (i === index ? { ...r, enabled } : r)))}
-              />
+              {/* The package's Switch names itself for screen readers only; the title is for the mouse. */}
+              <span className="flex" title={t("rules.enabled", { name: rule.name })}>
+                <Switch
+                  size="sm"
+                  checked={rule.enabled}
+                  disabled={saving || locked}
+                  label={t("rules.enabled", { name: rule.name })}
+                  onChange={(enabled) => change(set.rules.map((r, i) => (i === index ? { ...r, enabled } : r)))}
+                />
+              </span>
               <button
                 type="button"
                 disabled={locked}

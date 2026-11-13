@@ -1,8 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useEffect, useId, useState } from "react";
 import { backend } from "@/backend/backend";
-import { Button, IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { Caret, Thinking } from "./ComposeAssist";
 import { mailKey, summaryParts, threadKey, useAssistReader } from "./readerState";

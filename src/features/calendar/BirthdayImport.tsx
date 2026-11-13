@@ -1,12 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Dialog, Icon, IconButton, ICONS, TextInput } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useMemo, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { BirthdayCandidate, BirthdayImportEntry, ContactRecord } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { foldName, parseDay } from "@/lib/birthdays";
 import { errorText, queryKeys } from "@/lib/queries";

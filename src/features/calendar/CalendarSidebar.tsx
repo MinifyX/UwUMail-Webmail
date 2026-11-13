@@ -1,6 +1,5 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { Button } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { addMinutes, localWall, withClock } from "@/lib/calendarDates";
 import { CalendarList } from "./CalendarList";

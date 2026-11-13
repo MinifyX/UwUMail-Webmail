@@ -1,8 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Icon, IconButton, ICONS } from "@uwusuite/design";
 import type { LucideIcon } from "lucide-react";
 import type { ReactElement } from "react";
 import type { AssistEstimateRequest, Message } from "@/backend/types";
-import { IconButton } from "@/components/ui/Button";
 import type { MenuItem } from "@/components/ui/Menu";
 import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";

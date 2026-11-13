@@ -1,4 +1,4 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Badge, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -6,9 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { Account, Folder, FolderRights, MailboxView, SharedAccount } from "@/backend/types";
 import { AccountDot } from "@/components/ui/Avatar";
-import { IconButton } from "@/components/ui/Button";
 import { ContextMenu, type MenuItem } from "@/components/ui/Menu";
-import { Badge } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
 import { accountAddress, folderRefOf, hasRef, hiddenFromUnified, orderAccounts, resolveRefs } from "@/lib/arrangement";
 import {

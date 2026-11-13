@@ -1,7 +1,6 @@
+import { Button, Dialog } from "@uwusuite/design";
 import { useState } from "react";
 import { NyuScene } from "@/components/nyu/scenes";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
 import { answerDeleteForever, useDeleteForever } from "@/state/deleteForever";
 import { armedActivation } from "./LinkWarning";

@@ -1,8 +1,7 @@
-import { ICONS } from "@uwusuite/design";
+import { IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useMemo } from "react";
 import type { ContactRecord } from "@/backend/types";
-import { IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { useBackLayer } from "@/lib/backStack";
 import { useIsPhone, useMediaQuery } from "@/lib/device";

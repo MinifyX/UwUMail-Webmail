@@ -1,7 +1,6 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
-import { Button } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { useMediaQuery } from "@/lib/device";
 import { firstPictureFile, type Crop, type Picture } from "@/lib/pictures";

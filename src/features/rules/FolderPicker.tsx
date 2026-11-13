@@ -1,7 +1,6 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Dialog, Icon, ICONS } from "@uwusuite/design";
 import { useMemo, useState } from "react";
 import type { Folder } from "@/backend/types";
-import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
 import { useFolders } from "@/lib/queries";
 import { buildFolderTree, type FolderNode } from "@/features/mail/folderTree";

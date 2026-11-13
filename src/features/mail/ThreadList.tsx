@@ -1,14 +1,11 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { NyuScene } from "@/components/nyu/scenes";
+import { Button, EmptyState, Icon, IconButton, ICONS, Pill, Segmented } from "@uwusuite/design";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { ListFilter, ThreadSummary } from "@/backend/types";
 import type { SceneName } from "@/components/nyu/scenes";
-import { Button, IconButton } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Segmented } from "@/components/ui/Field";
 import { Menu } from "@/components/ui/Menu";
-import { Pill } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
 import { flattenThreads, useAccounts, useMessageActions, useThreadActions, useVisibleAccounts } from "@/lib/queries";
 import { openFolderDialog } from "@/state/folderDialog";
@@ -389,7 +386,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
           <p className="px-6 py-10 text-center text-meta text-muted">{t("list.loading")}</p>
         ) : threads.length === 0 ? (
           <EmptyState
-            scene={EMPTY_SCENES[empty]}
+            art={<NyuScene name={EMPTY_SCENES[empty]} />}
             compact={variant === "pro"}
             title={t(`list.empty.${empty}.title`)}
             body={t(`list.empty.${empty}.body`)}

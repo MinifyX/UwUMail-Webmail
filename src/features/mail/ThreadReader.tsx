@@ -1,10 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { NyuScene } from "@/components/nyu/scenes";
+import { Button, EmptyState, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Message } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { inTrash, useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
@@ -80,7 +79,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
     return (
       <section className={clsx("flex h-full items-center justify-center bg-surface", className)}>
         <EmptyState
-          scene="pick"
+          art={<NyuScene name="pick" />}
           compact={variant === "pro"}
           title={t("reader.empty.title")}
           body={t("reader.empty.body")}
@@ -93,7 +92,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
     return (
       <section className={clsx("flex h-full items-center justify-center bg-surface", className)}>
         <EmptyState
-          scene="loadError"
+          art={<NyuScene name="loadError" />}
           compact={variant === "pro"}
           title={t("reader.error.title")}
           body={t("reader.error.body")}

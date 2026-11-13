@@ -1,11 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { NyuScene } from "@/components/nyu/scenes";
+import { EmptyState, Icon, IconButton, ICONS, Pill } from "@uwusuite/design";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 import type { ListFilter } from "@/backend/types";
 import type { SceneName } from "@/components/nyu/scenes";
-import { IconButton } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Pill } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
 import { codeForThread, useVerificationCodes } from "../codes/codes";
 import { VerificationCodeBar } from "../codes/VerificationCodeBar";
@@ -235,7 +233,7 @@ export function MobileList() {
             <p className="px-6 py-10 text-center text-meta text-muted">{t("list.loading")}</p>
           ) : threads.length === 0 ? (
             <EmptyState
-              scene={EMPTY_SCENES[empty]}
+              art={<NyuScene name={EMPTY_SCENES[empty]} />}
               title={t(`list.empty.${empty}.title`)}
               body={t(`list.empty.${empty}.body`)}
               className="min-h-full"

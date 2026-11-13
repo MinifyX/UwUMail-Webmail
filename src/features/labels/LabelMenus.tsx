@@ -1,10 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Dialog, Icon, ICONS } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useId, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AssistLabel, ThreadSummary } from "@/backend/types";
-import { Dialog } from "@/components/ui/Dialog";
 import { ContextMenu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
 import { queryKeys } from "@/lib/queries";

@@ -1,7 +1,5 @@
-import { ICONS } from "@uwusuite/design";
+import { Button, Dialog, IconButton, ICONS } from "@uwusuite/design";
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
 import { translate, useT } from "@/i18n";
 import {
   MAX_ZOOM,

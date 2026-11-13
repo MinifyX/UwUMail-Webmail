@@ -1,11 +1,9 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Dialog, Icon, ICONS } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AssistLabel, LabelSuggestions, LabelVerdict, NewLabelSuggestion } from "@/backend/types";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
 import { errorText, queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";

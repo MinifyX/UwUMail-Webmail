@@ -1,9 +1,7 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, Tooltip } from "@uwusuite/design";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { requestOpenLink } from "@/state/links";
 import { toast } from "@/state/toasts";
 import {

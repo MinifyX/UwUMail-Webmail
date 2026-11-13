@@ -1,4 +1,4 @@
-import { Icon, ICONS } from "@uwusuite/design";
+import { Button, Field, Icon, IconButton, ICONS, Segmented, Select, TextInput, Toggle } from "@uwusuite/design";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -18,8 +18,6 @@ import {
   type LabelRuleField,
   type LabelRules,
 } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Field, Segmented, Select, TextInput, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { formatLongDate } from "@/lib/format";
 import { queryKeys } from "@/lib/queries";
