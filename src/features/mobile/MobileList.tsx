@@ -1,23 +1,10 @@
+import { NyuScene } from "@/components/nyu/scenes";
+import { EmptyState, Icon, IconButton, ICONS, Pill } from "@uwusuite/design";
 import clsx from "clsx";
-import {
-  Archive,
-  Check,
-  FolderInput,
-  MailCheck,
-  PenLine,
-  RefreshCw,
-  Search,
-  Star,
-  Trash,
-  Trash2,
-  X,
-} from "lucide-react";
+import { MailCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ListFilter } from "@/backend/types";
 import type { SceneName } from "@/components/nyu/scenes";
-import { IconButton } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Pill } from "@/components/ui/Pill";
 import { useT } from "@/i18n";
 import { codeForThread, useVerificationCodes } from "../codes/codes";
 import { VerificationCodeBar } from "../codes/VerificationCodeBar";
@@ -134,7 +121,7 @@ export function MobileList() {
       <header className="flex flex-col gap-2.5 px-3 pt-2 pb-2">
         {selecting ? (
           <div className="flex h-12 items-center gap-1 rounded-2xl bg-pink-tint px-1 text-pink-ink">
-            <IconButton icon={X} label={t("mobile.selection.clear")} onClick={() => setSelected(new Set())} />
+            <IconButton icon={ICONS.close} label={t("mobile.selection.clear")} onClick={() => setSelected(new Set())} />
             <p className="min-w-0 flex-1 truncate text-reading font-bold">
               {t("mobile.selected", { count: selected.size })}
             </p>
@@ -142,19 +129,19 @@ export function MobileList() {
               <IconButton icon={MailCheck} label={t("mobile.swipe.read")} onClick={() => runOnSelection("read")} />
             )}
             {info.rights.flag && (
-              <IconButton icon={Star} label={t("reader.flag")} onClick={() => runOnSelection("flag")} />
+              <IconButton icon={ICONS.favorite} label={t("reader.flag")} onClick={() => runOnSelection("flag")} />
             )}
             {info.rights.archive && (
-              <IconButton icon={Archive} label={t("reader.archive")} onClick={() => runOnSelection("archive")} />
+              <IconButton icon={ICONS.archive} label={t("reader.archive")} onClick={() => runOnSelection("archive")} />
             )}
             {info.rights.remove && (
               <IconButton
-                icon={Trash}
+                icon={ICONS.delete}
                 label={info.isTrash ? t("reader.deleteForever") : t("reader.trash")}
                 onClick={() => runOnSelection("trash")}
               />
             )}
-            {info.rights.remove && <IconButton icon={FolderInput} label={t("reader.move")} onClick={moveSelection} />}
+            {info.rights.remove && <IconButton icon={ICONS.move} label={t("reader.move")} onClick={moveSelection} />}
           </div>
         ) : (
           <div className="flex items-end gap-1 pt-2">
@@ -164,19 +151,19 @@ export function MobileList() {
             </div>
             {(info.isTrash || info.isJunk) && info.folder && threads.length > 0 && (
               <IconButton
-                icon={Trash2}
+                icon={ICONS.delete}
                 label={t(`folders.empty.${info.isJunk ? "junk" : "trash"}`)}
                 onClick={() => openFolderDialog({ kind: "empty", folder: info.folder! })}
               />
             )}
             <IconButton
-              icon={RefreshCw}
+              icon={ICONS.refresh}
               label={t("list.refresh")}
               className={clsx(query.isFetching && "[&>svg]:animate-spin")}
               onClick={() => void refresh()}
             />
             <IconButton
-              icon={Search}
+              icon={ICONS.search}
               label={t("list.search")}
               active={searchOpen}
               onClick={() => {
@@ -187,16 +174,16 @@ export function MobileList() {
               }}
             />
             {accounts.length > 0 && (
-              <IconButton icon={PenLine} label={t("nav.compose")} onClick={() => openCompose({ mode: "new" })} />
+              <IconButton icon={ICONS.compose} label={t("nav.compose")} onClick={() => openCompose({ mode: "new" })} />
             )}
           </div>
         )}
 
         {searchOpen && (
           <div className="relative">
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-              aria-hidden
+            <Icon
+              icon={ICONS.search}
+              className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
             />
             <input
               id={SEARCH_INPUT_ID}
@@ -211,7 +198,9 @@ export function MobileList() {
             />
             <div className="absolute top-1/2 right-1 flex -translate-y-1/2 items-center">
               <SearchHelp onInsert={(term) => setDraftSearch(withSearchTerm(draftSearch, term))} />
-              {draftSearch && <IconButton icon={X} label={t("list.clearSearch")} onClick={() => setDraftSearch("")} />}
+              {draftSearch && (
+                <IconButton icon={ICONS.close} label={t("list.clearSearch")} onClick={() => setDraftSearch("")} />
+              )}
             </div>
           </div>
         )}
@@ -245,7 +234,7 @@ export function MobileList() {
             <p className="px-6 py-10 text-center text-meta text-muted">{t("list.loading")}</p>
           ) : threads.length === 0 ? (
             <EmptyState
-              scene={EMPTY_SCENES[empty]}
+              art={<NyuScene name={EMPTY_SCENES[empty]} />}
               title={t(`list.empty.${empty}.title`)}
               body={t(`list.empty.${empty}.body`)}
               className="min-h-full"
@@ -296,7 +285,7 @@ export function MobileList() {
                               density === "compact" ? "top-2 left-6 size-7" : "top-3 left-[26px] size-10",
                             )}
                           >
-                            <Check className={density === "compact" ? "size-4" : "size-5"} strokeWidth={3} />
+                            <Icon icon={ICONS.done} className={density === "compact" ? "size-4" : "size-5"} />
                           </span>
                         )}
                       </div>

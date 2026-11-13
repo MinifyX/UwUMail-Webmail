@@ -1,70 +1,71 @@
-import clsx from "clsx";
-import { CircleAlert, CircleCheck, Mail, X } from "lucide-react";
+import { Icon, ICONS, type Toast as PackageToast, Toaster as PackageToaster, type ToastStore } from "@uwusuite/design";
+import { useEffect, useState } from "react";
 import { LogoSymbol } from "@/components/ui/Logo";
 import { useT } from "@/i18n";
-import { useEffect, useState } from "react";
 import { useBrand } from "@/state/brand";
-import { useToasts } from "@/state/toasts";
+import { type Toast, useToasts } from "@/state/toasts";
 
-const ICONS = { info: Mail, success: CircleCheck, error: CircleAlert } as const;
+// Most of UwUMail's notes are about a mail (archived, sent, moved), so "info" shows the envelope.
+const TONE_ICONS = { info: ICONS.mail, success: ICONS.success, error: ICONS.error } as const;
 
-export function Toaster() {
-  const { toasts, dismiss } = useToasts();
-  const { t } = useT();
-  const mascot = useBrand((s) => s.mascot);
-
+function toastIcon(item: Toast) {
   return (
-    <div
-      aria-live="polite"
-      className="pointer-events-none fixed bottom-5 left-1/2 z-50 flex w-[min(440px,calc(100vw-32px))] -translate-x-1/2 flex-col items-center gap-2 max-[699px]:top-2 max-[699px]:bottom-auto"
-    >
-      {toasts.map((item) => {
-        const Icon = ICONS[item.tone];
-        return (
-          <div
-            key={item.id}
-            role={item.tone === "error" ? "alert" : "status"}
-            className="pointer-events-auto flex w-full animate-slide-up items-center gap-3 rounded-2xl bg-toast py-2.5 pr-2 pl-4 text-meta font-medium text-toast-ink shadow-float"
-          >
-            <span className="relative shrink-0">
-              <Icon
-                className={clsx("size-[18px]", item.tone === "error" ? "text-toast-danger" : "text-toast-accent")}
-                aria-hidden
-              />
-              {item.effect === "sent" && mascot && (
-                <LogoSymbol
-                  mood="happy"
-                  className="nyu-flyer pointer-events-none absolute -top-2 -left-2 h-8 w-auto animate-nyu-fly"
-                />
-              )}
-            </span>
-            <span className="flex-1">{item.message}</span>
-            {item.countdownTo && <Countdown to={item.countdownTo} />}
-            {item.action && (
-              <button
-                type="button"
-                onClick={() => {
-                  dismiss(item.id);
-                  item.action?.run();
-                }}
-                className="shrink-0 rounded-full px-3 py-1.5 text-meta font-bold text-toast-accent hover:bg-white/10 dark:hover:bg-black/5"
-              >
-                {item.action.label}
-              </button>
-            )}
-            <button
-              type="button"
-              aria-label={t("common.close")}
-              onClick={() => dismiss(item.id)}
-              className="grid size-7 place-items-center rounded-full opacity-70 hover:bg-white/10 hover:opacity-100 dark:hover:bg-black/10"
-            >
-              <X className="size-4" aria-hidden />
-            </button>
-          </div>
-        );
-      })}
-    </div>
+    <>
+      <Icon
+        icon={TONE_ICONS[item.tone]}
+        size="md"
+        className={item.tone === "error" ? "text-toast-danger" : "text-toast-accent"}
+      />
+      {item.effect === "sent" && useBrand.getState().mascot && (
+        <LogoSymbol mood="happy" className="nyu-flyer pointer-events-none absolute -top-2 -left-2 h-8 w-auto" />
+      )}
+    </>
   );
+}
+
+/**
+ * The webmail keeps its own toast state (a duration per toast: the undo toast of a held-back mail
+ * lives exactly as long as the delay) and hands it to the package's toast stack through this view.
+ * Envelope icon, Nyu flying off with a sent mail and the countdown ride along as `icon`/`detail`.
+ */
+function createStoreView(): ToastStore {
+  let source: Toast[] | null = null;
+  let mapped: PackageToast[] = [];
+  const get = () => {
+    const toasts = useToasts.getState().toasts;
+    if (toasts !== source) {
+      source = toasts;
+      mapped = toasts.map((item) => ({
+        id: item.id,
+        message: item.message,
+        tone: item.tone,
+        action: item.action,
+        icon: toastIcon(item),
+        detail: item.countdownTo ? <Countdown to={item.countdownTo} /> : undefined,
+      }));
+    }
+    return mapped;
+  };
+  return {
+    show: (message, options = {}) =>
+      useToasts.getState().show(String(message), options.tone, undefined, { action: options.action }),
+    dismiss: (id) => useToasts.getState().dismiss(id),
+    subscribe(listener) {
+      const unsubscribe = useToasts.subscribe(listener);
+      return () => {
+        unsubscribe();
+        return true;
+      };
+    },
+    get,
+  };
+}
+
+const toastStore = createStoreView();
+
+/** The package's toast stack: bottom centre, at the top on phones. */
+export function Toaster() {
+  return <PackageToaster store={toastStore} />;
 }
 
 /** Whole seconds left until `to`, e.g. until a held-back mail goes out. */
@@ -81,5 +82,5 @@ function Countdown({ to }: { to: string }) {
   const text = new Intl.NumberFormat(i18n.language, { style: "unit", unit: "second", unitDisplay: "narrow" }).format(
     seconds,
   );
-  return <span className="shrink-0 text-caption tabular-nums opacity-70">{text}</span>;
+  return <span className="tabular-nums">{text}</span>;
 }

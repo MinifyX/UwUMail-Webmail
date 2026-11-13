@@ -1,15 +1,12 @@
+import { Button, Dialog, Field, Icon, IconButton, ICONS, TextInput } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { BookUser, Ellipsis, Plus, Star, UsersRound, UserPlus } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AddressBookInfo } from "@/backend/types";
 import { NyuScene } from "@/components/nyu/scenes";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, TextInput } from "@/components/ui/Field";
-import { ContextMenu } from "@/components/ui/Menu";
+import { ContextMenu } from "@/components/ui/ContextMenu";
 import { useT } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";
@@ -25,7 +22,7 @@ export function ContactsSidebar({ className, onNavigate }: { className?: string;
     <nav className={clsx("flex h-full flex-col gap-4 px-3 pt-3 pb-3", className)} aria-label={t("contacts.title")}>
       <Button
         size="lg"
-        icon={UserPlus}
+        icon={ICONS.addContact}
         onClick={() => {
           onNavigate?.();
           startNewContact();
@@ -74,7 +71,7 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
     onNavigate?.();
   };
   const entry = (id: string | null, name: string, icon: LucideIcon, book?: AddressBookInfo) => {
-    const Icon = icon;
+    const Glyph = icon;
     return (
       <li
         key={id ?? "all"}
@@ -97,11 +94,11 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
           onClick={() => pick(id)}
           className="flex min-w-0 flex-1 items-center gap-3 text-left text-body"
         >
-          <Icon className="size-[18px] shrink-0 opacity-80" strokeWidth={2} aria-hidden />
+          <Icon icon={Glyph} size="md" className="shrink-0 opacity-80" />
           <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
           {book?.isDefault && books.length > 1 && (
             <span className="shrink-0 text-muted" title={t("contacts.default")}>
-              <Star className="size-3.5" strokeWidth={2.2} aria-hidden />
+              <Icon icon={ICONS.favorite} size="xs" />
               <span className="sr-only">{t("contacts.default")}</span>
             </span>
           )}
@@ -109,7 +106,7 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
         </button>
         {book && (
           <IconButton
-            icon={Ellipsis}
+            icon={ICONS.more}
             size="sm"
             label={t("contacts.bookActions", { name: book.name })}
             aria-haspopup="menu"
@@ -126,14 +123,14 @@ function AddressBookList({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <section className="flex flex-col gap-0.5" aria-labelledby="uwu-address-books">
-      <ul className="flex flex-col gap-0.5">{entry(null, t("contacts.all"), UsersRound)}</ul>
+      <ul className="flex flex-col gap-0.5">{entry(null, t("contacts.all"), ICONS.contacts)}</ul>
       <div className="flex items-center justify-between pt-3 pr-1 pl-3">
         <h2 id="uwu-address-books" className="text-caption font-bold tracking-wide text-muted uppercase">
           {t("contacts.addressBooks")}
         </h2>
-        <IconButton icon={Plus} size="sm" label={t("contacts.newBook")} onClick={() => setEditing("new")} />
+        <IconButton icon={ICONS.add} size="sm" label={t("contacts.newBook")} onClick={() => setEditing("new")} />
       </div>
-      <ul className="flex flex-col gap-0.5">{books.map((book) => entry(book.id, book.name, BookUser, book))}</ul>
+      <ul className="flex flex-col gap-0.5">{books.map((book) => entry(book.id, book.name, ICONS.contacts, book))}</ul>
 
       <ContextMenu
         at={menu?.at ?? null}

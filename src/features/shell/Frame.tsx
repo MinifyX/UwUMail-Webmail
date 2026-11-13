@@ -1,12 +1,10 @@
+import { Button, Icon, IconButton, ICONS, Menu } from "@uwusuite/design";
 import clsx from "clsx";
-import { CalendarDays, Ellipsis, FolderOpen, Inbox, PenLine, Search, Settings, UsersRound, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { PORTAL_URL } from "@/backend/server";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
 import { LogoSymbol } from "@/components/ui/Logo";
-import { Menu } from "@/components/ui/Menu";
 import { useT } from "@/i18n";
 import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
 import { modKey } from "@/lib/platform";
@@ -43,17 +41,10 @@ function AccountMenu({ side = "above" }: { side?: "above" | "below" }) {
     <Menu
       side={side}
       items={[
-        {
-          label: t("nav.portal"),
-          onSelect: () => window.location.assign(PORTAL_URL),
-          group: account?.email ?? t("nav.account"),
-        },
-        { label: t("nav.settings"), onSelect: () => ui.openSettings(), group: account?.email ?? t("nav.account") },
-        {
-          label: t("settings.shortcuts"),
-          onSelect: () => ui.setShortcutsOpen(true),
-          group: account?.email ?? t("nav.account"),
-        },
+        { heading: account?.email ?? t("nav.account") },
+        { label: t("nav.portal"), onSelect: () => window.location.assign(PORTAL_URL) },
+        { label: t("nav.settings"), onSelect: () => ui.openSettings() },
+        { label: t("settings.shortcuts"), onSelect: () => ui.setShortcutsOpen(true) },
       ]}
       trigger={({ open, toggle, ...aria }) => (
         <button
@@ -67,7 +58,7 @@ function AccountMenu({ side = "above" }: { side?: "above" | "below" }) {
           {account ? (
             <Avatar address={{ name: account.name, email: account.email }} size="sm" />
           ) : (
-            <UsersRound className="size-5 text-muted" aria-hidden />
+            <Icon icon={ICONS.account} size="lg" className="text-muted" />
           )}
         </button>
       )}
@@ -95,7 +86,7 @@ export function IconRail() {
       >
         <LogoSymbol className="h-8 w-auto max-w-10" hop={hops} />
       </button>
-      {SECTIONS.filter(({ id }) => available.includes(id)).map(({ id, icon: Icon }) => (
+      {SECTIONS.filter(({ id }) => available.includes(id)).map(({ id, icon: Glyph }) => (
         <button
           key={id}
           type="button"
@@ -108,7 +99,7 @@ export function IconRail() {
             section === id ? "bg-pink-tint text-pink-ink" : "text-muted hover:bg-pink-tint/50 hover:text-ink",
           )}
         >
-          <Icon className="size-5" strokeWidth={2.2} aria-hidden />
+          <Icon icon={Glyph} size="lg" />
         </button>
       ))}
       <span className="flex-1" aria-hidden />
@@ -122,7 +113,7 @@ export function IconRail() {
           settingsOpen ? "bg-pink-tint text-pink-ink" : "text-muted hover:bg-pink-tint/50 hover:text-ink",
         )}
       >
-        <Settings className="size-5" strokeWidth={2.2} aria-hidden />
+        <Icon icon={ICONS.settings} size="lg" />
       </button>
       <AccountMenu />
     </nav>
@@ -158,10 +149,7 @@ export function GlobalSearch({ className, autoFocus }: { className?: string; aut
 
   return (
     <div role="search" className={clsx("relative", className)}>
-      <Search
-        className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-        aria-hidden
-      />
+      <Icon icon={ICONS.search} className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" />
       <input
         id={SEARCH_INPUT_ID}
         type="search"
@@ -196,7 +184,9 @@ export function GlobalSearch({ className, autoFocus }: { className?: string; aut
             document.getElementById(SEARCH_INPUT_ID)?.focus();
           }}
         />
-        {draft && <IconButton icon={X} size="sm" label={t("list.clearSearch")} onClick={() => setDraft("")} />}
+        {draft && (
+          <IconButton icon={ICONS.close} size="sm" label={t("list.clearSearch")} onClick={() => setDraft("")} />
+        )}
       </div>
     </div>
   );
@@ -211,7 +201,7 @@ export function TopBar() {
       <span aria-hidden />
       <GlobalSearch className="w-full" />
       <div className="flex justify-end">
-        <Button variant="primary" icon={PenLine} onClick={() => openCompose({ mode: "new" })}>
+        <Button variant="primary" icon={ICONS.compose} onClick={() => openCompose({ mode: "new" })}>
           {t("nav.compose")}
         </Button>
       </div>
@@ -236,7 +226,7 @@ export function PhoneTabBar() {
   const tabs: { id: PhoneTab; icon: LucideIcon; label: string; run: () => void }[] = [
     {
       id: "inbox",
-      icon: Inbox,
+      icon: ICONS.inbox,
       label: t("nav.inbox"),
       run: () => {
         const ui = useUi.getState();
@@ -247,7 +237,7 @@ export function PhoneTabBar() {
     },
     {
       id: "folders",
-      icon: FolderOpen,
+      icon: ICONS.folderOpen,
       label: t("nav.menu"),
       run: () => {
         const ui = useUi.getState();
@@ -259,7 +249,7 @@ export function PhoneTabBar() {
       ? [
           {
             id: "calendar" as const,
-            icon: CalendarDays,
+            icon: ICONS.calendar,
             label: t("nav.section.calendar"),
             run: () => useUi.getState().setSection("calendar"),
           },
@@ -269,20 +259,20 @@ export function PhoneTabBar() {
       ? [
           {
             id: "contacts" as const,
-            icon: UsersRound,
+            icon: ICONS.contacts,
             label: t("nav.section.contacts"),
             run: () => useUi.getState().setSection("contacts"),
           },
         ]
       : []),
-    { id: "more", icon: Ellipsis, label: t("mobile.more"), run: () => useUi.getState().setMoreOpen(true) },
+    { id: "more", icon: ICONS.more, label: t("mobile.more"), run: () => useUi.getState().setMoreOpen(true) },
   ];
   return (
     <nav
       aria-label={t("nav.tabs")}
       className="flex shrink-0 border-t border-hairline bg-surface/95 px-1 pt-1 pb-[calc(0.25rem+env(safe-area-inset-bottom))] backdrop-blur"
     >
-      {tabs.map(({ id, icon: Icon, label, run }) => (
+      {tabs.map(({ id, icon: Glyph, label, run }) => (
         <button
           key={id}
           type="button"
@@ -299,7 +289,7 @@ export function PhoneTabBar() {
               active === id && "bg-pink-tint",
             )}
           >
-            <Icon className="size-5" strokeWidth={2.2} aria-hidden />
+            <Icon icon={Glyph} size="lg" />
           </span>
           <span className="max-w-full truncate">{label}</span>
         </button>

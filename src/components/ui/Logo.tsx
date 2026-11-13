@@ -1,5 +1,5 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { Mail } from "lucide-react";
 import { Nyu, type NyuMood } from "@/components/nyu/Nyu";
 import { DEFAULT_BRAND, useBrand } from "@/state/brand";
 
@@ -27,16 +27,16 @@ export function LogoSymbol({ className, title, mood, hop = 0, mascot: override }
         src={logo}
         alt={title ?? ""}
         aria-hidden={!title}
-        className={clsx("object-contain", hop > 0 && "origin-bottom animate-nyu-hop", className)}
+        className={clsx("object-contain", hop > 0 && "nyu-logo-hop", className)}
       />
     );
   }
   if (!mascot) {
     return (
-      <Mail
+      <Icon
+        icon={ICONS.mail}
         key={hop}
-        className={clsx("text-pink", hop > 0 && "origin-bottom animate-nyu-hop", className)}
-        strokeWidth={2.2}
+        className={clsx("text-pink", hop > 0 && "nyu-logo-hop", className)}
         role={title ? "img" : undefined}
         aria-label={title}
         aria-hidden={!title}
@@ -47,7 +47,7 @@ export function LogoSymbol({ className, title, mood, hop = 0, mascot: override }
     <svg
       key={hop}
       viewBox="56 40 400 388"
-      className={clsx("nyu-host overflow-visible", hop > 0 && "origin-bottom animate-nyu-hop", className)}
+      className={clsx("nyu-host overflow-visible", hop > 0 && "nyu-logo-hop", className)}
       role={title ? "img" : undefined}
       aria-hidden={!title}
     >

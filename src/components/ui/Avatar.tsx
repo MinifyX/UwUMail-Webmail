@@ -1,4 +1,4 @@
-import { Blobatar } from "@blobatar/react";
+import { AvatarBlob } from "@uwusuite/design";
 import clsx from "clsx";
 import { useState } from "react";
 import type { AccountColor, Address } from "@/backend/types";
@@ -50,9 +50,7 @@ export function Avatar({ address, size = "md", className }: AvatarProps) {
     >
       {/* The blob (blobatar.dev) waits underneath until the picture is there, and comes back if it
           can't load. Same seed as the app's, so a person looks the same in both. */}
-      {!ready && (
-        <Blobatar aria-hidden="true" animate="hover" className="size-full" name={address.email.trim().toLowerCase()} />
-      )}
+      {!ready && <AvatarBlob seed={address.email} />}
       {shown && (
         <span
           className={clsx(

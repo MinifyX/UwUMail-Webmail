@@ -3,7 +3,6 @@ import {
   clampPane,
   fitPanes,
   INITIAL_WIDTHS,
-  keyedWidth,
   loadPaneWidths,
   PANE_LIMITS,
   PANES_STORAGE_KEY,
@@ -62,14 +61,5 @@ describe("column widths", () => {
     expect(fitPanes(wide, 800, true)).toEqual({ sidebar: PANE_LIMITS.sidebar.min, list: PANE_LIMITS.list.min });
     // Without the folders only the list gives way.
     expect(fitPanes(wide, 900, false)).toEqual({ sidebar: 300, list: 900 - READER_MIN });
-  });
-
-  it("move with the arrow keys, further with Shift, and to the limits with Home and End", () => {
-    expect(keyedWidth("list", 400, "ArrowRight", false)).toBe(416);
-    expect(keyedWidth("list", 400, "ArrowLeft", true)).toBe(336);
-    expect(keyedWidth("sidebar", PANE_LIMITS.sidebar.min, "ArrowLeft", false)).toBe(PANE_LIMITS.sidebar.min);
-    expect(keyedWidth("list", 400, "Home", false)).toBe(PANE_LIMITS.list.min);
-    expect(keyedWidth("list", 400, "End", false)).toBe(PANE_LIMITS.list.max);
-    expect(keyedWidth("list", 400, "Enter", false)).toBeNull();
   });
 });

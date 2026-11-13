@@ -1,8 +1,5 @@
-import { FileText, Pencil, Save, SquarePlus } from "lucide-react";
+import { Button, Dialog, Field, Icon, IconButton, ICONS, TextInput } from "@uwusuite/design";
 import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { foreignHtml } from "@/lib/safeHtml";
 import { MAX_VALUE_BYTES, valueBytes } from "@/lib/settingsSync";
@@ -119,7 +116,7 @@ export function TemplatesMenu({
   return (
     <div ref={root} className="relative inline-flex">
       <IconButton
-        icon={SquarePlus}
+        icon={ICONS.add}
         size="sm"
         label={t("templates.insert")}
         onMouseDown={(e) => e.preventDefault()}
@@ -165,7 +162,7 @@ export function TemplatesMenu({
                   onClick={() => select(() => onPick(template))}
                   className={item}
                 >
-                  <FileText className="size-4 shrink-0 text-muted" aria-hidden />
+                  <Icon icon={ICONS.document} className="shrink-0 text-muted" />
                   <span className="min-w-0">{template.name}</span>
                 </button>
               ))}
@@ -178,7 +175,7 @@ export function TemplatesMenu({
           )}
           <span className="mx-2 my-1 h-px bg-hairline" aria-hidden />
           <button type="button" role="menuitem" onClick={() => select(onSaveDraft)} className={item}>
-            <Save className="size-4 shrink-0 text-muted" aria-hidden />
+            <Icon icon={ICONS.save} className="shrink-0 text-muted" />
             {t("templates.saveDraft")}
           </button>
           <button
@@ -187,7 +184,7 @@ export function TemplatesMenu({
             onClick={() => select(() => useUi.getState().openSettings("templates"))}
             className={item}
           >
-            <Pencil className="size-4 shrink-0 text-muted" aria-hidden />
+            <Icon icon={ICONS.edit} className="shrink-0 text-muted" />
             {t("templates.manage")}
           </button>
         </div>

@@ -1,25 +1,9 @@
+import { NyuScene } from "@/components/nyu/scenes";
+import { Button, EmptyState, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import {
-  AlarmClock,
-  Archive,
-  ArrowLeft,
-  FolderInput,
-  Forward,
-  Inbox,
-  MailOpen,
-  RefreshCw,
-  Reply,
-  ReplyAll,
-  ShieldAlert,
-  ShieldCheck,
-  Star,
-  Trash,
-} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Message } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { inTrash, useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
@@ -95,7 +79,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
     return (
       <section className={clsx("flex h-full items-center justify-center bg-surface", className)}>
         <EmptyState
-          scene="pick"
+          art={<NyuScene name="pick" />}
           compact={variant === "pro"}
           title={t("reader.empty.title")}
           body={t("reader.empty.body")}
@@ -108,12 +92,12 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
     return (
       <section className={clsx("flex h-full items-center justify-center bg-surface", className)}>
         <EmptyState
-          scene="loadError"
+          art={<NyuScene name="loadError" />}
           compact={variant === "pro"}
           title={t("reader.error.title")}
           body={t("reader.error.body")}
           action={
-            <Button icon={RefreshCw} busy={isRefetching} onClick={() => void refetch()}>
+            <Button icon={ICONS.refresh} busy={isRefetching} onClick={() => void refetch()}>
               {t("reader.error.retry")}
             </Button>
           }
@@ -155,46 +139,46 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
       <header className="flex items-center gap-1 border-b border-hairline bg-surface px-3 py-2">
         {variant === "simple" && (
           <IconButton
-            icon={ArrowLeft}
+            icon={ICONS.back}
             label={t("reader.back")}
             onClick={() => selectThread(null)}
             className="mr-1 lg:hidden"
           />
         )}
         <ReplyButton
-          icon={Reply}
+          icon={ICONS.reply}
           label={t("reader.reply")}
           primary
           onClick={() => openCompose({ mode: "reply", source })}
         />
         <ReplyButton
-          icon={ReplyAll}
+          icon={ICONS.replyAll}
           label={t("reader.replyAll")}
           onClick={() => openCompose({ mode: "replyAll", source })}
         />
         <ReplyButton
-          icon={Forward}
+          icon={ICONS.forward}
           label={t("reader.forward")}
           onClick={() => openCompose({ mode: "forward", source })}
         />
         <span className="min-w-2 flex-1" aria-hidden />
         {rights.archive && (
           <IconButton
-            icon={Archive}
+            icon={ICONS.archive}
             label={t("reader.archive")}
             onClick={() => void actions.archive(ids).then(() => selectThread(null))}
           />
         )}
         {rights.remove && (
           <IconButton
-            icon={Trash}
+            icon={ICONS.delete}
             label={trashed ? t("reader.deleteForever") : t("reader.trash")}
             onClick={() => void actions.trash(all).then((gone) => gone && selectThread(null))}
           />
         )}
         {rights.remove && (
           <IconButton
-            icon={FolderInput}
+            icon={ICONS.move}
             label={t("reader.move")}
             onClick={() => requestMove(all, () => selectThread(null))}
           />
@@ -202,28 +186,28 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
         {/* Snoozed mail waits in the account's own Snoozed folder. */}
         {rights.remove && !rights.shared && (
           <IconButton
-            icon={AlarmClock}
+            icon={ICONS.reminder}
             label={t("snooze.action")}
             onClick={() => requestSnooze(all, () => selectThread(null))}
           />
         )}
         {snoozed && (
           <IconButton
-            icon={Inbox}
+            icon={ICONS.inbox}
             label={t("snooze.unsnooze")}
             onClick={() => void unsnooze(all, [data.thread.id]).then(() => selectThread(null))}
           />
         )}
         {rights.spam && (
           <IconButton
-            icon={inJunk ? ShieldCheck : ShieldAlert}
+            icon={inJunk ? ICONS.notSpam : ICONS.spam}
             label={inJunk ? t("reader.notSpam") : t("reader.spam")}
             onClick={() => void actions.spam(ids, !inJunk).then(() => selectThread(null))}
           />
         )}
         {rights.flag && (
           <IconButton
-            icon={Star}
+            icon={ICONS.favorite}
             label={flagged ? t("reader.unflag") : t("reader.flag")}
             active={flagged}
             onClick={() => void actions.setFlags(flagged ? ids : [latest.id], { flagged: !flagged })}
@@ -231,7 +215,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
         )}
         {rights.markSeen && (
           <IconButton
-            icon={MailOpen}
+            icon={ICONS.unread}
             label={t("reader.markUnread")}
             onClick={() => void actions.setFlags([latest.id], { seen: false }).then(() => selectThread(null))}
           />
@@ -294,7 +278,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
 
 /** Reply, reply all and forward: with their names where the reader has room, else just the icon. */
 function ReplyButton({
-  icon: Icon,
+  icon: Glyph,
   label,
   primary,
   onClick,
@@ -317,7 +301,7 @@ function ReplyButton({
           : "border border-line bg-surface text-ink hover:bg-elevated",
       )}
     >
-      <Icon className="size-4 shrink-0" strokeWidth={2.2} aria-hidden />
+      <Icon icon={Glyph} className="shrink-0" />
       <span className="hidden @[640px]:inline">{label}</span>
     </button>
   );

@@ -1,8 +1,5 @@
-import { Clock } from "lucide-react";
+import { Button, Dialog, Field, Icon, ICONS, TextInput } from "@uwusuite/design";
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Field, TextInput } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { fromLocalInput, sendLaterPresets, sendLaterProblem, toLocalInput } from "@/lib/sendLater";
 
@@ -53,7 +50,7 @@ function SendLaterForm({ maxDelay, onClose, onPick }: Omit<SendLaterDialogProps,
               onClick={() => onPick(at.toISOString())}
               className="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-body hover:bg-pink-tint/60"
             >
-              <Clock className="size-4 shrink-0 text-muted" aria-hidden />
+              <Icon icon={ICONS.time} className="shrink-0 text-muted" />
               <span className="min-w-0 flex-1 truncate font-semibold">{t(`compose.later.${preset}`)}</span>
               <span className="shrink-0 text-meta text-muted">{format(at)}</span>
             </button>

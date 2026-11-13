@@ -1,9 +1,7 @@
+import { Button, Icon, IconButton, ICONS, Tooltip } from "@uwusuite/design";
 import clsx from "clsx";
-import { Check, Copy, ExternalLink, Link2, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { requestOpenLink } from "@/state/links";
 import { toast } from "@/state/toasts";
 import {
@@ -68,7 +66,7 @@ function CodeChip({ code, now, copied, onCopy }: ChipProps) {
   const { t } = useTranslation();
   const heuristic = code.source === "heuristic";
   const low = secondsLeft(code.expiresAt, now) < 60;
-  const Shield = heuristic ? ShieldAlert : ShieldCheck;
+  const Shield = heuristic ? ICONS.warning : ICONS.securityCheck;
   return (
     <li
       className={clsx(
@@ -82,7 +80,7 @@ function CodeChip({ code, now, copied, onCopy }: ChipProps) {
         <span className="font-mono text-reading font-bold tracking-[0.04em] tabular-nums">{formatCode(code.code)}</span>
       ) : (
         <span className="flex items-center gap-1.5 text-body font-semibold">
-          <Link2 className="size-4 text-pink-ink" aria-hidden />
+          <Icon icon={ICONS.link} className="text-pink-ink" />
           {t("codes.link")}
         </span>
       )}
@@ -94,12 +92,18 @@ function CodeChip({ code, now, copied, onCopy }: ChipProps) {
       </span>
       {code.kind === "otp" && !code.autofill && <NoAutofillTag />}
       {openableUrl(code) ? (
-        <Button size="sm" icon={ExternalLink} onClick={() => openCodeLink(code)}>
+        <Button size="sm" icon={ICONS.openExternal} onClick={() => openCodeLink(code)}>
           {t("codes.open")}
         </Button>
       ) : (
         code.code && (
-          <IconButton size="sm" icon={copied ? Check : Copy} label={t("codes.copy")} active={copied} onClick={onCopy} />
+          <IconButton
+            size="sm"
+            icon={copied ? ICONS.done : ICONS.copy}
+            label={t("codes.copy")}
+            active={copied}
+            onClick={onCopy}
+          />
         )
       )}
     </li>
@@ -151,7 +155,7 @@ export function CodeHint({ code }: { code: VerificationCode }) {
   const heuristic = code.source === "heuristic";
   const tone = expired ? "info" : heuristic ? "warning" : "success";
   const time = remaining(code.expiresAt, now);
-  const Icon = expired ? ShieldCheck : heuristic ? ShieldAlert : ShieldCheck;
+  const Glyph = expired ? ICONS.securityCheck : heuristic ? ICONS.warning : ICONS.securityCheck;
   const title =
     code.kind === "link"
       ? t("codes.hint.linkTitle", { origin: code.origin, time })
@@ -175,21 +179,21 @@ export function CodeHint({ code }: { code: VerificationCode }) {
         tone === "info" && "border-hairline bg-elevated text-muted",
       )}
     >
-      <Icon className="size-[18px] shrink-0" aria-hidden />
+      <Icon icon={Glyph} size="md" className="shrink-0" />
       <div className="min-w-0 flex-1">
         {!expired && <p className="font-semibold">{title}</p>}
         <p>{body}</p>
       </div>
       {!expired &&
         (openableUrl(code) ? (
-          <Button size="sm" icon={ExternalLink} onClick={() => openCodeLink(code)}>
+          <Button size="sm" icon={ICONS.openExternal} onClick={() => openCodeLink(code)}>
             {t("codes.open")}
           </Button>
         ) : (
           code.code && (
             <IconButton
               size="sm"
-              icon={copied === code.id ? Check : Copy}
+              icon={copied === code.id ? ICONS.done : ICONS.copy}
               label={t("codes.copy")}
               onClick={() => copy(code)}
             />

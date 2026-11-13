@@ -1,12 +1,12 @@
-import { CalendarDays, Mail, UsersRound } from "lucide-react";
+import { ICONS } from "@uwusuite/design";
 import type { AppSection } from "@/state/ui";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
 import { useContactsAvailable } from "../contacts/useContactsData";
 
-export const SECTIONS: { id: AppSection; icon: typeof Mail }[] = [
-  { id: "mail", icon: Mail },
-  { id: "calendar", icon: CalendarDays },
-  { id: "contacts", icon: UsersRound },
+export const SECTIONS: { id: AppSection; icon: typeof ICONS.mail }[] = [
+  { id: "mail", icon: ICONS.mail },
+  { id: "calendar", icon: ICONS.calendar },
+  { id: "contacts", icon: ICONS.contacts },
 ];
 
 /** The sections the server offers besides mail. */

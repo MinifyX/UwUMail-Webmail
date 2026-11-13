@@ -1,8 +1,7 @@
+import { IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { Menu, UserPlus } from "lucide-react";
 import { useMemo } from "react";
 import type { ContactRecord } from "@/backend/types";
-import { IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { useBackLayer } from "@/lib/backStack";
 import { useIsPhone, useMediaQuery } from "@/lib/device";
@@ -83,9 +82,11 @@ function ListHeader({ onMenu }: { onMenu?: () => void }) {
   const title = books.find((book) => book.id === bookId)?.name ?? t("contacts.all");
   return (
     <div className="flex items-center gap-1">
-      {onMenu && <IconButton icon={Menu} label={t("contacts.menu")} onClick={onMenu} className="-ml-1" />}
+      {onMenu && <IconButton icon={ICONS.menu} label={t("contacts.menu")} onClick={onMenu} className="-ml-1" />}
       <h1 className="min-w-0 flex-1 truncate text-title leading-tight font-extrabold tracking-[-0.01em]">{title}</h1>
-      {onMenu && <IconButton icon={UserPlus} label={t("contacts.newContact")} onClick={() => startNewContact()} />}
+      {onMenu && (
+        <IconButton icon={ICONS.addContact} label={t("contacts.newContact")} onClick={() => startNewContact()} />
+      )}
     </div>
   );
 }

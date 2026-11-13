@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { Field, Icon, ICONS, Select, Toggle } from "@uwusuite/design";
 import { backend } from "@/backend/backend";
 import {
   ASSIST_FEATURES,
@@ -9,7 +9,6 @@ import {
   type AssistSettings,
   type AssistSettingsPatch,
 } from "@/backend/types";
-import { Field, Select, Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { CURRENCY_CHOICES, useSettings, type CurrencyChoice } from "@/state/settings";
 import { toast } from "@/state/toasts";
@@ -36,7 +35,7 @@ export function AssistantSettings() {
     <div className="flex flex-col gap-5 py-4">
       <div className="flex gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-pink-tint text-pink">
-          <Sparkles className="size-5" aria-hidden />
+          <Icon icon={ICONS.ai} size="lg" />
         </span>
         <div>
           <p className="text-body font-semibold">{t("assist.settings.title")}</p>

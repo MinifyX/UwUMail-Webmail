@@ -1,6 +1,4 @@
-import { CircleHelp } from "lucide-react";
-import { IconButton } from "@/components/ui/Button";
-import { Menu } from "@/components/ui/Menu";
+import { IconButton, ICONS, Menu } from "@uwusuite/design";
 import { useT } from "@/i18n";
 import { SEARCH_OPERATORS, type SearchOperatorKey } from "@/lib/searchQuery";
 
@@ -36,7 +34,7 @@ export function SearchHelp({ onInsert }: { onInsert: (term: string) => void }) {
       }))}
       trigger={(menu) => (
         <IconButton
-          icon={CircleHelp}
+          icon={ICONS.help}
           size="sm"
           label={t("searchHelp.open")}
           title={`${t("searchHelp.open")}. ${t("searchHelp.hint")}`}

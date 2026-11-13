@@ -1,10 +1,8 @@
+import { Button, Icon, ICONS, Select } from "@uwusuite/design";
 import { useQueryClient } from "@tanstack/react-query";
-import { Info } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BackendError, backend } from "@/backend/backend";
 import type { Signature } from "@/backend/types";
-import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import {
   ALL_DOMAINS,
@@ -64,7 +62,7 @@ function useSave() {
 function Note({ children }: { children: React.ReactNode }) {
   return (
     <p className="flex gap-2 rounded-2xl bg-canvas px-3 py-2 text-meta text-muted">
-      <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+      <Icon icon={ICONS.info} className="mt-0.5 shrink-0" />
       <span>{children}</span>
     </p>
   );

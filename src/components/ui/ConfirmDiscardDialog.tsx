@@ -1,7 +1,7 @@
+import { Button, Dialog } from "@uwusuite/design";
+import { useId } from "react";
 import { NyuScene } from "@/components/nyu/scenes";
 import { useT } from "@/i18n";
-import { Button } from "./Button";
-import { Dialog } from "./Dialog";
 
 interface ConfirmDiscardDialogProps {
   open: boolean;
@@ -12,12 +12,15 @@ interface ConfirmDiscardDialogProps {
 /** Nyu double-checks before a form with unsaved input actually closes. */
 export function ConfirmDiscardDialog({ open, onDiscard, onKeepEditing }: ConfirmDiscardDialogProps) {
   const { t } = useT();
+  const titleId = useId();
   return (
-    <Dialog open={open} onClose={onKeepEditing} width="sm">
+    <Dialog open={open} onClose={onKeepEditing} width="sm" labelledBy={titleId}>
       {open && (
         <div className="flex flex-col items-center gap-3 px-6 pt-2 pb-6 text-center">
           <NyuScene name="search" className="w-44" />
-          <h2 className="text-section font-extrabold text-balance">{t("discardChanges.title")}</h2>
+          <h2 id={titleId} className="text-section font-extrabold text-balance">
+            {t("discardChanges.title")}
+          </h2>
           <p className="text-meta text-muted">{t("discardChanges.body")}</p>
           <div className="flex flex-wrap justify-center gap-2 pt-1">
             <Button variant="primary" autoFocus onClick={onKeepEditing}>

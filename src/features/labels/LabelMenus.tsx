@@ -1,11 +1,10 @@
+import { Dialog, Icon, ICONS } from "@uwusuite/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Check, Minus, Plus, Search, Tags } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { backend } from "@/backend/backend";
 import type { AssistLabel, ThreadSummary } from "@/backend/types";
-import { Dialog } from "@/components/ui/Dialog";
-import { ContextMenu } from "@/components/ui/Menu";
+import { ContextMenu } from "@/components/ui/ContextMenu";
 import { useT } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";
@@ -28,8 +27,8 @@ export function LabelDot({ color, className }: { color: string | null; className
 }
 
 function PresenceMark({ presence }: { presence: LabelPresence }) {
-  if (presence === "all") return <Check className="size-3.5 shrink-0 text-pink" strokeWidth={3} aria-hidden />;
-  if (presence === "some") return <Minus className="size-3.5 shrink-0 text-muted" strokeWidth={3} aria-hidden />;
+  if (presence === "all") return <Icon icon={ICONS.done} size="xs" className="shrink-0 text-pink" />;
+  if (presence === "some") return <Icon icon={ICONS.mixed} size="xs" className="shrink-0 text-muted" />;
   return <span className="size-3.5 shrink-0" aria-hidden />;
 }
 
@@ -74,7 +73,7 @@ export function ThreadLabelMenu({
     {
       label: (
         <span className="flex items-center gap-2.5">
-          <Tags className="size-3.5 shrink-0 text-muted" aria-hidden />
+          <Icon icon={ICONS.labels} size="xs" className="shrink-0 text-muted" />
           {t("labels.quick.more")}
         </span>
       ),
@@ -168,10 +167,7 @@ function PickerBody({ threadIds }: { threadIds: string[] }) {
     <div className="flex flex-col gap-2 px-5 pt-1 pb-5">
       <p className="text-meta text-muted">{t("labels.quick.for", { count: threadIds.length })}</p>
       <div className="relative">
-        <Search
-          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
-          aria-hidden
-        />
+        <Icon icon={ICONS.search} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted" />
         <input
           ref={input}
           role="combobox"
@@ -232,7 +228,7 @@ function PickerBody({ threadIds }: { threadIds: string[] }) {
               current === shown.length && "bg-pink-tint/60",
             )}
           >
-            <Plus className="size-3.5 shrink-0" aria-hidden />
+            <Icon icon={ICONS.add} size="xs" className="shrink-0" />
             <span className="min-w-0 flex-1 truncate">{t("labels.quick.create", { name })}</span>
           </li>
         )}

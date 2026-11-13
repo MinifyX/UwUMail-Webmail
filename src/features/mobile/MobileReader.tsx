@@ -1,26 +1,9 @@
+import { NyuScene } from "@/components/nyu/scenes";
+import { Button, EmptyState, Icon, IconButton, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import {
-  AlarmClock,
-  Archive,
-  ArrowLeft,
-  EllipsisVertical,
-  FolderInput,
-  Forward,
-  Inbox,
-  MailOpen,
-  RefreshCw,
-  Reply,
-  ReplyAll,
-  ShieldAlert,
-  ShieldCheck,
-  Star,
-  Trash,
-} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Message } from "@/backend/types";
-import { Button, IconButton } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/i18n";
 import { useAccounts, useFolders, useMessageActions, useThread } from "@/lib/queries";
 import { useUi } from "@/state/ui";
@@ -43,14 +26,14 @@ function initiallyExpanded(messages: Message[]) {
   return ids;
 }
 
-function BarButton({ icon: Icon, label, onClick }: { icon: LucideIcon; label: string; onClick: () => void }) {
+function BarButton({ icon: Glyph, label, onClick }: { icon: LucideIcon; label: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-muted active:bg-pink-tint active:text-pink-ink"
     >
-      <Icon className="size-5" strokeWidth={2} aria-hidden />
+      <Icon icon={Glyph} size="lg" />
       <span className="max-w-full truncate text-badge font-semibold">{label}</span>
     </button>
   );
@@ -108,14 +91,14 @@ export function MobileReader({ threadId }: { threadId: string }) {
     return (
       <section className="flex h-full flex-col bg-canvas">
         <header className="flex h-14 items-center px-2">
-          <IconButton icon={ArrowLeft} label={t("reader.back")} onClick={back} />
+          <IconButton icon={ICONS.back} label={t("reader.back")} onClick={back} />
         </header>
         <EmptyState
-          scene="loadError"
+          art={<NyuScene name="loadError" />}
           title={t("reader.error.title")}
           body={t("reader.error.body")}
           action={
-            <Button icon={RefreshCw} busy={isRefetching} onClick={() => void refetch()}>
+            <Button icon={ICONS.refresh} busy={isRefetching} onClick={() => void refetch()}>
               {t("reader.error.retry")}
             </Button>
           }
@@ -129,7 +112,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
     return (
       <section className="flex h-full flex-col bg-canvas">
         <header className="flex h-14 items-center px-2">
-          <IconButton icon={ArrowLeft} label={t("reader.back")} onClick={back} />
+          <IconButton icon={ICONS.back} label={t("reader.back")} onClick={back} />
         </header>
         <p className="flex flex-1 items-center justify-center text-meta text-muted">{t("reader.loading")}</p>
       </section>
@@ -153,7 +136,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
   return (
     <section className="flex h-full min-w-0 flex-col bg-canvas" aria-label={data.thread.subject}>
       <header className="relative flex h-14 shrink-0 items-center gap-1 border-b border-hairline bg-surface px-1.5">
-        <IconButton icon={ArrowLeft} label={t("reader.back")} onClick={back} />
+        <IconButton icon={ICONS.back} label={t("reader.back")} onClick={back} />
         <h1 className="min-w-0 flex-1 truncate px-1 text-reading font-bold">
           {data.thread.subject || t("reader.noSubject")}
         </h1>
@@ -166,14 +149,14 @@ export function MobileReader({ threadId }: { threadId: string }) {
         />
         {rights.flag && (
           <IconButton
-            icon={Star}
+            icon={ICONS.favorite}
             label={flagged ? t("reader.unflag") : t("reader.flag")}
             active={flagged}
             onClick={() => void actions.setFlags(flagged ? ids : [latest.id], { flagged: !flagged })}
           />
         )}
         <IconButton
-          icon={EllipsisVertical}
+          icon={ICONS.more}
           label={t("mobile.more")}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -196,7 +179,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
                   }}
                   className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
-                  <FolderInput className="size-[18px] text-muted" aria-hidden />
+                  <Icon icon={ICONS.move} size="md" className="text-muted" />
                   {t("reader.move")}
                 </button>
               )}
@@ -209,7 +192,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
                   }}
                   className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
-                  <AlarmClock className="size-[18px] text-muted" aria-hidden />
+                  <Icon icon={ICONS.reminder} size="md" className="text-muted" />
                   {t("snooze.action")}
                 </button>
               )}
@@ -222,7 +205,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
                   }}
                   className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
-                  <Inbox className="size-[18px] text-muted" aria-hidden />
+                  <Icon icon={ICONS.inbox} size="md" className="text-muted" />
                   {t("snooze.unsnooze")}
                 </button>
               )}
@@ -233,9 +216,9 @@ export function MobileReader({ threadId }: { threadId: string }) {
                   className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
                   {inJunk ? (
-                    <ShieldCheck className="size-[18px] text-muted" aria-hidden />
+                    <Icon icon={ICONS.notSpam} size="md" className="text-muted" />
                   ) : (
-                    <ShieldAlert className="size-[18px] text-muted" aria-hidden />
+                    <Icon icon={ICONS.spam} size="md" className="text-muted" />
                   )}
                   {inJunk ? t("reader.notSpam") : t("reader.spam")}
                 </button>
@@ -246,7 +229,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
                   onClick={() => leaveAfter(actions.setFlags([latest.id], { seen: false }))}
                   className="flex h-12 w-full items-center gap-3 px-4 text-left text-body font-medium active:bg-pink-tint"
                 >
-                  <MailOpen className="size-[18px] text-muted" aria-hidden />
+                  <Icon icon={ICONS.unread} size="md" className="text-muted" />
                   {t("reader.markUnread")}
                 </button>
               )}
@@ -311,27 +294,31 @@ export function MobileReader({ threadId }: { threadId: string }) {
         )}
         aria-label={t("mobile.actions")}
       >
-        <BarButton icon={Reply} label={t("reader.reply")} onClick={() => openCompose({ mode: "reply", source })} />
         <BarButton
-          icon={ReplyAll}
+          icon={ICONS.reply}
+          label={t("reader.reply")}
+          onClick={() => openCompose({ mode: "reply", source })}
+        />
+        <BarButton
+          icon={ICONS.replyAll}
           label={t("mobile.replyAllShort")}
           onClick={() => openCompose({ mode: "replyAll", source })}
         />
         <BarButton
-          icon={Forward}
+          icon={ICONS.forward}
           label={t("reader.forward")}
           onClick={() => openCompose({ mode: "forward", source })}
         />
         {rights.archive && (
           <BarButton
-            icon={Archive}
+            icon={ICONS.archive}
             label={t("mobile.swipe.archive")}
             onClick={() => leaveAfter(actions.archive(ids))}
           />
         )}
         {rights.remove && (
           <BarButton
-            icon={Trash}
+            icon={ICONS.delete}
             label={rights.shared ? t("reader.deleteForever") : t("reader.trash")}
             onClick={() => void actions.trash(all).then((gone) => gone && back())}
           />

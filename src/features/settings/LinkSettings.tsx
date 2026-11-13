@@ -1,7 +1,5 @@
+import { Icon, IconButton, ICONS, Toggle } from "@uwusuite/design";
 import clsx from "clsx";
-import { Link2, X } from "lucide-react";
-import { IconButton } from "@/components/ui/Button";
-import { Toggle } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import { Row } from "./Row";
@@ -42,10 +40,10 @@ export function LinkSettings() {
           >
             {domains.map((domain) => (
               <li key={domain} className="flex items-center gap-3 rounded-xl py-1 pr-1 pl-3 hover:bg-elevated">
-                <Link2 className="size-4 shrink-0 text-faint" aria-hidden />
+                <Icon icon={ICONS.link} className="shrink-0 text-faint" />
                 <span className="selectable min-w-0 flex-1 truncate text-body font-semibold">{domain}</span>
                 <IconButton
-                  icon={X}
+                  icon={ICONS.close}
                   size="sm"
                   label={t("settings.forgetLinkDomain", { domain })}
                   onClick={() => forgetLinkDomains([domain])}

@@ -1,6 +1,4 @@
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { IconButton } from "@/components/ui/Button";
-import { Toggle } from "@/components/ui/Field";
+import { IconButton, ICONS, Toggle } from "@uwusuite/design";
 import { useT } from "@/i18n";
 import { accountAddress, hiddenFromUnified, orderAccounts } from "@/lib/arrangement";
 import { useAccounts, useMailboxes, useSharedAccounts } from "@/lib/queries";
@@ -49,14 +47,14 @@ export function MailboxSettings() {
                       )}
                     </span>
                     <IconButton
-                      icon={ArrowUp}
+                      icon={ICONS.moveUp}
                       size="sm"
                       label={t("settings.accountUp", { email: name ?? mailbox.email })}
                       disabled={index <= 0}
                       onClick={() => moveMailbox(mailboxes, index, index - 1)}
                     />
                     <IconButton
-                      icon={ArrowDown}
+                      icon={ICONS.moveDown}
                       size="sm"
                       label={t("settings.accountDown", { email: name ?? mailbox.email })}
                       disabled={index >= addresses.length - 1}

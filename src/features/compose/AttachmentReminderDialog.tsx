@@ -1,6 +1,4 @@
-import { Paperclip } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
+import { Button, Dialog, ICONS } from "@uwusuite/design";
 import { useT } from "@/i18n";
 
 /** Asked before sending when the text speaks of an attachment and none is there. */
@@ -24,7 +22,7 @@ export function AttachmentReminderDialog({
           <Button variant="ghost" onClick={onSend}>
             {t("attachmentReminder.sendAnyway")}
           </Button>
-          <Button variant="primary" icon={Paperclip} autoFocus onClick={onAttach}>
+          <Button variant="primary" icon={ICONS.attachment} autoFocus onClick={onAttach}>
             {t("attachmentReminder.attach")}
           </Button>
         </div>

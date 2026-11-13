@@ -1,17 +1,6 @@
+import { Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
-import {
-  AlarmClock,
-  Archive,
-  Check,
-  Mail,
-  MailOpen,
-  Paperclip,
-  ShieldAlert,
-  ShieldCheck,
-  Star,
-  Trash,
-} from "lucide-react";
 import type { Account, ThreadSummary } from "@/backend/types";
 import { AccountDot, Avatar } from "@/components/ui/Avatar";
 import { useT } from "@/i18n";
@@ -53,7 +42,7 @@ interface ThreadRowProps {
 }
 
 function QuickAction({
-  icon: Icon,
+  icon: Glyph,
   label,
   active,
   compact,
@@ -79,7 +68,7 @@ function QuickAction({
         active ? "text-pink" : "text-muted hover:bg-pink-tint hover:text-pink-ink",
       )}
     >
-      <Icon className={clsx(compact ? "size-3.5" : "size-4", active && "fill-current")} strokeWidth={2} aria-hidden />
+      <Icon icon={Glyph} className={clsx(compact ? "size-3.5" : "size-4", active && "fill-current")} />
     </button>
   );
 }
@@ -162,7 +151,7 @@ export function ThreadRow({
         <Avatar address={lead} size={compact ? "sm" : variant === "pro" ? "list" : "md"} />
         {checked && (
           <span className="absolute inset-0 grid place-items-center rounded-full bg-pink text-white">
-            <Check className="size-4" strokeWidth={3} aria-hidden />
+            <Icon icon={ICONS.done} />
           </span>
         )}
         {account && (
@@ -194,9 +183,9 @@ export function ThreadRow({
             )}
           </span>
           <span className="flex shrink-0 items-center gap-1.5 self-center transition-opacity group-hover:opacity-0">
-            {thread.hasAttachments && <Paperclip className="size-3.5 text-muted" aria-hidden />}
-            {thread.flagged && <Star className="size-3.5 fill-pink text-pink" aria-hidden />}
-            {snoozedUntil && <AlarmClock className="size-3.5 text-pink-ink" aria-hidden />}
+            {thread.hasAttachments && <Icon icon={ICONS.attachment} size="xs" className="text-muted" />}
+            {thread.flagged && <Icon icon={ICONS.favorite} size="xs" className="fill-pink text-pink" />}
+            {snoozedUntil && <Icon icon={ICONS.reminder} size="xs" className="text-pink-ink" />}
             <span
               className={clsx(
                 "text-caption tabular-nums",
@@ -244,7 +233,7 @@ export function ThreadRow({
       >
         {(rights?.archive ?? true) && (
           <QuickAction
-            icon={Archive}
+            icon={ICONS.archive}
             label={t("reader.archive")}
             compact={compact}
             onClick={() => void actions.archive(thread)}
@@ -252,7 +241,7 @@ export function ThreadRow({
         )}
         {(rights?.spam ?? true) && (
           <QuickAction
-            icon={inJunk ? ShieldCheck : ShieldAlert}
+            icon={inJunk ? ICONS.notSpam : ICONS.spam}
             label={inJunk ? t("reader.notSpam") : t("reader.spam")}
             compact={compact}
             onClick={() => void actions.spam(thread, !inJunk)}
@@ -260,7 +249,7 @@ export function ThreadRow({
         )}
         {(rights?.remove ?? true) && (
           <QuickAction
-            icon={Trash}
+            icon={ICONS.delete}
             label={inTrash ? t("reader.deleteForever") : t("reader.trash")}
             compact={compact}
             onClick={() => void actions.trash(thread)}
@@ -268,7 +257,7 @@ export function ThreadRow({
         )}
         {(rights?.markSeen ?? true) && (
           <QuickAction
-            icon={unread ? MailOpen : Mail}
+            icon={unread ? ICONS.unread : ICONS.mail}
             label={unread ? t("list.markRead") : t("reader.markUnread")}
             compact={compact}
             onClick={() => void actions.toggleRead(thread)}
@@ -276,7 +265,7 @@ export function ThreadRow({
         )}
         {(rights?.flag ?? true) && (
           <QuickAction
-            icon={Star}
+            icon={ICONS.favorite}
             label={thread.flagged ? t("reader.unflag") : t("reader.flag")}
             active={thread.flagged}
             compact={compact}

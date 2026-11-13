@@ -1,10 +1,15 @@
 import "@/test/dom";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { Dialog, UwuLabels } from "@uwusuite/design";
+import type { ReactNode } from "react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { i18n } from "@/i18n";
-import { Dialog } from "./Dialog";
+import { i18n, useSuiteLabels } from "@/i18n";
 
-describe("Dialog", () => {
+function Labelled({ children }: { children: ReactNode }) {
+  return <UwuLabels labels={useSuiteLabels()}>{children}</UwuLabels>;
+}
+
+describe("suite dialog with the webmail's words", () => {
   beforeAll(async () => {
     await i18n.changeLanguage("en");
   });
@@ -13,9 +18,11 @@ describe("Dialog", () => {
   it("stays open on a click beside it and closes with its X", () => {
     const onClose = vi.fn();
     render(
-      <Dialog open onClose={onClose} title="Settings">
-        <p>Body</p>
-      </Dialog>,
+      <Labelled>
+        <Dialog open onClose={onClose} title="Settings">
+          <p>Body</p>
+        </Dialog>
+      </Labelled>,
     );
     // A click on the backdrop lands on the <dialog> element itself.
     fireEvent.click(screen.getByRole("dialog"));

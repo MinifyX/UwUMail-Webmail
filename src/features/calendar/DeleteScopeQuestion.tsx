@@ -1,7 +1,6 @@
+import { Button, Dialog } from "@uwusuite/design";
 import { useState } from "react";
 import type { EventDeleteScope } from "@/backend/types";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
 import { answerDeleteScope, useCalendarUi } from "./state";
 

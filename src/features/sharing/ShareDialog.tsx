@@ -1,10 +1,7 @@
-import { Search, UserPlus, X } from "lucide-react";
+import { Button, Dialog, Icon, IconButton, ICONS, Select } from "@uwusuite/design";
 import { useState } from "react";
 import type { Person, ShareLevel } from "@/backend/types";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
-import { Select } from "@/components/ui/Field";
 import { useT } from "@/i18n";
 import { errorText, usePeople } from "@/lib/queries";
 import { toast } from "@/state/toasts";
@@ -107,7 +104,7 @@ function ShareForm({ sharedWith, onShare, kind }: Pick<ShareDialogProps, "shared
                   {levelOptions}
                 </Select>
                 <IconButton
-                  icon={X}
+                  icon={ICONS.close}
                   size="sm"
                   label={t("sharing.remove", { name: person.name })}
                   disabled={busy !== null}
@@ -143,7 +140,7 @@ function ShareForm({ sharedWith, onShare, kind }: Pick<ShareDialogProps, "shared
               <Button
                 variant="primary"
                 size="sm"
-                icon={UserPlus}
+                icon={ICONS.share}
                 busy={busy === picked.id}
                 onClick={async () => {
                   if (await run(picked.id, level, t("sharing.shared", { name: picked.name }))) {
@@ -160,9 +157,9 @@ function ShareForm({ sharedWith, onShare, kind }: Pick<ShareDialogProps, "shared
         ) : (
           <>
             <div className="relative">
-              <Search
-                className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-                aria-hidden
+              <Icon
+                icon={ICONS.search}
+                className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted"
               />
               <input
                 type="search"

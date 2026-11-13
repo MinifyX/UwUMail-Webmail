@@ -1,26 +1,8 @@
+import { Button, Icon, IconButton, ICONS, Menu, Tooltip } from "@uwusuite/design";
 import clsx from "clsx";
-import {
-  Ban,
-  ChevronDown,
-  Copy,
-  Download,
-  ImageIcon,
-  ImageOff,
-  Moon,
-  MoreHorizontal,
-  PenLine,
-  Printer,
-  Sun,
-  UserPlus,
-  UserRound,
-  Video,
-} from "lucide-react";
 import { Fragment, useId, useMemo, useState } from "react";
 import type { Account, Message } from "@/backend/types";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
-import { Menu } from "@/components/ui/Menu";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { translate, useT } from "@/i18n";
 import { addressRows, fullAddress, type AddressRole } from "@/lib/addresses";
 import { displayName, formatFullDate, formatListDate, formatLongDate } from "@/lib/format";
@@ -86,7 +68,7 @@ function AppearanceToggle({ message, appearance, autoDark }: AppearanceTogglePro
         ? t("reader.appearanceNative")
         : undefined;
   const action = isDark ? t("reader.appearanceShowLight") : t("reader.appearanceShowDark");
-  const Icon = isDark ? Sun : Moon;
+  const Glyph = isDark ? ICONS.lightTheme : ICONS.darkTheme;
 
   return (
     <button
@@ -99,7 +81,7 @@ function AppearanceToggle({ message, appearance, autoDark }: AppearanceTogglePro
       }}
       className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-line px-2.5 text-caption font-semibold text-muted transition-colors hover:border-pink hover:bg-pink-tint hover:text-pink-ink"
     >
-      <Icon className="size-3.5" aria-hidden />
+      <Icon icon={Glyph} size="xs" />
       {isDark ? t("reader.appearanceLight") : t("reader.appearanceDark")}
     </button>
   );
@@ -122,7 +104,7 @@ function RemoteImagesBanner({ email, onLoad }: { email: string; onLoad: () => vo
 
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pink-tint/70 px-4 py-2.5 text-meta text-pink-ink">
-      <ImageOff className="size-4 shrink-0" aria-hidden />
+      <Icon icon={ICONS.imagesBlocked} className="shrink-0" />
       <span className="min-w-[min(100%,14rem)] flex-1">{t("reader.remoteBlocked")}</span>
       <span className="ml-auto flex items-center gap-2">
         <Button size="sm" variant="secondary" onClick={onLoad}>
@@ -138,11 +120,7 @@ function RemoteImagesBanner({ email, onLoad }: { email: string; onLoad: () => vo
             trigger={({ open, toggle, ...menu }) => (
               <Button size="sm" variant="ghost" onClick={toggle} {...menu}>
                 {t("reader.remoteTrust")}
-                <ChevronDown
-                  className={clsx("size-3.5 transition-transform", open && "rotate-180")}
-                  strokeWidth={2.4}
-                  aria-hidden
-                />
+                <Icon icon={ICONS.expand} className={clsx("size-3.5 transition-transform", open && "rotate-180")} />
               </Button>
             )}
           />
@@ -167,7 +145,7 @@ function TrustedImagesNote({ entries, onUntrust }: { entries: string[]; onUntrus
 
   return (
     <p className="-mt-1 flex flex-wrap items-center gap-x-1.5 px-1 text-caption text-muted">
-      <ImageIcon className="size-3.5 shrink-0" aria-hidden />
+      <Icon icon={ICONS.image} size="xs" className="shrink-0" />
       <span className="min-w-0 break-words">{t(`reader.remoteLoading${key}`, who)}</span>
       <span aria-hidden>·</span>
       <button
@@ -195,9 +173,9 @@ function TeamsMeetingBar({ message }: { message: Message }) {
       aria-label={t("reader.teamsMeeting")}
       className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-hairline bg-canvas px-4 py-2.5 text-meta"
     >
-      <Video className="size-4 shrink-0 text-pink" aria-hidden />
+      <Icon icon={ICONS.videoCall} className="shrink-0 text-pink" />
       <p className="min-w-0 flex-1 font-semibold">{t("reader.teamsMeeting")}</p>
-      <Button size="sm" icon={Video} onClick={() => requestOpenLink(link, link)}>
+      <Button size="sm" icon={ICONS.videoCall} onClick={() => requestOpenLink(link, link)}>
         {t("reader.teamsJoin")}
       </Button>
     </section>
@@ -281,7 +259,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
           {message.flags.draft ? <span className="text-danger">{t("reader.draft")}</span> : displayName(message.from)}
         </span>
         <span className="min-w-0 flex-1 truncate text-meta text-muted">{message.snippet}</span>
-        {message.flags.draft && <PenLine className="size-4 shrink-0 text-muted" aria-hidden />}
+        {message.flags.draft && <Icon icon={ICONS.drafts} className="shrink-0 text-muted" />}
         <span className="shrink-0 text-caption text-muted">
           {formatListDate(message.date, i18n.language, t("common.yesterday"))}
         </span>
@@ -318,10 +296,9 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
                 onClick={toggleDetails}
                 className="grid size-6 shrink-0 place-items-center rounded-full text-muted hover:bg-pink-tint hover:text-pink-ink focus-visible:shadow-focus focus-visible:outline-none"
               >
-                <ChevronDown
+                <Icon
+                  icon={ICONS.expand}
                   className={clsx("size-3.5 transition-transform", showDetails && "rotate-180")}
-                  strokeWidth={2.4}
-                  aria-hidden
                 />
               </button>
             </p>
@@ -332,7 +309,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
                 <span className="rounded-full bg-danger-tint px-2 py-0.5 text-caption font-bold text-danger">
                   {t("reader.draft")}
                 </span>
-                <Button size="sm" icon={PenLine} onClick={() => void openDraftMessage(message.id)}>
+                <Button size="sm" icon={ICONS.compose} onClick={() => void openDraftMessage(message.id)}>
                   {t("reader.continueDraft")}
                 </Button>
               </>
@@ -467,7 +444,7 @@ function AddressDetails({ id, message }: { id: string; message: Message }) {
                   onClick={() => copy(address.email)}
                   className="grid size-6 shrink-0 place-items-center rounded-full text-faint hover:bg-pink-tint hover:text-pink-ink focus-visible:shadow-focus focus-visible:outline-none"
                 >
-                  <Copy className="size-3.5" aria-hidden />
+                  <Icon icon={ICONS.copy} size="xs" />
                 </button>
               </span>
             ))}
@@ -500,9 +477,9 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
   };
   const items = [
     // Android's web view can't print; the system share sheet will do that later.
-    ...(nativeAndroid ? [] : [{ label: <MenuLabel icon={Printer} text={t("reader.print")} />, onSelect: onPrint }]),
+    ...(nativeAndroid ? [] : [{ label: <MenuLabel icon={ICONS.print} text={t("reader.print")} />, onSelect: onPrint }]),
     {
-      label: <MenuLabel icon={Download} text={t("reader.saveMessage")} />,
+      label: <MenuLabel icon={ICONS.download} text={t("reader.saveMessage")} />,
       onSelect: () =>
         void backend()
           .saveMessage(message.id)
@@ -515,7 +492,7 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
           ...(known
             ? [
                 {
-                  label: <MenuLabel icon={UserRound} text={t("contacts.showContact")} />,
+                  label: <MenuLabel icon={ICONS.contact} text={t("contacts.showContact")} />,
                   onSelect: () => {
                     useUi.getState().setSection("contacts");
                     useContactsUi.getState().select(known.id);
@@ -525,16 +502,19 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
             : contactsAvailable && email
               ? [
                   {
-                    label: <MenuLabel icon={UserPlus} text={t("contacts.addSender")} />,
+                    label: <MenuLabel icon={ICONS.addContact} text={t("contacts.addSender")} />,
                     onSelect: () => startNewContact(draftFromSender(message.from.name, email)),
                   },
                 ]
               : []),
-          { label: <MenuLabel icon={Ban} text={t("reader.blockSender", { email })} />, onSelect: () => block(email) },
+          {
+            label: <MenuLabel icon={ICONS.block} text={t("reader.blockSender", { email })} />,
+            onSelect: () => block(email),
+          },
           ...(domain
             ? [
                 {
-                  label: <MenuLabel icon={Ban} text={t("reader.blockDomain", { domain })} />,
+                  label: <MenuLabel icon={ICONS.block} text={t("reader.blockDomain", { domain })} />,
                   onSelect: () => block(`@${domain}`),
                 },
               ]
@@ -548,7 +528,7 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
       items={items}
       trigger={(menu) => (
         <IconButton
-          icon={MoreHorizontal}
+          icon={ICONS.more}
           size="sm"
           label={t("reader.more")}
           onClick={menu.toggle}
@@ -561,10 +541,10 @@ function MessageMenu({ message, accounts, onPrint }: { message: Message; account
   );
 }
 
-function MenuLabel({ icon: Icon, text }: { icon: typeof Ban; text: string }) {
+function MenuLabel({ icon: Glyph, text }: { icon: typeof ICONS.block; text: string }) {
   return (
     <span className="flex items-center gap-2.5">
-      <Icon className="size-4 shrink-0 text-muted" aria-hidden />
+      <Icon icon={Glyph} className="shrink-0 text-muted" />
       {text}
     </span>
   );

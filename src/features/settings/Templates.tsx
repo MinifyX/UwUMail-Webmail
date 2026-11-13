@@ -1,7 +1,5 @@
-import { Bold, Italic, Link, List, Pencil, Plus, Trash2 } from "lucide-react";
+import { Button, IconButton, ICONS, TextInput } from "@uwusuite/design";
 import { useEffect, useRef, useState } from "react";
-import { Button, IconButton } from "@/components/ui/Button";
-import { TextInput } from "@/components/ui/Field";
 import { insertDroppedHtml } from "@/features/compose/droppedHtml";
 import { useT } from "@/i18n";
 import { foreignHtml, htmlToPlainText, isSafeLinkTarget } from "@/lib/safeHtml";
@@ -73,13 +71,13 @@ export function Templates() {
                 </span>
               </span>
               <IconButton
-                icon={Pencil}
+                icon={ICONS.edit}
                 size="sm"
                 label={t("templates.edit", { name: template.name })}
                 onClick={() => setEditing(id)}
               />
               <IconButton
-                icon={Trash2}
+                icon={ICONS.delete}
                 size="sm"
                 label={t("templates.delete", { name: template.name })}
                 onClick={() => {
@@ -97,7 +95,7 @@ export function Templates() {
             onCancel={() => setEditing(null)}
           />
         ) : (
-          <Button size="sm" variant="ghost" icon={Plus} className="self-start" onClick={() => setEditing("new")}>
+          <Button size="sm" variant="ghost" icon={ICONS.add} className="self-start" onClick={() => setEditing("new")}>
             {t("templates.add")}
           </Button>
         )}
@@ -165,28 +163,28 @@ function TemplateEditor({
       <div className="overflow-hidden rounded-xl border border-line">
         <div className="flex flex-wrap items-center gap-1 border-b border-hairline bg-canvas px-1.5 py-1">
           <IconButton
-            icon={Bold}
+            icon={ICONS.bold}
             size="sm"
             label={t("compose.bold")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => format("bold")}
           />
           <IconButton
-            icon={Italic}
+            icon={ICONS.italic}
             size="sm"
             label={t("compose.italic")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => format("italic")}
           />
           <IconButton
-            icon={List}
+            icon={ICONS.bulletList}
             size="sm"
             label={t("compose.list")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => format("insertUnorderedList")}
           />
           <IconButton
-            icon={Link}
+            icon={ICONS.link}
             size="sm"
             label={t("compose.link")}
             onMouseDown={(e) => e.preventDefault()}

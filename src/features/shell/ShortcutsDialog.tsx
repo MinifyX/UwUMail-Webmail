@@ -1,4 +1,4 @@
-import { Dialog } from "@/components/ui/Dialog";
+import { Dialog } from "@uwusuite/design";
 import { useT } from "@/i18n";
 import { modKey } from "@/lib/platform";
 import { useUi } from "@/state/ui";

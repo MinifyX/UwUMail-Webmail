@@ -1,3 +1,4 @@
+import { LABELS_DE, LABELS_EN, type Labels } from "@uwusuite/design";
 import i18n from "i18next";
 import { useEffect } from "react";
 import { initReactI18next, useTranslation } from "react-i18next";
@@ -107,6 +108,16 @@ export function useApplyLanguage() {
     if (i18n.language !== language) void i18n.changeLanguage(language);
     document.documentElement.lang = HTML_LANG[language];
   }, [setting]);
+}
+
+/** The words the suite's components say themselves (the close buttons), in the page's language. */
+export function useSuiteLabels(): Labels {
+  const { t, i18n: active } = useT();
+  return {
+    // English for the few words the webmail never shows, German only in German.
+    ...(active.language === "de" ? LABELS_DE : LABELS_EN),
+    close: t("common.close"),
+  };
 }
 
 export { i18n };

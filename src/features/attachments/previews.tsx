@@ -1,9 +1,8 @@
+import { Button, Icon, ICONS } from "@uwusuite/design";
 import clsx from "clsx";
-import { CalendarDays, Mail, MapPin, Phone, User, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { AttachmentContent } from "@/backend/types";
 import { useT } from "@/i18n";
-import { Button } from "@/components/ui/Button";
 import { parseCsv, parseIcs, parseVcf, type AttachmentKind } from "@/lib/attachments";
 import { draftFromCard } from "../contacts/format";
 import { startNewContact } from "../contacts/state";
@@ -131,7 +130,7 @@ function CalendarPreview({ file }: { file: AttachmentContent }) {
       {events.map((event, index) => (
         <article key={index} className="selectable w-full max-w-[520px] rounded-2xl border border-line bg-surface p-6">
           <p className="flex items-center gap-2 text-caption font-bold tracking-wide text-pink-ink uppercase">
-            <CalendarDays className="size-4" aria-hidden />
+            <Icon icon={ICONS.calendar} />
             {event.method === "REQUEST" ? t("attachment.invitation") : t("attachment.event")}
           </p>
           <h3 className="pt-2 text-title font-extrabold">{event.summary}</h3>
@@ -147,7 +146,7 @@ function CalendarPreview({ file }: { file: AttachmentContent }) {
               <>
                 <dt className="text-muted">{t("attachment.where")}</dt>
                 <dd className="flex items-center gap-1.5">
-                  <MapPin className="size-4 text-muted" aria-hidden />
+                  <Icon icon={ICONS.location} className="text-muted" />
                   {event.location}
                 </dd>
               </>
@@ -184,7 +183,7 @@ function ContactPreview({ file }: { file: AttachmentContent }) {
           className="selectable flex w-full max-w-[420px] flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-6 text-center"
         >
           <span className="grid size-16 place-items-center rounded-full bg-pink-tint text-pink-ink">
-            <User className="size-5" aria-hidden />
+            <Icon icon={ICONS.contact} size="lg" />
           </span>
           <div>
             <h3 className="text-title font-extrabold">{card.name}</h3>
@@ -195,19 +194,19 @@ function ContactPreview({ file }: { file: AttachmentContent }) {
           <ul className="flex w-full flex-col gap-2 pt-2 text-body">
             {card.emails.map((email) => (
               <li key={email} className="flex items-center gap-2 rounded-xl bg-canvas px-3 py-2">
-                <Mail className="size-4 text-muted" aria-label={t("attachment.email")} />
+                <Icon icon={ICONS.mail} className="text-muted" aria-label={t("attachment.email")} />
                 {email}
               </li>
             ))}
             {card.phones.map((phone) => (
               <li key={phone} className="flex items-center gap-2 rounded-xl bg-canvas px-3 py-2">
-                <Phone className="size-4 text-muted" aria-label={t("attachment.phone")} />
+                <Icon icon={ICONS.phone} className="text-muted" aria-label={t("attachment.phone")} />
                 {phone}
               </li>
             ))}
           </ul>
           {contactsAvailable && (
-            <Button size="sm" icon={UserPlus} onClick={() => startNewContact(draftFromCard(card))}>
+            <Button size="sm" icon={ICONS.addContact} onClick={() => startNewContact(draftFromCard(card))}>
               {t("contacts.addCard")}
             </Button>
           )}

@@ -1,35 +1,15 @@
+import { Button, Icon, IconButton, ICONS, Menu } from "@uwusuite/design";
 import clsx from "clsx";
-import {
-  ArrowLeft,
-  Bold,
-  Check,
-  ChevronDown,
-  Clock,
-  Info,
-  Italic,
-  Link,
-  List,
-  Maximize2,
-  Minimize2,
-  Paperclip,
-  PenLine,
-  Send,
-  Signature as SignatureIcon,
-  Trash,
-  X,
-} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { backend, BackendError } from "@/backend/backend";
 import type { Identity, OutgoingAttachment, Signature } from "@/backend/types";
-import { Menu } from "@/components/ui/Menu";
 import { defaultSignature, withSignature, withoutSignatureMarker } from "@/lib/signatures";
 import { useBackLayer } from "@/lib/backStack";
 import { useIsPhone } from "@/lib/device";
 import { insertDroppedHtml } from "./droppedHtml";
 import { clearLocalDraft, markLocalDraftSaved, saveLocalDraft } from "./localDraft";
 import { AccountDot } from "@/components/ui/Avatar";
-import { Button, IconButton } from "@/components/ui/Button";
 import { useT } from "@/i18n";
 import { escapeHtml, formatSize } from "@/lib/format";
 import { modKey } from "@/lib/platform";
@@ -582,7 +562,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
     const names = [...draft.to, ...draft.cc, ...draft.bcc].map((a) => a.name || a.email).join(", ");
     return (
       <div className="fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 flex animate-slide-up items-center gap-2 rounded-card bg-toast py-1.5 pr-1.5 pl-4 text-toast-ink shadow-float">
-        <PenLine className="size-4 shrink-0 text-toast-accent" aria-hidden />
+        <Icon icon={ICONS.compose} className="shrink-0 text-toast-accent" />
         <button type="button" onClick={() => setMinimized(false)} className="min-w-0 flex-1 py-1 text-left">
           <span className="block truncate text-body font-bold">
             {names ? t("mobile.draft.to", { names }) : title}
@@ -597,7 +577,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           title={t("compose.discard")}
           className="grid size-10 shrink-0 place-items-center rounded-full hover:bg-white/10"
         >
-          <X className="size-4" aria-hidden />
+          <Icon icon={ICONS.close} />
         </button>
       </div>
     );
@@ -610,9 +590,9 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         onClick={() => setMinimized(false)}
         className="fixed right-6 bottom-0 z-40 flex h-12 w-80 items-center gap-3 rounded-t-2xl bg-toast px-4 text-left text-body font-semibold text-toast-ink shadow-float"
       >
-        <Send className="size-4 text-toast-accent" aria-hidden />
+        <Icon icon={ICONS.send} className="text-toast-accent" />
         <span className="min-w-0 flex-1 truncate">{title}</span>
-        <ChevronDown className="size-4 rotate-180" aria-hidden />
+        <Icon icon={ICONS.expand} className="rotate-180" />
       </button>
     );
   }
@@ -652,7 +632,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
             title={t("compose.minimize")}
             className="grid size-10 place-items-center rounded-full hover:bg-white/10"
           >
-            <ArrowLeft className="size-5" aria-hidden />
+            <Icon icon={ICONS.back} size="lg" />
           </button>
         )}
         <h2 className="min-w-0 flex-1 truncate text-body font-bold">{title}</h2>
@@ -665,7 +645,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
               title={t("compose.minimize")}
               className="grid size-8 place-items-center rounded-full hover:bg-white/10"
             >
-              <ChevronDown className="size-4" aria-hidden />
+              <Icon icon={ICONS.expand} />
             </button>
             <button
               type="button"
@@ -674,7 +654,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
               title={t(large ? "compose.minimize" : "compose.expand")}
               className="grid size-8 place-items-center rounded-full hover:bg-white/10"
             >
-              {large ? <Minimize2 className="size-4" aria-hidden /> : <Maximize2 className="size-4" aria-hidden />}
+              {large ? <Icon icon={ICONS.exitFullscreen} /> : <Icon icon={ICONS.fullscreen} />}
             </button>
           </>
         )}
@@ -685,7 +665,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           title={t("compose.close")}
           className="grid size-8 place-items-center rounded-full hover:bg-white/10"
         >
-          <X className="size-4" aria-hidden />
+          <Icon icon={ICONS.close} />
         </button>
       </header>
 
@@ -764,7 +744,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           className="flex items-center gap-2 border-b border-hairline px-4 py-1.5 text-caption text-muted"
           data-testid="internal-only-note"
         >
-          <Info className="size-3.5 shrink-0" aria-hidden />
+          <Icon icon={ICONS.info} size="xs" className="shrink-0" />
           {t("compose.internalOnly")}
         </p>
       )}
@@ -877,7 +857,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
               key={`${attachment.filename}-${index}`}
               className="flex h-8 items-center gap-2 rounded-full bg-canvas pr-1 pl-3 text-meta"
             >
-              <Paperclip className="size-3.5 text-muted" aria-hidden />
+              <Icon icon={ICONS.attachment} size="xs" className="text-muted" />
               <span className="max-w-[180px] truncate font-semibold">{attachment.filename}</span>
               <span className="text-muted">{formatSize(attachment.size, i18n.language)}</span>
               <button
@@ -889,7 +869,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
                 }}
                 className="grid size-6 place-items-center rounded-full hover:bg-pink-tint"
               >
-                <X className="size-3.5" aria-hidden />
+                <Icon icon={ICONS.close} size="xs" />
               </button>
             </li>
           ))}
@@ -905,7 +885,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
       <footer className="flex items-center gap-1 border-t border-hairline px-3 py-2.5">
         <Button
           variant="primary"
-          icon={Send}
+          icon={ICONS.send}
           busy={sending}
           onClick={() => void send()}
           title={`${t("compose.send")} (${modKey}+Enter)`}
@@ -915,7 +895,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         {maxSendDelay > 0 && (
           <>
             <IconButton
-              icon={Clock}
+              icon={ICONS.sendLater}
               size="sm"
               label={t("compose.later.open")}
               disabled={sending}
@@ -961,34 +941,39 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         </div>
         <span className="mx-1.5 h-5 w-px bg-line" aria-hidden />
         <IconButton
-          icon={Bold}
+          icon={ICONS.bold}
           size="sm"
           label={t("compose.bold")}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => format("bold")}
         />
         <IconButton
-          icon={Italic}
+          icon={ICONS.italic}
           size="sm"
           label={t("compose.italic")}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => format("italic")}
         />
         <IconButton
-          icon={List}
+          icon={ICONS.bulletList}
           size="sm"
           label={t("compose.list")}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => format("insertUnorderedList")}
         />
         <IconButton
-          icon={Link}
+          icon={ICONS.link}
           size="sm"
           label={t("compose.link")}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => format("createLink")}
         />
-        <IconButton icon={Paperclip} size="sm" label={t("compose.attach")} onClick={() => fileInput.current?.click()} />
+        <IconButton
+          icon={ICONS.attachment}
+          size="sm"
+          label={t("compose.attach")}
+          onClick={() => fileInput.current?.click()}
+        />
         <Menu
           side="above"
           items={[
@@ -1000,7 +985,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           ]}
           trigger={(menu) => (
             <IconButton
-              icon={SignatureIcon}
+              icon={ICONS.signature}
               size="sm"
               label={t("compose.signature")}
               onMouseDown={(e) => e.preventDefault()}
@@ -1071,7 +1056,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         />
         <span className="flex-1" />
         <DraftStatus state={saveState} />
-        <IconButton icon={Trash} size="sm" label={t("compose.discard")} onClick={discard} />
+        <IconButton icon={ICONS.delete} size="sm" label={t("compose.discard")} onClick={discard} />
       </footer>
     </section>
   );
@@ -1096,7 +1081,7 @@ function DraftStatus({ state }: { state: SaveState }) {
         state.kind === "local" ? "font-semibold text-danger" : "text-muted",
       )}
     >
-      {state.kind === "saved" && <Check className="size-3.5 shrink-0" aria-hidden />}
+      {state.kind === "saved" && <Icon icon={ICONS.done} size="xs" className="shrink-0" />}
       <span className="truncate">{text}</span>
     </span>
   );

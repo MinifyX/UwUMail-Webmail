@@ -79,20 +79,3 @@ export function fitPanes(widths: PaneWidths, available: number, sidebar: boolean
   }
   return fitted;
 }
-
-/** The width a key on a handle asks for; null for keys that don't move it. */
-export function keyedWidth(pane: Pane, width: number, key: string, shift: boolean): number | null {
-  const step = shift ? KEY_STEP * 4 : KEY_STEP;
-  switch (key) {
-    case "ArrowLeft":
-      return clampPane(pane, width - step);
-    case "ArrowRight":
-      return clampPane(pane, width + step);
-    case "Home":
-      return PANE_LIMITS[pane].min;
-    case "End":
-      return PANE_LIMITS[pane].max;
-    default:
-      return null;
-  }
-}

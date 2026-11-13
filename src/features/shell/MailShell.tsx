@@ -1,3 +1,4 @@
+import { ResizeHandle } from "@uwusuite/design";
 import clsx from "clsx";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
@@ -6,11 +7,10 @@ import { useT } from "@/i18n";
 import { useIsPhone, useMediaQuery } from "@/lib/device";
 import { useBackLayer } from "@/lib/backStack";
 import { useHotkeys, type HotkeyMap } from "@/lib/hotkeys";
-import { fitPanes, keyedWidth, PANE_LIMITS, type Pane } from "@/lib/paneSizes";
+import { fitPanes, KEY_STEP, PANE_LIMITS, type Pane } from "@/lib/paneSizes";
 import { useAccounts, useBackendEvents, useIdentities, useSignatures } from "@/lib/queries";
 import { usePanes } from "@/state/panes";
 import { useUi } from "@/state/ui";
-import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { CalendarShell } from "../calendar/CalendarShell";
 import { DeleteScopeQuestion } from "../calendar/DeleteScopeQuestion";
 import { EventEditor } from "../calendar/EventEditor";
@@ -297,7 +297,7 @@ function PaneHandle({
       onResize={(next) => setWidth(pane, next)}
       onCommit={save}
       onReset={() => reset(pane)}
-      keyedWidth={(key, shift) => keyedWidth(pane, width, key, shift)}
+      step={KEY_STEP}
     />
   );
 }

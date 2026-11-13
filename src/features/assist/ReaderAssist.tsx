@@ -1,14 +1,12 @@
-import { CalendarSearch, FileText, ShieldQuestion, Sparkles, Tags, type LucideIcon } from "lucide-react";
-import type { ReactElement } from "react";
+import { Icon, IconButton, ICONS, Menu } from "@uwusuite/design";
+import type { LucideIcon } from "lucide-react";
 import type { AssistEstimateRequest, Message } from "@/backend/types";
-import { IconButton } from "@/components/ui/Button";
-import type { MenuItem } from "@/components/ui/Menu";
-import { Menu } from "@/components/ui/Menu";
+import type { MenuEntry, MenuItem } from "@uwusuite/design";
 import { useT } from "@/i18n";
 import { useUi } from "@/state/ui";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
 import { findEventsWithAssistant, includesImages } from "../dates/useMailEvents";
-import { EstimateTip } from "./Estimate";
+import { EstimateLabel } from "./Estimate";
 import { mailKey, threadKey, useAssistReader } from "./readerState";
 import { SpamCheckCard } from "./SpamCheckCard";
 import { SummaryCard } from "./SummaryCard";
@@ -29,14 +27,6 @@ export function useReaderAssist(own: boolean) {
 }
 
 /** A menu item's button with the tooltip of about what it costs. */
-const estimated =
-  (request: AssistEstimateRequest) =>
-  (button: ReactElement): ReactElement => (
-    <EstimateTip request={request} beside>
-      {button}
-    </EstimateTip>
-  );
-
 function summarizeRequest(key: { emailId: string } | { threadId: string }, language: string): AssistEstimateRequest {
   return { method: "Assist/summarize", request: { ...key, language } };
 }
@@ -55,65 +45,74 @@ function suggestRequest(emailId: string, language: string): AssistEstimateReques
 }
 
 /** "Label again" for one mail: the model judges every label, the person decides. */
-function labelAgainItem(emailId: string, language: string, text: string, group?: string): MenuItem {
+function labelAgainItem(emailId: string, language: string, text: string): MenuItem {
   return {
-    group,
-    label: <ItemLabel icon={Tags} text={text} />,
+    label: (
+      <EstimateLabel request={suggestRequest(emailId, language)}>
+        <ItemLabel icon={ICONS.labels} text={text} />
+      </EstimateLabel>
+    ),
     onSelect: () => useUi.getState().openLabelSuggest(emailId),
-    wrap: estimated(suggestRequest(emailId, language)),
   };
 }
 
-function ItemLabel({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
+function ItemLabel({ icon: Glyph, text }: { icon: LucideIcon; text: string }) {
   return (
     <span className="flex items-center gap-2.5">
-      <Icon className="size-4 shrink-0 text-muted" aria-hidden />
+      <Icon icon={Glyph} className="shrink-0 text-muted" />
       {text}
     </span>
   );
 }
 
 /** "Summarize" and "Check for spam" for one mail, for its "more" menu. */
-export function useMessageAssistItems(message: Message, own: boolean, fromMe: boolean): MenuItem[] {
+/** Under their own heading, after the mail's other items. */
+export function useMessageAssistItems(message: Message, own: boolean, fromMe: boolean): MenuEntry[] {
   const { t, i18n } = useT();
   const can = useReaderAssist(own);
   const showSummary = useAssistReader((s) => s.showSummary);
   const showSpamCheck = useAssistReader((s) => s.showSpamCheck);
   if (message.flags.draft) return [];
-  const group = t("assist.menuGroup");
-  return [
+  const items: MenuItem[] = [
     ...(can.summarize
       ? [
           {
-            group,
-            label: <ItemLabel icon={FileText} text={t("assist.summary.summarizeMail")} />,
+            label: (
+              <EstimateLabel request={summarizeRequest({ emailId: message.id }, i18n.language)}>
+                <ItemLabel icon={ICONS.summary} text={t("assist.summary.summarizeMail")} />
+              </EstimateLabel>
+            ),
             onSelect: () => showSummary(mailKey(message.id)),
-            wrap: estimated(summarizeRequest({ emailId: message.id }, i18n.language)),
           },
         ]
       : []),
     ...(can.findEvents
       ? [
           {
-            group,
-            label: <ItemLabel icon={CalendarSearch} text={t("dates.find")} />,
+            label: (
+              <EstimateLabel request={eventsRequest(message)}>
+                <ItemLabel icon={ICONS.findEvent} text={t("dates.find")} />
+              </EstimateLabel>
+            ),
             onSelect: () => findEventsWithAssistant(message.id),
-            wrap: estimated(eventsRequest(message)),
           },
         ]
       : []),
     ...(can.spamCheck && !fromMe
       ? [
           {
-            group,
-            label: <ItemLabel icon={ShieldQuestion} text={t("assist.spam.check")} />,
+            label: (
+              <EstimateLabel request={spamRequest(message.id, i18n.language)}>
+                <ItemLabel icon={ICONS.spamCheck} text={t("assist.spam.check")} />
+              </EstimateLabel>
+            ),
             onSelect: () => showSpamCheck(message.id),
-            wrap: estimated(spamRequest(message.id, i18n.language)),
           },
         ]
       : []),
-    ...(can.labelAgain ? [labelAgainItem(message.id, i18n.language, t("labels.suggest.menu"), group)] : []),
+    ...(can.labelAgain ? [labelAgainItem(message.id, i18n.language, t("labels.suggest.menu"))] : []),
   ];
+  return items.length > 0 ? [{ heading: t("assist.menuGroup") }, ...items] : [];
 }
 
 interface ThreadAssistButtonProps {
@@ -142,43 +141,58 @@ export function ThreadAssistButton({ threadId, messages, own, mine, align }: Thr
       ? messages.length > 1
         ? [
             {
-              label: <ItemLabel icon={Sparkles} text={t("assist.summary.summarizeThread")} />,
+              label: (
+                <EstimateLabel request={summarizeRequest({ threadId }, language)}>
+                  <ItemLabel icon={ICONS.ai} text={t("assist.summary.summarizeThread")} />
+                </EstimateLabel>
+              ),
               onSelect: () => showSummary(threadKey(threadId)),
-              wrap: estimated(summarizeRequest({ threadId }, language)),
             },
             ...(newest
               ? [
                   {
-                    label: <ItemLabel icon={FileText} text={t("assist.summary.summarizeLatest")} />,
+                    label: (
+                      <EstimateLabel request={summarizeRequest({ emailId: newest.id }, language)}>
+                        <ItemLabel icon={ICONS.summary} text={t("assist.summary.summarizeLatest")} />
+                      </EstimateLabel>
+                    ),
                     onSelect: () => showSummary(mailKey(newest.id)),
-                    wrap: estimated(summarizeRequest({ emailId: newest.id }, language)),
                   },
                 ]
               : []),
           ]
         : [
             {
-              label: <ItemLabel icon={Sparkles} text={t("assist.summary.summarizeMail")} />,
+              label: (
+                <EstimateLabel request={summarizeRequest({ emailId: messages[0]!.id }, language)}>
+                  <ItemLabel icon={ICONS.ai} text={t("assist.summary.summarizeMail")} />
+                </EstimateLabel>
+              ),
               onSelect: () => showSummary(mailKey(messages[0]!.id)),
-              wrap: estimated(summarizeRequest({ emailId: messages[0]!.id }, language)),
             },
           ]
       : []),
     ...(can.findEvents && forEvents
       ? [
           {
-            label: <ItemLabel icon={CalendarSearch} text={t("dates.find")} />,
+            label: (
+              <EstimateLabel request={eventsRequest(forEvents)}>
+                <ItemLabel icon={ICONS.findEvent} text={t("dates.find")} />
+              </EstimateLabel>
+            ),
             onSelect: () => findEventsWithAssistant(forEvents.id),
-            wrap: estimated(eventsRequest(forEvents)),
           },
         ]
       : []),
     ...(can.spamCheck && newest
       ? [
           {
-            label: <ItemLabel icon={ShieldQuestion} text={t("assist.spam.check")} />,
+            label: (
+              <EstimateLabel request={spamRequest(newest.id, language)}>
+                <ItemLabel icon={ICONS.spamCheck} text={t("assist.spam.check")} />
+              </EstimateLabel>
+            ),
             onSelect: () => showSpamCheck(newest.id),
-            wrap: estimated(spamRequest(newest.id, language)),
           },
         ]
       : []),
@@ -199,7 +213,7 @@ export function ThreadAssistButton({ threadId, messages, own, mine, align }: Thr
       items={items}
       trigger={(menu) => (
         <IconButton
-          icon={Sparkles}
+          icon={ICONS.ai}
           label={t("assist.reader.button")}
           onClick={menu.toggle}
           aria-haspopup={menu["aria-haspopup"]}
