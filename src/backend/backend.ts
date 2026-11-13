@@ -54,6 +54,7 @@ import type {
   MaskedAddressPatch,
   MaskedOptions,
   MailtoDraft,
+  Message,
   MovedMessage,
   SnoozedMessage,
   UnsnoozeOutcome,
@@ -227,6 +228,8 @@ export interface Backend {
   emptyFolder(folderId: string): Promise<number>;
   listThreads(query: ThreadQuery): Promise<ThreadPage>;
   getThread(threadId: string, conversations: boolean): Promise<ThreadDetail>;
+  /** The mails of several conversations without bodies, for actions on a selection. */
+  selectionMessages(threadIds: string[], conversations: boolean): Promise<Message[]>;
 
   setFlags(messageIds: string[], change: FlagChange): Promise<void>;
   /**
@@ -279,6 +282,8 @@ export interface Backend {
   scheduledSends(): Promise<ScheduledSend[]>;
   /** How far ahead "send later" may go, in seconds; 0 where the server can't hold mail. */
   maxSendDelay(): Promise<number>;
+  /** The largest file the server takes in one upload, in bytes; 0 when it doesn't say. */
+  maxUploadSize(): Promise<number>;
   /** Whether the account may only send to addresses on its own server, and which domains those are. */
   sendPolicy(accountId?: string): Promise<SendPolicy>;
   /** Saves into the Drafts folder, replacing the draft's earlier version. */

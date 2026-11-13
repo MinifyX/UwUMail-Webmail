@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useApplyNyuLevel } from "@/components/nyu/level";
 import { NyuStage } from "@/components/nyu/NyuStage";
@@ -11,6 +12,7 @@ import { LinkWarning } from "@/features/mail/LinkWarning";
 import { MailShell } from "@/features/shell/MailShell";
 import { useApplyLanguage, useT } from "@/i18n";
 import { BackendError, isDemo, loadBackend } from "@/backend/backend";
+import { clearLocalDraft } from "@/features/compose/localDraft";
 import { PORTAL_URL, loadSession, webmailAccess } from "@/backend/server";
 import { useApplyBrand } from "@/lib/brand";
 import { useApplyTheme } from "@/lib/theme";
@@ -119,8 +121,8 @@ export function App() {
         const session = await loadSession();
         if (cancelled) return;
         if (!session) {
-          // The subscription belonged to the session that ended; the browser's goes too.
-          void forgetWebPush();
+          // The subscription belonged to the session that ended; the browser's goes too, and so
+          // does an unsent draft on a shared computer.
           setBoot({ state: "signedOut" });
           return;
         }
@@ -143,7 +145,6 @@ export function App() {
       } catch (error) {
         if (cancelled) return;
         if (error instanceof BackendError && error.code === "signed_out") {
-          void forgetWebPush();
           setBoot({ state: "signedOut" });
           return;
         }
@@ -158,6 +159,28 @@ export function App() {
       cancelled = true;
     };
   }, []);
+
+  // Signed out: after the shell is gone, so a composer's last local copy is cleared too.
+  useEffect(() => {
+    if (boot.state !== "signedOut") return;
+    void forgetWebPush();
+    clearLocalDraft();
+  }, [boot.state]);
+
+  // A session that ends while the tab is open leads back to the login, not to error toasts.
+  const client = useQueryClient();
+  useEffect(() => {
+    const ended = (event: { type: string; action?: { type: string; error?: unknown } }) => {
+      const error = event.type === "updated" && event.action?.type === "error" ? event.action.error : null;
+      if (error instanceof BackendError && error.code === "signed_out") setBoot({ state: "signedOut" });
+    };
+    const stopQueries = client.getQueryCache().subscribe(ended);
+    const stopMutations = client.getMutationCache().subscribe(ended);
+    return () => {
+      stopQueries();
+      stopMutations();
+    };
+  }, [client]);
 
   return (
     <>

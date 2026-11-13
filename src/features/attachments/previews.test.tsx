@@ -54,4 +54,13 @@ describe("PDF preview", () => {
     expect(screen.queryByTitle("invoice.pdf")).toBeNull();
     expect(create).not.toHaveBeenCalled();
   });
+  it("says the download failed instead of showing the server's error page", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("<h1>Session expired</h1>", { status: 401 })),
+    );
+    render(<AttachmentPreview file={file("Rechnung.pdf")} kind="pdf" />);
+    expect(await screen.findByText(/Couldn't load the attachment. HTTP 401/)).toBeTruthy();
+    expect(screen.queryByText(/isn't one/)).toBeNull();
+  });
 });

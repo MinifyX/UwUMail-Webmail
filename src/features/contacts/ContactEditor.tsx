@@ -85,7 +85,6 @@ function EditorDialog({ request, onClose }: { request: ContactEditorRequest | nu
       <Dialog
         open
         onClose={requestClose}
-        closeOnOutsideClick={!dirty}
         title={contact ? t("contacts.editContact") : t("contacts.newContact")}
         width="md"
       >

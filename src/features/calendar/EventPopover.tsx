@@ -218,18 +218,18 @@ export function QuickCreate() {
     }
   };
 
+  const dismiss = () => {
+    setTitle("");
+    close();
+  };
+
   return (
-    <Popover
-      key={`${quick.start}-${quick.end}`}
-      anchor={quick.anchor}
-      label={t("calendar.newEvent")}
-      onClose={() => {
-        setTitle("");
-        close();
-      }}
-    >
+    <Popover key={`${quick.start}-${quick.end}`} anchor={quick.anchor} label={t("calendar.newEvent")} onClose={dismiss}>
+      <div className="flex justify-end px-2 pt-2">
+        <IconButton icon={X} label={t("common.close")} onClick={dismiss} />
+      </div>
       <form
-        className="flex flex-col gap-3 p-5"
+        className="flex flex-col gap-3 px-5 pb-5"
         onSubmit={(event) => {
           event.preventDefault();
           void save();
@@ -241,6 +241,7 @@ export function QuickCreate() {
           placeholder={t("calendar.titlePlaceholder")}
           aria-label={t("calendar.eventTitle")}
           maxLength={500}
+          data-autofocus
         />
         <p className="flex items-center gap-2 text-meta text-muted">
           <Clock className="size-4 shrink-0" aria-hidden />

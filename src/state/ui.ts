@@ -187,7 +187,11 @@ export const useUi = create<UiState>()((set, get) => ({
     }),
   setFilter: (filter) =>
     set({ filter, selectedThreadId: null, checkedThreadIds: [], selectionAnchor: null, selectionCursor: null }),
-  setSearch: (search) => set({ search }),
+  // A new search shows other mail, so what was checked in the old list goes, as with a new filter.
+  setSearch: (search) =>
+    set((state) =>
+      state.search === search ? {} : { search, checkedThreadIds: [], selectionAnchor: null, selectionCursor: null },
+    ),
   selectThread: (id) =>
     set(id ? { selectedThreadId: id, selectionAnchor: id, selectionCursor: null } : { selectedThreadId: null }),
   setVisibleThreadIds: (ids) => set({ visibleThreadIds: ids }),

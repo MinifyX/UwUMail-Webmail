@@ -33,6 +33,7 @@ import { requestMove } from "../mail/selection";
 import { requestSnooze, someSnoozed, useSnooze } from "../mail/snooze";
 import { mailRights } from "../mail/rights";
 import { useNyuOnOpen } from "../mail/nyuOnOpen";
+import { replySource } from "@/features/compose/draft";
 
 /** Messages that start expanded: the newest one plus every unread one. */
 function initiallyExpanded(messages: Message[]) {
@@ -137,6 +138,7 @@ export function MobileReader({ threadId }: { threadId: string }) {
 
   const all = data.messages;
   const latest = all[all.length - 1]!;
+  const source = replySource(all);
   const ids = all.map((m) => m.id);
   const flagged = data.thread.flagged;
   const hiddenCount = all.filter((m) => !expanded.has(m.id)).length;
@@ -309,20 +311,16 @@ export function MobileReader({ threadId }: { threadId: string }) {
         )}
         aria-label={t("mobile.actions")}
       >
-        <BarButton
-          icon={Reply}
-          label={t("reader.reply")}
-          onClick={() => openCompose({ mode: "reply", source: latest })}
-        />
+        <BarButton icon={Reply} label={t("reader.reply")} onClick={() => openCompose({ mode: "reply", source })} />
         <BarButton
           icon={ReplyAll}
           label={t("mobile.replyAllShort")}
-          onClick={() => openCompose({ mode: "replyAll", source: latest })}
+          onClick={() => openCompose({ mode: "replyAll", source })}
         />
         <BarButton
           icon={Forward}
           label={t("reader.forward")}
-          onClick={() => openCompose({ mode: "forward", source: latest })}
+          onClick={() => openCompose({ mode: "forward", source })}
         />
         {rights.archive && (
           <BarButton

@@ -262,7 +262,9 @@ async function newIn(
       "Email/query",
       {
         accountId,
-        filter: { ...where, notKeyword: "$seen", after: since },
+        // `after` is strict and receivedAt has whole seconds: a mail in the same second as the last
+        // one counts too, `announced` drops the repeat.
+        filter: { ...where, notKeyword: "$seen", after: utcDate(new Date(Date.parse(since) - 1000)) },
         sort: [{ property: "receivedAt", isAscending: false }],
         limit: MAX_NEW,
       },

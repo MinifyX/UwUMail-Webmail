@@ -1,6 +1,7 @@
 import clsx from "clsx";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { IconButton } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { useT } from "@/i18n";
 import { useUi } from "@/state/ui";
@@ -21,6 +22,7 @@ export function CommandPalette({ commands }: { commands: Command[] }) {
           onClose={() => setOpen(false)}
           placeholder={t("palette.placeholder")}
           empty={t("palette.empty")}
+          closeLabel={t("common.close")}
         />
       )}
     </Dialog>
@@ -32,11 +34,13 @@ function PaletteBody({
   onClose,
   placeholder,
   empty,
+  closeLabel,
 }: {
   commands: Command[];
   onClose: () => void;
   placeholder: string;
   empty: string;
+  closeLabel: string;
 }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -74,6 +78,7 @@ function PaletteBody({
           }}
           className="h-14 flex-1 bg-transparent text-reading outline-none"
         />
+        <IconButton icon={X} label={closeLabel} onClick={onClose} />
       </div>
       <ul className="max-h-[360px] overflow-y-auto p-2" role="listbox">
         {results.length === 0 && <li className="px-4 py-6 text-center text-meta text-muted">{empty}</li>}

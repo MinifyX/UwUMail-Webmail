@@ -32,6 +32,7 @@ import { mailRights } from "./rights";
 import { requestMove } from "./selection";
 import { requestSnooze, someSnoozed, useSnooze } from "./snooze";
 import { useNyuOnOpen } from "./nyuOnOpen";
+import { replySource } from "@/features/compose/draft";
 
 interface ThreadReaderProps {
   variant: "simple" | "pro";
@@ -131,6 +132,7 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
 
   const all = data.messages;
   const latest = all[all.length - 1]!;
+  const source = replySource(all);
   const ids = all.map((m) => m.id);
   const flagged = data.thread.flagged;
   const hiddenCount = all.filter((m) => !expanded.has(m.id)).length;
@@ -163,17 +165,17 @@ export function ThreadReader({ variant, className }: ThreadReaderProps) {
           icon={Reply}
           label={t("reader.reply")}
           primary
-          onClick={() => openCompose({ mode: "reply", source: latest })}
+          onClick={() => openCompose({ mode: "reply", source })}
         />
         <ReplyButton
           icon={ReplyAll}
           label={t("reader.replyAll")}
-          onClick={() => openCompose({ mode: "replyAll", source: latest })}
+          onClick={() => openCompose({ mode: "replyAll", source })}
         />
         <ReplyButton
           icon={Forward}
           label={t("reader.forward")}
-          onClick={() => openCompose({ mode: "forward", source: latest })}
+          onClick={() => openCompose({ mode: "forward", source })}
         />
         <span className="min-w-2 flex-1" aria-hidden />
         {rights.archive && (

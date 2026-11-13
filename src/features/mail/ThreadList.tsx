@@ -123,10 +123,12 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
 
   const showAccount = shown.length > 1 && view.kind === "unified";
   const checkedThreads = threads.filter((thread) => checked.includes(thread.id));
+  // Actions reach only what the list shows: a checked mail a search hid stays untouched.
+  const checkedIds = checkedThreads.map((thread) => thread.id);
   const anyUnread = checkedThreads.some((thread) => thread.unreadCount > 0);
   const allFlagged = checkedThreads.length > 0 && checkedThreads.every((thread) => thread.flagged);
   const runOnChecked = (action: (threadIds: string[]) => Promise<unknown>) => {
-    const ids = checked;
+    const ids = checkedIds;
     setChecked([]);
     void action(ids);
   };
@@ -145,7 +147,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
     event.preventDefault();
     setMenu({
       at: { x: event.clientX, y: event.clientY },
-      threadIds: checked.includes(thread.id) ? checked : [thread.id],
+      threadIds: checked.includes(thread.id) ? checkedIds : [thread.id],
     });
   };
 
@@ -160,7 +162,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
       showAccount={showAccount}
       actions={threadActions}
       checked={checked.includes(thread.id)}
-      dragIds={checked.includes(thread.id) ? checked : [thread.id]}
+      dragIds={checked.includes(thread.id) ? checkedIds : [thread.id]}
       inTrash={info.isTrash}
       inJunk={info.isJunk}
       snoozedUntil={snoozedRows?.get(thread.id)}
@@ -231,6 +233,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
               ...MORE_FILTERS.map((item) => ({
                 label: <Checked on={filter === item}>{t(`filter.${item}`)}</Checked>,
                 onSelect: () => setFilter(filter === item ? "all" : item),
+                checked: filter === item,
                 group: t("list.filterGroup"),
               })),
               ...(labels.length > 0
@@ -238,6 +241,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
                     {
                       label: <Checked on={grouped}>{t("labels.group.on")}</Checked>,
                       onSelect: () => updateSettings({ groupByLabel: !grouped }),
+                      checked: grouped,
                       group: t("list.viewGroup"),
                     },
                   ]
@@ -270,15 +274,15 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
           />
         </div>
 
-        {checked.length > 0 ? (
+        {checkedIds.length > 0 ? (
           <div
             className="flex h-9 items-center gap-0.5 rounded-full bg-pink-tint pr-1 pl-1 text-pink-ink"
             role="toolbar"
-            aria-label={t("list.selected", { count: checked.length })}
+            aria-label={t("list.selected", { count: checkedIds.length })}
           >
             <IconButton icon={X} size="sm" label={t("list.clearSelection")} onClick={() => setChecked([])} />
             <span className="min-w-0 flex-1 truncate px-1 text-meta font-bold">
-              {t("list.selected", { count: checked.length })}
+              {t("list.selected", { count: checkedIds.length })}
             </span>
             {info.rights.archive && (
               <IconButton
@@ -341,7 +345,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
                 icon={Tag}
                 size="sm"
                 label={t("labels.quick.button")}
-                onClick={() => useUi.getState().openLabelPicker(checked)}
+                onClick={() => useUi.getState().openLabelPicker(checkedIds)}
               />
             )}
             {info.rights.spam && (

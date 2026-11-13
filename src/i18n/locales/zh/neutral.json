@@ -185,7 +185,9 @@
         "tooFar": "你的服务器最多保留邮件 {{days}} 天。"
       }
     },
-    "companyFooter": "发送时服务器会添加你所在组织的页脚。"
+    "companyFooter": "发送时服务器会添加你所在组织的页脚。",
+    "attachFailed": "无法读取该文件，因此未添加任何附件。",
+    "attachTooBig": "{{name}} 超过了服务器允许的大小（{{limit}}）。"
   },
   "toast": {
     "sent": "邮件已发送",
@@ -2010,5 +2012,19 @@
       "link": "来源已签名。链接请自行打开。",
       "expired": "此验证码已过期。"
     }
+  },
+  "errors": {
+    "generic": "出了点问题。请重试。",
+    "authFailed": "登录未成功。",
+    "connectionFailed": "无法连接到邮件服务器。请检查你的网络连接。",
+    "notFound": "该内容已不存在。",
+    "invalidInput": "服务器未接受该操作。",
+    "notSupported": "此服务器不支持该操作。",
+    "internal": "邮件服务器出现问题。请重试。",
+    "signedOut": "你的会话已结束。请重新登录。",
+    "webmailDisabled": "此账户的网页邮箱已关闭。",
+    "tooLate": "邮件已在发送途中，无法撤回。",
+    "internalOnly": "此账户只能发送到本服务器上的地址。",
+    "stateMismatch": "该内容在此期间已在别处被更改。请重试。"
   }
 }

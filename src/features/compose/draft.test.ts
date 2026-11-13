@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Account, Identity, Message } from "@/backend/types";
-import { initialDraft, replyFrom } from "./draft";
+import { initialDraft, replyFrom, replySource } from "./draft";
 
 const account: Account = {
   id: "acc",
@@ -51,6 +51,11 @@ describe("replies", () => {
     );
   });
 
+  it("come from the alias my own mail went out from", () => {
+    const sent = { ...message(["leni@wanders.example"]), from: { name: "Studio", email: "Hallo@uwumail.example" } };
+    expect(replyFrom(sent, identities)).toBe("hallo@uwumail.example");
+  });
+
   it("use the mailbox's own address otherwise", () => {
     expect(replyFrom(message(["mini@uwumail.example"]), identities)).toBe("");
     // An alias of another mailbox doesn't count.
@@ -62,5 +67,18 @@ describe("replies", () => {
     const draft = initialDraft({ key: 1, mode: "replyAll", source }, [account], identities, t, "de");
     expect([...draft.to, ...draft.cc].map((a) => a.email)).toEqual(["leni@wanders.example", "fee@friends.example"]);
     expect(draft.fromEmail).toBeNull();
+  });
+
+  it("answer the newest real mail, and my own sent one goes to its recipients", () => {
+    const sent = {
+      ...message(["leni@wanders.example"]),
+      id: "m2",
+      from: { name: "Mini", email: "mini@uwumail.example" },
+    };
+    const draft = { ...message([]), id: "m3", flags: { ...message([]).flags, draft: true } };
+    const source = replySource([message(["mini@uwumail.example"]), sent, draft]);
+    expect(source.id).toBe("m2");
+    const reply = initialDraft({ key: 1, mode: "reply", source }, [account], identities, t, "de");
+    expect(reply.to.map((a) => a.email)).toEqual(["leni@wanders.example"]);
   });
 });

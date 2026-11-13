@@ -61,25 +61,14 @@ export function claimedHost(text: string): string | null {
   return domain ? bareHost(domain[1]!) : null;
 }
 
-/** Every recipient host a mailto: link would send to: the path and the to/cc/bcc header fields. */
+/** Every recipient host a mailto: link would send to, read by the parser that fills the compose window. */
 function mailtoHosts(href: string): string[] {
-  const trimmed = href.trim();
-  if (!/^mailto:/i.test(trimmed)) return [];
-  const [rawPath = "", query = ""] = trimmed.slice("mailto:".length).split("?");
-  let path = rawPath;
-  try {
-    path = decodeURIComponent(rawPath);
-  } catch {
-    // keep the raw path if it is not valid percent-encoding
-  }
-  const params = new URLSearchParams(query);
-  const fields = [path, ...params.getAll("to"), ...params.getAll("cc"), ...params.getAll("bcc")];
-  const hosts: string[] = [];
-  for (const address of fields.flatMap((field) => field.split(","))) {
-    const at = address.trim().lastIndexOf("@");
-    if (at > 0 && at < address.trim().length - 1) hosts.push(bareHost(address.trim().slice(at + 1)));
-  }
-  return hosts;
+  const draft = parseMailto(href);
+  if (!draft) return [];
+  return [...draft.to, ...draft.cc, ...draft.bcc].flatMap(({ email }) => {
+    const at = email.lastIndexOf("@");
+    return at > 0 && at < email.length - 1 ? [bareHost(email.slice(at + 1))] : [];
+  });
 }
 
 /**

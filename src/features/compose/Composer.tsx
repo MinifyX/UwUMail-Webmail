@@ -39,6 +39,7 @@ import {
   useDomainSignatures,
   useIdentities,
   useMaxSendDelay,
+  useMaxUploadSize,
   useMessageActions,
   useSendPolicy,
   useSignatures,
@@ -47,7 +48,7 @@ import { OPEN_SEND_POLICY, undeliverableRecipients } from "@/lib/internalOnly";
 import { companyFooterFor } from "@/lib/domainSignatures";
 import { toast } from "@/state/toasts";
 import { useUi, type ComposeRequest } from "@/state/ui";
-import { initialDraft, replyFrom, type DraftState } from "./draft";
+import { forwardedAttachments, initialDraft, replyFrom, type DraftState } from "./draft";
 import { RecipientInput } from "./RecipientInput";
 import { SendLaterDialog } from "./SendLater";
 import { announceSent } from "./undoSend";
@@ -104,10 +105,15 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   // never present but invisible (security-audit W-1).
   const [showCc, setShowCc] = useState(initial.cc.length > 0 || initial.bcc.length > 0);
   const [large, setLarge] = useState(false);
-  const [attachments, setAttachments] = useState<OutgoingAttachment[]>(request.attachments ?? []);
+  const [attachments, setAttachments] = useState<OutgoingAttachment[]>(
+    () =>
+      request.attachments ??
+      (request.mode === "forward" && request.source && !request.restore ? forwardedAttachments(request.source) : []),
+  );
   const [sending, setSending] = useState(false);
   const [pickingTime, setPickingTime] = useState(false);
   const { data: maxSendDelay = 0 } = useMaxSendDelay();
+  const { data: maxUploadSize = 0 } = useMaxUploadSize();
   // An account limited to its own server: other recipients are marked and block sending.
   const queryClient = useQueryClient();
   const { data: sendPolicy = OPEN_SEND_POLICY } = useSendPolicy(accountId);
@@ -169,6 +175,9 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
   const savedAccount = useRef(request.restore?.draftKey ? request.restore.accountId : undefined);
   const lastSave = useRef(0);
   const saving = useRef<Promise<void>>(Promise.resolve());
+  /** Each attachment as the server keeps it after a save, so it is uploaded once, not on every save. */
+  const stored = useRef(new WeakMap<OutgoingAttachment, OutgoingAttachment>());
+  const onServer = (files: OutgoingAttachment[]) => files.map((file) => stored.current.get(file) ?? file);
   /** Sent or thrown away: nothing may save the draft again. */
   const finished = useRef(false);
   const [saveState, setSaveState] = useState<SaveState>({ kind: "idle" });
@@ -259,9 +268,10 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           html,
           text: htmlToPlainText(html),
           inReplyTo,
-          attachments: files,
+          attachments: onServer(files),
           draftKey: draftKey.current,
         });
+        saved.attachments?.forEach((attachment, index) => stored.current.set(files[index]!, attachment));
         // Written from another mailbox now: the old copy goes.
         const previous = savedAccount.current;
         if (previous && previous !== account)
@@ -444,6 +454,8 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
 
   /** Hands the mail to the server: it goes after the undo window, or at `sendAt`. */
   const send = async (sendAt?: string, remindedAlready = false) => {
+    // Already on its way (a second Ctrl+Enter): one mail, not two.
+    if (finished.current) return;
     if (!checkRecipients()) return;
     // Before the undo window too: undoing is for second thoughts, this is for a forgotten file.
     if (
@@ -473,7 +485,7 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
         html,
         text: htmlToPlainText(html),
         inReplyTo,
-        attachments,
+        attachments: onServer(attachments),
         draftKey: savedAccount.current === accountId ? draftKey.current : undefined,
       };
       // The server holds it back for the undo window (or until `sendAt`) and says until when.
@@ -1033,16 +1045,28 @@ function ComposerWindow({ request }: { request: ComposeRequest }) {
           onChange={async (event) => {
             const files = [...(event.target.files ?? [])];
             event.target.value = "";
-            const added = await Promise.all(
-              files.map(async (file) => ({
-                filename: file.name,
-                mimeType: file.type || "application/octet-stream",
-                size: file.size,
-                source: { kind: "base64" as const, data: await readAsBase64(file) },
-              })),
-            );
-            changed();
-            setAttachments((current) => [...current, ...added]);
+            // Checked before reading: a file the server won't take is not loaded into memory.
+            const tooBig = maxUploadSize > 0 ? files.find((file) => file.size > maxUploadSize) : undefined;
+            if (tooBig) {
+              setError(
+                t("compose.attachTooBig", { name: tooBig.name, limit: formatSize(maxUploadSize, i18n.language) }),
+              );
+              return;
+            }
+            try {
+              const added = await Promise.all(
+                files.map(async (file) => ({
+                  filename: file.name,
+                  mimeType: file.type || "application/octet-stream",
+                  size: file.size,
+                  source: { kind: "base64" as const, data: await readAsBase64(file) },
+                })),
+              );
+              changed();
+              setAttachments((current) => [...current, ...added]);
+            } catch {
+              setError(t("compose.attachFailed"));
+            }
           }}
         />
         <span className="flex-1" />

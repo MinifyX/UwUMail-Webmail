@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
-import { backend, BackendError } from "@/backend/backend";
+import { backend, BackendError, type BackendErrorCode } from "@/backend/backend";
 import { playNyu, type CameoName } from "@/components/nyu/cameo";
 import type {
   Account,
@@ -50,10 +50,26 @@ export const queryKeys = {
   assistEstimate: ["assistEstimate"] as const,
 };
 
-/** What went wrong, for a toast: a refusal of a shared folder's owner in the reader's words. */
+const ERROR_KEYS: Partial<Record<BackendErrorCode, string>> = {
+  auth_failed: "errors.authFailed",
+  connection_failed: "errors.connectionFailed",
+  not_found: "errors.notFound",
+  invalid_input: "errors.invalidInput",
+  not_supported: "errors.notSupported",
+  internal: "errors.internal",
+  signed_out: "errors.signedOut",
+  webmail_disabled: "errors.webmailDisabled",
+  too_late: "errors.tooLate",
+  forbidden: "sharing.notAllowed",
+  internal_only: "errors.internalOnly",
+  state_mismatch: "errors.stateMismatch",
+};
+
+/** What went wrong, for a toast, in the reader's language; the English message only goes to the console. */
 export function errorText(error: unknown): string {
-  if (error instanceof BackendError && error.code === "forbidden") return translate("sharing.notAllowed");
-  return error instanceof Error ? error.message : String(error);
+  console.warn(error);
+  const key = error instanceof BackendError ? ERROR_KEYS[error.code] : undefined;
+  return translate(key ?? "errors.generic");
 }
 
 /** People who share folders with the account; their folders come with useFolders. */
@@ -184,6 +200,11 @@ export function useScheduledSends() {
     enabled: maxDelay > 0,
     refetchInterval: 60_000,
   });
+}
+
+/** The largest file the server takes, in bytes; 0 when it doesn't say. */
+export function useMaxUploadSize() {
+  return useQuery({ queryKey: ["maxUploadSize"], queryFn: () => backend().maxUploadSize(), staleTime: Infinity });
 }
 
 /** How far ahead "send later" may go, in seconds; 0 where the server can't hold mail. */
@@ -369,9 +390,9 @@ export async function trashMail(client: QueryClient, messages: Message[], leave?
     }
     return true;
   } catch (error) {
-    return fail(error);
-  } finally {
+    // Success already reloads through the backend's change event.
     await refresh();
+    return fail(error);
   }
 }
 
@@ -387,7 +408,7 @@ export function useMessageActions() {
       if (success) toast(success, "success");
     } catch (error) {
       toast(errorText(error), "error");
-    } finally {
+      // Undo what the screen already showed; success reloads through the backend's change event.
       await invalidate();
     }
   };
@@ -399,7 +420,6 @@ export function useMessageActions() {
       if (cameo) playNyu(cameo);
     } catch (error) {
       toast(errorText(error), "error");
-    } finally {
       await invalidate();
     }
   };
@@ -553,6 +573,10 @@ export function useBackendEvents() {
   }, [client, t]);
 }
 
+/** The loaded pages as one list; a thread that moved to the next page while it loaded shows once. */
 export function flattenThreads(pages: { threads: ThreadSummary[] }[] | undefined): ThreadSummary[] {
-  return pages?.flatMap((page) => page.threads) ?? [];
+  const seen = new Set<string>();
+  return (pages?.flatMap((page) => page.threads) ?? []).filter(
+    (thread) => !seen.has(thread.id) && !!seen.add(thread.id),
+  );
 }

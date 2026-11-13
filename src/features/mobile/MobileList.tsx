@@ -89,8 +89,6 @@ export function MobileList() {
 
   const query = useListThreads(view, filter, search);
   const threads = flattenThreads(query.data?.pages);
-  // Every search already runs on the server, so there is nothing extra to ask it for.
-  const serverButton = null;
   const ids = threads.map((thread) => thread.id).join("|");
   useEffect(() => {
     setVisibleThreadIds(ids ? ids.split("|") : []);
@@ -250,7 +248,6 @@ export function MobileList() {
               scene={EMPTY_SCENES[empty]}
               title={t(`list.empty.${empty}.title`)}
               body={t(`list.empty.${empty}.body`)}
-              action={serverButton}
               className="min-h-full"
             />
           ) : (
@@ -310,7 +307,6 @@ export function MobileList() {
               {query.isFetchingNextPage && (
                 <li className="py-4 text-center text-meta text-muted">{t("list.loading")}</li>
               )}
-              {serverButton && !query.hasNextPage && <li className="flex justify-center px-4 py-5">{serverButton}</li>}
             </ul>
           )}
         </div>

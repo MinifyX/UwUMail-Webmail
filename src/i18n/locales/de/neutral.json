@@ -189,7 +189,9 @@
         "tooFar": "Dein Server hält Mails höchstens {{days}} Tage zurück."
       }
     },
-    "companyFooter": "Beim Senden hängt der Server die Fußzeile deiner Organisation an."
+    "companyFooter": "Beim Senden hängt der Server die Fußzeile deiner Organisation an.",
+    "attachFailed": "Die Datei ließ sich nicht lesen, deshalb wurde nichts angehängt.",
+    "attachTooBig": "{{name}} ist größer, als der Server annimmt ({{limit}})."
   },
   "toast": {
     "sent": "Mail gesendet",
@@ -2080,5 +2082,19 @@
       "link": "Signierte Herkunft. Links öffnest du selbst.",
       "expired": "Dieser Code ist abgelaufen."
     }
+  },
+  "errors": {
+    "generic": "Da ist etwas schiefgegangen. Bitte versuch es noch einmal.",
+    "authFailed": "Die Anmeldung hat nicht geklappt.",
+    "connectionFailed": "Der Mailserver ist nicht erreichbar. Prüfe deine Verbindung.",
+    "notFound": "Das gibt es nicht mehr.",
+    "invalidInput": "Der Server hat das nicht angenommen.",
+    "notSupported": "Dieser Server kann das nicht.",
+    "internal": "Beim Mailserver ist ein Fehler aufgetreten. Bitte versuch es noch einmal.",
+    "signedOut": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    "webmailDisabled": "Das Webmail ist für dieses Konto ausgeschaltet.",
+    "tooLate": "Die Mail ist schon unterwegs und lässt sich nicht mehr zurückholen.",
+    "internalOnly": "Dieses Konto darf nur an Adressen auf dem eigenen Server senden.",
+    "stateMismatch": "Das wurde inzwischen woanders geändert. Bitte versuch es noch einmal."
   }
 }

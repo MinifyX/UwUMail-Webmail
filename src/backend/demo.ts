@@ -302,6 +302,7 @@ export class DemoBackend implements Backend {
     for (const account of targets) {
       account.status = { state: "idle" };
       this.emit({ type: "account:status", accountId: account.id, status: account.status });
+      this.emit({ type: "mail:changed", accountId: account.id });
     }
   }
 
@@ -429,6 +430,19 @@ export class DemoBackend implements Backend {
     if (list.length === 0) throw new BackendError("not_found", "Thread not found");
     const messages = conversations || threadId.startsWith("m:") ? list : list.slice(-1);
     return { thread: this.summarize(threadId, list), messages: structuredClone(messages) };
+  }
+
+  async selectionMessages(threadIds: string[], conversations: boolean): Promise<Message[]> {
+    // A conversation that is gone meanwhile is left out, like the server does.
+    const details = await Promise.all(
+      threadIds.map((id) =>
+        this.getThread(id, conversations).catch((error: unknown) => {
+          if (error instanceof BackendError && error.code === "not_found") return null;
+          throw error;
+        }),
+      ),
+    );
+    return details.flatMap((detail) => detail?.messages ?? []);
   }
 
   /** Like a server with shared folders: what the folder's owner didn't allow is refused. */
@@ -762,6 +776,10 @@ export class DemoBackend implements Backend {
 
   async maxSendDelay() {
     return 30 * 24 * 60 * 60;
+  }
+
+  async maxUploadSize() {
+    return 50 * 1024 * 1024;
   }
 
   /**

@@ -48,17 +48,17 @@ export function MonthView({ weeks, month, occurrences, calendars }: MonthViewPro
   const canDrag = (occurrence: CalendarOccurrence) => !occurrence.readOnly && !occurrence.recurrence;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col" role="grid" aria-label={t("calendar.views.month")}>
-      <div className="grid shrink-0 grid-cols-7 border-b border-hairline" role="row">
+    <section className="flex min-h-0 flex-1 flex-col" aria-label={t("calendar.views.month")}>
+      <div className="grid shrink-0 grid-cols-7 border-b border-hairline">
         {weeks[0]?.map((day) => (
-          <div key={day} role="columnheader" className="py-2 text-center text-caption font-bold text-muted uppercase">
+          <div key={day} className="py-2 text-center text-caption font-bold text-muted uppercase">
             {formatWeekdayShort(day)}
           </div>
         ))}
       </div>
       <div className="grid min-h-0 flex-1" style={{ gridTemplateRows: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
         {weeks.map((week) => (
-          <div key={week[0]} className="grid min-h-0 grid-cols-7 border-b border-hairline last:border-0" role="row">
+          <div key={week[0]} className="grid min-h-0 grid-cols-7 border-b border-hairline last:border-0">
             {week.map((day) => {
               const events = byDay.get(day) ?? [];
               const hidden = events.length - PER_DAY;
@@ -66,9 +66,7 @@ export function MonthView({ weeks, month, occurrences, calendars }: MonthViewPro
               return (
                 <div
                   key={day}
-                  role="gridcell"
                   data-day={day}
-                  aria-label={formatDayLong(day)}
                   onClick={(event) => {
                     if (event.target !== event.currentTarget) return;
                     openQuick({
@@ -186,6 +184,6 @@ export function MonthView({ weeks, month, occurrences, calendars }: MonthViewPro
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

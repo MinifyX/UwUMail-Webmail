@@ -16,7 +16,7 @@ interface PopoverProps {
 
 /**
  * A card beside what was clicked (an event, a slot), or a sheet from the bottom on a phone.
- * Escape and a click elsewhere close it; focus moves in and goes back afterwards.
+ * Escape or its close button closes it, not a click elsewhere; focus moves in and goes back afterwards.
  */
 export function Popover({ anchor, label, onClose, children }: PopoverProps) {
   const phone = useIsPhone();
@@ -38,23 +38,19 @@ export function Popover({ anchor, label, onClose, children }: PopoverProps) {
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
-    const first = card.current?.querySelector<HTMLElement>("[data-autofocus], input, button");
+    // The marked field first, wherever it sits: a close button above it comes first in page order.
+    const first =
+      card.current?.querySelector<HTMLElement>("[data-autofocus]") ??
+      card.current?.querySelector<HTMLElement>("input, button");
     first?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || document.querySelector("dialog[open]")) return;
       event.stopPropagation();
       close.current();
     };
-    const onPointer = (event: PointerEvent) => {
-      const target = event.target as Element;
-      if (card.current?.contains(target) || target.closest?.("[role=menu], dialog[open]")) return;
-      close.current();
-    };
     document.addEventListener("keydown", onKey, true);
-    document.addEventListener("pointerdown", onPointer, true);
     return () => {
       document.removeEventListener("keydown", onKey, true);
-      document.removeEventListener("pointerdown", onPointer, true);
       if (opener?.isConnected) opener.focus({ preventScroll: true });
     };
   }, []);

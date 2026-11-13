@@ -189,7 +189,9 @@
         "tooFar": "Je server houdt mail hoogstens {{days}} dagen vast."
       }
     },
-    "companyFooter": "De server voegt bij verzenden de voettekst van je organisatie toe."
+    "companyFooter": "De server voegt bij verzenden de voettekst van je organisatie toe.",
+    "attachFailed": "Het bestand kon niet worden gelezen, dus er is niets bijgevoegd.",
+    "attachTooBig": "{{name}} is groter dan de server toestaat ({{limit}})."
   },
   "toast": {
     "sent": "Bericht verzonden",
@@ -2080,5 +2082,19 @@
       "link": "Ondertekende herkomst. Links open je zelf.",
       "expired": "Deze code is verlopen."
     }
+  },
+  "errors": {
+    "generic": "Er ging iets mis. Probeer het opnieuw.",
+    "authFailed": "Inloggen is niet gelukt.",
+    "connectionFailed": "De mailserver is niet bereikbaar. Controleer je verbinding.",
+    "notFound": "Dat bestaat niet meer.",
+    "invalidInput": "De server heeft dat niet geaccepteerd.",
+    "notSupported": "Deze server kan dat niet.",
+    "internal": "De mailserver liep tegen een probleem aan. Probeer het opnieuw.",
+    "signedOut": "Je sessie is beëindigd. Log opnieuw in.",
+    "webmailDisabled": "De webmail is uitgeschakeld voor dit account.",
+    "tooLate": "De mail is al onderweg en kan niet meer worden teruggehaald.",
+    "internalOnly": "Dit account mag alleen naar adressen op de eigen server sturen.",
+    "stateMismatch": "Dat is intussen ergens anders gewijzigd. Probeer het opnieuw."
   }
 }

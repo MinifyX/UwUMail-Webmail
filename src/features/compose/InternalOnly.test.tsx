@@ -157,4 +157,15 @@ describe("an account without the limit", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
     await waitFor(() => expect(known.send).toHaveBeenCalledTimes(1));
   });
+
+  it("sends once when Ctrl+Enter comes twice", async () => {
+    known.sendPolicy.mockImplementation(async () => OPEN);
+    openComposer([{ email: "noah@zockt.example" }]);
+    await waitFor(() => expect(known.sendPolicy).toHaveBeenCalled());
+    const dialog = screen.getByRole("dialog");
+    fireEvent.keyDown(dialog, { key: "Enter", ctrlKey: true });
+    fireEvent.keyDown(dialog, { key: "Enter", ctrlKey: true });
+    await waitFor(() => expect(known.send).toHaveBeenCalled());
+    expect(known.send).toHaveBeenCalledTimes(1);
+  });
 });

@@ -19,9 +19,14 @@ function useText(url: string) {
   useEffect(() => {
     let cancelled = false;
     fetch(url)
-      .then((response) => response.text())
-      .then((text) => {
-        if (!cancelled) setState({ url, text: text.slice(0, TEXT_LIMIT), truncated: text.length > TEXT_LIMIT });
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.blob();
+      })
+      // Only the shown part becomes a string; a huge log stays out of the page's memory.
+      .then(async (blob) => ({ text: await blob.slice(0, TEXT_LIMIT).text(), truncated: blob.size > TEXT_LIMIT }))
+      .then(({ text, truncated }) => {
+        if (!cancelled) setState({ url, text, truncated });
       })
       .catch((error: unknown) => {
         if (!cancelled) setState({ url, error: String(error) });
@@ -226,20 +231,26 @@ export function looksLikePdf(bytes: Uint8Array) {
  */
 function PdfPreview({ file }: { file: AttachmentContent }) {
   const { t } = useT();
-  const [state, setState] = useState<{ url: string; pdf: string | null }>();
+  const [state, setState] = useState<{ url: string; pdf: string | null; error?: string }>();
   useEffect(() => {
     let cancelled = false;
     let pdf: string | null = null;
+    let error: string | undefined;
     fetch(file.url)
-      .then((response) => response.arrayBuffer())
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.arrayBuffer();
+      })
       .then((buffer) => {
         const bytes = new Uint8Array(buffer);
         if (cancelled || !looksLikePdf(bytes)) return;
         pdf = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
       })
-      .catch(() => {})
+      .catch((reason: unknown) => {
+        error = reason instanceof Error ? reason.message : String(reason);
+      })
       .then(() => {
-        if (!cancelled) setState({ url: file.url, pdf });
+        if (!cancelled) setState({ url: file.url, pdf, error });
       });
     return () => {
       cancelled = true;
@@ -248,6 +259,8 @@ function PdfPreview({ file }: { file: AttachmentContent }) {
   }, [file.url]);
 
   if (state?.url !== file.url) return <p className="p-6 text-meta text-muted">{t("attachment.loading")}</p>;
+  if (state.error !== undefined)
+    return <p className="p-6 text-center text-meta text-danger">{t("attachment.failed", { reason: state.error })}</p>;
   if (!state.pdf) return <p className="p-6 text-center text-meta text-muted">{t("attachment.notPdf")}</p>;
   return (
     <div className="flex h-full flex-col">

@@ -193,7 +193,9 @@
         "tooFar": "Votre serveur garde les e-mails au plus {{days}} jours."
       }
     },
-    "companyFooter": "Le serveur ajoute le pied de page de votre organisation à l'envoi."
+    "companyFooter": "Le serveur ajoute le pied de page de votre organisation à l'envoi.",
+    "attachFailed": "Le fichier n'a pas pu être lu, rien n'a donc été joint.",
+    "attachTooBig": "{{name}} dépasse la taille acceptée par le serveur ({{limit}})."
   },
   "toast": {
     "sent": "Message envoyé",
@@ -2148,5 +2150,19 @@
       "link": "Origine signée. Tu ouvres les liens toi-même.",
       "expired": "Ce code a expiré."
     }
+  },
+  "errors": {
+    "generic": "Un problème est survenu. Veuillez réessayer.",
+    "authFailed": "La connexion n'a pas fonctionné.",
+    "connectionFailed": "Le serveur de messagerie est injoignable. Vérifiez votre connexion.",
+    "notFound": "Cet élément n'existe plus.",
+    "invalidInput": "Le serveur n'a pas accepté cela.",
+    "notSupported": "Ce serveur ne permet pas cela.",
+    "internal": "Le serveur de messagerie a rencontré un problème. Veuillez réessayer.",
+    "signedOut": "Votre session a expiré. Veuillez vous reconnecter.",
+    "webmailDisabled": "Le webmail est désactivé pour ce compte.",
+    "tooLate": "Le message est déjà en route et ne peut plus être repris.",
+    "internalOnly": "Ce compte ne peut envoyer qu'à des adresses de son propre serveur.",
+    "stateMismatch": "Cela a été modifié ailleurs entre-temps. Veuillez réessayer."
   }
 }

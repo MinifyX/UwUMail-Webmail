@@ -1,4 +1,4 @@
-import type { Account, Address, Identity, Message } from "@/backend/types";
+import type { Account, Address, Identity, Message, OutgoingAttachment } from "@/backend/types";
 import { escapeHtml, formatAddress, formatFullDate, textToHtml } from "@/lib/format";
 import { quotableHtml } from "@/lib/safeHtml";
 import type { ComposeRequest } from "@/state/ui";
@@ -34,11 +34,35 @@ function quoted(message: Message) {
  * The address a reply comes from: the one of the mailbox's addresses the mail was sent to.
  * Empty means the mailbox's own address.
  */
-export function replyFrom(source: Message, identities: Identity[]): string {
-  const addressed = new Set([...source.to, ...source.cc].map((a) => a.email.toLowerCase()));
-  const match = identities.find(
-    (i) => i.accountId === source.accountId && !i.primary && addressed.has(i.email.toLowerCase()),
+/** The mail Reply and Forward answer: the newest one in the conversation that isn't an unsent draft. */
+export function replySource(messages: Message[]): Message {
+  return messages.findLast((message) => !message.flags.draft) ?? messages.at(-1)!;
+}
+
+/** A forward sends the mail's files on, straight from the server's copy. */
+export function forwardedAttachments(source: Message): OutgoingAttachment[] {
+  return source.attachments.flatMap((attachment) =>
+    !attachment.inline && attachment.blobId
+      ? [
+          {
+            filename: attachment.filename,
+            mimeType: attachment.mimeType,
+            size: attachment.size,
+            source: { kind: "blob" as const, blobId: attachment.blobId, accountId: source.accountId },
+          },
+        ]
+      : [],
   );
+}
+
+export function replyFrom(source: Message, identities: Identity[]): string {
+  const own = identities.filter((i) => i.accountId === source.accountId && !i.primary);
+  // My own mail (from Sent) is answered from the alias it went out from.
+  const sender = source.from.email.toLowerCase();
+  const sentFrom = own.find((i) => i.email.toLowerCase() === sender);
+  if (sentFrom) return sentFrom.email;
+  const addressed = new Set([...source.to, ...source.cc].map((a) => a.email.toLowerCase()));
+  const match = own.find((i) => addressed.has(i.email.toLowerCase()));
   return match?.email ?? "";
 }
 
@@ -99,7 +123,9 @@ export function initialDraft(
   }
 
   const replyTo = source.replyTo.length > 0 ? source.replyTo : [source.from];
-  const to = request.mode === "replyAll" ? withoutMe([...replyTo, ...source.to], accounts, identities) : replyTo;
+  // A reply to one's own sent mail goes to the people it went to, not back to oneself.
+  const answered = withoutMe(replyTo, accounts, identities).length > 0 ? replyTo : source.to;
+  const to = request.mode === "replyAll" ? withoutMe([...replyTo, ...source.to], accounts, identities) : answered;
   const cc = request.mode === "replyAll" ? withoutMe(source.cc, accounts, identities) : [];
   const header = escapeHtml(t("compose.quoteHeader", { date, name: "%%NAME%%" })).replace("%%NAME%%", name);
   return {

@@ -385,6 +385,7 @@ export async function uploadBlob(data: Blob, type: string): Promise<UploadedBlob
   } catch {
     throw new BackendError("connection_failed", "The mail server can't be reached.");
   }
+  if (response.status === 401) throw new BackendError("signed_out", "The session ended.");
   if (response.status === 413) throw new BackendError("invalid_input", "That attachment is too big for the server.");
   if (!response.ok) throw new BackendError("internal", `The upload answered ${response.status}.`);
   return (await response.json()) as UploadedBlob;
