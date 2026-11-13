@@ -64,4 +64,11 @@ describe("keyboard selection in the list", () => {
     expect(state.checkedThreadIds).toEqual([]);
     expect(state.selectionAnchor).toBeNull();
   });
+
+  it("a new search forgets the ticks, so actions can't reach mail it hides", () => {
+    const ui = useUi.getState();
+    ui.checkAllVisible();
+    ui.setSearch("invoice");
+    expect(useUi.getState().checkedThreadIds).toEqual([]);
+  });
 });
