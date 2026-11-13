@@ -1196,7 +1196,8 @@ export class JmapBackend implements Backend {
   /** Every id an `Email/query` finds, page by page (a mailbox's unread mail can be many). */
   private async queryAll(accountId: string, filter: Record<string, unknown>): Promise<string[]> {
     const ids: string[] = [];
-    for (let page = 0; page < 200; page += 1) {
+    // One page past the limit, to tell "exactly at it" from "more".
+    for (let page = 0; page <= 200; page += 1) {
       const found = await one<QueryResponse>("Email/query", {
         accountId,
         filter,
@@ -1204,6 +1205,7 @@ export class JmapBackend implements Backend {
         limit: QUERY_PAGE,
         calculateTotal: false,
       });
+      if (page === 200 && found.ids.length > 0) break;
       ids.push(...found.ids);
       if (found.ids.length < QUERY_PAGE) return ids;
     }

@@ -76,6 +76,21 @@ describe("JmapBackend and the server's per-call limits", () => {
     expect(jmap.one.mock.calls.filter(([name]) => name === "Email/get")).toHaveLength(2);
   });
 
+  it("finds exactly 100,000 mails, and refuses one more", async () => {
+    jmap.load.mockResolvedValue({});
+    let total = 100_000;
+    jmap.one.mockImplementation(async (_name: string, args: { position: number; limit: number }) => ({
+      ids: Array.from(
+        { length: Math.max(0, Math.min(args.limit, total - args.position)) },
+        (_, i) => `m${args.position + i}`,
+      ),
+    }));
+    const backend = (await load()) as unknown as { queryAll: (accountId: string, filter: object) => Promise<string[]> };
+    expect(await backend.queryAll("a1", {})).toHaveLength(100_000);
+    total += 1;
+    await expect(backend.queryAll("a1", {})).rejects.toThrow("more mail");
+  });
+
   it("uploads a draft's attachment once, not on every save", async () => {
     jmap.load.mockResolvedValue({});
     jmap.upload.mockResolvedValue({ blobId: "upload1" });
