@@ -143,7 +143,7 @@ function clashes(known: string | null, found: string): boolean {
 export function BirthdayImportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useT();
   return (
-    <Dialog open={open} onClose={onClose} title={t("calendar.birthdays.title")} width="lg" closeOnOutsideClick={false}>
+    <Dialog open={open} onClose={onClose} title={t("calendar.birthdays.title")} width="lg">
       {open && <ImportBody onClose={onClose} />}
     </Dialog>
   );

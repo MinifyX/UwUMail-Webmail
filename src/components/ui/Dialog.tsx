@@ -11,7 +11,7 @@ interface DialogProps {
   children: ReactNode;
   width?: "sm" | "md" | "lg" | "viewer";
   className?: string;
-  /** False while a form inside has unsaved input: a click beside the window leaves it open instead of closing it. Escape still counts as closing on purpose, like the X. Defaults to true. */
+  /** A click beside the window closes it. Off by default: windows close only on purpose (X, Escape, Cancel, or their action). */
   closeOnOutsideClick?: boolean;
 }
 
@@ -23,7 +23,7 @@ export function Dialog({
   children,
   width = "md",
   className,
-  closeOnOutsideClick = true,
+  closeOnOutsideClick = false,
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const { t } = useT();
