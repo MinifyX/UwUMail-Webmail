@@ -24,6 +24,7 @@
     "@fontsource-variable/dm-sans": "^5.3.0",
     "@fontsource-variable/rubik": "^5.3.0",
     "@tanstack/react-query": "^5.103.1",
+    "@uwusuite/design": "https://github.com/MinifyX/UwUSuite-Design/releases/download/v1.14.0/uwusuite-design-1.14.0.tgz",
     "blobatar": "2.7.0",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.17",
