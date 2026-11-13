@@ -233,6 +233,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
               ...MORE_FILTERS.map((item) => ({
                 label: <Checked on={filter === item}>{t(`filter.${item}`)}</Checked>,
                 onSelect: () => setFilter(filter === item ? "all" : item),
+                checked: filter === item,
                 group: t("list.filterGroup"),
               })),
               ...(labels.length > 0
@@ -240,6 +241,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
                     {
                       label: <Checked on={grouped}>{t("labels.group.on")}</Checked>,
                       onSelect: () => updateSettings({ groupByLabel: !grouped }),
+                      checked: grouped,
                       group: t("list.viewGroup"),
                     },
                   ]

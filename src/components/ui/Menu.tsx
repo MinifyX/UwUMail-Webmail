@@ -16,6 +16,8 @@ export interface MenuItem {
   onSelect: () => void;
   /** A heading above the first item of a group; items of one group follow each other. */
   group?: string;
+  /** Makes it an on/off item that says its state to screen readers. */
+  checked?: boolean;
   /** Puts something around the item's button, e.g. a tooltip that needs its events. */
   wrap?: (button: ReactElement) => ReactNode;
 }
@@ -36,6 +38,17 @@ interface MenuProps {
   className?: string;
 }
 
+/** Items next to each other with the same group form one section under its heading. */
+function sections(items: MenuItem[]) {
+  const result: { heading?: string; entries: MenuItem[] }[] = [];
+  for (const item of items) {
+    const last = result.at(-1);
+    if (last && last.heading === item.group) last.entries.push(item);
+    else result.push({ heading: item.group, entries: [item] });
+  }
+  return result;
+}
+
 const wrapped = (item: MenuItem, button: ReactElement): ReactNode => (item.wrap ? item.wrap(button) : button);
 
 /** A small popup list of actions. Closes on selection, Escape and clicks outside. */
@@ -47,7 +60,7 @@ export function Menu({ trigger, items, align = "start", side = "below", classNam
 
   useEffect(() => {
     if (!open) return;
-    list.current?.querySelector<HTMLButtonElement>("[role=menuitem]")?.focus();
+    list.current?.querySelector<HTMLButtonElement>("[role^=menuitem]")?.focus();
     const onPointer = (event: PointerEvent) => {
       if (!root.current?.contains(event.target as Node)) setOpen(false);
     };
@@ -67,7 +80,7 @@ export function Menu({ trigger, items, align = "start", side = "below", classNam
   }, [open]);
 
   const moveFocus = (step: number) => {
-    const buttons = [...(list.current?.querySelectorAll<HTMLButtonElement>("[role=menuitem]") ?? [])];
+    const buttons = [...(list.current?.querySelectorAll<HTMLButtonElement>("[role^=menuitem]") ?? [])];
     const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
     buttons[(index + step + buttons.length) % buttons.length]?.focus();
   };
@@ -98,35 +111,45 @@ export function Menu({ trigger, items, align = "start", side = "below", classNam
             align === "end" ? "right-0" : "left-0",
           )}
         >
-          {items.map((item, index) => (
-            <Fragment key={index}>
-              {item.group && item.group !== items[index - 1]?.group && (
+          {sections(items).map((section, sectionIndex) => {
+            const entries = section.entries.map((item, index) => (
+              <Fragment key={index}>
+                {wrapped(
+                  item,
+                  <button
+                    type="button"
+                    role={item.checked === undefined ? "menuitem" : "menuitemcheckbox"}
+                    aria-checked={item.checked}
+                    onClick={() => {
+                      setOpen(false);
+                      item.onSelect();
+                    }}
+                    className="rounded-xl px-3 py-2 text-left text-meta font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none"
+                  >
+                    {item.label}
+                  </button>,
+                )}
+              </Fragment>
+            ));
+            if (section.heading === undefined) return <Fragment key={sectionIndex}>{entries}</Fragment>;
+            return (
+              <div
+                key={sectionIndex}
+                role="group"
+                aria-labelledby={`${id}-h${sectionIndex}`}
+                className={clsx("flex flex-col", sectionIndex > 0 && "mt-1 border-t border-hairline")}
+              >
                 <p
+                  id={`${id}-h${sectionIndex}`}
                   role="presentation"
-                  className={clsx(
-                    "px-3 pt-2 pb-1 text-badge font-bold tracking-wide text-muted uppercase",
-                    index > 0 && "mt-1 border-t border-hairline",
-                  )}
+                  className="px-3 pt-2 pb-1 text-badge font-bold tracking-wide text-muted uppercase"
                 >
-                  {item.group}
+                  {section.heading}
                 </p>
-              )}
-              {wrapped(
-                item,
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setOpen(false);
-                    item.onSelect();
-                  }}
-                  className="rounded-xl px-3 py-2 text-left text-meta font-medium break-words hover:bg-pink-tint/60 focus:bg-pink-tint/60 focus:outline-none"
-                >
-                  {item.label}
-                </button>,
-              )}
-            </Fragment>
-          ))}
+                {entries}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -168,7 +191,7 @@ export function ContextMenu({ at, items, onClose, label }: ContextMenuProps) {
   useEffect(() => {
     if (!at) return;
     const opener = document.activeElement as HTMLElement | null;
-    list.current?.querySelector<HTMLButtonElement>("[role=menuitem]")?.focus();
+    list.current?.querySelector<HTMLButtonElement>("[role^=menuitem]")?.focus();
     const onPointer = (event: PointerEvent) => {
       if (!list.current?.contains(event.target as Node)) close.current();
     };
@@ -194,7 +217,7 @@ export function ContextMenu({ at, items, onClose, label }: ContextMenuProps) {
 
   if (!at) return null;
   const moveFocus = (step: number) => {
-    const buttons = [...(list.current?.querySelectorAll<HTMLButtonElement>("[role=menuitem]") ?? [])];
+    const buttons = [...(list.current?.querySelectorAll<HTMLButtonElement>("[role^=menuitem]") ?? [])];
     const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
     buttons[(index + step + buttons.length) % buttons.length]?.focus();
   };
