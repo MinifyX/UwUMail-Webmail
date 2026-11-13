@@ -508,7 +508,11 @@ export class JmapBackend implements Backend {
         whenSessionChanges(() => void this.sessionChanged());
         await this.loadFolders();
         this.listenForPush();
-      })();
+      })().catch((error: unknown) => {
+        // Forget the failure so the next call tries again instead of failing forever.
+        this.ready = null;
+        throw error;
+      });
     }
     return this.ready;
   }
@@ -1063,15 +1067,6 @@ export class JmapBackend implements Backend {
         },
         "t",
       ]);
-      calls.push([
-        "Email/get",
-        {
-          accountId,
-          "#ids": { resultOf: "t", name: "Thread/get", path: "/list/*/emailIds" },
-          properties: LIST_PROPERTIES,
-        },
-        "m",
-      ]);
     }
 
     const body = await call(calls);
@@ -1081,11 +1076,14 @@ export class JmapBackend implements Backend {
 
     let threads: ThreadSummary[];
     if (collapse) {
-      const threadList = responseOf<GetResponse<JmapThread>>(body, "t").list.map((thread) => ({
+      const rawThreads = responseOf<GetResponse<JmapThread>>(body, "t").list;
+      const threadList = rawThreads.map((thread) => ({
         id: scopeId(accountId, thread.id, own),
         emailIds: thread.emailIds.map((id) => scopeId(accountId, id, own)),
       }));
-      const members = responseOf<GetResponse<JmapEmail>>(body, "m").list.map(scope);
+      // Fetched apart from the batch: one long thread alone can hold more mails than one get takes.
+      const memberIds = rawThreads.flatMap((thread) => thread.emailIds);
+      const members = (await this.getEmails(accountId, memberIds, { properties: LIST_PROPERTIES })).map(scope);
       const byId = new Map(members.map((email) => [email.id, email]));
       const byThread = new Map(threadList.map((thread) => [thread.id, thread]));
       threads = heads.map((head) => {
@@ -1114,24 +1112,13 @@ export class JmapBackend implements Backend {
     const codes = accountId === own && verificationSupported(jmapSession());
     const properties = codes ? [...this.messageProperties(), "verification"] : this.messageProperties();
 
-    const calls: [string, Record<string, unknown>, string][] = single
-      ? [["Email/get", { accountId, ids: [target.id], properties, fetchAllBodyValues: true }, "e"]]
-      : [
-          ["Thread/get", { accountId, ids: [target.id] }, "t"],
-          [
-            "Email/get",
-            {
-              accountId,
-              "#ids": { resultOf: "t", name: "Thread/get", path: "/list/*/emailIds" },
-              properties,
-              fetchAllBodyValues: true,
-            },
-            "e",
-          ],
-        ];
     const using = [CORE, MAIL, ...(supports(WEBMAIL) ? [WEBMAIL] : []), ...(codes ? [VERIFICATION] : [])];
-    const body = await call(calls, using);
-    let emails = responseOf<GetResponse<JmapEmail>>(body, "e").list.map((email) => scopeEmail(email, accountId, own));
+    const ids = single
+      ? [target.id]
+      : ((await one<GetResponse<JmapThread>>("Thread/get", { accountId, ids: [target.id] })).list[0]?.emailIds ?? []);
+    let emails = (await this.getEmails(accountId, ids, { properties, fetchAllBodyValues: true }, using)).map((email) =>
+      scopeEmail(email, accountId, own),
+    );
     if (emails.length === 0) throw new BackendError("not_found", "That mail is gone.");
     if (!conversations && !single) {
       const newest = [...emails].sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))[0]!;
@@ -1159,12 +1146,7 @@ export class JmapBackend implements Backend {
     if (Object.keys(patch).length === 0) return;
     const groups = groupByAccount(messageIds, this.accountId);
     for (const [accountId, ids] of groups) {
-      const update = Object.fromEntries(ids.map((id) => [id, patch]));
-      const response = await one<SetResponse>("Email/set", { accountId, update });
-      if (Object.values(response.notUpdated ?? {}).some((problem) => problem.type === "forbidden")) {
-        throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
-      }
-      throwOnError(response);
+      await this.updateAll(accountId, ids, patch);
       this.emit({ type: "mail:changed", accountId });
     }
   }
@@ -1181,9 +1163,10 @@ export class JmapBackend implements Backend {
         calculateTotal: false,
       });
       ids.push(...found.ids);
-      if (found.ids.length < QUERY_PAGE) break;
+      if (found.ids.length < QUERY_PAGE) return ids;
     }
-    return ids;
+    // Stopping quietly would report success with mail left over.
+    throw new BackendError("invalid_input", "That is more mail than one action can handle.");
   }
 
   /** Sets the same patch on many mails of one account, a batch per call. */
@@ -1271,16 +1254,16 @@ export class JmapBackend implements Backend {
     this.ownOnly(messageIds);
     await this.loadFolders();
     const own = this.accountId;
-    const current = await one<GetResponse<JmapEmail>>("Email/get", {
-      accountId: own,
-      ids: messageIds.map((id) => unscopeId(id, own).id),
-      properties: ["id", "mailboxIds", "messageId"],
-    });
-    const withHeader = current.list.filter((email) => bareMessageId(email.messageId?.[0]));
+    const current = await this.getEmails(
+      own,
+      messageIds.map((id) => unscopeId(id, own).id),
+      { properties: ["id", "mailboxIds", "messageId"] },
+    );
+    const withHeader = current.filter((email) => bareMessageId(email.messageId?.[0]));
     if (withHeader.length === 0) throw new BackendError("invalid_input", "This mail has no Message-ID to find it by.");
     const folder = (await this.snoozedFolder(true))!;
     const snoozed: SnoozedMessage[] = [];
-    const update: Record<string, Record<string, unknown>> = {};
+    const moving: string[] = [];
     for (const email of withHeader) {
       const from = Object.keys(email.mailboxIds).filter((id) => email.mailboxIds[id] && id !== folder.id);
       snoozed.push({
@@ -1289,12 +1272,9 @@ export class JmapBackend implements Backend {
         headerId: bareMessageId(email.messageId![0]),
         folderId: from[0] ? scopeId(own, from[0], own) : null,
       });
-      if (from.length > 0) update[email.id] = { mailboxIds: { [folder.id]: true } };
+      if (from.length > 0) moving.push(email.id);
     }
-    if (Object.keys(update).length > 0) {
-      const response = await one<SetResponse>("Email/set", { accountId: own, update });
-      throwOnError(response);
-    }
+    await this.updateAll(own, moving, { mailboxIds: { [folder.id]: true } });
     await this.loadFolders();
     this.emit({ type: "mail:changed", accountId: own });
     return snoozed;
@@ -1308,16 +1288,27 @@ export class JmapBackend implements Backend {
     const own = this.accountId;
     const { accountId, id } = unscopeId(folderId, own);
     const ids = await this.queryAll(accountId, { inMailbox: id });
+    const emails = await this.getEmails(accountId, ids, { properties: ["id", "threadId", "mailboxIds", "messageId"] });
+    return { accountId, emails };
+  }
+
+  /** `Email/get` for any number of ids: the server takes at most QUERY_PAGE per call. */
+  private async getEmails(
+    accountId: string,
+    ids: string[],
+    args: Record<string, unknown>,
+    using?: string[],
+  ): Promise<JmapEmail[]> {
     const emails: JmapEmail[] = [];
     for (let start = 0; start < ids.length; start += QUERY_PAGE) {
-      const found = await one<GetResponse<JmapEmail>>("Email/get", {
-        accountId,
-        ids: ids.slice(start, start + QUERY_PAGE),
-        properties: ["id", "threadId", "mailboxIds", "messageId"],
-      });
+      const found = await one<GetResponse<JmapEmail>>(
+        "Email/get",
+        { ...args, accountId, ids: ids.slice(start, start + QUERY_PAGE) },
+        using,
+      );
       emails.push(...found.list);
     }
-    return { accountId, emails };
+    return emails;
   }
 
   async unsnooze(accountId: string, headerId: string, folderId: string | null): Promise<UnsnoozeOutcome> {
@@ -1376,14 +1367,12 @@ export class JmapBackend implements Backend {
       throw new BackendError("invalid_input", "Mail can only move to folders of its own mailbox.");
     }
     const accountId = target.accountId;
-    const current = await one<GetResponse<JmapEmail>>("Email/get", {
-      accountId,
-      ids: groups.get(accountId) ?? [],
+    const current = await this.getEmails(accountId, groups.get(accountId) ?? [], {
       properties: ["id", "mailboxIds", "keywords"],
     });
-    const update: Record<string, Record<string, unknown>> = {};
+    const moving: string[] = [];
     const moved: MovedMessage[] = [];
-    for (const email of current.list) {
+    for (const email of current) {
       const from = Object.keys(email.mailboxIds).filter((id) => email.mailboxIds[id]);
       if (from.includes(target.id) && from.length === 1) continue;
       if (accountId !== own) {
@@ -1393,16 +1382,12 @@ export class JmapBackend implements Backend {
           "mayRemoveItems",
         );
       }
-      update[email.id] = { mailboxIds: { [target.id]: true }, ...(keywords ?? {}) };
+      moving.push(email.id);
       const fromFolderId = from.find((id) => id !== target.id) ?? from[0] ?? "";
       moved.push({ id: scopeId(accountId, email.id, own), fromFolderId: scopeId(accountId, fromFolderId, own) });
     }
     if (moved.length === 0) return [];
-    const response = await one<SetResponse>("Email/set", { accountId, update });
-    if (Object.values(response.notUpdated ?? {}).some((problem) => problem.type === "forbidden")) {
-      throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
-    }
-    throwOnError(response);
+    await this.updateAll(accountId, moving, { mailboxIds: { [target.id]: true }, ...(keywords ?? {}) });
     await this.loadFolders();
     this.emit({ type: "mail:changed", accountId });
     return moved;
@@ -1461,25 +1446,26 @@ export class JmapBackend implements Backend {
       let destroy = ids;
       if (accountId === own) {
         const trash = this.folderOrFail("trash");
-        const current = await one<GetResponse<JmapEmail>>("Email/get", { ids, properties: ["id", "mailboxIds"] });
-        destroy = current.list.filter((email) => email.mailboxIds[trash.id] === true).map((email) => email.id);
+        const current = await this.getEmails(accountId, ids, { properties: ["id", "mailboxIds"] });
+        destroy = current.filter((email) => email.mailboxIds[trash.id] === true).map((email) => email.id);
       } else {
-        const current = await one<GetResponse<JmapEmail>>("Email/get", {
-          accountId,
-          ids,
-          properties: ["id", "mailboxIds"],
-        });
-        const folders = current.list.flatMap((email) =>
+        const current = await this.getEmails(accountId, ids, { properties: ["id", "mailboxIds"] });
+        const folders = current.flatMap((email) =>
           Object.keys(email.mailboxIds).map((id) => scopeId(accountId, id, own)),
         );
         this.allowed(folders, "mayRemoveItems");
       }
       if (destroy.length === 0) continue;
-      const response = await one<SetResponse>("Email/set", { accountId, destroy });
-      if (Object.values(response.notDestroyed ?? {}).some((problem) => problem.type === "forbidden")) {
-        throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+      for (let start = 0; start < destroy.length; start += SET_BATCH) {
+        const response = await one<SetResponse>("Email/set", {
+          accountId,
+          destroy: destroy.slice(start, start + SET_BATCH),
+        });
+        if (Object.values(response.notDestroyed ?? {}).some((problem) => problem.type === "forbidden")) {
+          throw new BackendError("forbidden", "The owner of this folder didn't allow that.");
+        }
+        count += response.destroyed?.length ?? 0;
       }
-      count += response.destroyed?.length ?? 0;
       this.emit({ type: "mail:changed", accountId });
     }
     await this.loadFolders();

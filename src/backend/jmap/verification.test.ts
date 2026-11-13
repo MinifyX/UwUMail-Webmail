@@ -245,13 +245,12 @@ vi.mock("./client", async (original) => {
           ],
           sessionState: "s1",
         };
-      return {
-        methodResponses: [
-          ["Thread/get", { list: [{ id: "t7", emailIds: ["e93"] }] }, "t"],
-          ["Email/get", { list: [mail], notFound: [] }, "e"],
-        ],
-        sessionState: "s1",
-      };
+      throw new Error(`unexpected ${name}`);
+    },
+    one: async (name: string, args: Record<string, unknown>, using: string[]) => {
+      jmap.calls.push({ methods: [[name, args, "0"]], using });
+      if (name === "Thread/get") return { list: [{ id: "t7", emailIds: ["e93"] }] };
+      return { list: [mail], notFound: [] };
     },
   };
 });
@@ -288,16 +287,16 @@ describe("the backend", () => {
   it("hands the reader the mail's own code", async () => {
     const detail = await (await load()).getThread("t7", true);
     expect(detail.messages[0]!.verification).toMatchObject({ code: "482913", origin: "login.shop.example" });
-    const request = jmap.calls.find((entry) => entry.methods[0]![0] === "Thread/get")!;
+    const request = jmap.calls.find((entry) => entry.methods[0]![0] === "Email/get")!;
     expect(request.using).toContain(VERIFICATION);
-    expect(request.methods[1]![1].properties).toContain("verification");
+    expect(request.methods[0]![1].properties).toContain("verification");
   });
 
   it("doesn't ask for the property without the capability", async () => {
     jmap.supported = false;
     await (await load()).getThread("t7", true);
-    const request = jmap.calls.find((entry) => entry.methods[0]![0] === "Thread/get")!;
+    const request = jmap.calls.find((entry) => entry.methods[0]![0] === "Email/get")!;
     expect(request.using).not.toContain(VERIFICATION);
-    expect(request.methods[1]![1].properties).not.toContain("verification");
+    expect(request.methods[0]![1].properties).not.toContain("verification");
   });
 });
