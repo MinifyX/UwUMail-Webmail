@@ -54,6 +54,16 @@ describe("buildDocument", () => {
     expect(doc).not.toContain("steal");
   });
 
+  it("drops links into the mail's own parts and files but keeps embedded pictures", () => {
+    const doc = buildDocument(
+      message({ bodyHtml: '<a href="cid:a@shop.example">a</a><a href=" blob:x">b</a><img src="cid:a@shop.example">' }),
+      false,
+      "light",
+    );
+    expect(doc).not.toMatch(/href="\s*(cid|blob):/);
+    expect(doc).toContain('<img src="cid:a@shop.example">');
+  });
+
   it("does not force app typography onto HTML mail", () => {
     const doc = buildDocument(message({ bodyHtml: "<p>Hi</p>" }), false, "light");
     expect(doc).not.toContain("overflow-wrap:anywhere");
