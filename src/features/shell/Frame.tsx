@@ -1,4 +1,4 @@
-import { Button, Icon, IconButton, ICONS, Menu } from "@uwusuite/design";
+import { Button, Icon, IconButton, ICONS, Menu, NavIndicator } from "@uwusuite/design";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -77,8 +77,10 @@ export function IconRail() {
   const { setSection, setView, openSettings } = useUi.getState();
   return (
     <nav aria-label={t("nav.apps")} className="flex w-16 shrink-0 flex-col items-center gap-1.5 py-3">
+      <NavIndicator />
       <button
         type="button"
+        data-uwu-reveal-origin
         aria-label={name}
         title={name}
         onClick={() => setView({ kind: "unified", role: "inbox" })}

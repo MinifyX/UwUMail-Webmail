@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, UwuLabels } from "@uwusuite/design";
-import { useEffect, useState } from "react";
+import { Button, revealFrom, UwuLabels } from "@uwusuite/design";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useApplyNyuLevel } from "@/components/nyu/level";
 import { NyuStage } from "@/components/nyu/NyuStage";
 import { NyuScene } from "@/components/nyu/scenes";
@@ -160,6 +160,12 @@ export function App() {
       cancelled = true;
     };
   }, []);
+
+  // Once per start: the mail comes out of the logo (or the middle on a phone) after loading.
+  useLayoutEffect(() => {
+    const root = document.getElementById("root");
+    if (boot.state === "ready" && root) revealFrom(root);
+  }, [boot.state]);
 
   // Signed out: after the shell is gone, so a composer's last local copy is cleared too.
   useEffect(() => {
