@@ -19,6 +19,8 @@ export function ContextMenu({ at, items, onClose, label }: ContextMenuProps) {
   const list = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
   const close = useRef(onClose);
+  // Where the focus goes back to once the menu closes, so the keyboard stays where it was.
+  const opener = useRef<HTMLElement | null>(null);
   useEffect(() => {
     close.current = onClose;
   });
@@ -37,7 +39,7 @@ export function ContextMenu({ at, items, onClose, label }: ContextMenuProps) {
 
   useEffect(() => {
     if (!at) return;
-    const opener = document.activeElement as HTMLElement | null;
+    opener.current = document.activeElement as HTMLElement | null;
     list.current?.querySelector<HTMLButtonElement>("[role^=menuitem]")?.focus();
     const onPointer = (event: PointerEvent) => {
       if (!list.current?.contains(event.target as Node)) close.current();
@@ -47,7 +49,7 @@ export function ContextMenu({ at, items, onClose, label }: ContextMenuProps) {
       event.stopPropagation();
       event.preventDefault();
       close.current();
-      opener?.focus();
+      opener.current?.focus();
     };
     const onAway = () => close.current();
     document.addEventListener("pointerdown", onPointer, true);
@@ -91,6 +93,8 @@ export function ContextMenu({ at, items, onClose, label }: ContextMenuProps) {
           role="menuitem"
           onClick={() => {
             onClose();
+            // Before the action, so one that opens a dialog can still move the focus on.
+            opener.current?.focus();
             item.onSelect();
           }}
           className={clsx(

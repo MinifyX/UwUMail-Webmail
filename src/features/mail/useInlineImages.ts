@@ -2,7 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { backend } from "@/backend/backend";
 import type { Message } from "@/backend/types";
-import { normalizeContentId, referencedContentIds } from "@/lib/inlineImages";
+import { isInlinePicture, normalizeContentId, referencedContentIds } from "@/lib/inlineImages";
 
 /**
  * The embedded images a mail's HTML points at, as blob URLs by Content-ID. Blob URLs are already
@@ -12,7 +12,10 @@ import { normalizeContentId, referencedContentIds } from "@/lib/inlineImages";
 export function useInlineImages(message: Message) {
   const referenced = useMemo(() => referencedContentIds(message.bodyHtml), [message.bodyHtml]);
   const inline = message.attachments.filter(
-    (attachment) => attachment.contentId && referenced.has(normalizeContentId(attachment.contentId)),
+    (attachment) =>
+      attachment.contentId &&
+      isInlinePicture(attachment.mimeType) &&
+      referenced.has(normalizeContentId(attachment.contentId)),
   );
   const results = useQueries({
     queries: inline.map((attachment) => ({

@@ -47,9 +47,25 @@ const purifier = DOMPurify();
 purifier.addHook("uponSanitizeAttribute", (_node, data) => {
   if (OWN_MARKER.test(data.attrName)) data.keepAttr = false;
 });
+/** Link attributes that could point into the mail's own parts (`cid:`) or the webmail's files (`blob:`). */
+const LINK_ATTRIBUTES = ["href", "xlink:href", "action", "formaction", "data"];
+const OWN_FILES = /^(cid|blob):/i;
+
+/** Such links would open a file on the webmail's origin; pictures keep their `cid:` sources (lib/inlineImages). */
+function dropOwnFileLinks(node: Element) {
+  for (const name of LINK_ATTRIBUTES) {
+    const value = node.getAttribute(name);
+    if (value === null) continue;
+    // Browsers skip leading whitespace and controls and ignore tabs and newlines in a scheme.
+    const scheme = [...value].filter((char) => char.charCodeAt(0) > 0x20).join("");
+    if (OWN_FILES.test(scheme)) node.removeAttribute(name);
+  }
+}
+
 // Microsoft Safe Links show and open their real target (lib/safeLinks). Runs after the mail's own
 // markers are gone, so only the reader sets this one.
 purifier.addHook("afterSanitizeAttributes", (node) => {
+  dropOwnFileLinks(node);
   if (node.nodeName === "A" || node.nodeName === "AREA") unwrapSafeLinkElement(node);
   // Safari follows `href` on any MathML element, and the reader's link handler only catches
   // a/area, so such a link would open in the frame without the link question (security-audit W-45).
