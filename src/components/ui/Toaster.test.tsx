@@ -20,3 +20,26 @@ it("shows the webmail's toasts in the package stack and runs their action", () =
   expect(run).toHaveBeenCalledOnce();
   expect(screen.queryByRole("status")).toBeNull();
 });
+
+it("holds a toast while hovered and gives it its full time again afterwards", () => {
+  vi.useFakeTimers();
+  try {
+    render(<Toaster />);
+    act(() => {
+      useToasts.getState().show("Moved", "info", undefined, { duration: 1000 });
+    });
+    const item = screen.getByRole("status").firstElementChild ?? screen.getByRole("status");
+    fireEvent.pointerEnter(item);
+    fireEvent.mouseEnter(item);
+    act(() => vi.advanceTimersByTime(5000));
+    expect(screen.getByRole("status").textContent).toContain("Moved");
+    fireEvent.pointerLeave(item);
+    fireEvent.mouseLeave(item);
+    act(() => vi.advanceTimersByTime(900));
+    expect(screen.getByRole("status").textContent).toContain("Moved");
+    act(() => vi.advanceTimersByTime(200));
+    expect(screen.queryByText("Moved")).toBeNull();
+  } finally {
+    vi.useRealTimers();
+  }
+});

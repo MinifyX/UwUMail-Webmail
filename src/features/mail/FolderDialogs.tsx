@@ -113,14 +113,7 @@ function NameForm({ dialog }: { dialog: Extract<FolderDialog, { kind: "create" |
       </div>
       <Field label={t("folders.name")} error={shownProblem ? t(`folders.problem.${shownProblem}`) : undefined}>
         {(id) => (
-          <TextInput
-            id={id}
-            autoFocus
-            value={name}
-            maxLength={255}
-            aria-invalid={shownProblem !== null}
-            onChange={(event) => setName(event.target.value)}
-          />
+          <TextInput id={id} autoFocus value={name} maxLength={255} onChange={(event) => setName(event.target.value)} />
         )}
       </Field>
       <div className="flex justify-end gap-2">
