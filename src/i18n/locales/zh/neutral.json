@@ -2082,7 +2082,8 @@
     "group": {
       "today": "今天",
       "onTheWay": "运输中",
-      "delivered": "已送达（最近 7 天）"
+      "delivered": "已送达（最近 7 天）",
+      "hidden": "已隐藏"
     },
     "day": {
       "today": "今天",
@@ -2161,6 +2162,9 @@
       "notFound": "这个包裹已不存在。",
       "connection": "无法连接服务器。请稍后再试。",
       "generic": "没有成功，请再试一次。"
-    }
+    },
+    "hiddenShow": "显示已隐藏（{{n}}）",
+    "hiddenHide": "收起已隐藏",
+    "unhide": "重新显示"
   }
 }

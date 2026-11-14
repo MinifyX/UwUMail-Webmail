@@ -1307,9 +1307,9 @@ export class DemoBackend implements Backend {
     return true;
   }
 
-  async shipments() {
+  async shipments(hidden = false) {
     await wait(120);
-    return this.parcels.list();
+    return this.parcels.list(hidden);
   }
 
   async createShipment(input: ShipmentInput) {

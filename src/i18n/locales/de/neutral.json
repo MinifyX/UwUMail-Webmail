@@ -2160,7 +2160,8 @@
     "group": {
       "today": "Heute",
       "onTheWay": "Unterwegs",
-      "delivered": "Zugestellt (letzte 7 Tage)"
+      "delivered": "Zugestellt (letzte 7 Tage)",
+      "hidden": "Ausgeblendet"
     },
     "day": {
       "today": "Heute",
@@ -2239,6 +2240,9 @@
       "notFound": "Das Paket gibt es nicht mehr.",
       "connection": "Keine Verbindung zum Server. Versuch es gleich noch mal.",
       "generic": "Das hat nicht geklappt. Versuch es noch mal."
-    }
+    },
+    "hiddenShow": "Ausgeblendete anzeigen ({{n}})",
+    "hiddenHide": "Ausgeblendete verbergen",
+    "unhide": "Wieder einblenden"
   }
 }

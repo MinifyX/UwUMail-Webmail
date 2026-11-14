@@ -202,6 +202,17 @@ export function sampleShipments(lang: Lang, now: number, pixelPartsMail: string 
       deliveredAt: ago(10 * DAY),
       created: ago(14 * DAY),
     }),
+    item({
+      id: "p10",
+      carrier: "dpd",
+      number: "01505098765432",
+      trackingUrl: "https://track.example/dpd/01505098765432",
+      merchant: "Kabelkiste",
+      title: de ? "Ersatzkabel (schon abgeholt)" : "Spare cable (already collected)",
+      status: "inTransit",
+      statusAt: ago(2 * DAY),
+      hidden: true,
+    }),
   ];
 }
 
@@ -219,10 +230,10 @@ export class DemoShipments {
     this.items = sampleShipments(lang, now, pixelPartsMail);
   }
 
-  /** Like the server's query: not hidden, last changed first. */
-  list(): Shipment[] {
+  /** Like the server's query: not hidden (or only the hidden ones), last changed first. */
+  list(hidden = false): Shipment[] {
     return this.items
-      .filter((s) => !s.hidden)
+      .filter((s) => s.hidden === hidden)
       .sort((a, b) => Date.parse(b.updated) - Date.parse(a.updated))
       .map((s) => structuredClone(s));
   }

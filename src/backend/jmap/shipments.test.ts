@@ -36,6 +36,7 @@ describe("JMAP shipments", () => {
     expect(query[0]).toBe("Shipment/query");
     expect(query[1]).toMatchObject({ filter: { hidden: false }, limit: 100 });
     expect(get[1]).toMatchObject({ "#ids": { resultOf: "q", path: "/ids" } });
+    expect(shipmentCalls("a1", true)[0]![1]).toMatchObject({ filter: { hidden: true } });
     expect(shipmentCreate({ carrier: "dpd", number: " 0150 5012 ", title: " " })).toEqual({
       carrier: "dpd",
       number: "01505012",

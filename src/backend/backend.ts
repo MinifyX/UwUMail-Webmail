@@ -381,8 +381,8 @@ export interface Backend {
 
   /** Whether the server tracks parcels (`urn:uwumail:jmap:shipments`); false hides "Parcels". */
   shipmentsAvailable(): Promise<boolean>;
-  /** The parcels not hidden, the most recently changed first (at most 100). */
-  shipments(): Promise<Shipment[]>;
+  /** The parcels not hidden (or only the hidden ones), the most recently changed first (at most 100). */
+  shipments(hidden?: boolean): Promise<Shipment[]>;
   /** Adds one by hand from carrier and tracking number; returns the new one's id. */
   createShipment(input: ShipmentInput): Promise<string>;
   /** Renames it (null goes back to the shop) or hides it. */

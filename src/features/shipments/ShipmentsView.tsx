@@ -25,7 +25,7 @@ import { addDays, todayKey } from "@/lib/calendarDates";
 import { useIsPhone } from "@/lib/device";
 import { dayOf, finishedAt, groupShipments, isActive, STEPS, stepOf } from "@/lib/shipments";
 import { useUi } from "@/state/ui";
-import { useShipmentActions, useShipmentFocus, useShipments } from "./useShipments";
+import { useHiddenShipments, useShipmentActions, useShipmentFocus, useShipments } from "./useShipments";
 
 type T = ReturnType<typeof useT>["t"];
 
@@ -72,7 +72,9 @@ export function ShipmentsView() {
   const { t } = useT();
   const phone = useIsPhone();
   const { data: shipments, isLoading } = useShipments();
+  const { data: hidden = [] } = useHiddenShipments();
   const [adding, setAdding] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
   const groups = groupShipments(shipments ?? []);
   const empty = !isLoading && groups.today.length + groups.onTheWay.length + groups.delivered.length === 0;
 
@@ -98,6 +100,21 @@ export function ShipmentsView() {
           <Group title={t("shipments.group.onTheWay")} items={groups.onTheWay} />
           <Group title={t("shipments.group.delivered")} items={groups.delivered} />
         </>
+      )}
+      {hidden.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <Button
+            size="sm"
+            variant="ghost"
+            icon={showHidden ? ICONS.hide : ICONS.show}
+            className="self-center"
+            aria-expanded={showHidden}
+            onClick={() => setShowHidden((v) => !v)}
+          >
+            {t(showHidden ? "shipments.hiddenHide" : "shipments.hiddenShow", { n: hidden.length })}
+          </Button>
+          {showHidden && <Group title={t("shipments.group.hidden")} items={hidden} />}
+        </div>
       )}
       <AddShipment open={adding} onClose={() => setAdding(false)} />
     </div>
@@ -326,12 +343,19 @@ function ShipmentCard({ shipment }: { shipment: Shipment }) {
             {t("shipments.toMail")}
           </Button>
         )}
+        {shipment.hidden && (
+          <Button size="sm" variant="ghost" icon={ICONS.show} onClick={() => void actions.unhide(shipment.id)}>
+            {t("shipments.unhide")}
+          </Button>
+        )}
         <span className="flex-1" />
         <Menu
           align="end"
           items={[
             { label: t("shipments.rename"), icon: ICONS.edit, onSelect: () => setRenaming(true) },
-            { label: t("shipments.hide"), icon: ICONS.hide, onSelect: () => void actions.hide(shipment.id) },
+            ...(shipment.hidden
+              ? []
+              : [{ label: t("shipments.hide"), icon: ICONS.hide, onSelect: () => void actions.hide(shipment.id) }]),
             "separator",
             { label: t("shipments.delete"), icon: ICONS.delete, danger: true, onSelect: () => setDeleting(true) },
           ]}

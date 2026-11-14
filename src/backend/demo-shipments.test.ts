@@ -27,6 +27,7 @@ describe("demo parcels", () => {
     expect(store.list().find((s) => s.id === id)!.title).toBeNull();
     store.update(id, { hidden: true });
     expect(store.list().some((s) => s.id === id)).toBe(false);
+    expect(store.list(true).map((s) => s.id)).toEqual([id, "p10"]);
     store.update(id, { hidden: false });
     store.remove(id);
     expect(store.list().some((s) => s.id === id)).toBe(false);

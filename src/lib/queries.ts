@@ -40,6 +40,8 @@ export const queryKeys = {
   backupsAvailable: ["backupsAvailable"] as const,
   shipmentsAvailable: ["shipmentsAvailable"] as const,
   shipments: ["shipments"] as const,
+  // Under `shipments`, so the same invalidation reloads it.
+  hiddenShipments: ["shipments", "hidden"] as const,
   maskedAddresses: ["maskedAddresses"] as const,
   verificationCodes: ["verificationCodes"] as const,
   profilePicture: ["profilePicture"] as const,

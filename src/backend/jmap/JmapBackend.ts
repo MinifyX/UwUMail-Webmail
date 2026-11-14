@@ -2583,10 +2583,10 @@ export class JmapBackend implements Backend {
     return one<SetResponse>("Shipment/set", args, [CORE, SHIPMENTS]);
   }
 
-  async shipments(): Promise<Shipment[]> {
+  async shipments(hidden = false): Promise<Shipment[]> {
     await this.start();
     if (!supports(SHIPMENTS)) return [];
-    const body = await call(shipmentCalls(this.accountId), [CORE, SHIPMENTS]);
+    const body = await call(shipmentCalls(this.accountId, hidden), [CORE, SHIPMENTS]);
     const { ids } = responseOf<{ ids: string[] }>(body, "q");
     const byId = new Map(
       responseOf<GetResponse<unknown>>(body, "g")

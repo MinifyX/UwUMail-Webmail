@@ -120,14 +120,14 @@ export function toShipment(value: unknown): Shipment | null {
   };
 }
 
-/** The calls for the list: the parcels not hidden, newest change first, fetched in the same go. */
-export function shipmentCalls(accountId: string): [string, Json, string][] {
+/** The calls for the list: the parcels not hidden (or only the hidden ones), newest change first, fetched in the same go. */
+export function shipmentCalls(accountId: string, hidden = false): [string, Json, string][] {
   return [
     [
       "Shipment/query",
       {
         accountId,
-        filter: { hidden: false },
+        filter: { hidden },
         sort: [{ property: "updated", isAscending: false }],
         limit: SHIPMENTS_LIMIT,
       },

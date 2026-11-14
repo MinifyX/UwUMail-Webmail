@@ -2236,7 +2236,8 @@
     "group": {
       "today": "Aujourd’hui",
       "onTheWay": "En route",
-      "delivered": "Livrés (7 derniers jours)"
+      "delivered": "Livrés (7 derniers jours)",
+      "hidden": "Masqués"
     },
     "day": {
       "today": "Aujourd’hui",
@@ -2315,6 +2316,9 @@
       "notFound": "Ce colis n’existe plus.",
       "connection": "Pas de connexion au serveur. Réessaie dans un instant.",
       "generic": "Ça n’a pas marché. Réessaie."
-    }
+    },
+    "hiddenShow": "Afficher les masqués ({{n}})",
+    "hiddenHide": "Cacher les masqués",
+    "unhide": "Afficher à nouveau"
   }
 }

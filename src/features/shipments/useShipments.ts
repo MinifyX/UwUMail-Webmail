@@ -20,6 +20,15 @@ export function useShipments() {
   return useQuery({ queryKey: queryKeys.shipments, queryFn: () => backend().shipments(), enabled: available });
 }
 
+export function useHiddenShipments() {
+  const { data: available = false } = useShipmentsAvailable();
+  return useQuery({
+    queryKey: queryKeys.hiddenShipments,
+    queryFn: () => backend().shipments(true),
+    enabled: available,
+  });
+}
+
 /** The card the mail's parcel chip leads to; the view scrolls to it and focuses it once. */
 export const useShipmentFocus = create<{ id: string | null; set: (id: string | null) => void }>()((set) => ({
   id: null,
@@ -64,6 +73,7 @@ export function useShipmentActions() {
         action: { label: translate("shipments.undo"), run: () => void update(id, { hidden: false }) },
       });
     },
+    unhide: (id: string) => update(id, { hidden: false }),
     remove: async (id: string) => {
       if (await run(() => backend().deleteShipment(id))) toast(translate("shipments.toast.deleted"), "success");
     },

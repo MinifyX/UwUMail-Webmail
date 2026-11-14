@@ -2160,7 +2160,8 @@
     "group": {
       "today": "Vandaag",
       "onTheWay": "Onderweg",
-      "delivered": "Bezorgd (laatste 7 dagen)"
+      "delivered": "Bezorgd (laatste 7 dagen)",
+      "hidden": "Verborgen"
     },
     "day": {
       "today": "Vandaag",
@@ -2239,6 +2240,9 @@
       "notFound": "Dat pakket bestaat niet meer.",
       "connection": "Geen verbinding met de server. Probeer het zo opnieuw.",
       "generic": "Dat is niet gelukt. Probeer het opnieuw."
-    }
+    },
+    "hiddenShow": "Verborgen tonen ({{n}})",
+    "hiddenHide": "Verborgen verbergen",
+    "unhide": "Weer tonen"
   }
 }

@@ -2160,7 +2160,8 @@
     "group": {
       "today": "Today",
       "onTheWay": "On the way",
-      "delivered": "Delivered (last 7 days)"
+      "delivered": "Delivered (last 7 days)",
+      "hidden": "Hidden"
     },
     "day": {
       "today": "Today",
@@ -2239,6 +2240,9 @@
       "notFound": "That parcel no longer exists.",
       "connection": "No connection to the server. Try again in a moment.",
       "generic": "That didn't work. Please try again."
-    }
+    },
+    "hiddenShow": "Show hidden ({{n}})",
+    "hiddenHide": "Hide hidden parcels",
+    "unhide": "Show again"
   }
 }
