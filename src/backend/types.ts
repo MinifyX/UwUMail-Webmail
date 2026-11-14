@@ -864,6 +864,50 @@ export interface MaskedAddressPatch {
   url?: string | null;
 }
 
+/** A mail found in the server's backups (UwUMail's `urn:uwumail:jmap:backups`); only the account's own. */
+export interface BackupMail {
+  id: string;
+  subject: string;
+  from: Address[];
+  to: Address[];
+  receivedAt: string;
+  size: number;
+  /** The folder it was in. */
+  folder: string;
+  /** When the backups it is in were made, oldest first. */
+  snapshots: string[];
+  /** The account has it already (the same Message-ID or content). */
+  inMailbox: boolean;
+}
+
+/** Searched in the headers: the subject, senders and recipients; dates are of when it arrived. */
+export interface BackupQuery {
+  text?: string;
+  after?: string;
+  before?: string;
+}
+
+export interface BackupSearchResult {
+  list: BackupMail[];
+  /** While `done` is below `total`, older backups are still being read and more may turn up. */
+  indexing: { done: number; total: number };
+}
+
+/** One mail read from the backup: its text only, never HTML, and what is attached. */
+export interface BackupMailContent extends BackupMail {
+  text: string;
+  attachments: { name: string; type: string; size: number }[];
+}
+
+export type BackupRestoreProblem = "notFound" | "overQuota" | "invalidEmail" | "other";
+
+export interface BackupRestoreResult {
+  /** Mail id → the id of the folder "Restored <date>" it went into. */
+  restored: Record<string, string>;
+  alreadyThere: string[];
+  notRestored: Record<string, BackupRestoreProblem>;
+}
+
 /** What the server found out about one remote picture of a mail, see `Backend.imageSizes`. */
 export interface RemoteImageSize {
   /** The picture's address as the mail has it, not the server's proxy address. */

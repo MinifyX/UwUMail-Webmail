@@ -2027,5 +2027,48 @@
     "tooLate": "メールはすでに送信中のため、取り消せません。",
     "internalOnly": "このアカウントは自分のサーバー上のアドレスにのみ送信できます。",
     "stateMismatch": "その間に別の場所で変更されました。もう一度お試しください。"
+  },
+  "backups": {
+    "open": "バックアップを検索",
+    "title": "バックアップから復元",
+    "intro": "メールを削除してしまいましたか？サーバーのバックアップから自分のメールを探して復元できます。",
+    "text": "件名、差出人、宛先",
+    "textHint": "ヘッダーのみを検索します。本文は対象外です。",
+    "after": "開始日",
+    "before": "終了日",
+    "search": "検索",
+    "found_other": "{{count}} 件のメールが見つかりました",
+    "indexing": "古いバックアップを読み込み中です（{{done}} / {{total}}）。後でさらに見つかる場合があります。",
+    "restoreFailed": "復元できませんでした。{{reason}}",
+    "hits": "見つかったメール",
+    "whereTo": "復元したメールは「Restored <日付>」フォルダーに入ります。",
+    "restore": "復元",
+    "restoreCount_other": "{{count}} 件を復元",
+    "inMailbox": "メールボックスにあります",
+    "outcome": {
+      "restored": "復元済み",
+      "notFound": "バックアップにありません",
+      "overQuota": "メールボックスが満杯",
+      "invalidEmail": "安全に保存できません",
+      "other": "復元されませんでした"
+    },
+    "noSubject": "（件名なし）",
+    "choose": "選択: {{subject}}",
+    "folder": "{{folder}} にありました",
+    "snapshots": "{{dates}} のバックアップ",
+    "preview": "表示",
+    "hide": "隠す",
+    "reading": "バックアップからメールを読み込み中…",
+    "noText": "（本文なし）",
+    "attachments": "添付ファイル",
+    "unnamed": "（名前なし）",
+    "summary": {
+      "restored_other": "{{count}} 件のメールを復元しました。",
+      "alreadyThere_other": "{{count}} 件はすでにメールボックスにありました。",
+      "notFound_other": "{{count}} 件はバックアップにありません。",
+      "overQuota_other": "{{count}} 件を復元できません: メールボックスが満杯です。",
+      "invalidEmail_other": "{{count}} 件は安全に保存できません。",
+      "other_other": "{{count}} 件を復元できませんでした。"
+    }
   }
 }

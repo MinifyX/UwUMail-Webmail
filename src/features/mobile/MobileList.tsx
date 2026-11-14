@@ -8,6 +8,7 @@ import type { SceneName } from "@/components/nyu/scenes";
 import { useT } from "@/i18n";
 import { codeForThread, useVerificationCodes } from "../codes/codes";
 import { VerificationCodeBar } from "../codes/VerificationCodeBar";
+import { BackupSearchButton, backupsHere } from "../backups/BackupSearch";
 import { SEARCH_INPUT_ID } from "../shell/search";
 import { useBackLayer } from "@/lib/backStack";
 import {
@@ -156,6 +157,7 @@ export function MobileList() {
                 onClick={() => openFolderDialog({ kind: "empty", folder: info.folder! })}
               />
             )}
+            {backupsHere(info.folder) && <BackupSearchButton icon />}
             <IconButton
               icon={ICONS.refresh}
               label={t("list.refresh")}

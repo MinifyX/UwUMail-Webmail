@@ -14,6 +14,7 @@ import { chipStyle } from "../assist/labels";
 import { useAssistLabels } from "../assist/useAssist";
 import { codeForThread, useVerificationCodes } from "../codes/codes";
 import { VerificationCodeBar } from "../codes/VerificationCodeBar";
+import { BackupSearchButton, backupsHere } from "../backups/BackupSearch";
 import { openDraftThread } from "../compose/openDraft";
 import { LabelDot, ThreadLabelMenu } from "../labels/LabelMenus";
 import { groupByLabel } from "../labels/logic";
@@ -203,6 +204,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
               {t("folders.emptyShort")}
             </Button>
           )}
+          {backupsHere(info.folder) && <BackupSearchButton />}
           <Segmented
             label={t("list.filterMenu")}
             value={filter}
@@ -388,6 +390,7 @@ export function ThreadList({ variant, className, showMenu = false }: ThreadListP
             compact={variant === "pro"}
             title={t(`list.empty.${empty}.title`)}
             body={t(`list.empty.${empty}.body`)}
+            action={backupsHere(info.folder) && !search ? <BackupSearchButton /> : undefined}
             className="h-full"
           />
         ) : (

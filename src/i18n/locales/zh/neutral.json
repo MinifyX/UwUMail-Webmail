@@ -2027,5 +2027,48 @@
     "tooLate": "邮件已在发送途中，无法撤回。",
     "internalOnly": "此账户只能发送到本服务器上的地址。",
     "stateMismatch": "该内容在此期间已在别处被更改。请重试。"
+  },
+  "backups": {
+    "open": "在备份中搜索",
+    "title": "从备份恢复",
+    "intro": "删掉了邮件？在服务器备份中找到你自己的邮件并恢复。",
+    "text": "主题、发件人或收件人",
+    "textHint": "只搜索邮件头，不搜索正文。",
+    "after": "从",
+    "before": "到",
+    "search": "搜索",
+    "found_other": "找到 {{count}} 封邮件",
+    "indexing": "仍在读取较早的备份（{{done}} / {{total}}），稍后可能找到更多。",
+    "restoreFailed": "恢复失败。{{reason}}",
+    "hits": "找到的邮件",
+    "whereTo": "恢复的邮件会放入“Restored <日期>”文件夹。",
+    "restore": "恢复",
+    "restoreCount_other": "恢复 {{count}} 封",
+    "inMailbox": "已在邮箱中",
+    "outcome": {
+      "restored": "已恢复",
+      "notFound": "已不在备份中",
+      "overQuota": "邮箱已满",
+      "invalidEmail": "无法安全保存",
+      "other": "未恢复"
+    },
+    "noSubject": "（无主题）",
+    "choose": "选择：{{subject}}",
+    "folder": "原在 {{folder}}",
+    "snapshots": "在 {{dates}} 的备份中",
+    "preview": "查看",
+    "hide": "隐藏",
+    "reading": "正在从备份读取邮件…",
+    "noText": "（无正文）",
+    "attachments": "附件",
+    "unnamed": "（无名称）",
+    "summary": {
+      "restored_other": "已恢复 {{count}} 封邮件。",
+      "alreadyThere_other": "{{count}} 封已在邮箱中。",
+      "notFound_other": "{{count}} 封已不在备份中。",
+      "overQuota_other": "{{count}} 封未恢复：邮箱已满。",
+      "invalidEmail_other": "{{count}} 封无法安全保存。",
+      "other_other": "{{count}} 封未恢复。"
+    }
   }
 }
