@@ -1,10 +1,12 @@
 import { BackendError, type Backend } from "./backend";
+import { textToHtml } from "@/lib/format";
 import { isDangerous } from "@/lib/attachments";
 import type { SaveOutcome } from "@/lib/settingsSyncQueue";
 import { demoAttachmentBlob } from "./demo-attachments";
 import { DemoCalendar } from "./demo-calendar";
 import { DemoContacts } from "./demo-contacts";
 import { DemoAssist } from "./demo-assist";
+import { sampleBackupMails, searchDemoBackups } from "./demo-backups";
 import { DemoMasked } from "./demo-masked";
 import { DemoSignatures } from "./demo-signatures";
 import type { DomainSignatureChange } from "@/lib/domainSignatures";
@@ -60,6 +62,8 @@ import type {
   Identity,
   MailScheduling,
   MailtoDraft,
+  BackupQuery,
+  BackupRestoreResult,
   MaskedAddressInput,
   MaskedAddressPatch,
   MovedMessage,
@@ -1288,6 +1292,83 @@ export class DemoBackend implements Backend {
 
   async maskedOptions() {
     return this.masked.options();
+  }
+
+  private backupStore = sampleBackupMails(lang());
+  /** The demo reads one more backup per search, until all seven are read. */
+  private backupsRead = 4;
+
+  async backupsAvailable() {
+    return true;
+  }
+
+  async searchBackups(query: BackupQuery) {
+    await wait(300);
+    this.backupsRead = Math.min(this.backupsRead + 1, 7);
+    return searchDemoBackups(this.backupStore, query, { done: this.backupsRead, total: 7 });
+  }
+
+  async backupMails(ids: string[]) {
+    await wait(250);
+    return this.backupStore.filter((mail) => ids.includes(mail.id)).map((mail) => structuredClone(mail));
+  }
+
+  async restoreFromBackups(ids: string[]): Promise<BackupRestoreResult> {
+    await wait(400);
+    const result: BackupRestoreResult = { restored: {}, alreadyThere: [], notRestored: {} };
+    const account = this.accounts[0]!;
+    for (const id of ids) {
+      const mail = this.backupStore.find((entry) => entry.id === id);
+      if (!mail) {
+        result.notRestored[id] = "notFound";
+        continue;
+      }
+      if (mail.inMailbox) {
+        result.alreadyThere.push(id);
+        continue;
+      }
+      const name = `Restored ${mail.snapshots.at(-1)?.slice(0, 10) ?? ""}`;
+      let folder = this.folders.find((f) => f.accountId === account.id && f.parentId === null && f.name === name);
+      if (!folder) {
+        folder = {
+          id: `${account.id}:f${this.nextId++}`,
+          accountId: account.id,
+          name,
+          path: name,
+          role: null,
+          parentId: null,
+          selectable: true,
+          unread: 0,
+          total: 0,
+          rights: ALL_RIGHTS,
+        };
+        this.folders.push(folder);
+      }
+      const messageId = `msg-${this.nextId++}`;
+      this.messages.push({
+        id: messageId,
+        threadId: `thr-${messageId}`,
+        accountId: account.id,
+        folderId: folder.id,
+        from: mail.from[0] ?? { email: "" },
+        to: mail.to,
+        cc: [],
+        bcc: [],
+        replyTo: [],
+        subject: mail.subject,
+        date: mail.receivedAt,
+        flags: { seen: false, flagged: false, answered: false, draft: false },
+        snippet: mail.text.slice(0, 140),
+        bodyHtml: textToHtml(mail.text),
+        bodyText: mail.text,
+        hasRemoteContent: false,
+        attachments: [],
+      });
+      mail.inMailbox = true;
+      result.restored[id] = folder.id;
+    }
+    if (Object.keys(result.restored).length > 0) this.emit({ type: "mail:changed", accountId: account.id });
+    return result;
   }
 
   /** The demo has no server that reads codes; `pnpm dev` with `?demoCodes` shows sample ones. */

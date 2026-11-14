@@ -28,6 +28,10 @@ import type {
   AssistSummary,
   AssistUsage,
   AttachmentContent,
+  BackupMailContent,
+  BackupQuery,
+  BackupRestoreResult,
+  BackupSearchResult,
   BackendEvent,
   BirthdayImportEntry,
   BirthdayImportResult,
@@ -371,6 +375,15 @@ export interface Backend {
   createMaskedAddress(input: MaskedAddressInput): Promise<MaskedAddress>;
   /** Changes the state (a deleted one may come back) or what it says about itself. */
   updateMaskedAddress(id: string, patch: MaskedAddressPatch): Promise<void>;
+
+  /** Whether the person may search their own mail in the server's backups; false hides it. */
+  backupsAvailable(): Promise<boolean>;
+  /** All backups at once, newest first; a mail in several backups comes once. */
+  searchBackups(query: BackupQuery): Promise<BackupSearchResult>;
+  /** Up to 10 at once; ids no longer in any backup are left out. */
+  backupMails(ids: string[]): Promise<BackupMailContent[]>;
+  /** Up to 50 at once, into the folder "Restored <date>"; nothing is stored twice. */
+  restoreFromBackups(ids: string[]): Promise<BackupRestoreResult>;
 
   /**
    * The sign-in codes and links still valid, newest first (UwUMail's verification extension);

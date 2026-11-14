@@ -23,6 +23,10 @@ import { oneClickResultOf, runUnsubscribe, type OneClickResult } from "@/lib/uns
 import { AssistError, BackendError, type Backend, type SignatureStore } from "../backend";
 import type {
   Account,
+  BackupMailContent,
+  BackupQuery,
+  BackupRestoreResult,
+  BackupSearchResult,
   AddressBookInfo,
   AssistComposeRequest,
   AssistComposeResult,
@@ -231,6 +235,17 @@ import {
   type JmapMaskedEmail,
   type JmapSetError,
 } from "./masked";
+import {
+  BACKUPS,
+  backupFilter,
+  backupsSupported,
+  toBackupContent,
+  toBackupSearch,
+  toRestoreResult,
+  type JmapBackupEmail,
+  type JmapBackupQueryResponse,
+  type JmapBackupRestoreResponse,
+} from "./backups";
 import { VERIFICATION, activeCodes, codeCalls, verificationSupported, type JmapCodeEmail } from "./verification";
 import {
   PROFILE,
@@ -2551,6 +2566,42 @@ export class JmapBackend implements Backend {
     const problem = response.notUpdated?.[id];
     if (problem) throw maskedSetError(problem);
     this.emit({ type: "masked:changed" });
+  }
+
+  async backupsAvailable(): Promise<boolean> {
+    await this.start();
+    return backupsSupported(jmapSession().accounts[this.accountId]?.accountCapabilities);
+  }
+
+  private backupCall<T>(name: string, args: Record<string, unknown>): Promise<T> {
+    if (!backupsSupported(jmapSession().accounts[this.accountId]?.accountCapabilities)) {
+      throw new BackendError("not_supported", "This server lets nobody search its backups.");
+    }
+    return one<T>(name, args, [CORE, BACKUPS]);
+  }
+
+  async searchBackups(query: BackupQuery): Promise<BackupSearchResult> {
+    await this.start();
+    const response = await this.backupCall<JmapBackupQueryResponse>("BackupEmail/query", {
+      filter: backupFilter(query),
+      limit: 200,
+    });
+    return toBackupSearch(response);
+  }
+
+  async backupMails(ids: string[]): Promise<BackupMailContent[]> {
+    await this.start();
+    const response = await this.backupCall<{ list?: JmapBackupEmail[] }>("BackupEmail/get", { ids: ids.slice(0, 10) });
+    return (response.list ?? []).map(toBackupContent);
+  }
+
+  async restoreFromBackups(ids: string[]): Promise<BackupRestoreResult> {
+    await this.start();
+    const response = await this.backupCall<JmapBackupRestoreResponse>("BackupEmail/restore", { ids: ids.slice(0, 50) });
+    const result = toRestoreResult(response);
+    // The new folder "Restored <date>" shows up at once, ahead of the server's push.
+    if (Object.keys(result.restored).length > 0) this.emit({ type: "mail:changed", accountId: this.accountId });
+    return result;
   }
 
   async profilePictureOptions(): Promise<ProfilePictureOptions | null> {

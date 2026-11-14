@@ -37,6 +37,7 @@ export const queryKeys = {
   sharedAccounts: ["sharedAccounts"] as const,
   people: ["people"] as const,
   maskedOptions: ["maskedOptions"] as const,
+  backupsAvailable: ["backupsAvailable"] as const,
   maskedAddresses: ["maskedAddresses"] as const,
   verificationCodes: ["verificationCodes"] as const,
   profilePicture: ["profilePicture"] as const,
@@ -514,6 +515,8 @@ export function useBackendEvents() {
           // The session came anew: which domains masked addresses may use can have changed with it,
           // and whether a public profile picture is allowed.
           void client.invalidateQueries({ queryKey: queryKeys.maskedOptions });
+          // And whether the admin lets people search the backups.
+          void client.invalidateQueries({ queryKey: queryKeys.backupsAvailable });
           void client.invalidateQueries({ queryKey: ["profilePictureOptions"] });
           // And what the AI assistant may do: the session names its features.
           void client.invalidateQueries({ queryKey: queryKeys.assistOptions });
