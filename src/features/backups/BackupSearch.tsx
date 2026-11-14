@@ -129,10 +129,9 @@ function BackupSearch() {
       <search>
         <form onSubmit={submit} className="flex flex-col gap-3">
           <Field label={t("backups.text")} hint={t("backups.textHint")}>
-            {(id, describedBy) => (
+            {(id) => (
               <TextInput
                 id={id}
-                aria-describedby={describedBy}
                 type="search"
                 value={text}
                 maxLength={256}
@@ -146,10 +145,9 @@ function BackupSearch() {
           </Field>
           <div className="flex flex-wrap items-end gap-3">
             <Field label={t("backups.after")} className="min-w-40 flex-1">
-              {(id, describedBy) => (
+              {(id) => (
                 <TextInput
                   id={id}
-                  aria-describedby={describedBy}
                   type="date"
                   value={after}
                   max={before || undefined}
@@ -158,10 +156,9 @@ function BackupSearch() {
               )}
             </Field>
             <Field label={t("backups.before")} className="min-w-40 flex-1">
-              {(id, describedBy) => (
+              {(id) => (
                 <TextInput
                   id={id}
-                  aria-describedby={describedBy}
                   type="date"
                   value={before}
                   min={after || undefined}

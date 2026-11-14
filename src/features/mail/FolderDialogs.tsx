@@ -118,7 +118,6 @@ function NameForm({ dialog }: { dialog: Extract<FolderDialog, { kind: "create" |
             autoFocus
             value={name}
             maxLength={255}
-            aria-invalid={shownProblem !== null}
             onChange={(event) => setName(event.target.value)}
           />
         )}

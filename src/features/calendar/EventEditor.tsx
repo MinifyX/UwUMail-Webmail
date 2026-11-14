@@ -244,7 +244,6 @@ function EditorDialog({ request, onClose }: { request: EditorRequest | null; onC
                     type="date"
                     required
                     value={form.endDate}
-                    aria-invalid={shown.includes("end")}
                     onChange={(event) => setForm({ endDate: event.target.value })}
                   />
                   {!form.allDay && (
