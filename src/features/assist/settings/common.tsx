@@ -103,7 +103,7 @@ export function ModelInput({
         onChange={(event) => setText(event.target.value)}
         onBlur={commit}
         onKeyDown={(event) => {
-          if (event.key === "Enter") {
+          if (event.key === "Enter" && !(event.nativeEvent.isComposing || event.keyCode === 229)) {
             event.preventDefault();
             commit();
           }
