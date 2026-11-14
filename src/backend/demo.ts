@@ -8,6 +8,7 @@ import { DemoContacts } from "./demo-contacts";
 import { DemoAssist } from "./demo-assist";
 import { sampleBackupMails, searchDemoBackups } from "./demo-backups";
 import { DemoMasked } from "./demo-masked";
+import { DemoShipments } from "./demo-shipments";
 import { DemoSignatures } from "./demo-signatures";
 import type { DomainSignatureChange } from "@/lib/domainSignatures";
 import { rulesToSieve } from "@/lib/sieveRules";
@@ -66,6 +67,8 @@ import type {
   BackupRestoreResult,
   MaskedAddressInput,
   MaskedAddressPatch,
+  ShipmentInput,
+  ShipmentPatch,
   MovedMessage,
   SnoozedMessage,
   UnsnoozeOutcome,
@@ -1292,6 +1295,40 @@ export class DemoBackend implements Backend {
 
   async maskedOptions() {
     return this.masked.options();
+  }
+
+  private parcels = new DemoShipments(
+    lang(),
+    this.messages.find((m) => m.from.email === "orders@pixelparts.example" && m.subject.includes("📦"))?.id ?? null,
+    () => this.emit({ type: "shipments:changed" }),
+  );
+
+  async shipmentsAvailable() {
+    return true;
+  }
+
+  async shipments() {
+    await wait(120);
+    return this.parcels.list();
+  }
+
+  async createShipment(input: ShipmentInput) {
+    await wait(200);
+    return this.parcels.create(input);
+  }
+
+  async updateShipment(id: string, patch: ShipmentPatch) {
+    await wait(100);
+    this.parcels.update(id, patch);
+  }
+
+  mailThreadId(emailId: string) {
+    return `m:${emailId}`;
+  }
+
+  async deleteShipment(id: string) {
+    await wait(100);
+    this.parcels.remove(id);
   }
 
   private backupStore = sampleBackupMails(lang());

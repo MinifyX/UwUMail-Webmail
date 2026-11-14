@@ -74,7 +74,7 @@ export type SettingsSection =
   | "about";
 
 /** The parts of the app the switch at the top of the sidebar leads to. */
-export type AppSection = "mail" | "calendar" | "contacts";
+export type AppSection = "mail" | "calendar" | "contacts" | "shipments";
 
 interface UiState {
   section: AppSection;
