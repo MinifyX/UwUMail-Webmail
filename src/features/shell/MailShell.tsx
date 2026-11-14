@@ -171,7 +171,7 @@ export function MailShell() {
 
       {phone ? (
         <div className="flex min-h-0 flex-1 flex-col pt-[env(safe-area-inset-top)]">
-          <div className="relative min-h-0 flex-1">
+          <div key={moreOpen ? "more" : section} className="uwu-page relative min-h-0 flex-1">
             {moreOpen ? (
               <MoreScreen />
             ) : section === "calendar" ? (
@@ -189,59 +189,61 @@ export function MailShell() {
           <IconRail />
           <div className="flex min-w-0 flex-1 flex-col">
             <TopBar />
-            {section === "calendar" ? (
-              <CalendarShell />
-            ) : section === "contacts" ? (
-              <ContactsShell />
-            ) : (
-              <div
-                ref={shellRef}
-                className="relative flex min-h-0 flex-1 pr-3 pb-3"
-                style={{ "--list-w": `${widths.list}px`, "--sidebar-w": `${widths.sidebar}px` } as CSSProperties}
-              >
-                {roomForFolders && (
-                  <>
-                    <MailboxNav className="min-h-0 w-(--sidebar-w) shrink-0 overflow-y-auto" />
-                    <PaneHandle pane="sidebar" width={widths.sidebar} label={t("layout.resizeFolders")} />
-                  </>
-                )}
-                {/* List and reader share one card, with a hairline between them. */}
-                <div className="flex min-w-0 flex-1 overflow-hidden rounded-card border border-hairline bg-surface">
-                  <ThreadList
-                    variant="simple"
-                    showMenu={!roomForFolders}
-                    className={clsx(
-                      "shrink-0 border-hairline lg:w-(--list-w) lg:border-r",
-                      selectedThreadId ? "hidden lg:flex" : "w-full",
-                    )}
-                  />
-                  {sideBySide && (
-                    <PaneHandle
-                      pane="list"
-                      width={widths.list}
-                      label={t("layout.resizeList")}
-                      className="relative z-10 -mx-1.5"
-                    />
+            <div key={section} className="uwu-page flex min-h-0 flex-1 flex-col">
+              {section === "calendar" ? (
+                <CalendarShell />
+              ) : section === "contacts" ? (
+                <ContactsShell />
+              ) : (
+                <div
+                  ref={shellRef}
+                  className="relative flex min-h-0 flex-1 pr-3 pb-3"
+                  style={{ "--list-w": `${widths.list}px`, "--sidebar-w": `${widths.sidebar}px` } as CSSProperties}
+                >
+                  {roomForFolders && (
+                    <>
+                      <MailboxNav className="min-h-0 w-(--sidebar-w) shrink-0 overflow-y-auto" />
+                      <PaneHandle pane="sidebar" width={widths.sidebar} label={t("layout.resizeFolders")} />
+                    </>
                   )}
-                  <ThreadReader
-                    variant="simple"
-                    className={clsx("min-w-0 flex-1 overflow-hidden", !selectedThreadId && "max-lg:hidden")}
-                  />
-                </div>
-
-                {drawerOpen && !roomForFolders && (
-                  <div className="absolute inset-0 z-30 flex" role="presentation">
-                    <button
-                      type="button"
-                      aria-label={t("common.close")}
-                      onClick={() => setDrawerOpen(false)}
-                      className="absolute inset-0 animate-fade bg-backdrop"
+                  {/* List and reader share one card, with a hairline between them. */}
+                  <div className="flex min-w-0 flex-1 overflow-hidden rounded-card border border-hairline bg-surface">
+                    <ThreadList
+                      variant="simple"
+                      showMenu={!roomForFolders}
+                      className={clsx(
+                        "shrink-0 border-hairline lg:w-(--list-w) lg:border-r",
+                        selectedThreadId ? "hidden lg:flex" : "w-full",
+                      )}
                     />
-                    <MailboxNav className="relative w-[280px] animate-slide-up overflow-y-auto rounded-r-dialog bg-surface shadow-float" />
+                    {sideBySide && (
+                      <PaneHandle
+                        pane="list"
+                        width={widths.list}
+                        label={t("layout.resizeList")}
+                        className="relative z-10 -mx-1.5"
+                      />
+                    )}
+                    <ThreadReader
+                      variant="simple"
+                      className={clsx("min-w-0 flex-1 overflow-hidden", !selectedThreadId && "max-lg:hidden")}
+                    />
                   </div>
-                )}
-              </div>
-            )}
+
+                  {drawerOpen && !roomForFolders && (
+                    <div className="absolute inset-0 z-30 flex" role="presentation">
+                      <button
+                        type="button"
+                        aria-label={t("common.close")}
+                        onClick={() => setDrawerOpen(false)}
+                        className="absolute inset-0 animate-fade bg-backdrop"
+                      />
+                      <MailboxNav className="relative w-[280px] animate-slide-up overflow-y-auto rounded-r-dialog bg-surface shadow-float" />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
