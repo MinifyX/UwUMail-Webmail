@@ -1,7 +1,8 @@
 import { type QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
 import { backend, BackendError } from "@/backend/backend";
-import type { ShipmentInput, ShipmentPatch } from "@/backend/types";
+import type { ShipmentInput, ShipmentPatch, ShipmentStatus } from "@/backend/types";
+import { markNow } from "@/lib/shipments";
 import { translate } from "@/i18n";
 import { queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";
@@ -94,6 +95,14 @@ export function useShipmentActions() {
       });
     },
     unhide: (id: string) => update(id, { hidden: false }),
+    mark: async (id: string, status: ShipmentStatus) => {
+      const event = { at: markNow(), status };
+      if (!(await update(id, { addEvents: [event] }))) return;
+      const name = translate(`shipments.status.${status}`);
+      toast(translate("shipments.toast.marked", { status: name }), "success", undefined, {
+        action: { label: translate("shipments.undo"), run: () => void update(id, { removeEvents: [event] }) },
+      });
+    },
     remove: async (id: string) => {
       if (await run(() => backend().deleteShipment(id))) toast(translate("shipments.toast.deleted"), "success");
     },

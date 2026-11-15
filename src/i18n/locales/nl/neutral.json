@@ -2223,6 +2223,7 @@
     "track": "Zending volgen",
     "newTab": "(opent in een nieuw tabblad)",
     "toMail": "Naar de mail",
+    "mark": "Status instellen",
     "rename": "Hernoemen",
     "hide": "Verbergen",
     "delete": "Verwijderen",
@@ -2238,7 +2239,8 @@
     "undo": "Ongedaan maken",
     "toast": {
       "hidden": "Pakket verborgen",
-      "deleted": "Pakket verwijderd"
+      "deleted": "Pakket verwijderd",
+      "marked": "Gemarkeerd als ‘{{status}}’"
     },
     "error": {
       "invalid": "Dat klopt niet. Controleer het trackingnummer, misschien bestaat het al.",

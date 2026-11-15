@@ -2223,6 +2223,7 @@
     "track": "Sendung verfolgen",
     "newTab": "(öffnet in neuem Tab)",
     "toMail": "Zur Mail",
+    "mark": "Status setzen",
     "rename": "Umbenennen",
     "hide": "Ausblenden",
     "delete": "Löschen",
@@ -2238,7 +2239,8 @@
     "undo": "Rückgängig",
     "toast": {
       "hidden": "Paket ausgeblendet",
-      "deleted": "Paket gelöscht"
+      "deleted": "Paket gelöscht",
+      "marked": "Als „{{status}}“ markiert"
     },
     "error": {
       "invalid": "Das passt nicht. Prüfe die Sendungsnummer, vielleicht gibt es sie schon.",

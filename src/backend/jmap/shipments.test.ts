@@ -76,6 +76,9 @@ describe("JMAP shipments", () => {
     });
     expect(shipmentUpdate({ title: "" })).toEqual({ title: null });
     expect(shipmentUpdate({ hidden: true })).toEqual({ hidden: true });
+    const mark = { at: "2026-11-15T10:00:00Z", status: "delivered" as const };
+    expect(shipmentUpdate({ addEvents: [mark] })).toEqual({ addEvents: [mark] });
+    expect(shipmentUpdate({ removeEvents: [mark], addEvents: [] })).toEqual({ removeEvents: [mark] });
     expect(shipmentSetError({ type: "notFound" }).code).toBe("not_found");
     expect(shipmentSetError({ type: "alreadyExists" }).code).toBe("invalid_input");
   });

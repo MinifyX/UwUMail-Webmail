@@ -2299,6 +2299,7 @@
     "track": "Suivre l’envoi",
     "newTab": "(s’ouvre dans un nouvel onglet)",
     "toMail": "Voir le mail",
+    "mark": "Définir le statut",
     "rename": "Renommer",
     "hide": "Masquer",
     "delete": "Supprimer",
@@ -2314,7 +2315,8 @@
     "undo": "Annuler",
     "toast": {
       "hidden": "Colis masqué",
-      "deleted": "Colis supprimé"
+      "deleted": "Colis supprimé",
+      "marked": "Marqué comme « {{status}} »"
     },
     "error": {
       "invalid": "Ça ne va pas. Vérifie le numéro de suivi, il existe peut-être déjà.",
