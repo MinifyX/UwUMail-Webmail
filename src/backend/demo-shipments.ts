@@ -1,5 +1,6 @@
 // Made-up parcels for the demo, tracked on reserved domains only. They start over with every reload.
 
+import { movesTo } from "@/lib/shipments";
 import { BackendError } from "./backend";
 import type { Shipment, ShipmentEvent, ShipmentInput, ShipmentPatch } from "./types";
 
@@ -283,6 +284,31 @@ export class DemoShipments {
     const item = this.find(id);
     if (patch.title !== undefined) item.title = patch.title?.trim() || null;
     if (patch.hidden !== undefined) item.hidden = patch.hidden;
+    if (patch.addEvents?.length || patch.removeEvents?.length) {
+      const gone = (e: ShipmentEvent) =>
+        e.source === "client" && !!patch.removeEvents?.some((r) => r.at === e.at && r.status === e.status);
+      const added = (patch.addEvents ?? []).map((e): ShipmentEvent => ({
+        ...e,
+        text: "",
+        location: null,
+        source: "client",
+        clientName: "Webmail",
+        emailId: null,
+      }));
+      item.events = [...item.events.filter((e) => !gone(e)), ...added];
+      // As the server does: the status follows the events in the order they came.
+      let first = true;
+      for (const event of item.events) {
+        if (!event.status) continue;
+        if (first || (Date.parse(event.at) >= Date.parse(item.statusAt ?? "") && movesTo(item.status, event.status))) {
+          item.status = event.status;
+          item.statusAt = event.at;
+          if (first) item.deliveredAt = null;
+          if (event.status === "delivered") item.deliveredAt = event.at;
+          first = false;
+        }
+      }
+    }
     item.updated = new Date().toISOString();
     this.changed();
   }

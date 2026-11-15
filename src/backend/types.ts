@@ -906,9 +906,17 @@ export interface ShipmentsSupport {
   enabled: boolean;
 }
 
+/** An event set by hand, or one to take back: by its `at` and status, as it was sent. */
+export interface ShipmentMark {
+  at: string;
+  status: ShipmentStatus;
+}
+
 export interface ShipmentPatch {
   title?: string | null;
   hidden?: boolean;
+  addEvents?: ShipmentMark[];
+  removeEvents?: ShipmentMark[];
 }
 
 /** What the server lets the account make masked addresses on. */

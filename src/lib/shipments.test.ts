@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Shipment } from "@/backend/types";
-import { dayOf, groupShipments, shipmentOfMail, stepOf } from "./shipments";
+import { dayOf, groupShipments, markable, markNow, shipmentOfMail, stepOf } from "./shipments";
 
 const now = new Date(2026, 10, 14, 9, 0);
 const at = (days: number) => new Date(now.getTime() + days * 86_400_000).toISOString();
@@ -57,5 +57,32 @@ describe("shipments", () => {
     const list = [parcel("a", { emailIds: ["m1"] }), parcel("b", { emailIds: ["m2"], hidden: true })];
     expect(shipmentOfMail(list, "m1")?.id).toBe("a");
     expect(shipmentOfMail(list, "m2")).toBeNull();
+  });
+});
+
+describe("marking by hand", () => {
+  it("offers what the server takes", () => {
+    expect(markable("ordered")).toEqual([
+      "shipped",
+      "inTransit",
+      "outForDelivery",
+      "delivered",
+      "readyForPickup",
+      "deliveryFailed",
+      "returned",
+      "cancelled",
+    ]);
+    expect(markable("readyForPickup")).toEqual(["delivered", "deliveryFailed", "returned", "cancelled"]);
+    expect(markable("deliveryFailed")).toEqual([
+      "shipped",
+      "inTransit",
+      "outForDelivery",
+      "delivered",
+      "readyForPickup",
+      "returned",
+      "cancelled",
+    ]);
+    expect(markable("delivered")).toEqual(["readyForPickup", "deliveryFailed", "returned", "cancelled"]);
+    expect(markNow()).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
   });
 });

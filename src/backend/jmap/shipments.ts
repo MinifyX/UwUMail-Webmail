@@ -165,6 +165,8 @@ export function shipmentUpdate(patch: ShipmentPatch): Json {
   const out: Json = {};
   if (patch.title !== undefined) out.title = patch.title?.trim() || null;
   if (patch.hidden !== undefined) out.hidden = patch.hidden;
+  if (patch.addEvents?.length) out.addEvents = patch.addEvents.map(({ at, status }) => ({ at, status }));
+  if (patch.removeEvents?.length) out.removeEvents = patch.removeEvents.map(({ at, status }) => ({ at, status }));
   return out;
 }
 

@@ -2145,6 +2145,7 @@
     "track": "查看物流",
     "newTab": "（在新标签页中打开）",
     "toMail": "打开邮件",
+    "mark": "设置状态",
     "rename": "重命名",
     "hide": "隐藏",
     "delete": "删除",
@@ -2160,7 +2161,8 @@
     "undo": "撤销",
     "toast": {
       "hidden": "已隐藏包裹",
-      "deleted": "已删除包裹"
+      "deleted": "已删除包裹",
+      "marked": "已标记为“{{status}}”"
     },
     "error": {
       "invalid": "内容不对。请检查运单号，它可能已经存在。",
