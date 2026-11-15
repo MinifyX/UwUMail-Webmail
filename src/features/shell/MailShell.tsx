@@ -18,6 +18,7 @@ import { openLinkedMail } from "../dates/mailLink";
 import { ContactEditor } from "../contacts/ContactEditor";
 import { ContactsShell } from "../contacts/ContactsShell";
 import { ShipmentsView } from "../shipments/ShipmentsView";
+import { useShipmentsAvailable } from "../shipments/useShipments";
 import { DeleteContactQuestion } from "../contacts/DeleteContactQuestion";
 import { useContactsAvailable } from "../contacts/useContactsData";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
@@ -110,6 +111,12 @@ export function MailShell() {
   const section = useUi((s) => s.section);
   const { data: calendarAvailable = false } = useCalendarsAvailable();
   const { data: contactsAvailable = false } = useContactsAvailable();
+  const { data: shipmentsAvailable } = useShipmentsAvailable();
+  // Parcels switched off while they are open: back to the inbox.
+  useEffect(() => {
+    if (section === "shipments" && shipmentsAvailable === false)
+      useUi.getState().setView({ kind: "unified", role: "inbox" });
+  }, [section, shipmentsAvailable]);
   const { data: assistOptions } = useAssistOptions();
   const labelsAvailable = Boolean(assistOptions);
   const commands = useMemo(
@@ -179,7 +186,7 @@ export function MailShell() {
               <CalendarShell />
             ) : section === "contacts" ? (
               <ContactsShell />
-            ) : section === "shipments" ? (
+            ) : section === "shipments" && shipmentsAvailable ? (
               <ShipmentsView />
             ) : (
               <MobileShell />
@@ -197,7 +204,7 @@ export function MailShell() {
                 <CalendarShell />
               ) : section === "contacts" ? (
                 <ContactsShell />
-              ) : section === "shipments" ? (
+              ) : section === "shipments" && shipmentsAvailable ? (
                 <ShipmentsView />
               ) : (
                 <div

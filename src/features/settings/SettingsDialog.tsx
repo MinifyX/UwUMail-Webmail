@@ -20,6 +20,7 @@ import { LabelsSettingsPage } from "../labels/LabelSettings";
 import { MaskedAddresses } from "../masked/MaskedAddresses";
 import { useMaskedOptions } from "../masked/useMasked";
 import { MailRules } from "../rules/MailRules";
+import { ShipmentsSetting } from "../shipments/ShipmentsSetting";
 import { useMailRulesAccounts } from "../rules/useMailRules";
 import { BlockedSenders } from "./BlockedSenders";
 import { FontPicker, SenderFontsSetting } from "./FontPicker";
@@ -290,6 +291,7 @@ function Reading() {
           description={t("settings.detectEventsDesc")}
         />
       </div>
+      <ShipmentsSetting />
       {phone && (
         <Row label={t("settings.swipeRight")} description={t("settings.swipeDesc")}>
           <SwipeSelect value={settings.swipeRight} onChange={(swipeRight) => settings.update({ swipeRight })} />

@@ -900,6 +900,12 @@ export interface ShipmentInput {
   title?: string | null;
 }
 
+/** Whether parcels are there: the server offers them (`offered`), and this account kept them on (`enabled`). */
+export interface ShipmentsSupport {
+  offered: boolean;
+  enabled: boolean;
+}
+
 export interface ShipmentPatch {
   title?: string | null;
   hidden?: boolean;

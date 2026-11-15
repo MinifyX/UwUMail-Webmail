@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
 import { backend, BackendError } from "@/backend/backend";
 import type { ShipmentInput, ShipmentPatch } from "@/backend/types";
@@ -7,12 +7,19 @@ import { queryKeys } from "@/lib/queries";
 import { toast } from "@/state/toasts";
 import { useUi } from "@/state/ui";
 
-export function useShipmentsAvailable() {
+/** What the session says about parcels; asked anew whenever the session changes. */
+export function useShipmentsSupport() {
   return useQuery({
     queryKey: queryKeys.shipmentsAvailable,
-    queryFn: () => backend().shipmentsAvailable(),
+    queryFn: () => backend().shipmentsSupport(),
     staleTime: Infinity,
   });
+}
+
+/** Whether parcels are on for the account; while false, nothing about parcels shows or is asked for. */
+export function useShipmentsAvailable() {
+  const { data } = useShipmentsSupport();
+  return { data: data?.enabled };
 }
 
 export function useShipments() {
@@ -34,6 +41,19 @@ export const useShipmentFocus = create<{ id: string | null; set: (id: string | n
   id: null,
   set: (id) => set({ id }),
 }));
+
+/** Switches parcels on or off for the account; off drops the parcels kept here at once. */
+export async function setShipmentsEnabled(client: QueryClient, on: boolean): Promise<boolean> {
+  try {
+    await backend().setShipmentsEnabled(on);
+  } catch (error) {
+    toast(shipmentErrorText(error), "error");
+    return false;
+  }
+  if (!on) client.removeQueries({ queryKey: queryKeys.shipments });
+  await client.invalidateQueries({ queryKey: queryKeys.shipmentsAvailable });
+  return true;
+}
 
 export function showShipment(id: string) {
   useShipmentFocus.getState().set(id);

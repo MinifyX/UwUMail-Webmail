@@ -1297,19 +1297,35 @@ export class DemoBackend implements Backend {
     return this.masked.options();
   }
 
-  private parcels = new DemoShipments(
-    lang(),
-    this.messages.find((m) => m.from.email === "orders@pixelparts.example" && m.subject.includes("📦"))?.id ?? null,
-    () => this.emit({ type: "shipments:changed" }),
-  );
+  private newParcels() {
+    return new DemoShipments(
+      lang(),
+      this.messages.find((m) => m.from.email === "orders@pixelparts.example" && m.subject.includes("📦"))?.id ?? null,
+      () => this.emit({ type: "shipments:changed" }),
+    );
+  }
 
-  async shipmentsAvailable() {
-    return true;
+  private parcels = this.newParcels();
+
+  /** Like the server: the account's switch in its settings, on unless it says "off". */
+  private parcelsOn() {
+    return this.userSettings.values.shipments !== "off";
+  }
+
+  async shipmentsSupport() {
+    return { offered: true, enabled: this.parcelsOn() };
+  }
+
+  async setShipmentsEnabled(on: boolean) {
+    // Off deletes what was found; back on, the mails are read again.
+    if (on && !this.parcelsOn()) this.parcels = this.newParcels();
+    await this.saveUserSettings({ shipments: on ? "on" : "off" });
+    this.emit({ type: "accounts:changed" });
   }
 
   async shipments(hidden = false) {
     await wait(120);
-    return this.parcels.list(hidden);
+    return this.parcelsOn() ? this.parcels.list(hidden) : [];
   }
 
   async createShipment(input: ShipmentInput) {
