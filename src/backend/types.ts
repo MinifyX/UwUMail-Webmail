@@ -834,6 +834,77 @@ export interface MaskedAddress {
   createdBy: string;
 }
 
+// ---------------------------------------------------------------------------------------------
+// Parcels (UwUMail Server's `urn:uwumail:jmap:shipments`, see the server's docs/jmap-shipments.md).
+// The server finds them in shipping mails; clients such as Home Assistant add the live status.
+
+export type ShipmentCarrier =
+  "dhl" | "deutschePost" | "dpd" | "hermes" | "gls" | "ups" | "amazonLogistics" | "fedex" | "other";
+
+export type ShipmentStatus =
+  | "ordered"
+  | "shipped"
+  | "inTransit"
+  | "outForDelivery"
+  | "delivered"
+  | "readyForPickup"
+  | "deliveryFailed"
+  | "returned"
+  | "cancelled";
+
+export interface ShipmentEvent {
+  at: string;
+  status: ShipmentStatus | null;
+  text: string;
+  location: string | null;
+  /** Where it came from: `mail`, `ai` or `client` (then `clientName` says which). */
+  source: string;
+  clientName: string | null;
+  emailId: string | null;
+}
+
+export interface ShipmentPickup {
+  kind: "packstation" | "postOffice" | "parcelShop" | "accessPoint";
+  name: string;
+  address: string;
+  /** The last day to collect it, "YYYY-MM-DD"; null when not known. */
+  until: string | null;
+}
+
+export interface Shipment {
+  id: string;
+  carrier: ShipmentCarrier;
+  number: string;
+  trackingUrl: string | null;
+  /** The name the person gave it; null shows the shop. */
+  title: string | null;
+  merchant: string | null;
+  orderRef: string | null;
+  status: ShipmentStatus;
+  statusAt: string | null;
+  expected: { from: string; to: string | null; allDay: boolean } | null;
+  deliveredAt: string | null;
+  pickup: ShipmentPickup | null;
+  hidden: boolean;
+  /** The mails it was found in. */
+  emailIds: string[];
+  /** Oldest first. */
+  events: ShipmentEvent[];
+  created: string;
+  updated: string;
+}
+
+export interface ShipmentInput {
+  carrier: ShipmentCarrier;
+  number: string;
+  title?: string | null;
+}
+
+export interface ShipmentPatch {
+  title?: string | null;
+  hidden?: boolean;
+}
+
 /** What the server lets the account make masked addresses on. */
 export interface MaskedOptions {
   /**
@@ -965,6 +1036,8 @@ export type BackendEvent =
   | { type: "contacts:changed" }
   /** Masked addresses changed, here, on another device, or by arriving mail. */
   | { type: "masked:changed" }
+  /** Parcels changed: a shipping mail arrived, a client wrote a status, or they were edited here. */
+  | { type: "shipments:changed" }
   /** The own profile picture or its settings changed, here or elsewhere. */
   | { type: "profile:changed" }
   /** The AI assistant's providers, settings or labels changed, here or on another device. */

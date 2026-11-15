@@ -15,7 +15,8 @@
     "section": {
       "mail": "Mail",
       "calendar": "Agenda",
-      "contacts": "Contacten"
+      "contacts": "Contacten",
+      "shipments": "Pakketten"
     },
     "scheduled": "Gepland",
     "searchAll": "Zoeken in alle postvakken",
@@ -2148,5 +2149,100 @@
       "other_one": "{{count}} niet teruggehaald.",
       "other_other": "{{count}} niet teruggehaald."
     }
+  },
+  "shipments": {
+    "add": "Zending toevoegen",
+    "addButton": "Toevoegen",
+    "empty": {
+      "title": "Op dit moment geen pakketten",
+      "body": "UwUMail herkent verzendmails vanzelf. Je kunt ook zelf een trackingnummer toevoegen."
+    },
+    "group": {
+      "today": "Vandaag",
+      "onTheWay": "Onderweg",
+      "delivered": "Bezorgd (laatste 7 dagen)",
+      "hidden": "Verborgen"
+    },
+    "day": {
+      "today": "Vandaag",
+      "tomorrow": "Morgen"
+    },
+    "window": "{{day}}, {{from}}–{{to}}",
+    "from": "{{day}}, vanaf {{from}}",
+    "expected": "Verwacht",
+    "progress": "Voortgang van de zending",
+    "status": {
+      "ordered": "Besteld",
+      "shipped": "Verzonden",
+      "inTransit": "Onderweg",
+      "outForDelivery": "Wordt bezorgd",
+      "delivered": "Bezorgd",
+      "readyForPickup": "Klaar om op te halen",
+      "deliveryFailed": "Bezorging mislukt",
+      "returned": "Terug naar afzender",
+      "cancelled": "Geannuleerd"
+    },
+    "carrier": {
+      "dhl": "DHL",
+      "deutschePost": "Deutsche Post",
+      "dpd": "DPD",
+      "hermes": "Hermes",
+      "gls": "GLS",
+      "ups": "UPS",
+      "amazonLogistics": "Amazon Logistics",
+      "fedex": "FedEx",
+      "other": "Andere vervoerder"
+    },
+    "source": {
+      "mail": "Mail",
+      "ai": "AI",
+      "client": "App"
+    },
+    "via": "via {{source}}",
+    "finished": {
+      "delivered": "Bezorgd: {{date}}",
+      "returned": "Teruggestuurd: {{date}}",
+      "cancelled": "Geannuleerd: {{date}}"
+    },
+    "pickup": {
+      "packstation": "Pakketautomaat",
+      "postOffice": "Postkantoor",
+      "parcelShop": "Pakketpunt",
+      "accessPoint": "Afhaalpunt",
+      "until": "Ophalen vóór {{date}}"
+    },
+    "failedHint": "De bezorger heeft je niet getroffen.",
+    "number": "Trackingnummer",
+    "numberMissing": "Vul het trackingnummer in.",
+    "history": "Geschiedenis ({{n}})",
+    "track": "Zending volgen",
+    "newTab": "(opent in een nieuw tabblad)",
+    "toMail": "Naar de mail",
+    "rename": "Hernoemen",
+    "hide": "Verbergen",
+    "delete": "Verwijderen",
+    "deleteTitle": "Pakket verwijderen?",
+    "deleteBody": "‘{{name}}’ verdwijnt uit de lijst en wordt niet meer gevolgd.",
+    "actions": "Acties voor {{name}}",
+    "name": "Naam",
+    "nameHint": "Laat leeg om de winkel weer te tonen.",
+    "nameOptional": "Naam (optioneel)",
+    "carrierLabel": "Vervoerder",
+    "order": "Bestelling {{ref}}",
+    "chip": "Pakket: {{status}}",
+    "undo": "Ongedaan maken",
+    "toast": {
+      "hidden": "Pakket verborgen",
+      "deleted": "Pakket verwijderd"
+    },
+    "error": {
+      "invalid": "Dat klopt niet. Controleer het trackingnummer, misschien bestaat het al.",
+      "notFound": "Dat pakket bestaat niet meer.",
+      "connection": "Geen verbinding met de server. Probeer het zo opnieuw.",
+      "generic": "Dat is niet gelukt. Probeer het opnieuw."
+    },
+    "hiddenShow": "Verborgen tonen ({{n}})",
+    "hiddenHide": "Verborgen verbergen",
+    "unhide": "Weer tonen"
   }
 }

@@ -56,6 +56,9 @@ import type {
   MaskedAddress,
   MaskedAddressInput,
   MaskedAddressPatch,
+  Shipment,
+  ShipmentInput,
+  ShipmentPatch,
   MaskedOptions,
   MailtoDraft,
   Message,
@@ -375,6 +378,18 @@ export interface Backend {
   createMaskedAddress(input: MaskedAddressInput): Promise<MaskedAddress>;
   /** Changes the state (a deleted one may come back) or what it says about itself. */
   updateMaskedAddress(id: string, patch: MaskedAddressPatch): Promise<void>;
+
+  /** Whether the server tracks parcels (`urn:uwumail:jmap:shipments`); false hides "Parcels". */
+  shipmentsAvailable(): Promise<boolean>;
+  /** The parcels not hidden (or only the hidden ones), the most recently changed first (at most 100). */
+  shipments(hidden?: boolean): Promise<Shipment[]>;
+  /** Adds one by hand from carrier and tracking number; returns the new one's id. */
+  createShipment(input: ShipmentInput): Promise<string>;
+  /** Renames it (null goes back to the shop) or hides it. */
+  updateShipment(id: string, patch: ShipmentPatch): Promise<void>;
+  deleteShipment(id: string): Promise<void>;
+  /** The id the reader opens just the mail `emailId` by, e.g. from a parcel. */
+  mailThreadId(emailId: string): string;
 
   /** Whether the person may search their own mail in the server's backups; false hides it. */
   backupsAvailable(): Promise<boolean>;

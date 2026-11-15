@@ -4,3 +4,6 @@
 minimumReleaseAgeExclude:
   - source-map-js@1.2.2
   - "@uwusuite/design"
+overrides:
+  undici: "^8.12.2"
+  minimatch: "^11.0.1"

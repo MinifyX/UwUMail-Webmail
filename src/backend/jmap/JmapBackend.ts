@@ -81,6 +81,9 @@ import type {
   MaskedAddressInput,
   MaskedAddressPatch,
   MaskedOptions,
+  Shipment,
+  ShipmentInput,
+  ShipmentPatch,
   Message,
   MovedMessage,
   SnoozedMessage,
@@ -235,6 +238,7 @@ import {
   type JmapMaskedEmail,
   type JmapSetError,
 } from "./masked";
+import { SHIPMENTS, shipmentCalls, shipmentCreate, shipmentSetError, shipmentUpdate, toShipment } from "./shipments";
 import {
   BACKUPS,
   backupFilter,
@@ -573,6 +577,7 @@ export class JmapBackend implements Backend {
       if (changed.AddressBook || changed.ContactCard) this.emit({ type: "contacts:changed" });
       if (changed.ProfilePicture) this.emit({ type: "profile:changed" });
       if (changed.MaskedEmail) this.emit({ type: "masked:changed" });
+      if (changed.Shipment) this.emit({ type: "shipments:changed" });
       if (changed.AssistProvider || changed.AssistSettings || changed.AssistLabel)
         this.emit({ type: "assist:changed" });
       if (changed.Identity) {
@@ -2566,6 +2571,62 @@ export class JmapBackend implements Backend {
     const problem = response.notUpdated?.[id];
     if (problem) throw maskedSetError(problem);
     this.emit({ type: "masked:changed" });
+  }
+
+  async shipmentsAvailable(): Promise<boolean> {
+    await this.start();
+    return supports(SHIPMENTS);
+  }
+
+  private shipmentSet(args: Record<string, unknown>): Promise<SetResponse> {
+    if (!supports(SHIPMENTS)) throw new BackendError("not_supported", "This server doesn't track parcels.");
+    return one<SetResponse>("Shipment/set", args, [CORE, SHIPMENTS]);
+  }
+
+  async shipments(hidden = false): Promise<Shipment[]> {
+    await this.start();
+    if (!supports(SHIPMENTS)) return [];
+    const body = await call(shipmentCalls(this.accountId, hidden), [CORE, SHIPMENTS]);
+    const { ids } = responseOf<{ ids: string[] }>(body, "q");
+    const byId = new Map(
+      responseOf<GetResponse<unknown>>(body, "g")
+        .list.map(toShipment)
+        .filter((item): item is Shipment => item !== null)
+        .map((item) => [item.id, item]),
+    );
+    // In the query's order: the get answers in any.
+    return ids.map((id) => byId.get(id)).filter((item): item is Shipment => item !== undefined);
+  }
+
+  async createShipment(input: ShipmentInput): Promise<string> {
+    await this.start();
+    const response = await this.shipmentSet({ create: { new: shipmentCreate(input) } });
+    const problem = response.notCreated?.new;
+    if (problem) throw shipmentSetError(problem);
+    const id = response.created?.new?.id;
+    if (!id) throw new BackendError("internal", "The server didn't add the parcel.");
+    this.emit({ type: "shipments:changed" });
+    return id;
+  }
+
+  async updateShipment(id: string, patch: ShipmentPatch): Promise<void> {
+    await this.start();
+    const response = await this.shipmentSet({ update: { [id]: shipmentUpdate(patch) } });
+    const problem = response.notUpdated?.[id];
+    if (problem) throw shipmentSetError(problem);
+    this.emit({ type: "shipments:changed" });
+  }
+
+  async deleteShipment(id: string): Promise<void> {
+    await this.start();
+    const response = await this.shipmentSet({ destroy: [id] });
+    const problem = response.notDestroyed?.[id];
+    if (problem) throw shipmentSetError(problem);
+    this.emit({ type: "shipments:changed" });
+  }
+
+  mailThreadId(emailId: string): string {
+    return listThreadId(emailId, emailId, false);
   }
 
   async backupsAvailable(): Promise<boolean> {

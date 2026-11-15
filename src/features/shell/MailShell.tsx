@@ -17,6 +17,7 @@ import { EventEditor } from "../calendar/EventEditor";
 import { openLinkedMail } from "../dates/mailLink";
 import { ContactEditor } from "../contacts/ContactEditor";
 import { ContactsShell } from "../contacts/ContactsShell";
+import { ShipmentsView } from "../shipments/ShipmentsView";
 import { DeleteContactQuestion } from "../contacts/DeleteContactQuestion";
 import { useContactsAvailable } from "../contacts/useContactsData";
 import { useCalendarsAvailable } from "../calendar/useCalendarData";
@@ -178,6 +179,8 @@ export function MailShell() {
               <CalendarShell />
             ) : section === "contacts" ? (
               <ContactsShell />
+            ) : section === "shipments" ? (
+              <ShipmentsView />
             ) : (
               <MobileShell />
             )}
@@ -194,6 +197,8 @@ export function MailShell() {
                 <CalendarShell />
               ) : section === "contacts" ? (
                 <ContactsShell />
+              ) : section === "shipments" ? (
+                <ShipmentsView />
               ) : (
                 <div
                   ref={shellRef}

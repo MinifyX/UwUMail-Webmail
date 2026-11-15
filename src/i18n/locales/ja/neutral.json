@@ -15,7 +15,8 @@
     "section": {
       "mail": "メール",
       "calendar": "カレンダー",
-      "contacts": "連絡先"
+      "contacts": "連絡先",
+      "shipments": "荷物"
     },
     "scheduled": "予約済み",
     "searchAll": "すべてのメールボックスを検索",
@@ -2070,5 +2071,100 @@
       "invalidEmail_other": "{{count}} 件は安全に保存できません。",
       "other_other": "{{count}} 件を復元できませんでした。"
     }
+  },
+  "shipments": {
+    "add": "荷物を追加",
+    "addButton": "追加",
+    "empty": {
+      "title": "今は荷物はありません",
+      "body": "UwUMail は発送メールを自動で見つけます。追跡番号を自分で追加することもできます。"
+    },
+    "group": {
+      "today": "今日",
+      "onTheWay": "配送中",
+      "delivered": "配達済み（過去7日間）",
+      "hidden": "非表示"
+    },
+    "day": {
+      "today": "今日",
+      "tomorrow": "明日"
+    },
+    "window": "{{day}} {{from}}–{{to}}",
+    "from": "{{day}} {{from}}以降",
+    "expected": "お届け予定",
+    "progress": "配送の進み具合",
+    "status": {
+      "ordered": "注文済み",
+      "shipped": "発送済み",
+      "inTransit": "配送中",
+      "outForDelivery": "配達中",
+      "delivered": "配達済み",
+      "readyForPickup": "受け取り可能",
+      "deliveryFailed": "配達できませんでした",
+      "returned": "差出人に返送",
+      "cancelled": "キャンセル"
+    },
+    "carrier": {
+      "dhl": "DHL",
+      "deutschePost": "Deutsche Post",
+      "dpd": "DPD",
+      "hermes": "Hermes",
+      "gls": "GLS",
+      "ups": "UPS",
+      "amazonLogistics": "Amazon Logistics",
+      "fedex": "FedEx",
+      "other": "その他の配送業者"
+    },
+    "source": {
+      "mail": "メール",
+      "ai": "AI",
+      "client": "アプリ"
+    },
+    "via": "{{source}}から",
+    "finished": {
+      "delivered": "配達済み：{{date}}",
+      "returned": "返送：{{date}}",
+      "cancelled": "キャンセル：{{date}}"
+    },
+    "pickup": {
+      "packstation": "宅配ロッカー",
+      "postOffice": "郵便局",
+      "parcelShop": "受け取り店舗",
+      "accessPoint": "受け取り場所",
+      "until": "{{date}}までに受け取り"
+    },
+    "failedHint": "配達員が不在を確認しました。",
+    "number": "追跡番号",
+    "numberMissing": "追跡番号を入力してください。",
+    "history": "履歴（{{n}}）",
+    "track": "配送状況を見る",
+    "newTab": "（新しいタブで開きます）",
+    "toMail": "メールを開く",
+    "rename": "名前を変更",
+    "hide": "非表示",
+    "delete": "削除",
+    "deleteTitle": "荷物を削除しますか？",
+    "deleteBody": "「{{name}}」は一覧から消え、追跡されなくなります。",
+    "actions": "{{name}}の操作",
+    "name": "名前",
+    "nameHint": "空にするとショップ名に戻ります。",
+    "nameOptional": "名前（任意）",
+    "carrierLabel": "配送業者",
+    "order": "注文 {{ref}}",
+    "chip": "荷物：{{status}}",
+    "undo": "元に戻す",
+    "toast": {
+      "hidden": "荷物を非表示にしました",
+      "deleted": "荷物を削除しました"
+    },
+    "error": {
+      "invalid": "内容が正しくありません。追跡番号を確認してください。すでに登録済みかもしれません。",
+      "notFound": "その荷物はもうありません。",
+      "connection": "サーバーに接続できません。少ししてからもう一度お試しください。",
+      "generic": "うまくいきませんでした。もう一度お試しください。"
+    },
+    "hiddenShow": "非表示の荷物を表示（{{n}}）",
+    "hiddenHide": "非表示の荷物を隠す",
+    "unhide": "再表示"
   }
 }

@@ -215,7 +215,14 @@ type PhoneTab = "inbox" | "folders" | AppSection | "more";
 
 function useActiveTab(): PhoneTab {
   return useUi((s) =>
-    s.moreOpen ? "more" : s.section !== "mail" ? s.section : s.folderDrawerOpen ? "folders" : "inbox",
+    // Parcels have no tab of their own; they open from "More".
+    s.moreOpen || s.section === "shipments"
+      ? "more"
+      : s.section !== "mail"
+        ? s.section
+        : s.folderDrawerOpen
+          ? "folders"
+          : "inbox",
   );
 }
 
@@ -305,7 +312,11 @@ export function MoreScreen() {
   const { t } = useT();
   const { data: accounts = [] } = useAccounts();
   const ui = useUi.getState();
+  const sections = useAvailableSections();
   const rows: { label: string; run: () => void }[] = [
+    ...(sections.includes("shipments")
+      ? [{ label: t("nav.section.shipments"), run: () => ui.setSection("shipments") }]
+      : []),
     { label: t("nav.settings"), run: () => ui.openSettings() },
     { label: t("nav.portal"), run: () => window.location.assign(PORTAL_URL) },
     { label: t("shortcuts.palette"), run: () => ui.setPaletteOpen(true) },

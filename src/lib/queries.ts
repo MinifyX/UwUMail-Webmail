@@ -38,6 +38,10 @@ export const queryKeys = {
   people: ["people"] as const,
   maskedOptions: ["maskedOptions"] as const,
   backupsAvailable: ["backupsAvailable"] as const,
+  shipmentsAvailable: ["shipmentsAvailable"] as const,
+  shipments: ["shipments"] as const,
+  // Under `shipments`, so the same invalidation reloads it.
+  hiddenShipments: ["shipments", "hidden"] as const,
   maskedAddresses: ["maskedAddresses"] as const,
   verificationCodes: ["verificationCodes"] as const,
   profilePicture: ["profilePicture"] as const,
@@ -557,6 +561,9 @@ export function useBackendEvents() {
           break;
         case "masked:changed":
           void client.invalidateQueries({ queryKey: queryKeys.maskedAddresses });
+          break;
+        case "shipments:changed":
+          void client.invalidateQueries({ queryKey: queryKeys.shipments });
           break;
         case "assist:changed":
           for (const key of [

@@ -15,7 +15,8 @@
     "section": {
       "mail": "邮件",
       "calendar": "日历",
-      "contacts": "联系人"
+      "contacts": "联系人",
+      "shipments": "包裹"
     },
     "scheduled": "定时发送",
     "searchAll": "搜索所有邮箱",
@@ -2070,5 +2071,100 @@
       "invalidEmail_other": "{{count}} 封无法安全保存。",
       "other_other": "{{count}} 封未恢复。"
     }
+  },
+  "shipments": {
+    "add": "添加包裹",
+    "addButton": "添加",
+    "empty": {
+      "title": "目前没有包裹",
+      "body": "UwUMail 会自动识别发货邮件。你也可以自己添加运单号。"
+    },
+    "group": {
+      "today": "今天",
+      "onTheWay": "运输中",
+      "delivered": "已送达（最近 7 天）",
+      "hidden": "已隐藏"
+    },
+    "day": {
+      "today": "今天",
+      "tomorrow": "明天"
+    },
+    "window": "{{day}} {{from}}–{{to}}",
+    "from": "{{day}} {{from}} 起",
+    "expected": "预计",
+    "progress": "包裹进度",
+    "status": {
+      "ordered": "已下单",
+      "shipped": "已发货",
+      "inTransit": "运输中",
+      "outForDelivery": "派送中",
+      "delivered": "已送达",
+      "readyForPickup": "待取件",
+      "deliveryFailed": "派送失败",
+      "returned": "已退回寄件人",
+      "cancelled": "已取消"
+    },
+    "carrier": {
+      "dhl": "DHL",
+      "deutschePost": "Deutsche Post",
+      "dpd": "DPD",
+      "hermes": "Hermes",
+      "gls": "GLS",
+      "ups": "UPS",
+      "amazonLogistics": "Amazon Logistics",
+      "fedex": "FedEx",
+      "other": "其他快递"
+    },
+    "source": {
+      "mail": "邮件",
+      "ai": "AI",
+      "client": "应用"
+    },
+    "via": "来自 {{source}}",
+    "finished": {
+      "delivered": "已送达：{{date}}",
+      "returned": "已退回：{{date}}",
+      "cancelled": "已取消：{{date}}"
+    },
+    "pickup": {
+      "packstation": "快递柜",
+      "postOffice": "邮局",
+      "parcelShop": "代收点",
+      "accessPoint": "取件点",
+      "until": "请在 {{date}} 前取件"
+    },
+    "failedHint": "快递员未能联系到你。",
+    "number": "运单号",
+    "numberMissing": "请输入运单号。",
+    "history": "记录（{{n}}）",
+    "track": "查看物流",
+    "newTab": "（在新标签页中打开）",
+    "toMail": "打开邮件",
+    "rename": "重命名",
+    "hide": "隐藏",
+    "delete": "删除",
+    "deleteTitle": "删除这个包裹？",
+    "deleteBody": "“{{name}}”将从列表中移除，不再跟踪。",
+    "actions": "{{name}} 的操作",
+    "name": "名称",
+    "nameHint": "留空则重新显示商家名称。",
+    "nameOptional": "名称（可选）",
+    "carrierLabel": "快递公司",
+    "order": "订单 {{ref}}",
+    "chip": "包裹：{{status}}",
+    "undo": "撤销",
+    "toast": {
+      "hidden": "已隐藏包裹",
+      "deleted": "已删除包裹"
+    },
+    "error": {
+      "invalid": "内容不对。请检查运单号，它可能已经存在。",
+      "notFound": "这个包裹已不存在。",
+      "connection": "无法连接服务器。请稍后再试。",
+      "generic": "没有成功，请再试一次。"
+    },
+    "hiddenShow": "显示已隐藏（{{n}}）",
+    "hiddenHide": "收起已隐藏",
+    "unhide": "重新显示"
   }
 }

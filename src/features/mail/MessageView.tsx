@@ -42,6 +42,7 @@ import type { Anchor } from "../calendar/state";
 import { openInCalendar } from "../dates/addToCalendar";
 import { DatePopover, EventsBar } from "../dates/EventsBar";
 import { useMailEvents } from "../dates/useMailEvents";
+import { ShipmentChip } from "../shipments/ShipmentChip";
 import type { DetectedEvent } from "@/lib/dates";
 
 interface AppearanceToggleProps {
@@ -344,6 +345,7 @@ export function MessageView({ message, accounts, collapsed, onExpand }: MessageV
         <TrustedImagesNote entries={trustedBy} onUntrust={() => setLoadRemote(false)} />
       )}
 
+      <ShipmentChip emailId={message.id} />
       <EventsBar messageId={message.id} found={found} onAdd={addToCalendar} />
       {!message.flags.draft && <TeamsMeetingBar message={message} />}
 

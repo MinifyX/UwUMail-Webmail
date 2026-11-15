@@ -15,7 +15,8 @@
     "section": {
       "mail": "E-mails",
       "calendar": "Agenda",
-      "contacts": "Contacts"
+      "contacts": "Contacts",
+      "shipments": "Colis"
     },
     "scheduled": "Programmés",
     "searchAll": "Rechercher dans toutes les boîtes",
@@ -2224,5 +2225,100 @@
       "other_many": "{{count}} non récupérés.",
       "other_other": "{{count}} non récupérés."
     }
+  },
+  "shipments": {
+    "add": "Ajouter un envoi",
+    "addButton": "Ajouter",
+    "empty": {
+      "title": "Aucun colis pour le moment",
+      "body": "UwUMail repère tout seul les mails d’expédition. Tu peux aussi ajouter un numéro de suivi toi-même."
+    },
+    "group": {
+      "today": "Aujourd’hui",
+      "onTheWay": "En route",
+      "delivered": "Livrés (7 derniers jours)",
+      "hidden": "Masqués"
+    },
+    "day": {
+      "today": "Aujourd’hui",
+      "tomorrow": "Demain"
+    },
+    "window": "{{day}}, {{from}}–{{to}}",
+    "from": "{{day}}, à partir de {{from}}",
+    "expected": "Prévu",
+    "progress": "Progression de l’envoi",
+    "status": {
+      "ordered": "Commandé",
+      "shipped": "Expédié",
+      "inTransit": "En route",
+      "outForDelivery": "En cours de livraison",
+      "delivered": "Livré",
+      "readyForPickup": "Prêt à retirer",
+      "deliveryFailed": "Échec de livraison",
+      "returned": "Retourné à l’expéditeur",
+      "cancelled": "Annulé"
+    },
+    "carrier": {
+      "dhl": "DHL",
+      "deutschePost": "Deutsche Post",
+      "dpd": "DPD",
+      "hermes": "Hermes",
+      "gls": "GLS",
+      "ups": "UPS",
+      "amazonLogistics": "Amazon Logistics",
+      "fedex": "FedEx",
+      "other": "Autre transporteur"
+    },
+    "source": {
+      "mail": "Mail",
+      "ai": "IA",
+      "client": "App"
+    },
+    "via": "via {{source}}",
+    "finished": {
+      "delivered": "Livré : {{date}}",
+      "returned": "Retourné : {{date}}",
+      "cancelled": "Annulé : {{date}}"
+    },
+    "pickup": {
+      "packstation": "Consigne",
+      "postOffice": "Bureau de poste",
+      "parcelShop": "Point relais",
+      "accessPoint": "Point de retrait",
+      "until": "À retirer avant {{date}}"
+    },
+    "failedHint": "Le livreur ne t’a pas trouvé.",
+    "number": "Numéro de suivi",
+    "numberMissing": "Saisis le numéro de suivi.",
+    "history": "Historique ({{n}})",
+    "track": "Suivre l’envoi",
+    "newTab": "(s’ouvre dans un nouvel onglet)",
+    "toMail": "Voir le mail",
+    "rename": "Renommer",
+    "hide": "Masquer",
+    "delete": "Supprimer",
+    "deleteTitle": "Supprimer le colis ?",
+    "deleteBody": "« {{name}} » quitte la liste et n’est plus suivi.",
+    "actions": "Actions pour {{name}}",
+    "name": "Nom",
+    "nameHint": "Laisse vide pour afficher à nouveau la boutique.",
+    "nameOptional": "Nom (facultatif)",
+    "carrierLabel": "Transporteur",
+    "order": "Commande {{ref}}",
+    "chip": "Colis : {{status}}",
+    "undo": "Annuler",
+    "toast": {
+      "hidden": "Colis masqué",
+      "deleted": "Colis supprimé"
+    },
+    "error": {
+      "invalid": "Ça ne va pas. Vérifie le numéro de suivi, il existe peut-être déjà.",
+      "notFound": "Ce colis n’existe plus.",
+      "connection": "Pas de connexion au serveur. Réessaie dans un instant.",
+      "generic": "Ça n’a pas marché. Réessaie."
+    },
+    "hiddenShow": "Afficher les masqués ({{n}})",
+    "hiddenHide": "Cacher les masqués",
+    "unhide": "Afficher à nouveau"
   }
 }
