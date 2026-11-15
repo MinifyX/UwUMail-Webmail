@@ -287,9 +287,14 @@ export class DemoShipments {
     if (patch.addEvents?.length || patch.removeEvents?.length) {
       const gone = (e: ShipmentEvent) =>
         e.source === "client" && !!patch.removeEvents?.some((r) => r.at === e.at && r.status === e.status);
-      const added = (patch.addEvents ?? []).map(
-        (e): ShipmentEvent => ({ ...e, text: "", location: null, source: "client", clientName: "Webmail", emailId: null }),
-      );
+      const added = (patch.addEvents ?? []).map((e): ShipmentEvent => ({
+        ...e,
+        text: "",
+        location: null,
+        source: "client",
+        clientName: "Webmail",
+        emailId: null,
+      }));
       item.events = [...item.events.filter((e) => !gone(e)), ...added];
       // As the server does: the status follows the events in the order they came.
       let first = true;

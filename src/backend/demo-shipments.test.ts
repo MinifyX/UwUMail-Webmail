@@ -33,7 +33,12 @@ describe("demo parcels", () => {
     // Marked delivered by hand, then taken back.
     const mark = { at: new Date(Date.now() + 1000).toISOString(), status: "delivered" as const };
     store.update(id, { addEvents: [mark] });
-    expect(store.list(true).concat(store.list()).find((s) => s.id === id)!.status).toBe("delivered");
+    expect(
+      store
+        .list(true)
+        .concat(store.list())
+        .find((s) => s.id === id)!.status,
+    ).toBe("delivered");
     store.update(id, { removeEvents: [mark] });
     expect(store.list().find((s) => s.id === id)).toMatchObject({ status: "shipped", deliveredAt: null });
     store.remove(id);
