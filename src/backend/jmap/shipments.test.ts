@@ -1,7 +1,40 @@
 import { describe, expect, it } from "vitest";
-import { shipmentCalls, shipmentCreate, shipmentSetError, shipmentUpdate, toShipment, webUrl } from "./shipments";
+import {
+  SHIPMENTS,
+  shipmentCalls,
+  shipmentCreate,
+  shipmentSetError,
+  shipmentsSupport,
+  shipmentUpdate,
+  toShipment,
+  webUrl,
+} from "./shipments";
+
+function session(top: boolean, account: boolean) {
+  return {
+    accountId: "a1",
+    capabilities: top ? { [SHIPMENTS]: {} } : {},
+    accounts: {
+      a1: {
+        name: "mini@uwumail.example",
+        isPersonal: true,
+        isReadOnly: false,
+        accountCapabilities: account ? { [SHIPMENTS]: {} } : {},
+      },
+    },
+  };
+}
 
 describe("JMAP shipments", () => {
+  it("is off when the admin switched it off, offered when only the account did, on with both", () => {
+    expect(shipmentsSupport(session(false, false))).toEqual({ offered: false, enabled: false });
+    expect(shipmentsSupport(session(true, false))).toEqual({ offered: true, enabled: false });
+    expect(shipmentsSupport(session(true, true))).toEqual({ offered: true, enabled: true });
+    // The account alone doesn't count, nor does an account that isn't there.
+    expect(shipmentsSupport(session(false, true)).enabled).toBe(false);
+    expect(shipmentsSupport({ ...session(true, true), accountId: "gone" }).enabled).toBe(false);
+  });
+
   it("reads a server shipment and drops what it can't trust", () => {
     const shipment = toShipment({
       id: "s1",

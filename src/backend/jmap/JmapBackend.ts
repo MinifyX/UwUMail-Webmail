@@ -84,6 +84,7 @@ import type {
   Shipment,
   ShipmentInput,
   ShipmentPatch,
+  ShipmentsSupport,
   Message,
   MovedMessage,
   SnoozedMessage,
@@ -238,7 +239,16 @@ import {
   type JmapMaskedEmail,
   type JmapSetError,
 } from "./masked";
-import { SHIPMENTS, shipmentCalls, shipmentCreate, shipmentSetError, shipmentUpdate, toShipment } from "./shipments";
+import {
+  SHIPMENTS,
+  SHIPMENTS_SETTING,
+  shipmentCalls,
+  shipmentsSupport,
+  shipmentCreate,
+  shipmentSetError,
+  shipmentUpdate,
+  toShipment,
+} from "./shipments";
 import {
   BACKUPS,
   backupFilter,
@@ -2573,19 +2583,31 @@ export class JmapBackend implements Backend {
     this.emit({ type: "masked:changed" });
   }
 
-  async shipmentsAvailable(): Promise<boolean> {
+  async shipmentsSupport(): Promise<ShipmentsSupport> {
     await this.start();
-    return supports(SHIPMENTS);
+    return shipmentsSupport(jmapSession());
+  }
+
+  async setShipmentsEnabled(on: boolean): Promise<void> {
+    await this.start();
+    if (!shipmentsSupport(jmapSession()).offered || !supports(SETTINGS)) {
+      throw new BackendError("not_supported", "This server doesn't track parcels.");
+    }
+    await patchUserSettings({ [SHIPMENTS_SETTING]: on ? "on" : "off" });
+    // The server answers with the account's capability in the session or without it.
+    await reloadJmapSession();
+    this.emit({ type: "accounts:changed" });
   }
 
   private shipmentSet(args: Record<string, unknown>): Promise<SetResponse> {
-    if (!supports(SHIPMENTS)) throw new BackendError("not_supported", "This server doesn't track parcels.");
+    if (!shipmentsSupport(jmapSession()).enabled)
+      throw new BackendError("not_supported", "This server doesn't track parcels.");
     return one<SetResponse>("Shipment/set", args, [CORE, SHIPMENTS]);
   }
 
   async shipments(hidden = false): Promise<Shipment[]> {
     await this.start();
-    if (!supports(SHIPMENTS)) return [];
+    if (!shipmentsSupport(jmapSession()).enabled) return [];
     const body = await call(shipmentCalls(this.accountId, hidden), [CORE, SHIPMENTS]);
     const { ids } = responseOf<{ ids: string[] }>(body, "q");
     const byId = new Map(

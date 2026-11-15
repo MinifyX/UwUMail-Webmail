@@ -528,6 +528,8 @@ export function useBackendEvents() {
           void client.invalidateQueries({ queryKey: queryKeys.verificationCodes });
           // And whether the account may only send to addresses on its own server.
           void client.invalidateQueries({ queryKey: ["sendPolicy"] });
+          // And whether parcels are on: the admin or the account may have switched them off.
+          void client.invalidateQueries({ queryKey: queryKeys.shipmentsAvailable });
           break;
         case "scheduled:changed":
           void client.invalidateQueries({ queryKey: queryKeys.scheduled });

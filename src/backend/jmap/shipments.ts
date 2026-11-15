@@ -5,6 +5,7 @@
  */
 
 import { BackendError } from "../backend";
+import type { JmapSession } from "./client";
 import type {
   Shipment,
   ShipmentCarrier,
@@ -13,9 +14,25 @@ import type {
   ShipmentPatch,
   ShipmentPickup,
   ShipmentStatus,
+  ShipmentsSupport,
 } from "../types";
 
 export const SHIPMENTS = "urn:uwumail:jmap:shipments";
+
+/** The UserSettings key of the account's switch: "on" or "off", absent is on. */
+export const SHIPMENTS_SETTING = "shipments";
+
+/**
+ * Offered when the session names the extension at all (the admin allows it), enabled when the own
+ * account carries it too (the account kept it on). Only then are there parcels to ask for.
+ */
+export function shipmentsSupport(
+  session: Pick<JmapSession, "capabilities" | "accounts" | "accountId">,
+): ShipmentsSupport {
+  const offered = SHIPMENTS in session.capabilities;
+  const account = session.accounts[session.accountId];
+  return { offered, enabled: offered && !!account && SHIPMENTS in account.accountCapabilities };
+}
 
 /** Parcels one list shows at most; the most recently changed ones. */
 export const SHIPMENTS_LIMIT = 100;

@@ -1,14 +1,16 @@
 import { Icon, ICONS } from "@uwusuite/design";
 import { useT } from "@/i18n";
 import { shipmentOfMail } from "@/lib/shipments";
-import { showShipment, useShipments } from "./useShipments";
+import { showShipment, useShipments, useShipmentsAvailable } from "./useShipments";
 
 /** "Parcel: out for delivery" above a shipping mail; leads to the parcel's card. */
 export function ShipmentChip({ emailId }: { emailId: string }) {
   const { t } = useT();
+  const { data: available = false } = useShipmentsAvailable();
   const { data: shipments = [] } = useShipments();
   const shipment = shipmentOfMail(shipments, emailId);
-  if (!shipment) return null;
+  // A disabled query keeps its last answer: switched off elsewhere, the chip goes anyway.
+  if (!available || !shipment) return null;
   return (
     <button
       type="button"

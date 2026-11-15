@@ -59,6 +59,7 @@ import type {
   Shipment,
   ShipmentInput,
   ShipmentPatch,
+  ShipmentsSupport,
   MaskedOptions,
   MailtoDraft,
   Message,
@@ -379,8 +380,13 @@ export interface Backend {
   /** Changes the state (a deleted one may come back) or what it says about itself. */
   updateMaskedAddress(id: string, patch: MaskedAddressPatch): Promise<void>;
 
-  /** Whether the server tracks parcels (`urn:uwumail:jmap:shipments`); false hides "Parcels". */
-  shipmentsAvailable(): Promise<boolean>;
+  /**
+   * Whether the server tracks parcels (`urn:uwumail:jmap:shipments`) and the account has them on;
+   * without `enabled` everything about parcels is hidden, without `offered` the switch too.
+   */
+  shipmentsSupport(): Promise<ShipmentsSupport>;
+  /** The account's switch (UserSettings `shipments`). Off deletes the parcels found on the server. */
+  setShipmentsEnabled(on: boolean): Promise<void>;
   /** The parcels not hidden (or only the hidden ones), the most recently changed first (at most 100). */
   shipments(hidden?: boolean): Promise<Shipment[]>;
   /** Adds one by hand from carrier and tracking number; returns the new one's id. */
