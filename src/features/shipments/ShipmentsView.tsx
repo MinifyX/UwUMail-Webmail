@@ -13,8 +13,6 @@ import {
   TextInput,
 } from "@uwusuite/design";
 import clsx from "clsx";
-// shortcut: lucide's Package straight away, the Design vocabulary has no parcel icon yet; swap for ICONS.parcel once it has one.
-import { Package } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { backend } from "@/backend/backend";
 import type { Shipment, ShipmentCarrier, ShipmentEvent } from "@/backend/types";
@@ -240,7 +238,7 @@ function ShipmentCard({ shipment }: { shipment: Shipment }) {
     >
       <div className="flex items-start gap-3">
         <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-control bg-canvas text-muted">
-          <Icon icon={Package} size="lg" />
+          <Icon icon={ICONS.parcel} size="lg" />
         </span>
         <div className="min-w-0 flex-1">
           <h3 id={headingId} className="truncate text-body font-semibold">
