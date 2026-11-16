@@ -2277,7 +2277,8 @@
     "source": {
       "mail": "Mail",
       "ai": "IA",
-      "client": "App"
+      "client": "App",
+      "carrier": "Transporteur"
     },
     "via": "via {{source}}",
     "finished": {
@@ -2326,6 +2327,23 @@
     },
     "hiddenShow": "Afficher les masqués ({{n}})",
     "hiddenHide": "Cacher les masqués",
-    "unhide": "Afficher à nouveau"
+    "unhide": "Afficher à nouveau",
+    "shop": "Voir chez le marchand",
+    "lookup": {
+      "now": "Actualiser",
+      "done": "Transporteur interrogé",
+      "at": "Dernière demande au transporteur :",
+      "not": {
+        "tooSoon": "Demande déjà faite à l’instant. Réessaie dans quelques minutes.",
+        "notSupported": "Le serveur n’interroge pas le transporteur pour ce colis.",
+        "unavailable": "Le transporteur ne répond pas pour le moment. Réessaie plus tard.",
+        "notFound": "Le transporteur ne connaît pas ce numéro de suivi."
+      },
+      "error": {
+        "notFound": "Le transporteur ne connaît pas (encore) ce numéro.",
+        "unavailable": "Le transporteur n’a pas répondu.",
+        "rateLimited": "Trop de demandes, le serveur réessaiera plus tard."
+      }
+    }
   }
 }

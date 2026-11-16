@@ -103,6 +103,16 @@ export function useShipmentActions() {
         action: { label: translate("shipments.undo"), run: () => void update(id, { removeEvents: [event] }) },
       });
     },
+    /** Asks the carrier now; says so when it won't, then shows what came back. */
+    lookUp: async (id: string) => {
+      try {
+        const why = await backend().refreshShipment(id);
+        await refresh();
+        toast(translate(why ? `shipments.lookup.not.${why}` : "shipments.lookup.done"), why ? "info" : "success");
+      } catch (error) {
+        toast(shipmentErrorText(error), "error");
+      }
+    },
     remove: async (id: string) => {
       if (await run(() => backend().deleteShipment(id))) toast(translate("shipments.toast.deleted"), "success");
     },

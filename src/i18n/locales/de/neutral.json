@@ -2201,7 +2201,8 @@
     "source": {
       "mail": "Mail",
       "ai": "KI",
-      "client": "App"
+      "client": "App",
+      "carrier": "Paketdienst"
     },
     "via": "über {{source}}",
     "finished": {
@@ -2250,6 +2251,23 @@
     },
     "hiddenShow": "Ausgeblendete anzeigen ({{n}})",
     "hiddenHide": "Ausgeblendete verbergen",
-    "unhide": "Wieder einblenden"
+    "unhide": "Wieder einblenden",
+    "shop": "Beim Shop ansehen",
+    "lookup": {
+      "now": "Jetzt aktualisieren",
+      "done": "Beim Paketdienst nachgefragt",
+      "at": "Zuletzt beim Paketdienst nachgefragt:",
+      "not": {
+        "tooSoon": "Gerade erst nachgefragt. Versuch es in ein paar Minuten noch mal.",
+        "notSupported": "Für dieses Paket fragt der Server nicht beim Paketdienst nach.",
+        "unavailable": "Der Paketdienst antwortet gerade nicht. Versuch es später noch mal.",
+        "notFound": "Der Paketdienst kennt diese Sendungsnummer nicht."
+      },
+      "error": {
+        "notFound": "Der Paketdienst kennt die Nummer (noch) nicht.",
+        "unavailable": "Der Paketdienst hat nicht geantwortet.",
+        "rateLimited": "Zu viele Anfragen, der Server fragt später noch mal."
+      }
+    }
   }
 }

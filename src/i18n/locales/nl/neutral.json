@@ -2201,7 +2201,8 @@
     "source": {
       "mail": "Mail",
       "ai": "AI",
-      "client": "App"
+      "client": "App",
+      "carrier": "Vervoerder"
     },
     "via": "via {{source}}",
     "finished": {
@@ -2250,6 +2251,23 @@
     },
     "hiddenShow": "Verborgen tonen ({{n}})",
     "hiddenHide": "Verborgen verbergen",
-    "unhide": "Weer tonen"
+    "unhide": "Weer tonen",
+    "shop": "Bekijken bij de winkel",
+    "lookup": {
+      "now": "Nu bijwerken",
+      "done": "Vervoerder gevraagd",
+      "at": "Laatst bij de vervoerder nagevraagd:",
+      "not": {
+        "tooSoon": "Net al nagevraagd. Probeer het over een paar minuten opnieuw.",
+        "notSupported": "De server vraagt voor dit pakket niet na bij de vervoerder.",
+        "unavailable": "De vervoerder antwoordt nu niet. Probeer het later opnieuw.",
+        "notFound": "De vervoerder kent dit trackingnummer niet."
+      },
+      "error": {
+        "notFound": "De vervoerder kent het nummer (nog) niet.",
+        "unavailable": "De vervoerder heeft niet geantwoord.",
+        "rateLimited": "Te veel verzoeken, de server vraagt later opnieuw."
+      }
+    }
   }
 }

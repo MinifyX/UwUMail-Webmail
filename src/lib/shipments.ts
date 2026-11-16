@@ -93,3 +93,14 @@ export function groupShipments(shipments: Shipment[], now: Date = new Date()): S
 export function shipmentOfMail(shipments: Shipment[], emailId: string): Shipment | null {
   return shipments.find((s) => !s.hidden && s.emailIds.includes(emailId)) ?? null;
 }
+
+/** "5 minutes ago", "yesterday": how long ago `at` was, in the reader's language. */
+export function agoText(at: string, locale: string, now = Date.now()): string {
+  const seconds = Math.round((Date.parse(at) - now) / 1000);
+  const format = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const abs = Math.abs(seconds);
+  if (abs < 60) return format.format(0, "minute");
+  if (abs < 3600) return format.format(Math.round(seconds / 60), "minute");
+  if (abs < 86400) return format.format(Math.round(seconds / 3600), "hour");
+  return format.format(Math.round(seconds / 86400), "day");
+}

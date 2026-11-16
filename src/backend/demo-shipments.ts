@@ -1,12 +1,22 @@
 // Made-up parcels for the demo, tracked on reserved domains only. They start over with every reload.
 
-import { movesTo } from "@/lib/shipments";
+import { isActive, movesTo } from "@/lib/shipments";
 import { BackendError } from "./backend";
-import type { Shipment, ShipmentEvent, ShipmentInput, ShipmentPatch } from "./types";
+import type {
+  Shipment,
+  ShipmentCarrier,
+  ShipmentEvent,
+  ShipmentInput,
+  ShipmentNotRefreshed,
+  ShipmentPatch,
+} from "./types";
 
 type Lang = "de" | "en";
 
 const HOUR = 60 * 60 * 1000;
+
+/** The carriers the demo "asks", like a server with only the DHL key. */
+export const DEMO_LOOKUP_CARRIERS: ShipmentCarrier[] = ["dhl", "deutschePost"];
 const DAY = 24 * HOUR;
 
 /** A local date (YYYY-MM-DD) some days from now. */
@@ -38,6 +48,7 @@ export function sampleShipments(lang: Lang, now: number, pixelPartsMail: string 
   const item = (patch: Partial<Shipment> & Pick<Shipment, "id" | "carrier" | "status">): Shipment => ({
     number: "",
     trackingUrl: null,
+    shopTrackingUrl: null,
     title: null,
     merchant: null,
     orderRef: null,
@@ -48,6 +59,8 @@ export function sampleShipments(lang: Lang, now: number, pixelPartsMail: string 
     hidden: false,
     emailIds: [],
     events: [],
+    lookedUpAt: null,
+    lookupError: null,
     created: ago(3 * DAY),
     updated: patch.statusAt ?? ago(3 * HOUR),
     ...patch,
@@ -58,6 +71,8 @@ export function sampleShipments(lang: Lang, now: number, pixelPartsMail: string 
       carrier: "dhl",
       number: "00340434161094042557",
       trackingUrl: "https://track.example/dhl/00340434161094042557",
+      shopTrackingUrl: "https://pixelparts.example/sendungsverfolgung/?orderNo=UWU-2048",
+      lookedUpAt: ago(25 * 60 * 1000),
       merchant: "Pixel Parts Shop",
       title: de ? "Keycaps „Bubblegum“" : "“Bubblegum” keycaps",
       orderRef: "UWU-2048",
@@ -252,6 +267,7 @@ export class DemoShipments {
       carrier: input.carrier,
       number,
       trackingUrl: null,
+      shopTrackingUrl: null,
       title: input.title?.trim() || null,
       merchant: null,
       orderRef: null,
@@ -273,6 +289,8 @@ export class DemoShipments {
           emailId: null,
         },
       ],
+      lookedUpAt: null,
+      lookupError: null,
       created: now,
       updated: now,
     });
@@ -311,6 +329,19 @@ export class DemoShipments {
     }
     item.updated = new Date().toISOString();
     this.changed();
+  }
+
+  /** Like `Shipment/refresh`: at most once in five minutes, only for the carriers "asked". */
+  refresh(id: string, now = Date.now()): ShipmentNotRefreshed | null {
+    const item = this.items.find((s) => s.id === id);
+    if (!item) return "notFound";
+    if (!item.number || !DEMO_LOOKUP_CARRIERS.includes(item.carrier) || !isActive(item)) return "notSupported";
+    if (item.lookedUpAt && now - Date.parse(item.lookedUpAt) < 5 * 60 * 1000) return "tooSoon";
+    item.lookedUpAt = new Date(now).toISOString();
+    item.lookupError = null;
+    item.updated = item.lookedUpAt;
+    this.changed();
+    return null;
   }
 
   remove(id: string) {

@@ -21,9 +21,15 @@ import { NyuScene } from "@/components/nyu/scenes";
 import { useT } from "@/i18n";
 import { addDays, todayKey } from "@/lib/calendarDates";
 import { useIsPhone } from "@/lib/device";
-import { dayOf, finishedAt, groupShipments, isActive, markable, STEPS, stepOf } from "@/lib/shipments";
+import { agoText, dayOf, finishedAt, groupShipments, isActive, markable, STEPS, stepOf } from "@/lib/shipments";
 import { useUi } from "@/state/ui";
-import { useHiddenShipments, useShipmentActions, useShipmentFocus, useShipments } from "./useShipments";
+import {
+  useHiddenShipments,
+  useShipmentActions,
+  useShipmentFocus,
+  useShipments,
+  useShipmentsSupport,
+} from "./useShipments";
 
 type T = ReturnType<typeof useT>["t"];
 
@@ -59,8 +65,13 @@ function whenText(expected: NonNullable<Shipment["expected"]>, t: T, locale: str
 function sourceText(event: ShipmentEvent, t: T): string {
   if (event.source === "mail") return t("shipments.source.mail");
   if (event.source === "ai") return t("shipments.source.ai");
+  if (event.source === "carrier") return t("shipments.source.carrier");
   return event.clientName ?? t("shipments.source.client");
 }
+
+/** A link out of the webmail, styled like a small button. */
+const LINK =
+  "inline-flex h-9 items-center gap-1.5 rounded-control border border-control px-3 text-meta font-semibold hover:bg-pink-tint/50 focus-visible:shadow-focus focus-visible:outline-hidden";
 
 const cardTitle = (shipment: Shipment, t: T) =>
   shipment.title ?? shipment.merchant ?? t(`shipments.carrier.${shipment.carrier}`);
@@ -215,6 +226,14 @@ function ShipmentCard({ shipment }: { shipment: Shipment }) {
   const active = isActive(shipment);
   const latest = shipment.events.at(-1);
   const marks = markable(shipment.status);
+  const { data: support } = useShipmentsSupport();
+  const lookup = active && !!shipment.number && !!support?.lookupCarriers.includes(shipment.carrier);
+  const [lookingUp, setLookingUp] = useState(false);
+  const lookUp = async () => {
+    setLookingUp(true);
+    await actions.lookUp(shipment.id);
+    setLookingUp(false);
+  };
 
   useEffect(() => {
     if (focusId !== shipment.id || !ref.current) return;
@@ -290,6 +309,18 @@ function ShipmentCard({ shipment }: { shipment: Shipment }) {
           {t("shipments.number")} <span className="selectable font-mono text-ink">{shipment.number}</span>
         </p>
       )}
+      {(shipment.lookedUpAt || shipment.lookupError) && (
+        <p className="text-caption text-muted">
+          {shipment.lookedUpAt && (
+            <>
+              {t("shipments.lookup.at")}{" "}
+              <time dateTime={shipment.lookedUpAt}>{agoText(shipment.lookedUpAt, locale)}</time>
+            </>
+          )}
+          {shipment.lookedUpAt && shipment.lookupError && " · "}
+          {shipment.lookupError && t(`shipments.lookup.error.${shipment.lookupError}`)}
+        </p>
+      )}
 
       {shipment.events.length > 0 && (
         <details className="group text-meta">
@@ -317,16 +348,23 @@ function ShipmentCard({ shipment }: { shipment: Shipment }) {
 
       <div className="-mb-1 flex flex-wrap items-center gap-2">
         {shipment.trackingUrl && (
-          <a
-            href={shipment.trackingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-1.5 rounded-control border border-control px-3 text-meta font-semibold hover:bg-pink-tint/50 focus-visible:shadow-focus focus-visible:outline-hidden"
-          >
+          <a href={shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className={LINK}>
             <Icon icon={ICONS.openExternal} size="sm" />
             {t("shipments.track")}
             <span className="sr-only">{t("shipments.newTab")}</span>
           </a>
+        )}
+        {shipment.shopTrackingUrl && (
+          <a href={shipment.shopTrackingUrl} target="_blank" rel="noopener noreferrer" className={LINK}>
+            <Icon icon={ICONS.openExternal} size="sm" />
+            {t("shipments.shop")}
+            <span className="sr-only">{t("shipments.newTab")}</span>
+          </a>
+        )}
+        {lookup && (
+          <Button size="sm" variant="ghost" icon={ICONS.refresh} busy={lookingUp} onClick={() => void lookUp()}>
+            {t("shipments.lookup.now")}
+          </Button>
         )}
         {mail && (
           <Button
