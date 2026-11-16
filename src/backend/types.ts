@@ -857,7 +857,7 @@ export interface ShipmentEvent {
   status: ShipmentStatus | null;
   text: string;
   location: string | null;
-  /** Where it came from: `mail`, `ai` or `client` (then `clientName` says which). */
+  /** Where it came from: `mail`, `ai`, `carrier` (the server asked it) or `client` (then `clientName` says which). */
   source: string;
   clientName: string | null;
   emailId: string | null;
@@ -876,6 +876,8 @@ export interface Shipment {
   carrier: ShipmentCarrier;
   number: string;
   trackingUrl: string | null;
+  /** The shop's own tracking page; null when the server doesn't know one (or is older). */
+  shopTrackingUrl: string | null;
   /** The name the person gave it; null shows the shop. */
   title: string | null;
   merchant: string | null;
@@ -890,9 +892,18 @@ export interface Shipment {
   emailIds: string[];
   /** Oldest first. */
   events: ShipmentEvent[];
+  /** When the server last asked the carrier; null when never (or an older server). */
+  lookedUpAt: string | null;
+  /** How that last question went wrong; null when it went well or was never asked. */
+  lookupError: ShipmentLookupError | null;
   created: string;
   updated: string;
 }
+
+export type ShipmentLookupError = "notFound" | "unavailable" | "rateLimited";
+
+/** Why `Shipment/refresh` didn't ask the carrier about a parcel. */
+export type ShipmentNotRefreshed = "tooSoon" | "notSupported" | "unavailable" | "notFound";
 
 export interface ShipmentInput {
   carrier: ShipmentCarrier;
@@ -904,6 +915,8 @@ export interface ShipmentInput {
 export interface ShipmentsSupport {
   offered: boolean;
   enabled: boolean;
+  /** The carriers the server asks itself for this account; empty while the lookup is off (or on older servers). */
+  lookupCarriers: ShipmentCarrier[];
 }
 
 /** An event set by hand, or one to take back: by its `at` and status, as it was sent. */

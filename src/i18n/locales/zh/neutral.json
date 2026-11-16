@@ -2123,7 +2123,8 @@
     "source": {
       "mail": "邮件",
       "ai": "AI",
-      "client": "应用"
+      "client": "应用",
+      "carrier": "快递公司"
     },
     "via": "来自 {{source}}",
     "finished": {
@@ -2172,6 +2173,23 @@
     },
     "hiddenShow": "显示已隐藏（{{n}}）",
     "hiddenHide": "收起已隐藏",
-    "unhide": "重新显示"
+    "unhide": "重新显示",
+    "shop": "在商家处查看",
+    "lookup": {
+      "now": "立即更新",
+      "done": "已向快递公司查询",
+      "at": "上次向快递公司查询：",
+      "not": {
+        "tooSoon": "刚刚查询过，请几分钟后再试。",
+        "notSupported": "服务器不会为此包裹向快递公司查询。",
+        "unavailable": "快递公司暂时没有回应，请稍后再试。",
+        "notFound": "快递公司不认识这个运单号。"
+      },
+      "error": {
+        "notFound": "快递公司（暂时）不认识这个单号。",
+        "unavailable": "快递公司没有回应。",
+        "rateLimited": "请求过多，服务器稍后会再次查询。"
+      }
+    }
   }
 }

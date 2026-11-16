@@ -8,7 +8,7 @@ import { DemoContacts } from "./demo-contacts";
 import { DemoAssist } from "./demo-assist";
 import { sampleBackupMails, searchDemoBackups } from "./demo-backups";
 import { DemoMasked } from "./demo-masked";
-import { DemoShipments } from "./demo-shipments";
+import { DEMO_LOOKUP_CARRIERS, DemoShipments } from "./demo-shipments";
 import { DemoSignatures } from "./demo-signatures";
 import type { DomainSignatureChange } from "@/lib/domainSignatures";
 import { rulesToSieve } from "@/lib/sieveRules";
@@ -1313,7 +1313,8 @@ export class DemoBackend implements Backend {
   }
 
   async shipmentsSupport() {
-    return { offered: true, enabled: this.parcelsOn() };
+    const enabled = this.parcelsOn();
+    return { offered: true, enabled, lookupCarriers: enabled ? DEMO_LOOKUP_CARRIERS : [] };
   }
 
   async setShipmentsEnabled(on: boolean) {
@@ -1345,6 +1346,11 @@ export class DemoBackend implements Backend {
   async deleteShipment(id: string) {
     await wait(100);
     this.parcels.remove(id);
+  }
+
+  async refreshShipment(id: string) {
+    await wait(400);
+    return this.parcels.refresh(id);
   }
 
   private backupStore = sampleBackupMails(lang());

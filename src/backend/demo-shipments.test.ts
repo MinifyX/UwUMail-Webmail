@@ -46,4 +46,17 @@ describe("demo parcels", () => {
     expect(() => store.remove(id)).toThrow();
     expect(changed).toHaveBeenCalledTimes(7);
   });
+
+  it("asks the carrier at most once in five minutes, and only while it can", () => {
+    const now = new Date(2026, 10, 14, 9, 0).getTime();
+    const store = new DemoShipments("en", null, () => {}, now);
+    // p1 (DHL) was asked 25 minutes ago.
+    expect(store.refresh("p1", now)).toBeNull();
+    expect(store.list().find((s) => s.id === "p1")!.lookedUpAt).toBe(new Date(now).toISOString());
+    expect(store.refresh("p1", now + 60_000)).toBe("tooSoon");
+    expect(store.refresh("p1", now + 6 * 60_000)).toBeNull();
+    const hermes = store.list().find((s) => s.carrier === "hermes")!;
+    expect(store.refresh(hermes.id, now)).toBe("notSupported");
+    expect(store.refresh("gone", now)).toBe("notFound");
+  });
 });

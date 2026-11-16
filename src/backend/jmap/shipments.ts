@@ -11,6 +11,8 @@ import type {
   ShipmentCarrier,
   ShipmentEvent,
   ShipmentInput,
+  ShipmentLookupError,
+  ShipmentNotRefreshed,
   ShipmentPatch,
   ShipmentPickup,
   ShipmentStatus,
@@ -31,7 +33,11 @@ export function shipmentsSupport(
 ): ShipmentsSupport {
   const offered = SHIPMENTS in session.capabilities;
   const account = session.accounts[session.accountId];
-  return { offered, enabled: offered && !!account && SHIPMENTS in account.accountCapabilities };
+  const enabled = offered && !!account && SHIPMENTS in account.accountCapabilities;
+  const capability = enabled ? account?.accountCapabilities[SHIPMENTS] : null;
+  const listed = isObject(capability) && Array.isArray(capability.lookupCarriers) ? capability.lookupCarriers : [];
+  const lookupCarriers = listed.filter((c): c is ShipmentCarrier => CARRIERS.includes(c as ShipmentCarrier));
+  return { offered, enabled, lookupCarriers };
 }
 
 /** Parcels one list shows at most; the most recently changed ones. */
@@ -60,6 +66,9 @@ export const STATUSES: readonly ShipmentStatus[] = [
   "returned",
   "cancelled",
 ];
+
+const LOOKUP_ERRORS: readonly ShipmentLookupError[] = ["notFound", "unavailable", "rateLimited"];
+const NOT_REFRESHED: readonly ShipmentNotRefreshed[] = ["tooSoon", "notSupported", "unavailable", "notFound"];
 
 const PICKUP_KINDS: readonly ShipmentPickup["kind"][] = ["packstation", "postOffice", "parcelShop", "accessPoint"];
 
@@ -116,6 +125,7 @@ export function toShipment(value: unknown): Shipment | null {
     carrier: oneOf(CARRIERS, value.carrier) ?? "other",
     number: text(value.number),
     trackingUrl: webUrl(value.trackingUrl),
+    shopTrackingUrl: webUrl(value.shopTrackingUrl),
     title: textOrNull(value.title),
     merchant: textOrNull(value.merchant),
     orderRef: textOrNull(value.orderRef),
@@ -132,6 +142,8 @@ export function toShipment(value: unknown): Shipment | null {
       (id): id is string => typeof id === "string",
     ),
     events,
+    lookedUpAt: textOrNull(value.lookedUpAt),
+    lookupError: oneOf(LOOKUP_ERRORS, value.lookupError),
     created: text(value.created) || updated,
     updated,
   };
@@ -179,4 +191,15 @@ export function shipmentSetError(problem: { type: string; description?: string }
   }
   if (problem.type === "forbidden" || problem.type === "overQuota") return new BackendError("forbidden", description);
   return new BackendError("internal", description);
+}
+
+/** What `Shipment/refresh` said about `id`: null when the carrier was asked, else why not. */
+export function refreshOutcome(
+  response: { refreshed?: unknown; notRefreshed?: unknown },
+  id: string,
+): ShipmentNotRefreshed | null {
+  if (Array.isArray(response.refreshed) && response.refreshed.includes(id)) return null;
+  const problem = isObject(response.notRefreshed) ? response.notRefreshed[id] : undefined;
+  // A reason this webmail doesn't know yet, or none at all, reads as "no answer".
+  return oneOf(NOT_REFRESHED, isObject(problem) ? problem.type : undefined) ?? "unavailable";
 }

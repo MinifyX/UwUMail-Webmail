@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  refreshOutcome,
   SHIPMENTS,
   shipmentCalls,
   shipmentCreate,
@@ -10,7 +11,7 @@ import {
   webUrl,
 } from "./shipments";
 
-function session(top: boolean, account: boolean) {
+function session(top: boolean, account: boolean, capability: unknown = {}) {
   return {
     accountId: "a1",
     capabilities: top ? { [SHIPMENTS]: {} } : {},
@@ -19,7 +20,7 @@ function session(top: boolean, account: boolean) {
         name: "mini@uwumail.example",
         isPersonal: true,
         isReadOnly: false,
-        accountCapabilities: account ? { [SHIPMENTS]: {} } : {},
+        accountCapabilities: account ? { [SHIPMENTS]: capability } : {},
       },
     },
   };
@@ -27,12 +28,31 @@ function session(top: boolean, account: boolean) {
 
 describe("JMAP shipments", () => {
   it("is off when the admin switched it off, offered when only the account did, on with both", () => {
-    expect(shipmentsSupport(session(false, false))).toEqual({ offered: false, enabled: false });
-    expect(shipmentsSupport(session(true, false))).toEqual({ offered: true, enabled: false });
-    expect(shipmentsSupport(session(true, true))).toEqual({ offered: true, enabled: true });
+    expect(shipmentsSupport(session(false, false))).toEqual({ offered: false, enabled: false, lookupCarriers: [] });
+    expect(shipmentsSupport(session(true, false))).toEqual({ offered: true, enabled: false, lookupCarriers: [] });
+    expect(shipmentsSupport(session(true, true))).toEqual({ offered: true, enabled: true, lookupCarriers: [] });
     // The account alone doesn't count, nor does an account that isn't there.
     expect(shipmentsSupport(session(false, true)).enabled).toBe(false);
     expect(shipmentsSupport({ ...session(true, true), accountId: "gone" }).enabled).toBe(false);
+  });
+
+  it("reads the carriers the server asks itself, known ones only", () => {
+    const capability = { maxEvents: 200, lookupCarriers: ["dhl", "deutschePost", "pigeon", 7] };
+    expect(shipmentsSupport(session(true, true, capability)).lookupCarriers).toEqual(["dhl", "deutschePost"]);
+    expect(shipmentsSupport(session(true, true, { lookupCarriers: "dhl" })).lookupCarriers).toEqual([]);
+  });
+
+  it("reads what Shipment/refresh did", () => {
+    const response = {
+      refreshed: ["s7"],
+      notRefreshed: { s8: { type: "tooSoon" }, s9: { type: "notSupported" }, s10: { type: "somethingNew" } },
+    };
+    expect(refreshOutcome(response, "s7")).toBeNull();
+    expect(refreshOutcome(response, "s8")).toBe("tooSoon");
+    expect(refreshOutcome(response, "s9")).toBe("notSupported");
+    // Unknown or missing reasons read as no answer.
+    expect(refreshOutcome(response, "s10")).toBe("unavailable");
+    expect(refreshOutcome({}, "s7")).toBe("unavailable");
   });
 
   it("reads a server shipment and drops what it can't trust", () => {
@@ -55,6 +75,26 @@ describe("JMAP shipments", () => {
     expect(shipment.expected).toEqual({ from: "2026-11-14", to: null, allDay: true });
     expect(shipment.events.map((e) => e.status)).toEqual(["shipped", "inTransit"]);
     expect(shipment.events[0]!.source).toBe("mail");
+    // Older servers lack the lookup fields.
+    expect(shipment).toMatchObject({ shopTrackingUrl: null, lookedUpAt: null, lookupError: null });
+    expect(
+      toShipment({
+        id: "s2",
+        shopTrackingUrl: "https://shop.example/track?orderNo=1",
+        lookedUpAt: "2026-11-15T08:00:00Z",
+        lookupError: "rateLimited",
+        events: [{ at: "2026-11-15T08:00:00Z", status: "inTransit", source: "carrier" }],
+      }),
+    ).toMatchObject({
+      shopTrackingUrl: "https://shop.example/track?orderNo=1",
+      lookedUpAt: "2026-11-15T08:00:00Z",
+      lookupError: "rateLimited",
+      events: [{ source: "carrier" }],
+    });
+    expect(toShipment({ id: "s3", shopTrackingUrl: "javascript:alert(1)", lookupError: "odd" })).toMatchObject({
+      shopTrackingUrl: null,
+      lookupError: null,
+    });
     expect(toShipment({ carrier: "dhl" })).toBeNull();
   });
 

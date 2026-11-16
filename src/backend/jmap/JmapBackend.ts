@@ -83,6 +83,7 @@ import type {
   MaskedOptions,
   Shipment,
   ShipmentInput,
+  ShipmentNotRefreshed,
   ShipmentPatch,
   ShipmentsSupport,
   Message,
@@ -247,6 +248,7 @@ import {
   shipmentCreate,
   shipmentSetError,
   shipmentUpdate,
+  refreshOutcome,
   toShipment,
 } from "./shipments";
 import {
@@ -2645,6 +2647,19 @@ export class JmapBackend implements Backend {
     const problem = response.notDestroyed?.[id];
     if (problem) throw shipmentSetError(problem);
     this.emit({ type: "shipments:changed" });
+  }
+
+  async refreshShipment(id: string): Promise<ShipmentNotRefreshed | null> {
+    await this.start();
+    if (!shipmentsSupport(jmapSession()).enabled) return "notSupported";
+    const response = await one<{ refreshed?: unknown; notRefreshed?: unknown }>(
+      "Shipment/refresh",
+      { accountId: this.accountId, ids: [id] },
+      [CORE, SHIPMENTS],
+    );
+    // What the carrier said may have changed the parcel; the push may come later or not at all.
+    this.emit({ type: "shipments:changed" });
+    return refreshOutcome(response, id);
   }
 
   mailThreadId(emailId: string): string {

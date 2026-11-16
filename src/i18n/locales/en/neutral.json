@@ -2201,7 +2201,8 @@
     "source": {
       "mail": "Mail",
       "ai": "AI",
-      "client": "App"
+      "client": "App",
+      "carrier": "Carrier"
     },
     "via": "via {{source}}",
     "finished": {
@@ -2250,6 +2251,23 @@
     },
     "hiddenShow": "Show hidden ({{n}})",
     "hiddenHide": "Hide hidden parcels",
-    "unhide": "Show again"
+    "unhide": "Show again",
+    "shop": "View at the shop",
+    "lookup": {
+      "now": "Refresh now",
+      "done": "Asked the carrier",
+      "at": "Last asked the carrier:",
+      "not": {
+        "tooSoon": "Just asked. Try again in a few minutes.",
+        "notSupported": "The server doesn't ask the carrier about this parcel.",
+        "unavailable": "The carrier isn't answering right now. Try again later.",
+        "notFound": "The carrier doesn't know this tracking number."
+      },
+      "error": {
+        "notFound": "The carrier doesn't know the number (yet).",
+        "unavailable": "The carrier didn't answer.",
+        "rateLimited": "Too many requests, the server will ask again later."
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Shipment } from "@/backend/types";
-import { dayOf, groupShipments, markable, markNow, shipmentOfMail, stepOf } from "./shipments";
+import { agoText, dayOf, groupShipments, markable, markNow, shipmentOfMail, stepOf } from "./shipments";
 
 const now = new Date(2026, 10, 14, 9, 0);
 const at = (days: number) => new Date(now.getTime() + days * 86_400_000).toISOString();
@@ -9,6 +9,7 @@ const parcel = (id: string, patch: Partial<Shipment>): Shipment => ({
   carrier: "dhl",
   number: id,
   trackingUrl: null,
+  shopTrackingUrl: null,
   title: null,
   merchant: null,
   orderRef: null,
@@ -20,6 +21,8 @@ const parcel = (id: string, patch: Partial<Shipment>): Shipment => ({
   hidden: false,
   emailIds: [],
   events: [],
+  lookedUpAt: null,
+  lookupError: null,
   created: at(-5),
   updated: at(-1),
   ...patch,
@@ -84,5 +87,13 @@ describe("marking by hand", () => {
     ]);
     expect(markable("delivered")).toEqual(["readyForPickup", "deliveryFailed", "returned", "cancelled"]);
     expect(markNow()).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
+  });
+
+  it("says how long ago the carrier was asked", () => {
+    const base = Date.parse("2026-11-16T12:00:00Z");
+    expect(agoText("2026-11-16T11:59:40Z", "en", base)).toBe("this minute");
+    expect(agoText("2026-11-16T11:35:00Z", "en", base)).toBe("25 minutes ago");
+    expect(agoText("2026-11-16T09:00:00Z", "de", base)).toBe("vor 3 Stunden");
+    expect(agoText("2026-11-15T10:00:00Z", "en", base)).toBe("yesterday");
   });
 });

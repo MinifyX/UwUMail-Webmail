@@ -58,6 +58,7 @@ import type {
   MaskedAddressPatch,
   Shipment,
   ShipmentInput,
+  ShipmentNotRefreshed,
   ShipmentPatch,
   ShipmentsSupport,
   MaskedOptions,
@@ -394,6 +395,8 @@ export interface Backend {
   /** Renames it (null goes back to the shop) or hides it. */
   updateShipment(id: string, patch: ShipmentPatch): Promise<void>;
   deleteShipment(id: string): Promise<void>;
+  /** Asks the carrier about it now (`Shipment/refresh`); null when asked, else why not. */
+  refreshShipment(id: string): Promise<ShipmentNotRefreshed | null>;
   /** The id the reader opens just the mail `emailId` by, e.g. from a parcel. */
   mailThreadId(emailId: string): string;
 

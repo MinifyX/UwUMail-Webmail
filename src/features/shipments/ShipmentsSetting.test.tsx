@@ -7,7 +7,7 @@ import { i18n } from "@/i18n";
 import { useSettings } from "@/state/settings";
 import { ShipmentsSetting } from "./ShipmentsSetting";
 
-let support: ShipmentsSupport = { offered: true, enabled: true };
+let support: ShipmentsSupport = { offered: true, enabled: true, lookupCarriers: [] };
 
 const fake = {
   kind: "jmap",
@@ -40,12 +40,12 @@ describe("parcel detection setting", () => {
   });
   beforeEach(() => {
     vi.clearAllMocks();
-    support = { offered: true, enabled: true };
+    support = { offered: true, enabled: true, lookupCarriers: [] };
   });
   afterEach(cleanup);
 
   it("isn't there when the admin switched parcels off", async () => {
-    support = { offered: false, enabled: false };
+    support = { offered: false, enabled: false, lookupCarriers: [] };
     renderSetting();
     await waitFor(() => expect(fake.shipmentsSupport).toHaveBeenCalled());
     expect(screen.queryByRole("switch")).toBeNull();
@@ -65,7 +65,7 @@ describe("parcel detection setting", () => {
   });
 
   it("switches back on without asking", async () => {
-    support = { offered: true, enabled: false };
+    support = { offered: true, enabled: false, lookupCarriers: [] };
     renderSetting();
     fireEvent.click(await toggle());
     await waitFor(() => expect(fake.setShipmentsEnabled).toHaveBeenCalledWith(true));
